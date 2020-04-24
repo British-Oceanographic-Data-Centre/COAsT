@@ -1,12 +1,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>NEMO-ENTRUST – Working with Ponycopters</title>
-    <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/</link>
-    <description>Recent content in Working with Ponycopters on NEMO-ENTRUST</description>
+    <title>COAsT – Working with Ponycopters</title>
+    <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/</link>
+    <description>Recent content in Working with Ponycopters on COAsT</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -16,10 +16,10 @@
     
     <item>
       <title>Docs: Configuring Ponycopters</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/configuring-ponycopters/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/configuring-ponycopters/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/configuring-ponycopters/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/configuring-ponycopters/</guid>
       <description>
         
         
@@ -317,10 +317,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Launching Ponycopters</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/launching-ponycopters/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/launching-ponycopters/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/launching-ponycopters/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/launching-ponycopters/</guid>
       <description>
         
         

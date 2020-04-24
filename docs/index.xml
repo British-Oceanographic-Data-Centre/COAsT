@@ -1,11 +1,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>NEMO-ENTRUST – Documentation</title>
-    <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/</link>
-    <description>Recent content in Documentation on NEMO-ENTRUST</description>
+    <title>COAsT – Documentation</title>
+    <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/</link>
+    <description>Recent content in Documentation on COAsT</description>
     <generator>Hugo -- gohugo.io</generator>
     
-	  <atom:link href="https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -15,10 +15,10 @@
     
     <item>
       <title>Docs: Bed and Chair Metrics</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/beds/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/beds/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/beds/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/beds/</guid>
       <description>
         
         
@@ -316,10 +316,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Configuring Ponycopters</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/configuring-ponycopters/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/configuring-ponycopters/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/configuring-ponycopters/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/configuring-ponycopters/</guid>
       <description>
         
         
@@ -617,10 +617,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Launching Ponycopters</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/launching-ponycopters/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/launching-ponycopters/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/launching-ponycopters/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/launching-ponycopters/</guid>
       <description>
         
         
@@ -918,10 +918,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Multi-Bear Domicile Setup</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tutorials/multi-bear/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tutorials/multi-bear/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tutorials/multi-bear/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tutorials/multi-bear/</guid>
       <description>
         
         
@@ -1219,10 +1219,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Porridge Assessment</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/porridge/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/porridge/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/porridge/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/porridge/</guid>
       <description>
         
         
@@ -1520,10 +1520,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Another Task</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/task/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/task/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/task/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/task/</guid>
       <description>
         
         
@@ -1821,10 +1821,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Another Tutorial</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tutorials/tutorial2/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tutorials/tutorial2/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tutorials/tutorial2/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tutorials/tutorial2/</guid>
       <description>
         
         
@@ -2122,10 +2122,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Example Page</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/getting-started/example-page/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/getting-started/example-page/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/getting-started/example-page/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/getting-started/example-page/</guid>
       <description>
         
         
@@ -2423,10 +2423,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Parameter Reference</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/reference/parameter-reference/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/parameter-reference/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/reference/parameter-reference/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/parameter-reference/</guid>
       <description>
         
         

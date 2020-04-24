@@ -1,12 +1,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>NEMO-ENTRUST – Core Tasks</title>
-    <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/</link>
-    <description>Recent content in Core Tasks on NEMO-ENTRUST</description>
+    <title>COAsT – Core Tasks</title>
+    <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/</link>
+    <description>Recent content in Core Tasks on COAsT</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate>
     
-	  <atom:link href="https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/index.xml" rel="self" type="application/rss+xml" />
+	  <atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/index.xml" rel="self" type="application/rss+xml" />
     
     
       
@@ -16,10 +16,10 @@
     
     <item>
       <title>Docs: Bed and Chair Metrics</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/beds/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/beds/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/beds/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/beds/</guid>
       <description>
         
         
@@ -317,10 +317,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Porridge Assessment</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/porridge/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/porridge/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/porridge/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/porridge/</guid>
       <description>
         
         
@@ -618,10 +618,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Another Task</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/task/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/task/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/task/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/task/</guid>
       <description>
         
         
@@ -919,10 +919,10 @@ This is a warning with a title.
     
     <item>
       <title>Docs: Working with Ponycopters</title>
-      <link>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/</link>
+      <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/</link>
       <pubDate>Thu, 05 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://british-oceanographic-data-centre.github.io/NEMO-ENTRUST/docs/tasks/ponycopters/</guid>
+      <guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/tasks/ponycopters/</guid>
       <description>
         
         
