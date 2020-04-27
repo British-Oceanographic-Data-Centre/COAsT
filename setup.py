@@ -1,11 +1,11 @@
-from setuptools import setup, find_packages
-
+from distutils.core import setup
 
 setup(
-    name="Coastal Ocean Assessment Tool",
-    version="0.0.1.dev1",
-    description="Put something here",  # TODO
-    url="https://www.bodc.ac.uk",  # TODO
+    name="COAsT",
+    version="0.1",
+    description="This is the Coastal Ocean Assessment Tool",
+    url="https://www.bodc.ac.uk",
+    download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.tar.gz',
     author="British Oceanographic Data Centre (BODC)",
     license="Put something here",  # TODO,
 
@@ -16,10 +16,13 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    keywords="Put something here",  # TODO
-    project_urls="Put something here",  # TODO
-    install_requires=[],  # TODO
+    keywords="NEMO, shallow water, ocean assessment",  # TODO
+    project_urls="https://british-oceanographic-data-centre.github.io/COAsT/",
+    install_requires=[
+        'dask',
+        'xarray',
+    ],
     python_requires=">=3",
-    packages=find_packages("coast"),
+    packages=["COAsT"],
     include_package_data=True
 )
