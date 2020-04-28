@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="COAsT",
-    version="0.1.1",
+    version="0.1.1-alpha.3",
     description="This is the Coastal Ocean Assessment Tool",
     url="https://www.bodc.ac.uk",
     download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.1.tar.gz',
@@ -22,6 +22,9 @@ setup(
     install_requires=[
         'dask',
         'xarray',
+        'matplotlib',
+        'Cartopy',
+        'tlz',
     ],
     python_requires=">=3",
     packages=["COAsT"],
