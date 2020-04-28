@@ -27,7 +27,7 @@ class DOMAIN(COAsT):
                 e2u, e2v, e2t, e2f (t,y,x) - double - (m)
         """
         try:
-            self.bathy_metry = self.dataset.bath_metry
+            self.bathy_metry = self.dataset.bathy_metry
         except AttributeError as e:
             warn(str(e))
 
