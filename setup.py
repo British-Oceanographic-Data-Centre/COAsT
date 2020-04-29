@@ -1,15 +1,15 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name="COAsT",
-    version="0.1.2-alpha.6",
+    version="0.1.2a7",
     description="This is the Coastal Ocean Assessment Tool",
     url="https://www.bodc.ac.uk",
-    download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.2-alpha.6.tar.gz',
+    download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.2a7.tar.gz',
     author="British Oceanographic Data Centre (BODC)",
     author_email="bodcsoft@bodc.ac.uk",
     license="Put something here",  # TODO,
-
+    setup_requires=['wheel'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Science/Research",
