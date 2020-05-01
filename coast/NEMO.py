@@ -1,7 +1,10 @@
 from .COAsT import COAsT
 import xarray as xa
 import numpy as np
-from dask import delayed
+from dask import delayed, compute, visualize
+import graphviz
+
+
 class NEMO(COAsT):
 
     def __init__(self):
@@ -103,34 +106,27 @@ class NEMO(COAsT):
         '''
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat.stack(new=('x','y'))
-        lon = self.dataset.nav_lon.stack(new=('x','y'))
-
-        # Total number of model points
-        n_pts = lat.shape[0]
-
-        # Initialise distance array
-        nemo_dist = xa.DataArray(np.zeros(n_pts))
+        lat = self.dataset.nav_lat.stack(new=('x', 'y'))
+        lon = self.dataset.nav_lon.stack(new=('x', 'y'))
 
         # Calculate the distances between every model point and the specified
-        # centre. Calls another routine dist_haversine. Not super efficient loop.
-        nemo_dist = [self.dist_haversine(centre_lon, centre_lat, lon[ii], lat[ii])
-                     for ii in range(0, n_pts)]
-        nemo_dist = xa.DataArray(nemo_dist)
+        # centre. Calls another routine dist_haversine.
+
+        nemo_dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
-        nemo_dist = nemo_dist.reshape(self.dataset.nav_lon.shape())
+        nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
 
         # Get boolean array where the distance is less than the specified radius
         # using np.where
         nemo_indices_bool = nemo_dist < radius
-        nemo_indices = xa.where(nemo_indices_bool)
+        nemo_indices = np.where(nemo_indices_bool.compute())
 
         # Then these output tuples can be separated into x and y arrays if necessary.
 
         return nemo_indices
 
-    def get_subset_of_var(self, var: str,  points_x: slice, points_y: slice):
+    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice):
         # TODO this is most likely wrong
         smaller = self.dataset[var].isel(x=points_x, y=points_y)
         return smaller
