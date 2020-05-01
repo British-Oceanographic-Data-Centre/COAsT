@@ -22,6 +22,7 @@ setup(
     install_requires=[
         'dask[complete]',
         'xarray',
+        'numpy',
         'matplotlib',
         'netCDF4',
     ],
