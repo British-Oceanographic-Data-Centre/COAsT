@@ -1,4 +1,4 @@
-from COAsT import COAsT
+from .COAsT import COAsT
 from dask import array
 
 
