@@ -3,3 +3,8 @@ dist/
 Example_Python_Package.egg-info/
 .idea/
 venv/
+COAsT/__pycache__/
+
+.eggs/
+
+COAsT.egg-info/
