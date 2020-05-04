@@ -106,8 +106,8 @@ class NEMO(COAsT):
         '''
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat.stack(new=('x', 'y'))
-        lon = self.dataset.nav_lon.stack(new=('x', 'y'))
+        lat = self.dataset.nav_lat
+        lon = self.dataset.nav_lon
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
@@ -115,7 +115,7 @@ class NEMO(COAsT):
         nemo_dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
-        nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
+        # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
 
         # Get boolean array where the distance is less than the specified radius
         # using np.where
