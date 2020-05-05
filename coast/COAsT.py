@@ -4,9 +4,13 @@ import xarray as xr
 from dask.distributed import Client
 
 
+def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
+    Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+
+
 class COAsT:
     def __init__(self, workers=2, threads=2, memory_limit_per_worker='2GB'):
-        self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+        #self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
         self.dataset = None
         # Radius of the earth in km
         self.earth_raids = 6371.007176

@@ -1,7 +1,10 @@
 from .COAsT import COAsT
 import xarray as xa
 import numpy as np
-from dask import delayed
+from dask import delayed, compute, visualize
+import graphviz
+
+
 class NEMO(COAsT):
 
     def __init__(self):
@@ -93,44 +96,7 @@ class NEMO(COAsT):
         except AttributeError as e:
             print(str(e))
 
-    def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
-        '''
-        This is just a sketch of what this type of routine might look like.
-        It would read in model domain location information as well as user specified
-        information on a point location: centre and radius (probably km). It
-        goes on to calculate the distance between all model points and the
-        specified point and compares these distances to the radius.
-        '''
-
-        # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat.stack(new=('x','y'))
-        lon = self.dataset.nav_lon.stack(new=('x','y'))
-
-        # Total number of model points
-        n_pts = lat.shape[0]
-
-        # Initialise distance array
-        nemo_dist = xa.DataArray(np.zeros(n_pts))
-
-        # Calculate the distances between every model point and the specified
-        # centre. Calls another routine dist_haversine. Not super efficient loop.
-        nemo_dist = [self.dist_haversine(centre_lon, centre_lat, lon[ii], lat[ii])
-                     for ii in range(0, n_pts)]
-        nemo_dist = xa.DataArray(nemo_dist)
-
-        # Reshape distance array back to original 2-dimensional form
-        nemo_dist = nemo_dist.reshape(self.dataset.nav_lon.shape())
-
-        # Get boolean array where the distance is less than the specified radius
-        # using np.where
-        nemo_indices_bool = nemo_dist < radius
-        nemo_indices = xa.where(nemo_indices_bool)
-
-        # Then these output tuples can be separated into x and y arrays if necessary.
-
-        return nemo_indices
-
-    def get_subset_of_var(self, var: str,  points_x: slice, points_y: slice):
+    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice):
         # TODO this is most likely wrong
         smaller = self.dataset[var].isel(x=points_x, y=points_y)
         return smaller
