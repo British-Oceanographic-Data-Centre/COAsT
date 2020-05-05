@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name="COAsT",
-    version="0.1.2a7",
+    version="0.1.2a8",
     description="This is the Coastal Ocean Assessment Tool",
     url="https://www.bodc.ac.uk",
-    download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.2a7.tar.gz',
+    download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.2a8.tar.gz',
     author="British Oceanographic Data Centre (BODC)",
     author_email="bodcsoft@bodc.ac.uk",
     license="Put something here",  # TODO,
@@ -27,6 +27,6 @@ setup(
         'netCDF4',
     ],
     python_requires=">=3",
-    packages=["COAsT"],
+    packages=["coast"],
     include_package_data=True
 )

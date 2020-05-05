@@ -1,3 +1,7 @@
 dask==2.14.0
 matplotlib==3.2.1
 xarray==0.15.1
+setuptools
+wheel
+twine
+
