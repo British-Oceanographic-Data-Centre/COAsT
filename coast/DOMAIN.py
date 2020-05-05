@@ -1,6 +1,7 @@
 from .COAsT import COAsT
 from warnings import warn
-
+import numpy as np
+import xarray as xa
 
 class DOMAIN(COAsT):
 
@@ -80,3 +81,26 @@ class DOMAIN(COAsT):
             self.e2f = self.dataset.e2f
         except AttributeError as e:
             print(str(e))
+
+
+    # TODO this might need to move to DOMAIN subclass
+    def find_J_I(self, lat, lon):
+        """
+            Simple routine to find the nearest J,I coordinates for given lat lon
+            Usage: [J,I] = findJI(49, -12, nav_lat_grid_T, nav_lon_grid_T)
+            """
+        dist2 = xa.ufuncs.square(self.dataset.gphit - lat) + xa.ufuncs.square(self.dataset.glamt - lon)
+        [J, I] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [J, I]
+
+
+    # TODO this might need to move DOMAIN
+    def transect_indices(self, start: tuple, end: tuple):
+        [J1, I1] = self.find_J_I(start[0], start[1]) # lat , lon
+        [J2, I2] = self.find_J_I(end[0], end[1]) # lat , lon
+
+        npts = max(np.abs(J2 - J1), np.abs(I2 - I1))
+
+        JJ = [int(jj) for jj in np.round(np.linspace(J1, J2, num=npts))]
+        II = [int(ii) for ii in np.round(np.linspace(I1, I2, num=npts))]
+        return JJ, II
