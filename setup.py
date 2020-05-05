@@ -27,6 +27,6 @@ setup(
         'netCDF4',
     ],
     python_requires=">=3",
-    packages=["COAsT"],
+    packages=["coast"],
     include_package_data=True
 )
