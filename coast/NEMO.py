@@ -96,36 +96,6 @@ class NEMO(COAsT):
         except AttributeError as e:
             print(str(e))
 
-    def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
-        '''
-        This is just a sketch of what this type of routine might look like.
-        It would read in model domain location information as well as user specified
-        information on a point location: centre and radius (probably km). It
-        goes on to calculate the distance between all model points and the
-        specified point and compares these distances to the radius.
-        '''
-
-        # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat
-        lon = self.dataset.nav_lon
-
-        # Calculate the distances between every model point and the specified
-        # centre. Calls another routine dist_haversine.
-
-        nemo_dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
-
-        # Reshape distance array back to original 2-dimensional form
-        # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
-
-        # Get boolean array where the distance is less than the specified radius
-        # using np.where
-        nemo_indices_bool = nemo_dist < radius
-        nemo_indices = np.where(nemo_indices_bool.compute())
-
-        # Then these output tuples can be separated into x and y arrays if necessary.
-
-        return nemo_indices
-
     def get_subset_of_var(self, var: str, points_x: slice, points_y: slice):
         # TODO this is most likely wrong
         smaller = self.dataset[var].isel(x=points_x, y=points_y)
