@@ -3,6 +3,7 @@ from warnings import warn
 import numpy as np
 import xarray as xa
 
+
 class DOMAIN(COAsT):
 
     def __init__(self):
@@ -112,7 +113,6 @@ class DOMAIN(COAsT):
 
         return nemo_indices
 
-    # TODO this might need to move to DOMAIN subclass
     def find_J_I(self, lat, lon, grid_ref: str):
         """
             Simple routine to find the nearest J,I coordinates for given lat lon
@@ -125,21 +125,20 @@ class DOMAIN(COAsT):
         [t, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-    # TODO this might need to move DOMAIN
     def transect_indices(self, start: tuple, end: tuple, grid_ref: str = 'T'):
 
-        if len(grid_ref) is not 1:
+        if len(grid_ref) != 1:
             raise AssertionError("grid_ref should be either T, V, U, F")
 
         letter = grid_ref.lower()
 
-        [j1, i1] = self.find_J_I(start[0], start[1], letter) # lat , lon
-        [j2, i2] = self.find_J_I(end[0], end[1], letter) # lat , lon
+        [j1, i1] = self.find_J_I(start[0], start[1], letter)  # lat , lon
+        [j2, i2] = self.find_J_I(end[0], end[1], letter)  # lat , lon
 
         npts = max(np.abs(j2 - j1), np.abs(i2 - i1))
 
         jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=npts))]
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=npts))]
-        #jj2 = [jj for jj in np.linspace(j1, j2, num=npts)]
-        #ii2 = [ii for ii in np.linspace(i1, i2, num=npts)]
+        # jj2 = [jj for jj in np.linspace(j1, j2, num=npts)]
+        # ii2 = [ii for ii in np.linspace(i1, i2, num=npts)]
         return jj1, ii1, npts
