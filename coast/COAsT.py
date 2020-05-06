@@ -24,19 +24,6 @@ class COAsT:
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords", compat='override'
         )
 
-
-
-    def get_transect_indices(self, points_a: tuple, points_b: tuple, grid_ref: str):
-        # self.dataset.nav_lon.stack(flat=('x', 'y'))
-        # self.dataset.nav_lat.stack(flat=('x', 'y'))
-        location_indexs = {}
-        lat = xr.where(self.dataset.nav_lat < 50, 1, 0) + xr.where(self.dataset.nav_lat > 40, 1, 0)
-        lon = xr.where(self.dataset.nav_lon < 30, 1, 0) + xr.where(self.dataset.nav_lon > 21, 1, 0)
-        unifined = lat + lon
-        answer = xr.where(unifined > 2, True, False)
-        location_indexs = np.where(answer)
-        return location_indexs
-
     def subset(self, domain, nemo, points_a: array, points_b: array):
         raise NotImplementedError
 
