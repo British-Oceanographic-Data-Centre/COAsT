@@ -112,25 +112,34 @@ class DOMAIN(COAsT):
 
         return nemo_indices
 
-
     # TODO this might need to move to DOMAIN subclass
-    def find_J_I(self, lat, lon):
+    def find_J_I(self, lat, lon, grid_ref: str):
         """
             Simple routine to find the nearest J,I coordinates for given lat lon
             Usage: [J,I] = findJI(49, -12, nav_lat_grid_T, nav_lon_grid_T)
-            """
-        dist2 = xa.ufuncs.square(self.dataset.gphit - lat) + xa.ufuncs.square(self.dataset.glamt - lon)
-        [J, I] = np.unravel_index(dist2.argmin(), dist2.shape)
-        return [J, I]
+        """
 
+        interal_lat = f"gphi{grid_ref}"
+        interal_lon = f"glam{grid_ref}"
+        dist2 = xa.ufuncs.square(self.dataset[interal_lat] - lat) + xa.ufuncs.square(self.dataset[interal_lon] - lon)
+        [t, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [y, x]
 
     # TODO this might need to move DOMAIN
-    def transect_indices(self, start: tuple, end: tuple):
-        [J1, I1] = self.find_J_I(start[0], start[1]) # lat , lon
-        [J2, I2] = self.find_J_I(end[0], end[1]) # lat , lon
+    def transect_indices(self, start: tuple, end: tuple, grid_ref: str = 'T'):
 
-        npts = max(np.abs(J2 - J1), np.abs(I2 - I1))
+        if len(grid_ref) is not 1:
+            raise AssertionError("grid_ref should be either T, V, U, F")
 
-        JJ = [int(jj) for jj in np.round(np.linspace(J1, J2, num=npts))]
-        II = [int(ii) for ii in np.round(np.linspace(I1, I2, num=npts))]
-        return JJ, II
+        letter = grid_ref.lower()
+
+        [j1, i1] = self.find_J_I(start[0], start[1], letter) # lat , lon
+        [j2, i2] = self.find_J_I(end[0], end[1], letter) # lat , lon
+
+        npts = max(np.abs(j2 - j1), np.abs(i2 - i1))
+
+        jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=npts))]
+        ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=npts))]
+        #jj2 = [jj for jj in np.linspace(j1, j2, num=npts)]
+        #ii2 = [ii for ii in np.linspace(i1, i2, num=npts)]
+        return jj1, ii1, npts
