@@ -1,17 +1,20 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>COAsT – Contribution Guidelines</title>
-    <link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/</link>
-    <description>Recent content in Contribution Guidelines on COAsT</description>
-    <generator>Hugo -- gohugo.io</generator>
-    
-	  <atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/index.xml" rel="self" type="application/rss+xml" />
-    
-    
-      
-        
-      
-    
-    
-  </channel>
-</rss>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contribution Guidelines</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/</link><description>Recent content in Contribution Guidelines on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Using Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contribution-guidelines/hugo/</guid><description>
+&lt;p>This page will walk you though a simple setup for hugo extended - which is needed if want to view any changes you make to this site locally.&lt;/p>
+&lt;p>For more details please &lt;a href="https://gohugo.io/getting-started/installing/">read this&lt;/a>.&lt;/p>
+&lt;h2 id="installation">Installation&lt;/h2>
+&lt;ol>
+&lt;li>Download hugo extended from &lt;a href="https://github.com/gohugoio/hugo/releases">GitHub&lt;/a>&lt;/li>
+&lt;li>Unzip into prefered location (I use C:\hugo)&lt;/li>
+&lt;li>Add to OS PATH
+&lt;ul>
+&lt;li>optional but makes usage easyer&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="try-it-out">Try it out!&lt;/h2>
+&lt;p>You should now be able to try the following in a terminal&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">$ hugo --help
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>if you have cloned the COAsT-site &lt;a href="github_repo">repo&lt;/a> you should also now be able to;&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">$ &lt;span style="color:#204a87">cd&lt;/span> COAsT-site
+$ hugo server
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>the above will start a local hugo powered version of the website. you can edit any of the files under /content and see your changes at http://localhost:1313/COAsT/&lt;/p></description></item></channel></rss>
