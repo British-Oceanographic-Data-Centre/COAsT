@@ -21,7 +21,8 @@ class DOMAIN(COAsT):
         self.e2f = None
 
     def set_command_variables(self):
-        """ A method to make accessing the following simpler
+        """
+         A method to make accessing the following simpler
                 bathy_metry (t,y,x) - float - (m i.e. metres)
                 nav_lat (y,x) - float - (deg)
                 nav_lon (y,x) - float - (deg)
@@ -84,13 +85,13 @@ class DOMAIN(COAsT):
             print(str(e))
 
     def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
-        '''
+        """
         This is just a sketch of what this type of routine might look like.
         It would read in model domain location information as well as user specified
         information on a point location: centre and radius (probably km). It
         goes on to calculate the distance between all model points and the
         specified point and compares these distances to the radius.
-        '''
+        """
 
         # Flatten NEMO domain stuff.
         lat = self.dataset.nav_lat
@@ -99,46 +100,61 @@ class DOMAIN(COAsT):
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        nemo_dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
+        dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
         # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
 
         # Get boolean array where the distance is less than the specified radius
         # using np.where
-        nemo_indices_bool = nemo_dist < radius
-        nemo_indices = np.where(nemo_indices_bool.compute())
+        indices_bool = dist < radius
+        indices = np.where(indices_bool.compute())
 
         # Then these output tuples can be separated into x and y arrays if necessary.
 
-        return nemo_indices
+        return indices
 
-    def find_J_I(self, lat, lon, grid_ref: str):
+    def find_j_i(self, lat: int, lon: int, grid_ref: str):
         """
-            Simple routine to find the nearest J,I coordinates for given lat lon
-            Usage: [J,I] = findJI(49, -12, nav_lat_grid_T, nav_lon_grid_T)
+        A routine to find the nearest y x coordinates for a given latitude and longitude
+        Usage: [y,x] = find_j_i(49, -12, t)
+
+        :param lat: latitude
+        :param lon: longitude
+        :param grid_ref: the gphi/glam version a user wishes to search over
+        :return: the y and x coordinates for the given grid_ref variable within the domain file
         """
 
-        interal_lat = f"gphi{grid_ref}"
-        interal_lon = f"glam{grid_ref}"
-        dist2 = xa.ufuncs.square(self.dataset[interal_lat] - lat) + xa.ufuncs.square(self.dataset[interal_lon] - lon)
-        [t, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        internal_lat = f"gphi{grid_ref}"
+        internal_lon = f"glam{grid_ref}"
+        dist2 = xa.ufuncs.square(self.dataset[internal_lat] - lat) + xa.ufuncs.square(self.dataset[internal_lon] - lon)
+        [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-    def transect_indices(self, start: tuple, end: tuple, grid_ref: str = 'T'):
+    def transect_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
+        """
+        This methods returns the indices of a simple straight line transect.
 
-        if len(grid_ref) != 1:
-            raise AssertionError("grid_ref should be either T, V, U, F")
+        checks `grid_ref` has a value within (T, V, U, F) this corresponds to the gphi/glam variable a user wishes
+        to use for looking up the indices from.
+
+        :type start: tuple A lat/lon pair
+        :type end: tuple A lat/lon pair
+        :type grid_ref: str
+        :return: array of y indices, array of x indices, number of indices in transect
+        """
+
+        assert isinstance(grid_ref, str) and grid_ref.upper() in ("T", "V", "U", "F"), \
+            "grid_ref should be either \"T\", \"V\", \"U\", \"F\""
+
 
         letter = grid_ref.lower()
 
-        [j1, i1] = self.find_J_I(start[0], start[1], letter)  # lat , lon
-        [j2, i2] = self.find_J_I(end[0], end[1], letter)  # lat , lon
+        [j1, i1] = self.find_j_i(start[0], start[1], letter)  # lat , lon
+        [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
-        npts = max(np.abs(j2 - j1), np.abs(i2 - i1))
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1))
 
-        jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=npts))]
-        ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=npts))]
-        # jj2 = [jj for jj in np.linspace(j1, j2, num=npts)]
-        # ii2 = [ii for ii in np.linspace(i1, i2, num=npts)]
-        return jj1, ii1, npts
+        jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
+        ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
+        return jj1, ii1, line_length
