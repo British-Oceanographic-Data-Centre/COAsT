@@ -11,7 +11,7 @@ def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
 
 class COAsT:
     def __init__(self, workers=2, threads=2, memory_limit_per_worker='2GB'):
-        #self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+        # self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
         self.dataset = None
         # Radius of the earth in km
         self.earth_raids = 6371.007176
@@ -63,18 +63,32 @@ class COAsT:
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
 
+        Setting time_counter to None will treat `var` as only having 3 dimensions depth, y, x
+
+        there is a check on `var` to see the size of the time_counter, if 1 then time_counter is fixed to index 0.
+
         :param var: the name of the variable to get data from
         :param points_x: a list/array of indices for the x dimension
         :param points_y: a list/array of indices for the y dimension
         :param line_length: (Optional) the length of your subset (assuming simple line transect)
-        :param time_counter: (Optional) which time slice to get data from
+        :param time_counter: (Optional) which time slice to get data from, if None and the variable only has one a time
+                             channel of length 1 then time_counter is fixed too an index of 0
         :return: data across all depths for the chosen variable along the given indices
         """
+        # TODO do we need a 3d version of this method - i.e no depth/time channel
         if line_length is None:
             line_length = len(points_x)
 
         internal_variable = self.dataset[var].values
-        [_, depth_size, _, _, ] = internal_variable.shape
+
+        # This will fail for a 3d variable, so we retry without time_size
+        try:
+            [time_size, depth_size, _, _] = internal_variable.shape
+            if time_size == 1:
+                time_counter == 0
+
+        except ValueError:
+            [depth_size, _, _] = internal_variable.shape
 
         smaller = np.zeros((depth_size, line_length))
 
