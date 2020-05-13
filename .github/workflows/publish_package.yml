@@ -1,0 +1,38 @@
+name: Build and Deploy Python package
+
+on:
+  push:
+    branches:
+      master
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip virtualenv
+    - name: Shell Script Permissions
+      run: |
+        chmod +x *.sh
+    - name: Setup Environment
+      run: |
+        ./setup_environment.sh
+    - name: Build Package
+      run: |
+        ./build.sh
+    - name: Publish Package
+      shell: bash
+      env:
+        PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
