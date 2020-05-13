@@ -96,13 +96,19 @@ class NEMO(COAsT):
         except AttributeError as e:
             print(str(e))
 
-    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None):
+    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 1):
         # TODO this is most likely wrong
         if line_length is None:
             line_length = len(points_x)
 
-        smaller = np.transpose([self.dataset[var][:, points_y[i], points_x[i]] for i in range(line_length)])
-        return smaller
+        a = []
+        for i in range(line_length):
+            a.append(self.dataset[var][time_counter, :, points_y[i], points_x[i]].compute())
+
+        #xa.DataArray(data).
+        #smaller = np.transpose(a)
+        #smaller = np.transpose([self.dataset[var][:, points_y[i], points_x[i]] for i in range(line_length)])
+        return a #smaller
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
