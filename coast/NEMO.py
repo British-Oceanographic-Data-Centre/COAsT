@@ -101,14 +101,18 @@ class NEMO(COAsT):
         if line_length is None:
             line_length = len(points_x)
 
-        a = []
+        internal_variable = self.dataset[var].values
+        [_, depth_size, _, _, ] = internal_variable.shape
+
+        smaller = np.zeros((line_length, depth_size))
+
         for i in range(line_length):
-            a.append(self.dataset[var][time_counter, :, points_y[i], points_x[i]].compute())
+            smaller[i, :] = internal_variable[time_counter, :, points_y[i], points_x[i]].squeeze()
 
         #xa.DataArray(data).
         #smaller = np.transpose(a)
         #smaller = np.transpose([self.dataset[var][:, points_y[i], points_x[i]] for i in range(line_length)])
-        return a #smaller
+        return smaller
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
