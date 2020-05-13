@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="COAsT",
-    version="0.1.2a8",
+    version="0.1.2a9",
     description="This is the Coastal Ocean Assessment Tool",
     url="https://www.bodc.ac.uk",
     download_url = 'https://github.com/British-Oceanographic-Data-Centre/COAsT/archive/0.1.2a8.tar.gz',
