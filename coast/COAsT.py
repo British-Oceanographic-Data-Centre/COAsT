@@ -58,6 +58,35 @@ class COAsT:
 
         return distance
 
+    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
+                          time_counter: int = 1):
+        """
+        This method gets a subset of the data across the x/y indices given for the chosen variable.
+
+        :param var: the name of the variable to get data from
+        :param points_x: a list/array of indices for the x dimension
+        :param points_y: a list/array of indices for the y dimension
+        :param line_length: (Optional) the length of your subset (assuming simple line transect)
+        :param time_counter: (Optional) which time slice to get data from
+        :return: data across all depths for the chosen variable along the given indices
+        """
+        if line_length is None:
+            line_length = len(points_x)
+
+        internal_variable = self.dataset[var].values
+        [_, depth_size, _, _, ] = internal_variable.shape
+
+        smaller = np.zeros((depth_size, line_length))
+
+        if time_counter is None:
+            for i in range(line_length):
+                smaller[:, 1] = internal_variable[:, points_y[i], points_x[i]].squeeze()
+        else:
+            for i in range(line_length):
+                smaller[:, i] = internal_variable[time_counter, :, points_y[i], points_x[i]].squeeze()
+
+        return smaller
+
     def plot_single(self, variable: str):
         return self.dataset[variable].plot()
         # raise NotImplementedError
