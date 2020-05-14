@@ -88,6 +88,7 @@ class COAsT:
                 time_counter == 0
 
         except ValueError:
+            time_counter = None
             [depth_size, _, _] = internal_variable.shape
 
         smaller = np.zeros((depth_size, line_length))
