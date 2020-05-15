@@ -96,8 +96,6 @@ class NEMO(COAsT):
         except AttributeError as e:
             print(str(e))
 
-
-
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller

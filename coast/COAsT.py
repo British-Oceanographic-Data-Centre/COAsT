@@ -3,6 +3,7 @@ from dask import array
 import xarray as xr
 import numpy as np
 from dask.distributed import Client
+from warnings import warn
 
 
 def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
@@ -58,6 +59,37 @@ class COAsT:
 
         return distance
 
+    def get_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
+                             time_counter: int = 1):
+        """
+
+        :param var:
+        :param points_x:
+        :param points_y:
+        :param line_length:
+        :param time_counter:
+        :return:
+        """
+
+        try:
+            [time_size, depth_size, _, _] = self.dataset[var].shape
+            if time_size == 1:
+                time_counter == 0
+
+        except ValueError:
+            time_counter = None
+            [depth_size, _, _] = self.dataset[var].shape
+
+        dx = xr.DataArray(points_x)
+        dy = xr.DataArray(points_y)
+
+        if time_counter is None:
+            smaller = self.dataset[var].isel(x=dx, y=dy)
+        else:
+            smaller = self.dataset[var].isel(time_counter=0, x=dx, y=dy)
+
+        return smaller
+
     def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
                           time_counter: int = 1):
         """
@@ -102,12 +134,27 @@ class COAsT:
 
         return smaller
 
-    def plot_single(self, variable: str):
-        return self.dataset[variable].plot()
-        # raise NotImplementedError
+    def plot_simple_2d(self, x, y, data: xr.DataArray, cmap):
+        import matplotlib.pyplot as plt
 
-    def plot_cartopy(self):
-        import cartopy.crs as ccrs
+        plt.close('all')
+
+        fig = plt.figure()
+        plt.rcParams['figure.figsize'] = (15.0, 15.0)
+
+        ax = fig.add_subplot(411)
+        plt.pcolormesh(x, y, data, cmap=cmap)
+
+        plt.ylim([200, 0])
+        plt.xlim([-10, 0])
+        plt.title('Temperature')
+        plt.ylabel('depth (m)')
+        plt.clim([8, 15])
+        plt.colorbar()
+
+        return plt
+
+    def plot_cartopy(self, var: str, plot_var: array, params, time_counter: int = 0):
         import matplotlib.pyplot as plt
         ax = plt.axes(projection=ccrs.Orthographic(5, 15))
         # ax = plt.axes(projection=ccrs.PlateCarree())
