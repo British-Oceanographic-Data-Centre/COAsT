@@ -158,3 +158,18 @@ class DOMAIN(COAsT):
         jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
         return jj1, ii1, line_length
+
+    def subset_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
+        """
+        copied from transect_indices but output as all the indices between the corner points.
+        Consequently the returned lists have different lengths
+        """
+        assert isinstance(grid_ref, str) and grid_ref.upper() in ("T", "V", "U", "F"), \
+            "grid_ref should be either \"T\", \"V\", \"U\", \"F\""
+
+        letter = grid_ref.lower()
+
+        [j1, i1] = self.find_j_i(start[0], start[1], letter)  # lat , lon
+        [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
+
+        return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))

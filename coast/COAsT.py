@@ -88,6 +88,40 @@ class COAsT:
         else:
             smaller = self.dataset[var].isel(time_counter=0, x=dx, y=dy)
 
+
+        return smaller
+
+    def get_2d_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
+                             time_counter: int = 1):
+        """
+
+        :param var:
+        :param points_x:
+        :param points_y:
+        :param line_length:
+        :param time_counter:
+        :return:
+        """
+
+        try:
+            [time_size, depth_size, _, _] = self.dataset[var].shape
+            if time_size == 1:
+                time_counter == 0
+
+        except ValueError:
+            time_counter = None
+            [depth_size, _, _] = self.dataset[var].shape
+
+        dx = xr.DataArray(points_x)
+        dy = xr.DataArray(points_y)
+
+        if time_counter is None:
+            smaller = self.dataset[var].isel(x=dx, y=dy)
+        else:
+            #smaller = self.dataset[var].isel(time_counter=0, x=dx, y=dy)
+            smaller = self.dataset[var].isel(time_counter=0, x=points_x, y=points_y)
+
+
         return smaller
 
     def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
