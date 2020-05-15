@@ -156,6 +156,7 @@ class COAsT:
 
     def plot_cartopy(self, var: str, plot_var: array, params, time_counter: int = 0):
         import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
         ax = plt.axes(projection=ccrs.Orthographic(5, 15))
         # ax = plt.axes(projection=ccrs.PlateCarree())
         tmp = self.dataset.votemper
