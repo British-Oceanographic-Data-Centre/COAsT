@@ -1,8 +1,8 @@
 from .COAsT import COAsT
 import xarray as xa
 import numpy as np
-from dask import delayed, compute, visualize
-import graphviz
+# from dask import delayed, compute, visualize
+# import graphviz
 
 
 class NEMO(COAsT):
@@ -95,11 +95,6 @@ class NEMO(COAsT):
             self.vtau = self.dataset.vtau
         except AttributeError as e:
             print(str(e))
-
-    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice):
-        # TODO this is most likely wrong
-        smaller = self.dataset[var].isel(x=points_x, y=points_y)
-        return smaller
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)

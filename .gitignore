@@ -8,3 +8,5 @@ COAsT/__pycache__/
 .eggs/
 
 COAsT.egg-info/
+
+*.png
