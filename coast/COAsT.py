@@ -121,22 +121,42 @@ class COAsT:
 
         return smaller
 
-    def plot_simple_2d(self, x, y, data: xr.DataArray, cmap):
+    def plot_simple_2d(self, x, y, data: xr.DataArray, cmap, plot_info: dict):
+        """
+        This is a simple method that will plot data in a 2d. It is a wrapper for matplotlib's 'pcolormesh' method.
+
+        `cmap` and `plot_info` are required to run this method, `cmap` is passed directly to `pcolormesh`.
+
+        `plot_info` contains all the required information for setting the figure;
+         - ylim
+         - xlim
+         - clim
+         - title
+         - fig_size
+         - ylabel
+
+        :param x: The variable contain the x axis information
+        :param y: The variable contain the y axis information
+        :param data: the DataArray a user wishes to plot
+        :param cmap:
+        :param plot_info:
+        :return:
+        """
         import matplotlib.pyplot as plt
 
         plt.close('all')
 
         fig = plt.figure()
-        plt.rcParams['figure.figsize'] = (15.0, 15.0)
+        plt.rcParams['figure.figsize'] = plot_info['fig_size']
 
         ax = fig.add_subplot(411)
         plt.pcolormesh(x, y, data, cmap=cmap)
 
-        plt.ylim([200, 0])
-        plt.xlim([-10, 0])
-        plt.title('Temperature')
-        plt.ylabel('depth (m)')
-        plt.clim([8, 15])
+        plt.ylim(plot_info['ylim'])
+        plt.xlim(plot_info['xlim'])
+        plt.title(plot_info['title'])
+        plt.ylabel(plot_info['ylabel'])
+        plt.clim(plot_info['clim'])
         plt.colorbar()
 
         return plt
