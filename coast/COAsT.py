@@ -31,7 +31,7 @@ class COAsT:
     def distance_between_two_points(self):
         raise NotImplementedError
 
-    def dist_haversine(self, lon1, lat1, lon2, lat2):
+    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):
         '''
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
@@ -60,72 +60,7 @@ class COAsT:
         return distance
 
     def get_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
-                             time_counter: int = 1):
-        """
-
-        :param var:
-        :param points_x:
-        :param points_y:
-        :param line_length:
-        :param time_counter:
-        :return:
-        """
-
-        try:
-            [time_size, depth_size, _, _] = self.dataset[var].shape
-            if time_size == 1:
-                time_counter == 0
-
-        except ValueError:
-            time_counter = None
-            [depth_size, _, _] = self.dataset[var].shape
-
-        dx = xr.DataArray(points_x)
-        dy = xr.DataArray(points_y)
-
-        if time_counter is None:
-            smaller = self.dataset[var].isel(x=dx, y=dy)
-        else:
-            smaller = self.dataset[var].isel(time_counter=0, x=dx, y=dy)
-
-
-        return smaller
-
-    def get_2d_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
-                             time_counter: int = 1):
-        """
-
-        :param var:
-        :param points_x:
-        :param points_y:
-        :param line_length:
-        :param time_counter:
-        :return:
-        """
-
-        try:
-            [time_size, depth_size, _, _] = self.dataset[var].shape
-            if time_size == 1:
-                time_counter == 0
-
-        except ValueError:
-            time_counter = None
-            [depth_size, _, _] = self.dataset[var].shape
-
-        dx = xr.DataArray(points_x)
-        dy = xr.DataArray(points_y)
-
-        if time_counter is None:
-            smaller = self.dataset[var].isel(x=dx, y=dy)
-        else:
-            #smaller = self.dataset[var].isel(time_counter=0, x=dx, y=dy)
-            smaller = self.dataset[var].isel(time_counter=0, x=points_x, y=points_y)
-
-
-        return smaller
-
-    def get_subset_of_var(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
-                          time_counter: int = 1):
+                             time_counter: int = 0):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
 
@@ -141,30 +76,48 @@ class COAsT:
                              channel of length 1 then time_counter is fixed too an index of 0
         :return: data across all depths for the chosen variable along the given indices
         """
-        # TODO do we need a 3d version of this method - i.e no depth/time channel
-        if line_length is None:
-            line_length = len(points_x)
 
-        internal_variable = self.dataset[var].values
-
-        # This will fail for a 3d variable, so we retry without time_size
         try:
-            [time_size, depth_size, _, _] = internal_variable.shape
+            [time_size, _, _, _] = self.dataset[var].shape
             if time_size == 1:
                 time_counter == 0
 
         except ValueError:
             time_counter = None
-            [depth_size, _, _] = internal_variable.shape
 
-        smaller = np.zeros((depth_size, line_length))
+        dx = xr.DataArray(points_x)
+        dy = xr.DataArray(points_y)
 
         if time_counter is None:
-            for i in range(line_length):
-                smaller[:, 1] = internal_variable[:, points_y[i], points_x[i]].squeeze()
+            smaller = self.dataset[var].isel(x=dx, y=dy)
         else:
-            for i in range(line_length):
-                smaller[:, i] = internal_variable[time_counter, :, points_y[i], points_x[i]].squeeze()
+            smaller = self.dataset[var].isel(time_counter=time_counter, x=dx, y=dy)
+
+        return smaller
+
+    def get_2d_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
+                                time_counter: int = 0):
+        """
+
+        :param var:
+        :param points_x:
+        :param points_y:
+        :param line_length:
+        :param time_counter:
+        :return:
+        """
+
+        try:
+            [time_size, _, _, _] = self.dataset[var].shape
+            if time_size == 1:
+                time_counter == 0
+        except ValueError:
+            time_counter = None
+
+        if time_counter is None:
+            smaller = self.dataset[var].isel(x=points_x, y=points_y)
+        else:
+            smaller = self.dataset[var].isel(time_counter=time_counter, x=points_x, y=points_y)
 
         return smaller
 
@@ -189,15 +142,50 @@ class COAsT:
         return plt
 
     def plot_cartopy(self, var: str, plot_var: array, params, time_counter: int = 0):
+        try:
+            import cartopy.crs as ccrs  # mapping plots
+            import cartopy.feature  # add rivers, regional boundaries etc
+            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
+        except ImportError:
+            import sys
+            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+            sys.exit(-1)
+
         import matplotlib.pyplot as plt
-        import cartopy.crs as ccrs
-        ax = plt.axes(projection=ccrs.Orthographic(5, 15))
-        # ax = plt.axes(projection=ccrs.PlateCarree())
-        tmp = self.dataset.votemper
-        tmp.attrs = self.dataset.votemper.attrs
-        tmp.isel(time_counter=0, deptht=0).plot.contourf(ax=ax, transform=ccrs.PlateCarree())
-        ax.set_global()
-        ax.coastlines()
+        plt.close('all')
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.gca()
+        ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+        cset = self.dataset[var].isel(time_counter=time_counter, deptht=0).plot.pcolormesh \
+            (np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap)
+
+        cset.set_clim([params.levs[0], params.levs[-1]])
+
+        ax.add_feature(cartopy.feature.OCEAN)
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+        ax.add_feature(cartopy.feature.RIVERS)
+        coast = NaturalEarthFeature(category='physical', scale='10m', facecolor='none', name='coastline')
+        ax.add_feature(coast, edgecolor='gray')
+
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
+
+        gl.xlabels_top = False
+        gl.xlabels_bottom = True
+        gl.ylabels_right = False
+        gl.ylabels_left = True
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+
+        plt.colorbar(cset, shrink=params.colorbar_shrink, pad=.05)
+
+        # tmp = self.dataset.votemper
+        # tmp.attrs = self.dataset.votemper.attrs
+        # tmp.isel(time_counter=time_counter, deptht=0).plot.contourf(ax=ax, transform=ccrs.PlateCarree())
+        # ax.set_global()
+        # ax.coastlines()
         plt.show()
 
     def plot_movie(self):

@@ -86,12 +86,16 @@ class DOMAIN(COAsT):
 
     def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
         """
-        This is just a sketch of what this type of routine might look like.
-        It would read in model domain location information as well as user specified
-        information on a point location: centre and radius (probably km). It
-        goes on to calculate the distance between all model points and the
-        specified point and compares these distances to the radius.
+        This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
+
+        Distance is calculated as haversine - see `self.calculate_haversine_distance`
+
+        :param centre_lon: The longitude of the users central point
+        :param centre_lat: The latitude of the users central point
+        :param radius: The haversine distance (in km) from the central point
+        :return: All indices in a `tuple` with the haversine distance of the central point
         """
+
 
         # Flatten NEMO domain stuff.
         lat = self.dataset.nav_lat
@@ -100,7 +104,7 @@ class DOMAIN(COAsT):
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.dist_haversine(centre_lon, centre_lat, lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
         # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
@@ -140,7 +144,7 @@ class DOMAIN(COAsT):
 
         :type start: tuple A lat/lon pair
         :type end: tuple A lat/lon pair
-        :type grid_ref: str
+        :type grid_ref: str The gphi/glam version a user wishes to search over
         :return: array of y indices, array of x indices, number of indices in transect
         """
 
@@ -161,8 +165,14 @@ class DOMAIN(COAsT):
 
     def subset_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
         """
-        copied from transect_indices but output as all the indices between the corner points.
-        Consequently the returned lists have different lengths
+        based off transect_indices, this method looks to return all indices between the given points.
+        This results in a 'box' (Quadrilateral) of indices.
+        consequently the returned lists may have different lengths.
+
+        :param start: A lat/lon pair
+        :param end: A lat/lon pair
+        :param grid_ref: The gphi/glam version a user wishes to search over
+        :return: list of y indices, list of x indices,
         """
         assert isinstance(grid_ref, str) and grid_ref.upper() in ("T", "V", "U", "F"), \
             "grid_ref should be either \"T\", \"V\", \"U\", \"F\""
