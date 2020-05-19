@@ -18,7 +18,7 @@ def generate_conda(directory="conda"):
             "version": package.version
         },
         "source": {
-            "url": f"https://pypi.io/packages/source/{package.name[0]}/{package.name}-{package.version}.tar.gz"
+            "url": f"https://pypi.io/packages/source/{package.name[0]}/{package.name}/{package.name}-{package.version}.tar.gz"
         },
         "build": {
             "number": 0,
