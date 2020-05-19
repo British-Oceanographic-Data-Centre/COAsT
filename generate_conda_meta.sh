@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python metadata.py
+./venv/bin/python metadata.py
