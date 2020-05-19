@@ -3,7 +3,7 @@ from dask import array
 import xarray as xr
 import numpy as np
 from dask.distributed import Client
-
+import datetime
 
 def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
@@ -76,92 +76,8 @@ class COAsT:
 
     def plot_movie(self):
         raise NotImplementedError
-        
-    def crps_sonf(self, nemo_dom, nemo_var, obs_lon, obs_lat, obs_var,
-              nh_radius=111, nh_method = 'radius', cdf_type = 'empirical',
-              plot=False):
-        """Calculatues the Continuous Ranked Probability Score (CRPS)
-    
-        Calculatues the Continuous Ranked Probability Score (CRPS) using
-        a single-observation and neighbourhood forecast (SONF). The statistic
-        uses a comparison between the probability distributions of a model 
-        neighbourhood subset and a single observation. The CRPS is calculated 
-        independently for each observation. 
 
-        Keyword arguments:
-        nemo_dom -- COAsT DOMAIN object
-        nemo_var -- COAsT variable object (xa.DataArray) at pre specified time.
-        obs_lon -- Array of observation longitudes
-        obs_lat -- Array of observation latitudes
-        obs_var -- Array of observation variables
-        nh_radius -- Neighbourhood radius in km (if radius method) or degrees 
-                     (if box method).
-        nh_method -- Neighbourhood determination method: 'radius' or 'box'.
-        cdf_type -- Method for model CDF determination: 'empirical' or 
-                    'theoretical'. Observation CDFs are always determined 
-                    empirically.
-        plot -- True or False. Will plot up to five CDF comparisons and CRPS.
-        
-        return: Array of CRPS scores for each observation supplied.
-        """
-        
-        # Cast obs to array if single value is given
-        if np.isscalar(obs_lon):
-            obs_lon = np.array([obs_lon])
-            obs_lat = np.array([obs_lat])
-            obs_var = np.array([obs_var])
-    
-        # Define output array
-        n_nh = len(obs_var) # Number of neighbourhoods (nh)
-        crps_list = np.zeros( n_nh )
-    
-        # Loop over variables
-        for ii in range(0, n_nh):
-        
-            cntr_lon = obs_lon[ii]
-            cntr_lat = obs_lat[ii]
-        
-            # Get model subset using specified method
-            if nh_method == 'radius':
-                subset_indices = nemo_dom.subset_indices_by_distance(cntr_lon, 
-                                 cntr_lat, nh_radius)
-            elif nh_method == 'box':
-                lonbounds = [ cntr_lon - nh_radius, cntr_lon + nh_radius ]
-                latbounds = [ cntr_lat - nh_radius, cntr_lat + nh_radius ]
-                subset_indices = self.extract_lonlat_box(nemo_dom.dataset.nav_lon,
-                                                    nemo_dom.dataset.nav_lat,
-                                                    lonbounds, latbounds )
-            nemo_var_subset = nemo_var[xr.DataArray(subset_indices[0]), 
-                                       xr.DataArray(subset_indices[1])]
-        
-            # Calculate model cumulative distribution function
-            model_mu = np.nanmean(nemo_var_subset)
-            model_sigma = np.nanmean(nemo_var_subset)
-            cdf_x = np.arange( model_mu - 5 * model_sigma, 
-                                model_mu + 5 * model_sigma, model_sigma / 100 )
-            if cdf_type == 'empirical':
-                model_cdf = self.empirical_distribution(cdf_x, 
-                                                   np.array(nemo_var_subset))
-            elif cdf_type == 'theoretical':
-                model_pdf = self.normal_distribution(cdf_x, mu = model_mu, 
-                                                sigma=model_sigma)
-                model_cdf = self.cumulative_distribution(cdf_x, model_pdf)
-            
-            # Calculate observation empirical distribution function
-            obs_cdf = self.empirical_distribution(cdf_x, obs_var[ii])
-            
-            # Calculate CRPS and put into output array
-            crps_list[ii] = self.crps(cdf_x, model_cdf, obs_cdf)
-            #if plot and n_nh<5:
-            #    plt.figure()
-            #    plt.plot(cdf_x, model_cdf, c='k', linestyle='--')
-            #    plt.plot(cdf_x, obs_cdf, linestyle='--')
-            #    plt.fill_between(cdf_x, model_cdf, obs_cdf, alpha=0.5)
-            #    plt.title(round( crps_list[ii], 3))
-    
-        return crps_list
-
-    def normal_distribution(x=np.arange(-6,6,0.001), mu=0, sigma=1):
+    def normal_distribution(self, x=np.arange(-6,6,0.001), mu=0, sigma=1):
         """Generates a normal distribution.
 
         Keyword arguments:
@@ -177,7 +93,7 @@ class COAsT:
         exponent = -0.5*((x-mu)/sigma)**2
         return term1*np.exp( exponent )
 
-    def cumulative_distribution(x, pdf):
+    def cumulative_distribution(self, x, pdf):
         """Estimates the cumulative distribution of a supplied PDF.
 
         Keyword arguments:
@@ -191,7 +107,7 @@ class COAsT:
         cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
         return np.array(cdf)
 
-    def crps(x, model_cdf, obs_cdf):
+    def crps(self, x, model_cdf, obs_cdf):
         """Calculated the CRPS of provided model and observed CDFs.
 
         Keyword arguments:
@@ -207,7 +123,7 @@ class COAsT:
         crps = np.trapz(diff, x)
         return crps
 
-    def empirical_distribution(x, sample):
+    def empirical_distribution(self, x, sample):
         """Estimates a CDF empirically.
 
         Keyword arguments:
@@ -216,15 +132,16 @@ class COAsT:
         
         return: Array of len(x) containing corresponding EDF values
         """
+        sample = np.array(sample)
         sample = sample[~np.isnan(sample)]
         sample = np.sort(sample)
         edf = np.zeros(len(x))
         n_sample = len(sample)
         for ss in sample:
             edf[x>ss] = edf[x>ss] + 1/n_sample
-        return edf
+        return xr.DataArray(edf)
 
-    def extract_lonlat_box(lon, lat, lonbounds, latbounds):
+    def extract_lonlat_box(self, lon, lat, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
         Keyword arguments:
@@ -241,3 +158,57 @@ class COAsT:
         ff4 = ( lat < latbounds[1] ).astype(int)
         ff = ff1 * ff2 * ff3 * ff4
         return np.where(ff)
+    
+    def num_to_date(self, dnum, epoch = datetime.datetime(1900,1,1), 
+                    units = 'days'):
+        """ Converts a datenumber to a datetime object. 
+        
+        Default is dnum is 'days since 1900-01-01' but the units and epoch can 
+        be specified if needed. Works for either arraylike objects or scalars.
+        
+        Keyword arguments:
+        dnum  -- datenumber or array of datenumbers to convert to datetime. 
+        epoch -- Datetime with which the provided datenumber is relative to.
+        units -- Units of datenumber.
+        
+        return: datetime or array of datetime objects
+        """
+    
+        adj_dict = {"days" : 1, "hours" : 24, 
+                    "minutes" : 24*60, "seconds": 24*60*60}
+    
+        if np.isscalar(dnum):
+            dnum = dnum/adj_dict[units]
+            dtime = epoch + datetime.timedelta(days=dnum) 
+        else:
+            dnum = dnum/adj_dict[units]
+            dtime = np.array( [epoch + datetime.timedelta(days=dii) \
+                               for dii in dnum],
+                             dtype = np.datetime64 )
+            
+        return dtime
+
+    def date_to_num(self, dtime, epoch = datetime.datetime(1900,1,1),
+                    units = 'days'):
+        """ Converts a datetime object to a datenumber.
+        
+        Default dnum is 'days since 1900-01-01' but the units and epoch can 
+        be specified if needed. Works for either arraylike objects or scalars.
+        
+        Keyword arguments:
+        dtime -- Datetime object or array of datetime objects to convert.
+        epoch -- Datetime with which the provided datenumber is relative to.
+        units -- Units of datenumber.
+        
+        return: Number of specified units since specified epoch.
+        """
+        adj_dict = {"days" : 24*60*60, "hours" : 60*60, 
+                    "minutes" : 60, "seconds": 1}
+    
+        if isinstance(dtime, (list, np.ndarray, tuple)):
+            datenum = np.array( [(dii - epoch).total_seconds() \
+                                 for dii in dtime])
+        else:
+            datenum = (dtime - epoch).total_seconds()
+    
+        return datenum/(adj_dict[units])
