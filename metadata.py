@@ -1,16 +1,16 @@
-import json
-from types import SimpleNamespace
-from os import path
-import yaml
+def get_package(package_path="package.json"):
+    from types import SimpleNamespace
+    import json
 
-
-def get_package(path="package.json"):
-    with open(path, "r") as package_file:
+    with open(package_path, "r") as package_file:
         package = json.load(package_file)
     return SimpleNamespace(**package)
 
 
 def generate_conda(directory="conda"):
+    import yaml
+    from os import path
+
     package = get_package()
     package_metadata = {
         "package": {
