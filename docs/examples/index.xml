@@ -341,6 +341,7 @@ loading a single file and extracting temperature&lt;/p>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="other-stuff">Other stuff&lt;/h2>
 &lt;p>Just a mo. Will probably put the extract a transect and plot example here.&lt;/p>
 &lt;h2 id="continuous-ranked-probability-score-crps">Continuous Ranked Probability Score (CRPS)&lt;/h2>
+&lt;p>This is a basic script for running the CRPS function with the example NEMO data and Altimetry data. Altimetry data currently being read in using netCDF4 and cut out of global domain before being given to the routine.&lt;/p>
 &lt;pre>&lt;code>import numpy as np
 from netCDF4 import Dataset as ds
 import xarray as xr
