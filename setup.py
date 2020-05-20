@@ -1,5 +1,14 @@
 from setuptools import setup
-from coast_metadata import get_package
+
+
+def get_package(package_path="package.json"):
+    from types import SimpleNamespace
+    import json
+
+    with open(package_path, "r") as package_file:
+        _package = json.load(package_file)
+    return SimpleNamespace(**_package)
+
 
 package = get_package()
 
