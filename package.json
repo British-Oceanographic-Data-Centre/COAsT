@@ -35,8 +35,7 @@
     ],
     "python_requires": ">=3",
     "packages": [
-        "coast",
-        "coast_metadata"
+        "coast"
     ],
     "include_package_data": true,
     "github": "British-Oceanographic-Data-Centre"
