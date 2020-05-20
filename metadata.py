@@ -45,11 +45,13 @@ def generate_conda(directory="conda"):
             "host": package.install_requires,
             "run": package.install_requires
         },
-        "test": {
-            "imports": [
-                "coast"
-            ]
-        },
+        # TODO --------------------
+        # "test": {
+        #     "imports": [
+        #         "coast"
+        #     ]
+        # },
+        # TODO --------------------
         "about": {
             "home": package.url,
             "license": package.license,
