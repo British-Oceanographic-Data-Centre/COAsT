@@ -46,26 +46,23 @@ def generate_conda(directory="conda"):
             "run": package.install_requires
         },
         # TODO --------------------
-        # "test": {
-        #     "imports": [
-        #         "coast"
-        #     ]
-        # },
+        "test": {
+            "imports": [
+                "coast"
+            ]
+        },
         # TODO --------------------
         "about": {
             "home": package.url,
             "license": package.license,
             "license_family": package.license_family,
-            "license_file": "",
             "summary": package.description,
-            "doc_url": "",
-            "dev_url": "",
         },
-        "extra": {
-            "recipe-maintainers": [
-                package.github
-            ]
-        }
+        # "extra": {
+        #     "recipe-maintainers": [
+        #         package.github
+        #     ]
+        # }
     })
 
     yaml_path = path.join(directory, "meta.yaml")
