@@ -1,5 +1,5 @@
 from setuptools import setup
-from metadata import get_package
+from coast_metadata import get_package
 
 package = get_package()
 
