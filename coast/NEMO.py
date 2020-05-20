@@ -106,8 +106,7 @@ class NEMO(COAsT):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
-    def crps_sonf(self, var_name, nemo_dom,  
-                  obs_lon, obs_lat, obs_var, obs_time,
+    def crps_sonf(self, nemo_var_name, nemo_dom, obs_object, obs_var_name,
                   nh_radius=111, nh_type = "radius", cdf_type = "empirical",
                   time_interp = "nearest", plot=False):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
@@ -140,9 +139,14 @@ class NEMO(COAsT):
         """
         # Define var_dict to determine which variable to use and define some
         # function variables
-        var_dict = {'sossheig': self.dataset.sossheig} # TODO: Expand
-        nemo_var = var_dict[var_name]
-        nemo_time = self.dataset.time_counter 
+        nemo_var = getattr(self, nemo_var_name)
+        nemo_time = self.dataset.time_counter
+        
+        obs_var = getattr(obs_object, obs_var_name)
+        obs_time = obs_object.dataset.time
+        obs_lon = obs_object.longitude
+        obs_lat = obs_object.latitude
+        obs_time = obs_object.time
     
         # Define output array and check for scalars being used as observations.
         # If so, put obs into lists/arrays.
@@ -170,9 +174,8 @@ class NEMO(COAsT):
             elif nh_type == "box":
                 lonbounds = [ cntr_lon - nh_radius, cntr_lon + nh_radius ]
                 latbounds = [ cntr_lat - nh_radius, cntr_lat + nh_radius ]
-                subset_indices = self.extract_lonlat_box(nemo_dom.dataset.nav_lon,
-                                                    nemo_dom.dataset.nav_lat,
-                                                    lonbounds, latbounds )
+                subset_indices = nemo_dom.subset_indices_lonlat_box(lonbounds, 
+                                                                    latbounds )
             # Subset model data in time and space
             if time_interp == "nearest": 
                 # CURRENTLY DOES NOTHING, TAKES FIRST INDEX
