@@ -178,6 +178,9 @@ class NEMO(COAsT):
                                            xa.DataArray(subset_indices[0]), 
                                            xa.DataArray(subset_indices[1])]
         
+            if nemo_var_subset.shape[0] == 0:
+                raise ValueError('Model neighbourhood contains no points.' + 
+                                 ' Try increasing neighbourhood size.')
             # Calculate model cumulative distribution function
             model_mu = np.nanmean(nemo_var_subset)
             model_sigma = np.nanmean(nemo_var_subset)

@@ -37,6 +37,7 @@ class ALTIMETRY(OBSERVATION):
         try:
             self.longitude = self.dataset.longitude
             self.var_list.append('longitude')
+            self.adjust_longitudes(self.longitude)
         except AttributeError as e:
             warn(str(e))
 
