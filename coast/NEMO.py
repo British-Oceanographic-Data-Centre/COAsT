@@ -112,8 +112,8 @@ class NEMO(COAsT):
         independently for each observation. 
 
         Keyword arguments:
+        nemo_var_name -- COAsT variable string.
         nemo_dom -- COAsT DOMAIN object
-        var_name -- COAsT variable string.
         obs_lon -- Array of observation longitudes
         obs_lat -- Array of observation latitudes
         obs_var -- Array of observation variables
