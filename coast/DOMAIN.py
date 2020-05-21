@@ -130,9 +130,7 @@ class DOMAIN(COAsT):
         return: Indices corresponding to datapoints inside specified box
         """
         lon = self.nav_lon.copy()
-        lat = self.nav_lat 
-        lon[lon>180] = lon[lon>180] - 360
-        lon[lon<-180] = lon[lon<-180] + 360
+        lat = self.nav_lat
         ff1 = ( lon > lonbounds[0] ).astype(int)
         ff2 = ( lon < lonbounds[1] ).astype(int)
         ff3 = ( lat > latbounds[0] ).astype(int)
