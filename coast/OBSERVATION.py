@@ -33,6 +33,15 @@ class OBSERVATION(COAsT):
         return indices
     
     def extract_indices_all_var(self, indices):
+        """ 
+        Extracts indices from all variables and saves them into obs object.
+        """
         for var in self.var_list:
             setattr(self, var, getattr(self, var)[indices])
         return
+    
+    def adjust_longitudes(self, lonbounds=[-180,180]):
+        bool0 = self.longitude<lonbounds[0]
+        bool1 = self.longitude>lonbounds[1]
+        self.longitude[bool0] = self.longitude[bool0] + 360
+        self.longitude[bool1] = self.longitude[bool1] - 360
