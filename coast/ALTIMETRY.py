@@ -16,51 +16,28 @@ class ALTIMETRY(OBSERVATION):
         self.latitude = None
         self.longitude = None
         self.time = None
+        # List of variables that are actually in the object (successfully read)
         self.var_list = []
+        # Mapping of quick access variables to dataset variables
+        # {'referencing_var' : 'dataset_var'}.
+        self.var_dict = {'sla_filtered'   : 'sla_filtered',
+                         'sla_unfiltered' : 'sla_unfiltered',
+                         'mdt'            : 'mdt',
+                         'ocean_tide'     : 'ocean_tide',
+                         'longitude'      : 'longitude', 
+                         'latitude'       : 'latitude',
+                         'time'           : 'time'}
 
     def set_command_variables(self):
         """
          A method to make accessing the following simpler
         """
-        try:
-            self.sla_filtered = self.dataset.sla_filtered
-            self.var_list.append('sla_filtered')
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.sla_unfiltered = self.dataset.sla_unfiltered
-            self.var_list.append('sla_unfiltered')
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.longitude = self.dataset.longitude
-            self.var_list.append('longitude')
-            self.adjust_longitudes(self.longitude)
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.latitude = self.dataset.latitude
-            self.var_list.append('latitude')
-        except AttributeError as e:
-            warn(str(e))
-            
-        try:
-            self.mdt = self.dataset.mdt
-            self.var_list.append('mdt')
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.ocean_tide = self.dataset.ocean_tide
-            self.var_list.append('ocean_tide')
-        except AttributeError as e:
-            warn(str(e))
-            
-        try:
-            self.time = self.dataset.time
-            self.var_list.append('time')
-        except AttributeError as e:
-            warn(str(e))
+        
+        for key, value in self.var_dict.items():
+            try:
+                setattr( self, key, self.dataset[value] )
+                self.var_list.append(key)
+            except AttributeError as e:
+                warn(str(e))
+                
+        self.adjust_longitudes()
