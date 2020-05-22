@@ -120,8 +120,8 @@ if (np.shape(data_t) == (51, 36)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
           + "extreme values")
 else:
     print("X - Issue with NEMO COAsT get_subset_as_xarray method")
-    
-    
+
+
 
 ## Test ALTIMETRY class methods
 ###############################
@@ -152,6 +152,6 @@ alt_test.extract_indices_all_var(np.arange(0,4))
 
 crps_test = nemo_var.crps_sonf('ssh', nemo_dom, alt_test, 'sla_filtered',
                     nh_radius=111, nh_type = "radius", cdf_type = "empirical",
-                    time_interp = "nearest", plot=True)    
+                    time_interp = "nearest", plot=True)
 
 """
