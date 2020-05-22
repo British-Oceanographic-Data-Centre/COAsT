@@ -5,7 +5,7 @@ Written as procedural code that plods through the code snippets and tests the
 outputs or expected metadata.
 
 Run:
-ipython: cd COAsT; run coast/unit_test.py  # I.e. from the git repo.
+ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 """
 
 
