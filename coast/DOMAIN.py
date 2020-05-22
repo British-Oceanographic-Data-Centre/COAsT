@@ -117,6 +117,26 @@ class DOMAIN(COAsT):
         # Then these output tuples can be separated into x and y arrays if necessary.
 
         return indices
+    
+    def subset_indices_lonlat_box(self, lonbounds, latbounds):
+        """Generates array indices for data which lies in a given lon/lat box.
+
+        Keyword arguments:
+        lon       -- Longitudes, 1D or 2D.
+        lat       -- Latitudes, 1D or 2D
+        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
+        latbounds -- Array of form [min_latitude, max_latitude]
+        
+        return: Indices corresponding to datapoints inside specified box
+        """
+        lon = self.nav_lon.copy()
+        lat = self.nav_lat
+        ff1 = ( lon > lonbounds[0] ).astype(int)
+        ff2 = ( lon < lonbounds[1] ).astype(int)
+        ff3 = ( lat > latbounds[0] ).astype(int)
+        ff4 = ( lat < latbounds[1] ).astype(int)
+        ff = ff1 * ff2 * ff3 * ff4
+        return np.where(ff)
 
     def find_j_i(self, lat: int, lon: int, grid_ref: str):
         """
