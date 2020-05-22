@@ -11,7 +11,7 @@ grows with the project. Two checks should be made for a feature:
 	2b) Output is as intended. This can be done by comparing automated
 	    output to a known and confirmed output.
 	    
-Primarily, any new feature should work for the India domain. In general however, any
+Primarily, any new feature should work for the India and AMM domain. In general however, any
 feature should be able to handle data:
 
 	3a) With Curvilinear coordinates on a tripolar grid.
