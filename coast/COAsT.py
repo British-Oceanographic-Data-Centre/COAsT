@@ -4,6 +4,7 @@ import xarray as xr
 import numpy as np
 from dask.distributed import Client
 from warnings import warn
+import copy
 
 def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
@@ -274,4 +275,6 @@ class COAsT:
             edf[x>ss] = edf[x>ss] + 1/n_sample
         return xr.DataArray(edf)
 
+    def copy(self):
+        return copy.copy(self)
     
