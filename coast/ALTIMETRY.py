@@ -22,7 +22,7 @@ class ALTIMETRY(OBSERVATION):
         # {'referencing_var' : 'dataset_var'}.
         self.var_dict = {'sla_filtered'   : 'sla_filtered',
                          'sla_unfiltered' : 'sla_unfiltered',
-                         'mdt'            : 'mdt',
+                         'mdt'            : 'mdsl',
                          'ocean_tide'     : 'ocean_tide',
                          'longitude'      : 'longitude', 
                          'latitude'       : 'latitude',
