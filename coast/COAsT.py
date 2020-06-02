@@ -16,6 +16,9 @@ class COAsT:
         self.dataset = None
         # Radius of the earth in km
         self.earth_raids = 6371.007176
+        
+    def copy(self):
+        return copy.copy(self)
 
     def load(self, file, chunks: dict = None):
         self.dataset = xr.open_dataset(file, chunks=chunks)
@@ -274,7 +277,4 @@ class COAsT:
         for ss in sample:
             edf[x>ss] = edf[x>ss] + 1/n_sample
         return xr.DataArray(edf)
-
-    def copy(self):
-        return copy.copy(self)
     
