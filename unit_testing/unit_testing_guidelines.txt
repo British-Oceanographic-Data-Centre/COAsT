@@ -1,0 +1,23 @@
+Each new change to the code in the COAsT repository needs to be testing against a number
+criteria. This is to ensure that:
+
+	1a) The new changes work as intended
+	1b) The changes don't break any other parts of the project.
+	
+This testing is done in a unit testing script, which tests all parts of the code and
+grows with the project. Two checks should be made for a feature:
+
+	2a) The feature runs without crashing. Can be done in a try except statement.
+	2b) Output is as intended. This can be done by comparing automated
+	    output to a known and confirmed output.
+	    
+Primarily, any new feature should work for the India and AMM domain. In general however, any
+feature should be able to handle data:
+
+	3a) With Curvilinear coordinates on a tripolar grid.
+	3b) Near or over the longitude 'seam' of a model grid. 
+	3c) Near or through domain boundaries.
+	3d) Near or through coastlines.
+	3e) Near or through geographical poles (latitude = 90 or -90).
+	3f) Near or through grid poles (poles of a tripolar grid).
+	3g) Near or through the equator.
