@@ -1,6 +1,7 @@
 from .COAsT import COAsT
 import xarray as xa
 import numpy as np
+from .CDF import CDF
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
@@ -133,17 +134,17 @@ class NEMO(COAsT):
         """
         # Define var_dict to determine which variable to use and define some
         # function variables
-        nemo_var = getattr(self, nemo_var_name)
-        nemo_time = self.dataset.time_counter
+        nemo_var = self.dataset[nemo_var_name]
+        nemo_time = self.dataset['time_counter']
         
-        obs_var = getattr(obs_object, obs_var_name)
+        obs_var = obs_object.dataset[obs_var_name]
         obs_lon = obs_object.longitude
         obs_lat = obs_object.latitude
         obs_time = obs_object.time
     
         # Define output array and check for scalars being used as observations.
         # If so, put obs into lists/arrays.
-        n_nh = obs_var.shape # Number of neighbourhoods (n_nh)  
+        n_nh = obs_lon.shape # Number of neighbourhoods (n_nh)  
         if len(n_nh) == 0: #Scalar case
             n_nh = 1
             obs_lon  =  [obs_lon]
@@ -153,6 +154,7 @@ class NEMO(COAsT):
         else:
             n_nh = n_nh[0]
         crps_list = np.zeros( n_nh )
+        
         # Loop over neighbourhoods
         for ii in range(0, n_nh):
         
@@ -180,29 +182,38 @@ class NEMO(COAsT):
             if nemo_var_subset.shape[0] == 0:
                 raise ValueError('Model neighbourhood contains no points.' + 
                                  ' Try increasing neighbourhood size.')
-            # Calculate model cumulative distribution function
-            model_mu = np.nanmean(nemo_var_subset)
-            model_sigma = np.nanmean(nemo_var_subset)
-            cdf_x = np.arange( model_mu - 5 * model_sigma, 
-                                model_mu + 5 * model_sigma, model_sigma / 100 )
-            if cdf_type == "empirical":
-                model_cdf = self.empirical_distribution(cdf_x, 
-                                                   nemo_var_subset)
-            elif cdf_type == "theoretical": # TODO: Add more distributions
-                model_pdf = self.normal_distribution(cdf_x, mu = model_mu, 
-                                                sigma=model_sigma)
-                model_cdf = self.cumulative_distribution(cdf_x, model_pdf)
-            
-            # Calculate observation empirical distribution function
-            obs_cdf = self.empirical_distribution(cdf_x, obs_var[ii])
+                
+            # Create model and observation CDF objects
+            model_cdf = CDF(nemo_var_subset, cdf_type=cdf_type)
+            obs_cdf = CDF(obs_var[ii], cdf_type=cdf_type)
             
             # Calculate CRPS and put into output array
-            crps_list[ii] = self.crps(cdf_x, model_cdf, obs_cdf)
+            crps_list[ii] = self.cdf_diff(model_cdf, obs_cdf)
+            
             if plot and n_nh<5:
                 plt.figure()
-                plt.plot(cdf_x, model_cdf, c='k', linestyle='--')
-                plt.plot(cdf_x, obs_cdf, linestyle='--')
-                plt.fill_between(cdf_x, model_cdf, obs_cdf, alpha=0.5)
+                ax = plt.subplot(111)
+                ax.plot(model_cdf.disc_x, model_cdf.disc_y, c='k', 
+                        linestyle='--')
+                ax.plot(obs_cdf.disc_x, obs_cdf.disc_y, linestyle='--')
+                ax.fill_between(model_cdf.disc_x, model_cdf.disc_y, 
+                                obs_cdf.disc_y, alpha=0.5)
                 plt.title(round( crps_list[ii], 3))
     
         return crps_list
+    
+    def cdf_diff(self, cdf1: CDF, cdf2: CDF):
+        """Calculated the CRPS of provided model and observed CDFs.
+
+        Keyword arguments:
+        cdf1 -- Discrete CDF of model data
+        cdf2   -- Discrete CDF of observation data
+        
+        return: A single squared difference between two CDFs.
+        """
+        xmin = min(cdf1.disc_x[0], cdf2.disc_x[0])
+        xmax = max(cdf1.disc_x[-1], cdf2.disc_x[-1])
+        common_x = np.linspace(xmin, xmax, 1000)
+        cdf1.build_discrete_cdf(x=common_x)
+        cdf2.build_discrete_cdf(x=common_x)
+        return np.trapz((cdf2.disc_y - cdf1.disc_x)**2, common_x)
