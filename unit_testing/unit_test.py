@@ -86,7 +86,7 @@ altimetry = coast.ALTIMETRY()
 altimetry.load(dir + fn_altimetry)
 
 # Test the data has loaded using attribute comparison, as for NEMO_data
-alt_attrs_ref = dict([('source', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
+alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
              ('date_created', '2019-02-20T11:20:56Z'),
              ('institution', 'CLS, CNES'),
              ('Conventions', 'CF-1.6'),])
@@ -206,6 +206,6 @@ crps_test = sci.crps_sonf('ssh', sci_dom, altimetry, 'sla_filtered',
                     nh_radius=111, nh_type = "radius", cdf_type = "empirical",
                     time_interp = "nearest", plot=True)
 if len(crps_test) == len(altimetry.longitude):
-    print(str(sec) + chr(subsec) + " OK - CRPS done for every observation")
+    print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
-    print(str(sec) + chr(subsec) + " X - Problem with CRPS method")
+    print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
