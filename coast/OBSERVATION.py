@@ -3,7 +3,6 @@ from warnings import warn
 import numpy as np
 import xarray as xa
 
-
 class OBSERVATION(COAsT):
 
     def __init__(self):
