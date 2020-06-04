@@ -11,9 +11,10 @@ ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 
 import coast
 import numpy as np
+import xarray as xr
 
 
-dir = "example_files/"
+dir = "../example_files/"
 
 ## Test COAsT class methods
 ###########################
@@ -36,6 +37,14 @@ if sci_attrs_ref.items() <= sci.dataset.attrs.items(): # checking is LHS is a su
 else:
     print("X - There is an issue with loading COAsT_example_data_141020.nc")
 
+# Load data from existing dataset
+sci2 = coast.NEMO()
+ds = xr.open_dataset(dir + "COAsT_example_data_141020.nc")
+sci2.load_dataset(ds)
+if ds.identical(sci.dataset):
+    print("COAsT.load_dataset: OK")
+else:
+    print("COAsT.load_dataset: ERROR")
 
 # Load example domain file
 sci_dom = coast.DOMAIN()
