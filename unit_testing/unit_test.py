@@ -107,7 +107,7 @@ sci_dom.set_command_variables()
 # 
 subsec = subsec+1
 
-ds = xr.open_dataset(dir + fn_nemo_dom)
+ds = xr.open_dataset(dir + fn_nemo_dat)
 sci_load_ds = coast.NEMO()
 sci_load_ds.load_dataset(ds)
 sci_load_file = coast.NEMO() 
