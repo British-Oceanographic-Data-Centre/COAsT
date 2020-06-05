@@ -4,6 +4,7 @@ import xarray as xr
 import numpy as np
 from dask.distributed import Client
 from warnings import warn
+import copy
 
 def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
@@ -15,6 +16,9 @@ class COAsT:
         self.dataset = None
         # Radius of the earth in km
         self.earth_raids = 6371.007176
+        
+    def copy(self):
+        return copy.copy(self)
 
     def load(self, file, chunks: dict = None):
         self.dataset = xr.open_dataset(file, chunks=chunks)
@@ -273,5 +277,4 @@ class COAsT:
         for ss in sample:
             edf[x>ss] = edf[x>ss] + 1/n_sample
         return xr.DataArray(edf)
-
     

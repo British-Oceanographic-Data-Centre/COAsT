@@ -1,0 +1,21 @@
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+|    Unit Testing Contents                                                    |
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+1. Loading & Initialisation
+    a. Loading NEMO data file
+    b. Loading NEMO domain file
+    c. Loading Altimetry file
+    
+2. General Utility Methods in COAsT
+    a. Copying a COAsT object
+    
+3. Transect Methods
+    a. Determine and extract transect indices
+
+4. Object Manipulation (e.g. indexing, subsetting)
+    a. Subsetting single variable
+    b. Indices by distance
+    
+5. CRPS Methods
+    a. Calculate single obs CRPS values
