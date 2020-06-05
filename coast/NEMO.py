@@ -137,7 +137,6 @@ class NEMO(COAsT):
         nemo_time = self.dataset.time_counter
         
         obs_var = getattr(obs_object, obs_var_name)
-        obs_time = obs_object.dataset.time
         obs_lon = obs_object.longitude
         obs_lat = obs_object.latitude
         obs_time = obs_object.time
