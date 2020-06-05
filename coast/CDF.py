@@ -12,8 +12,8 @@ class CDF():
         self.sample   = sample
         self.mu       = np.nanmean(sample)
         self.sigma    = np.nanstd(sample)
-        self.disc_x   = None
-        self.disc_y   = None
+        self.disc_x   = None # Discrete CDF x-values
+        self.disc_y   = None # Discrete CDF y-values
         self.build_discrete_cdf()
     
     def build_discrete_cdf(self, x: np.ndarray=None, n_pts: int=1000):
@@ -43,18 +43,17 @@ class CDF():
             
         elif self.cdf_type == "theoretical": 
             if self.cdf_func == 'gaussian':
-                disc_pdf = self.normal_distribution(x, mu=self.mu, 
-                                                    sigma=self.sigma)
-                y = self.cumulative_distribution(x, disc_pdf)
+                y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
+                                                 x=x, cdf_func=self.cdf_func)
             else:
-                disc_pdf = self.normal_distribution(x, mu=self.mu, 
-                                                    sigma=self.sigma)
-                y = self.cumulative_distribution(x, disc_pdf)
+                y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
+                                                 x=x, cdf_func=self.cdf_func)
         self.disc_x = x
         self.disc_y = y
         return
     
-    def normal_distribution(self,x=np.arange(-6,6,0.001), mu=0, sigma=1):
+    def normal_distribution(self, mu: float=0, sigma: float=1, 
+                            x: np.ndarray=None, n_pts: int=1000):
         """Generates a discrete normal distribution.
 
         Keyword arguments:
@@ -65,12 +64,15 @@ class CDF():
         return: Array of len(x) containing the normal values calculated from
                 the elements of x.
         """
+        if x is None:
+            x = np.linspace( mu-5*sigma, mu+5*sigma, n_pts)
         term1 = sigma*np.sqrt( 2*np.pi )
         term1 = 1/term1
         exponent = -0.5*((x-mu)/sigma)**2
         return term1*np.exp( exponent )
 
-    def cumulative_distribution(self,x, pdf):
+    def cumulative_distribution(self, mu: float=0, sigma: float=1, 
+                                x: np.ndarray=None, cdf_func: str='gaussian'):
         """Integrates under a discrete PDF to obtain an estimated CDF.
 
         Keyword arguments:
@@ -81,7 +83,12 @@ class CDF():
         return: Array of len(x) containing the discrete cumulative values 
                 estimated using the integral under the provided PDF.
         """
-        cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
+        if cdf_func=='gaussian': #If Gaussian, integrate under pdf
+            pdf = self.normal_distribution(x, mu=mu, sigma=sigma)
+            cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
+        else: # Assume Gaussian
+            pdf = self.normal_distribution(x, mu=mu, sigma=sigma)
+            cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
         return np.array(cdf)
     
     def empirical_distribution(self,x, sample):
