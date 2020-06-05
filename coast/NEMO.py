@@ -101,7 +101,7 @@ class NEMO(COAsT):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
-    def crps_sonf(self, nemo_var_name, nemo_dom, obs_object, obs_var_name,
+    def crps_sonf(self, mod_var_name, mod_dom, obs_object, obs_var_name,
                   nh_radius=111, nh_type = "radius", cdf_type = "empirical",
                   time_interp = "nearest", plot=False):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
@@ -134,8 +134,11 @@ class NEMO(COAsT):
         """
         # Define var_dict to determine which variable to use and define some
         # function variables
-        nemo_var = self.dataset[nemo_var_name]
-        nemo_time = self.dataset['time_counter']
+        mod_var = self.dataset[mod_var_name]
+        if len(mod_var.dims) > 3:
+            raise Exception('COAsT: CRPS Input data must only have dims ' + 
+                            '(time, lon, lat)')
+        mod_time = self.dataset['time_counter']
         
         obs_var = obs_object.dataset[obs_var_name]
         obs_lon = obs_object.longitude
@@ -164,39 +167,37 @@ class NEMO(COAsT):
         
             # Get model neighbourhood subset using specified method
             if nh_type == "radius":
-                subset_indices = nemo_dom.subset_indices_by_distance(cntr_lon, 
+                subset_indices = mod_dom.subset_indices_by_distance(cntr_lon, 
                                  cntr_lat, nh_radius)
             elif nh_type == "box":
                 lonbounds = [ cntr_lon - nh_radius, cntr_lon + nh_radius ]
                 latbounds = [ cntr_lat - nh_radius, cntr_lat + nh_radius ]
-                subset_indices = nemo_dom.subset_indices_lonlat_box(lonbounds, 
-                                                                    latbounds )
-            # Subset model data in time and space
-            if time_interp == "nearest": 
-                # CURRENTLY DOES NOTHING, TAKES FIRST INDEX
-                time_ind = 0
-                nemo_var_subset = nemo_var[time_ind,
-                                           xa.DataArray(subset_indices[0]), 
-                                           xa.DataArray(subset_indices[1])]
+                subset_indices = mod_dom.subset_indices_lonlat_box(lonbounds, 
+                                                                    latbounds )   
+            mod_var_subset = mod_var[:, xa.DataArray(subset_indices[0]), 
+                                     xa.DataArray(subset_indices[1])]
+            # Subset model data in time and space: What is the model doing at
+            # observation times?
+            
         
-            if nemo_var_subset.shape[0] == 0:
-                raise ValueError('Model neighbourhood contains no points.' + 
-                                 ' Try increasing neighbourhood size.')
+            if mod_var_subset.shape[0] == 0:
+                raise Exception('COAsT: CRPS model neighbourhood contains no' +
+                                ' points. Try increasing neighbourhood size.')
                 
             # Create model and observation CDF objects
-            model_cdf = CDF(nemo_var_subset, cdf_type=cdf_type)
+            mod_cdf = CDF(mod_var_subset, cdf_type=cdf_type)
             obs_cdf = CDF(obs_var[ii], cdf_type=cdf_type)
             
             # Calculate CRPS and put into output array
-            crps_list[ii] = self.cdf_diff(model_cdf, obs_cdf)
+            crps_list[ii] = self.cdf_diff(mod_cdf, obs_cdf)
             
             if plot and n_nh<5:
                 plt.figure()
                 ax = plt.subplot(111)
-                ax.plot(model_cdf.disc_x, model_cdf.disc_y, c='k', 
+                ax.plot(mod_cdf.disc_x, mod_cdf.disc_y, c='k', 
                         linestyle='--')
                 ax.plot(obs_cdf.disc_x, obs_cdf.disc_y, linestyle='--')
-                ax.fill_between(model_cdf.disc_x, model_cdf.disc_y, 
+                ax.fill_between(mod_cdf.disc_x, mod_cdf.disc_y, 
                                 obs_cdf.disc_y, alpha=0.5)
                 plt.title(round( crps_list[ii], 3))
     
