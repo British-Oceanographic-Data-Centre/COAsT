@@ -1,6 +1,5 @@
 import xarray as xr
 import numpy as np
-from dask.distributed import Client
 from .COAsT import COAsT
 import matplotlib.pyplot as plt
 
@@ -14,6 +13,8 @@ class CDF():
         self.sigma    = np.nanstd(sample)
         self.disc_x   = None # Discrete CDF x-values
         self.disc_y   = None # Discrete CDF y-values
+        self._cdf_type_options = ['empirical', 'theoretical']
+        self._cdf_func_options = ['gaussian']
         self.build_discrete_cdf()
     
     def build_discrete_cdf(self, x: np.ndarray=None, n_pts: int=1000):
@@ -30,9 +31,6 @@ class CDF():
             elif self.cdf_func == 'gaussian':
                 x = np.linspace( self.mu-5*self.sigma, self.mu+5*self.sigma, 
                                 n_pts)
-            else:   # assume gaussian otherwise
-                x = np.linspace( self.mu-5*self.sigma, self.mu+5*self.sigma, 
-                                n_pts)
             
         # Build discrete Y values according to CDF type, CDF function 
         # (if theoretical) and sample.
@@ -45,9 +43,7 @@ class CDF():
             if self.cdf_func == 'gaussian':
                 y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
                                                  x=x, cdf_func=self.cdf_func)
-            else:
-                y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
-                                                 x=x, cdf_func=self.cdf_func)
+
         self.disc_x = x
         self.disc_y = y
         return
