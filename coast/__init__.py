@@ -6,3 +6,4 @@ from .ALTIMETRY import ALTIMETRY
 from .TRANSECT import SUBSET
 from .OBSERVATION import OBSERVATION
 from .CDF import CDF
+from .interpolate_along_dimension import interpolate_along_dimension
