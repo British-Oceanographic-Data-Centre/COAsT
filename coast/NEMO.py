@@ -218,3 +218,5 @@ class NEMO(COAsT):
         cdf1.build_discrete_cdf(x=common_x)
         cdf2.build_discrete_cdf(x=common_x)
         return np.trapz((cdf2.disc_y - cdf1.disc_x)**2, common_x)
+    
+    
