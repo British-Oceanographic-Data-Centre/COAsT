@@ -8,7 +8,7 @@ class OBSERVATION(COAsT):
     def __init__(self):
         super()
         
-    def extract_lonlat_box(self, lonbounds, latbounds):
+    def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
         Keyword arguments:
@@ -28,16 +28,7 @@ class OBSERVATION(COAsT):
         ff3 = ( lat > latbounds[0] ).astype(int)
         ff4 = ( lat < latbounds[1] ).astype(int)
         indices = np.where( ff1 * ff2 * ff3 * ff4 )
-        self.extract_indices_all_var(indices)
-        return indices
-    
-    def extract_indices_all_var(self, indices):
-        """ 
-        Extracts indices from all variables and saves them into obs object.
-        """
-        for var in self.var_list:
-            setattr(self, var, getattr(self, var)[indices])
-        return
+        return indices[0]
     
     def adjust_longitudes(self, lonbounds=[-180,180]):
         bool0 = self.longitude<lonbounds[0]

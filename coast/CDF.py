@@ -4,6 +4,9 @@ from .COAsT import COAsT
 import matplotlib.pyplot as plt
 
 class CDF():
+    '''
+    An object for storing Cumulative Distribution Function information.
+    '''
     
     def __init__(self, sample, cdf_type='empirical', cdf_func = 'gaussian'):
         self.cdf_type = cdf_type
@@ -43,6 +46,10 @@ class CDF():
             if self.cdf_func == 'gaussian':
                 y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
                                                  x=x, cdf_func=self.cdf_func)
+            else:
+                raise NotImplementedError
+        else:
+            raise Exception('CDF Type must be empirical or theoretical')
 
         self.disc_x = x
         self.disc_y = y
@@ -80,11 +87,10 @@ class CDF():
                 estimated using the integral under the provided PDF.
         """
         if cdf_func=='gaussian': #If Gaussian, integrate under pdf
-            pdf = self.normal_distribution(x, mu=mu, sigma=sigma)
+            pdf = self.normal_distribution(mu=mu, sigma=sigma, x=x)
             cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
-        else: # Assume Gaussian
-            pdf = self.normal_distribution(x, mu=mu, sigma=sigma)
-            cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
+        else: 
+            raise NotImplementedError
         return np.array(cdf)
     
     def empirical_distribution(self,x, sample):
@@ -104,6 +110,22 @@ class CDF():
         for ss in sample:
             edf[x>ss] = edf[x>ss] + 1/n_sample
         return xr.DataArray(edf)
+    
+    def difference(self, other):
+        """Calculated the CRPS of provided model and observed CDFs.
+
+        Keyword arguments:
+        cdf1 -- Discrete CDF of model data
+        cdf2   -- Discrete CDF of observation data
+        
+        return: A single squared difference between two CDFs.
+        """
+        xmin = min(self.disc_x[0], other.disc_x[0])
+        xmax = max(self.disc_x[-1], other.disc_x[-1])
+        common_x = np.linspace(xmin, xmax, 1000)
+        self.build_discrete_cdf(x=common_x)
+        other.build_discrete_cdf(x=common_x)
+        return np.trapz((other.disc_y - self.disc_x)**2, common_x)
     
     def quick_plot(self):
         ax = plt.subplot(111)
