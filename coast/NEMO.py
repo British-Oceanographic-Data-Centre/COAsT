@@ -2,6 +2,7 @@ from .COAsT import COAsT
 import xarray as xa
 import numpy as np
 from .CDF import CDF
+from .interpolate_along_dimension import interpolate_along_dimension
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
@@ -138,12 +139,10 @@ class NEMO(COAsT):
         if len(mod_var.dims) > 3:
             raise Exception('COAsT: CRPS Input data must only have dims ' + 
                             '(time, lon, lat)')
-        mod_time = self.dataset['time_counter']
-        
         obs_var = obs_object.dataset[obs_var_name]
-        obs_lon = obs_object.longitude
-        obs_lat = obs_object.latitude
-        obs_time = obs_object.time
+        obs_lon = obs_object.dataset.longitude
+        obs_lat = obs_object.dataset.latitude
+        obs_time = obs_object.dataset.time
     
         # Define output array and check for scalars being used as observations.
         # If so, put obs into lists/arrays.
@@ -158,6 +157,10 @@ class NEMO(COAsT):
             n_nh = n_nh[0]
         crps_list = np.zeros( n_nh )
         
+        # Time interpolation weights object
+        weights = interpolate_along_dimension(mod_var, obs_time, 
+                                         'time_counter', method = time_interp)
+        
         # Loop over neighbourhoods
         for ii in range(0, n_nh):
         
@@ -169,17 +172,17 @@ class NEMO(COAsT):
             if nh_type == "radius":
                 subset_indices = mod_dom.subset_indices_by_distance(cntr_lon, 
                                  cntr_lat, nh_radius)
+                
             elif nh_type == "box":
                 lonbounds = [ cntr_lon - nh_radius, cntr_lon + nh_radius ]
                 latbounds = [ cntr_lat - nh_radius, cntr_lat + nh_radius ]
                 subset_indices = mod_dom.subset_indices_lonlat_box(lonbounds, 
                                                                     latbounds )   
-            mod_var_subset = mod_var[:, xa.DataArray(subset_indices[0]), 
-                                     xa.DataArray(subset_indices[1])]
             # Subset model data in time and space: What is the model doing at
             # observation times?
-            
-        
+            mod_var_subset = weights[ii][xa.DataArray(subset_indices[0]), 
+                                     xa.DataArray(subset_indices[1])]   
+
             if mod_var_subset.shape[0] == 0:
                 raise Exception('COAsT: CRPS model neighbourhood contains no' +
                                 ' points. Try increasing neighbourhood size.')
@@ -189,7 +192,7 @@ class NEMO(COAsT):
             obs_cdf = CDF(obs_var[ii], cdf_type=cdf_type)
             
             # Calculate CRPS and put into output array
-            crps_list[ii] = self.cdf_diff(mod_cdf, obs_cdf)
+            crps_list[ii] = mod_cdf.difference(obs_cdf)
             
             if plot and n_nh<5:
                 plt.figure()
@@ -202,21 +205,5 @@ class NEMO(COAsT):
                 plt.title(round( crps_list[ii], 3))
     
         return crps_list
-    
-    def cdf_diff(self, cdf1: CDF, cdf2: CDF):
-        """Calculated the CRPS of provided model and observed CDFs.
-
-        Keyword arguments:
-        cdf1 -- Discrete CDF of model data
-        cdf2   -- Discrete CDF of observation data
-        
-        return: A single squared difference between two CDFs.
-        """
-        xmin = min(cdf1.disc_x[0], cdf2.disc_x[0])
-        xmax = max(cdf1.disc_x[-1], cdf2.disc_x[-1])
-        common_x = np.linspace(xmin, xmax, 1000)
-        cdf1.build_discrete_cdf(x=common_x)
-        cdf2.build_discrete_cdf(x=common_x)
-        return np.trapz((cdf2.disc_y - cdf1.disc_x)**2, common_x)
     
     
