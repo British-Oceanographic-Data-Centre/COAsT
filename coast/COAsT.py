@@ -27,6 +27,15 @@ class COAsT:
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords", compat='override'
         )
+        
+    def load_dataset(self, dataset):
+        """        
+        :param dataset: The dataset to use
+        :type dataset: xarray.Dataset
+        """
+        
+        self.dataset = dataset
+        
 
     def subset(self, **kwargs):
         '''
