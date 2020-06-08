@@ -36,6 +36,29 @@ class COAsT:
         
         self.dataset = dataset
         
+    def isel(self, indexers: dict = None, drop: bool = False,
+             **kwargs):
+        '''
+        Indexes COAsT object along specified dimensions using xarray isel. 
+        Input is of same form as xarray.isel. Basic use, hand in either:
+            1. Dictionary with keys = dimensions, values = indices
+            2. **kwargs of form dimension = indices
+        '''
+        obj_copy = self.copy()
+        obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
+        return obj_copy
+    
+    def sel(self, indexers: dict = None, drop: bool = False,
+             **kwargs):
+        '''
+        Indexes COAsT object along specified dimensions using xarray sel. 
+        Input is of same form as xarray.sel. Basic use, hand in either:
+            1. Dictionary with keys = dimensions, values = indices
+            2. **kwargs of form dimension = indices
+        '''
+        obj_copy = self.copy()
+        obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
+        return obj_copy
 
     def subset(self, **kwargs):
         '''
