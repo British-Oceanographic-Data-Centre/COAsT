@@ -28,8 +28,25 @@ class COAsT:
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords", compat='override'
         )
 
-    def subset(self, domain, nemo, points_a: array, points_b: array):
-        raise NotImplementedError
+    def subset(self, **kwargs):
+        '''
+        Subsets all variables within the dataset inside self (a COAsT object).
+        Input is a set of keyword argument pairs of the form:
+            dimension_name = indices
+        The entire object is then subsetted along this dimension at indices
+        '''
+        self.dataset = self.dataset.isel(kwargs)
+        
+    def subset_as_copy(self, **kwargs):
+        '''
+        Similar to COAsT.subset() however applies the subsetting to a copy of
+        the original COAsT object. This subsetted copy is then returned.
+        Useful for preserving the original object whilst creating smaller
+        subsetted object copies.
+        '''
+        obj_copy = self.copy()
+        obj_copy.subset(**kwargs)
+        return obj_copy
 
     def distance_between_two_points(self):
         raise NotImplementedError
