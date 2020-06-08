@@ -10,6 +10,7 @@ ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 
 import coast
 import numpy as np
+import xarray as xr
 
 
 dir = "example_files/"
@@ -100,6 +101,21 @@ else:
 altimetry.set_command_variables()
 sci.set_command_variables()
 sci_dom.set_command_variables()
+
+#-----------------------------------------------------------------------------#
+# ( 1d ) Load data from existing dataset                                          #
+# 
+subsec = subsec+1
+
+ds = xr.open_dataset(dir + fn_nemo_dat)
+sci_load_ds = coast.NEMO()
+sci_load_ds.load_dataset(ds)
+sci_load_file = coast.NEMO() 
+sci_load_file.load(dir + fn_nemo_dat)
+if sci_load_ds.dataset.identical(sci_load_file.dataset):
+    print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
+else:
+    print(str(sec) + chr(subsec) + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()")
 
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
