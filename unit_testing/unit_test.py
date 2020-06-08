@@ -205,7 +205,18 @@ if (np.shape(ind) == (2,674)) :
 else:
     print(str(sec) + chr(subsec) + "X - Issue with indices extraction from NEMO domain " \
           + "subset_indices_by_distance method")
+        
+#-----------------------------------------------------------------------------#
+# ( 4c ) Subsetting entire COAsT object and return as copy                    #
+#                                                                             #
+subsec = subsec+1
+ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+altimetry_nwes = altimetry.subset_as_copy(time=ind) #nwes = northwest europe shelf
 
+if (altimetry_nwes.dataset.dims['time'] == 213) :
+    print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted and returned as copy ")
+else:
+    print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 
 #################################################
 ## ( 5 ) CRPS Methods                          ##
@@ -217,11 +228,14 @@ subsec = 96
 # ( 5a ) Calculate single obs CRPS values                                     #
 #                                                                             #
 subsec = subsec+1
-altimetry.extract_lonlat_box([-10,10], [45,60])
-crps_test = sci.crps_sonf('ssh', sci_dom, altimetry, 'sla_filtered',
+alt_tmp = altimetry_nwes.subset_as_copy(time=[0,1,2,3,4])
+crps_rad = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
                     nh_radius=111, nh_type = "radius", cdf_type = "empirical",
-                    time_interp = "nearest", plot=True)
-if len(crps_test) == len(altimetry.longitude):
+                    time_interp = "nearest", plot=False)
+crps_box = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
+                    nh_radius=1, nh_type = "box", cdf_type = "theoretical",
+                    time_interp = "nearest", plot=False)
+if len(crps_rad)==5 and len(crps_box)==5:
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
     print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
