@@ -177,7 +177,7 @@ class DOMAIN(COAsT):
         [j1, i1] = self.find_j_i(start[0], start[1], letter)  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
-        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1))
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
 
         jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
