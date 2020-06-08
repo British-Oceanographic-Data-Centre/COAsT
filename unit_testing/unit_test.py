@@ -211,10 +211,10 @@ else:
 #                                                                             #
 subsec = subsec+1
 ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-altimetry_nwes = altimetry.subset_as_copy(time=ind) #nwes = northwest europe shelf
+altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
 
 if (altimetry_nwes.dataset.dims['time'] == 213) :
-    print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted and returned as copy ")
+    print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
 else:
     print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 
