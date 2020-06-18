@@ -77,4 +77,4 @@ class ALTIMETRY(OBSERVATION):
         gl.yformatter = LATITUDE_FORMATTER
 
         plt.show()
-        return
+        return fig, ax

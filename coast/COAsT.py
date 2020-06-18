@@ -17,6 +17,9 @@ class COAsT:
         # Radius of the earth in km
         self.earth_raids = 6371.007176
         
+    def __getitem__(self, name: str):
+        return self.dataset[name]
+        
     def copy(self):
         return copy.copy(self)
 
