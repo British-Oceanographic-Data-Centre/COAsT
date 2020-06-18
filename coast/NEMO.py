@@ -206,30 +206,3 @@ class NEMO(COAsT):
                 plt.title(round( crps_list[ii], 3))
 
         return crps_list
-
-    def get_pyc_var(fw, zw, e3w,e3t, rho0, mbathy, ax=0):
-        """
-
-        Pycnocline depth: z_d = \int zN2 dz / \int N2 dz
-        Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 N2 dz / \int N2 dz}
-
-        Use function to save memory
-
-        Input:
-            fw - handle for file with N2
-                N2 - 3D stratification +ve [z,y,x]. W-pts. Surface value is zero
-            zw - 3D depth on W-pts [z,y,x]. gdepw. Never use the top and bottom values because of masking of other variables.
-            e2w
-            e2t
-            mbathy - used to mask bathymetry [y,x]
-            ax - z dimension number
-
-        Output:
-            z_d - (t,y,x) pycnocline depth
-            z_t - (t,y,x) pycnocline thickness
-    #        pyc_mask - (z,y,x) 1/0 mask. Unit in pycnocline band [z_d +/- z_t]
-        Useage:
-            [z_d, z_t] = get_pyc_var(fw, gdepw_0, e3w,e3t, rho0, ax=0)
-        """
-        diag = IT( mod_var_subset, )
-        return IT.zd(var_name='votemper', var_grid='grid_T')  #, IT.zt()
