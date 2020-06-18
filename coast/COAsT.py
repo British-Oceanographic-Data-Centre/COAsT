@@ -36,9 +36,49 @@ class COAsT:
         
         self.dataset = dataset
         
+    def isel(self, indexers: dict = None, drop: bool = False,
+             **kwargs):
+        '''
+        Indexes COAsT object along specified dimensions using xarray isel. 
+        Input is of same form as xarray.isel. Basic use, hand in either:
+            1. Dictionary with keys = dimensions, values = indices
+            2. **kwargs of form dimension = indices
+        '''
+        obj_copy = self.copy()
+        obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
+        return obj_copy
+    
+    def sel(self, indexers: dict = None, drop: bool = False,
+             **kwargs):
+        '''
+        Indexes COAsT object along specified dimensions using xarray sel. 
+        Input is of same form as xarray.sel. Basic use, hand in either:
+            1. Dictionary with keys = dimensions, values = indices
+            2. **kwargs of form dimension = indices
+        '''
+        obj_copy = self.copy()
+        obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
+        return obj_copy
 
-    def subset(self, domain, nemo, points_a: array, points_b: array):
-        raise NotImplementedError
+    def subset(self, **kwargs):
+        '''
+        Subsets all variables within the dataset inside self (a COAsT object).
+        Input is a set of keyword argument pairs of the form:
+            dimension_name = indices
+        The entire object is then subsetted along this dimension at indices
+        '''
+        self.dataset = self.dataset.isel(kwargs)
+        
+    def subset_as_copy(self, **kwargs):
+        '''
+        Similar to COAsT.subset() however applies the subsetting to a copy of
+        the original COAsT object. This subsetted copy is then returned.
+        Useful for preserving the original object whilst creating smaller
+        subsetted object copies.
+        '''
+        obj_copy = self.copy()
+        obj_copy.subset(**kwargs)
+        return obj_copy
 
     def distance_between_two_points(self):
         raise NotImplementedError
@@ -222,68 +262,3 @@ class COAsT:
 
     def plot_movie(self):
         raise NotImplementedError
-
-    def normal_distribution(self, x=np.arange(-6,6,0.001), mu=0, sigma=1):
-        """Generates a normal distribution.
-
-        Keyword arguments:
-        x     -- Arbitrary array of x-values
-        mu    -- Distribution mean
-        sigma -- Distribution standard deviation
-        
-        return: Array of len(x) containing the normal values calculated from
-                the elements of x.
-        """
-        term1 = sigma*np.sqrt( 2*np.pi )
-        term1 = 1/term1
-        exponent = -0.5*((x-mu)/sigma)**2
-        return term1*np.exp( exponent )
-
-    def cumulative_distribution(self, x, pdf):
-        """Estimates the cumulative distribution of a supplied PDF.
-
-        Keyword arguments:
-        x   -- Arbitrary array of x-values
-        pdf -- PDF corresponding to values in x. E.g. as generated using
-               normal_distribution.
-        
-        return: Array of len(x) containing the discrete cumulative values 
-                estimated using the integral under the provided PDF.
-        """
-        cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
-        return np.array(cdf)
-
-    def crps(self, x, model_cdf, obs_cdf):
-        """Calculated the CRPS of provided model and observed CDFs.
-
-        Keyword arguments:
-        x         -- Arbitrary array of x-values. Model_cdf and obs_cdf should
-                     share the same x array,
-        model_cdf -- Discrete CDF of model data
-        obs_cdf   -- Discrete CDF of observation data
-        
-        return: A single CRPS value.
-        """
-        diff = model_cdf - obs_cdf
-        diff = diff**2
-        crps = np.trapz(diff, x)
-        return crps
-
-    def empirical_distribution(self, x, sample):
-        """Estimates a CDF empirically.
-
-        Keyword arguments:
-        x      -- Array of x-values over which to generate distribution
-        sample -- Sample to use to generate distribution
-        
-        return: Array of len(x) containing corresponding EDF values
-        """
-        sample = np.array(sample)
-        sample = sample[~np.isnan(sample)]
-        sample = np.sort(sample)
-        edf = np.zeros(len(x))
-        n_sample = len(sample)
-        for ss in sample:
-            edf[x>ss] = edf[x>ss] + 1/n_sample
-        return xr.DataArray(edf)
-    
