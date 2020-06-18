@@ -10,3 +10,5 @@ COAsT/__pycache__/
 COAsT.egg-info/
 
 *.png
+
+.ipynb_checkpoints/
