@@ -59,6 +59,10 @@ class COAsT:
         obj_copy = self.copy()
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
+    
+    def rename(self, rename_dict: dict=None, inplace: bool=None, **kwargs):
+        self.dataset.rename(rename_dict, inplace, **kwargs)
+        return
 
     def subset(self, **kwargs):
         '''

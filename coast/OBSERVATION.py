@@ -19,8 +19,8 @@ class OBSERVATION(COAsT):
         
         return: Indices corresponding to datapoints inside specified box
         """
-        lon = self.longitude.copy()
-        lat = self.latitude
+        lon = self.dataset.longitude.copy()
+        lat = self.dataset.latitude
         lon[lon>180] = lon[lon>180] - 360
         lon[lon<-180] = lon[lon<-180] + 360
         ff1 = ( lon > lonbounds[0] ).astype(int)
