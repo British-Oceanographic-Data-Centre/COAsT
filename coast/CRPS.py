@@ -1,29 +1,40 @@
 import numpy as np
 import xarray as xa
 from warnings import warn
+import matplotlib.pyplot as plt
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
 
 class CRPS():
+    '''
+    Object for handling and storing necessary information, methods and outputs
+    for calculation of Continuous Ranked Probability Score. The object is 
+    initialized by passing it COAsT variables of model data, model domain and
+    and observation object. CRPS can then be calculated using the 
+    CRPS.calculate() function. This will return an array of CRPS values
+    (if desired) or will store them inside the object. They can be accessed
+    from the object by calling CRPS.crps or CRPS['crps']
+    
+    Example basic usage::
+        
+        $ crps_obj = coast.CRPS(nemo_data, nemo_domain, altimetry)
+        $ crps_obj.calculate('sossheig', 'sla_filtered', nh_radius=111)
+        $ crps_list = crps_obj.crps # Get crps values
+        $ crps.map_plot() # Plots CRPS on map
+    '''
     
     def __init__(self, mod_data, mod_dom, obs_object):
-        '''
-        nemo_dom -- COAsT DOMAIN object
-        obs_lon -- Array of observation longitudes
-        obs_lat -- Array of observation latitudes
-        obs_var -- Array of observation variables
-        nh_radius -- Neighbourhood radius in km (if radius method) or degrees 
-                     (if box method).
-        nh_type -- Neighbourhood determination method: 'radius' or 'box'.
-        cdf_type -- Method for model CDF determination: 'empirical' or 
-                    'theoretical'. Observation CDFs are always determined 
-                    empirically.
-        time_interp -- Method for interpolating in time, currently only
-                       "none" and "nearest". For none, only a single model
-                       time slice should be supplied and observations are
-                       assumed to correspond with the slice correctly.
-        plot -- True or False. Will plot up to five CDF comparisons and CRPS.
-        '''
+        """Initialisation of CRPS object.
+
+        Args:
+            mod_data (COAsT): COAsT model data object.
+            mod_dom  (COAsT): COAsT model domain object.
+            obs_object (OBSERVATION): COAsT OBSERVATION object.
+
+        Returns:
+            CRPS: Returns a new instance of a CRPS object.
+        """
+        
         self.mod_data    = mod_data
         self.mod_dom     = mod_dom
         self.obs_object  = obs_object
@@ -34,40 +45,68 @@ class CRPS():
         self.crps        = None
         self.mod_var     = None
         self.obs_var     = None
+        self.n_model_pts = None
+        self.contains_land = None
         self.longitude   = obs_object['longitude']
         self.latitude    = obs_object['latitude']
         return
         
-    def __getitem__(self, indices):
-        return self.crps[indices]
+    def __getitem__(self, varstr:str):
+        """Gets variable from __dict__"""
+        return self.__dict__[varstr]
 
-    
     def calculate(self, mod_var: str, obs_var: str, nh_radius: float=111, 
                   nh_type: str="radius", cdf_type: str="empirical", 
                   time_interp:str="nearest"):
+        """Calculate CRPS values for specified variables/methods/radii.
+
+        Args:
+            mod_var (str): Name of variable to use from model object.
+            obs_var (str): Name of variable to use from observation object.
+            nh_radius(float): Neighbourhood radius.
+            nh_type(str): Neighbourhood type, either 'radius' or 'box'
+            cdf_type(str): Type of CDF to use for model data.
+                           Either 'empirical' or 'theoretical'
+            time_interp(str): Type of time interpolation.
+                              Either 'nearest' or 'linear'
+        Returns:
+            array: CRPS values.
+        """
         self.mod_var = mod_var
         self.obs_var = obs_var
         self.nh_radius   = nh_radius
         self.nh_type     = nh_type
         self.cdf_type    = cdf_type
         self.time_interp = time_interp
-        crps_local = self.calculate_sonf()
-        self.crps = crps_local
-        return crps_local
+        tmp = self.calculate_sonf()
+        self.crps = tmp[0]
+        self.n_model_pts = tmp[1]
+        self.contains_land = tmp[2]
+        return 
     
     def cdf_plot(self, index):
-        
-        #plt.figure()
-        #ax = plt.subplot(111)
-        #ax.plot(mod_cdf.disc_x, mod_cdf.disc_y, c='k', 
-        #        linestyle='--')
-        #ax.plot(obs_cdf.disc_x, obs_cdf.disc_y, linestyle='--')
-        #ax.fill_between(mod_cdf.disc_x, mod_cdf.disc_y, 
-        #                obs_cdf.disc_y, alpha=0.5)
-        #plt.title(round( crps_list[ii], 3))
-        return
+        index = [index]
+        tmp = self.calculate_sonf(index)
+        crps_tmp = tmp[0]
+        n_mod_pts = tmp[1]
+        contains_land = tmp[2]
+        mod_cdf = tmp[3]
+        obs_cdf = tmp[4]
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        ax.plot(mod_cdf.disc_x, mod_cdf.disc_y, c='k', 
+                linestyle='--')
+        ax.plot(obs_cdf.disc_x, obs_cdf.disc_y, linestyle='--')
+        ax.fill_between(mod_cdf.disc_x, mod_cdf.disc_y, 
+                        obs_cdf.disc_y, alpha=0.5)
+        titlestr = 'CRPS = ' + str(round( crps_tmp[index[0]], 3)) + '\n'
+        titlestr = titlestr + '# Model Points : ' + str(n_mod_pts[0]) + '  |  '
+        titlestr = titlestr + 'Contains land : ' + str(bool(contains_land[0])) 
+        plt.title(titlestr)
+        plt.legend(['Model', 'Observations'])
+        return fig, ax
     
-    def map_plot(self):
+    def map_plot(self, crps_var: str='crps'):
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
@@ -82,7 +121,7 @@ class CRPS():
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-        plt.scatter(self.longitude, self.latitude, c=self.crps)
+        plt.scatter(self.longitude, self.latitude, c=self[crps_var])
         plt.colorbar()
         plt.title('Continuous Rank Probability Score')
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
@@ -100,7 +139,7 @@ class CRPS():
         plt.show()
         return fig, ax
     
-    def calculate_sonf(self):
+    def calculate_sonf(self, nh_indices=None):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
     
         Calculatues the Continuous Ranked Probability Score (CRPS) using
@@ -134,14 +173,20 @@ class CRPS():
         # Define output array and check for scalars being used as observations.
         # If so, put obs into lists/arrays.
         n_nh = obs[obs_var].shape[0] # Number of neighbourhoods (n_nh)  
-        crps_list = np.zeros( n_nh )
+        crps_list = np.zeros( n_nh )*np.nan
+        n_model_pts = np.zeros( n_nh )*np.nan
+        contains_land = np.zeros( n_nh , dtype=bool)
         
         # Time interpolation weights object
         weights = interpolate_along_dimension(mod_data[mod_var], 
                                               obs['time'], 'time_counter', 
                                               method = time_interp)
+        
+        if nh_indices is None:
+            nh_indices = np.arange(0,n_nh)
+        
         # Loop over neighbourhoods
-        for ii in range(0, n_nh):
+        for ii in nh_indices:
         
             # Neighbourhood centre
             cntr_lon = self.longitude[ii]
@@ -158,18 +203,19 @@ class CRPS():
             # observation times?
             mod_subset = weights[ii][xa.DataArray(subset_indices[0]), 
                                      xa.DataArray(subset_indices[1])]   
+            if any(np.isnan(mod_subset)):
+                contains_land[ii] = True
 
             if mod_subset.shape[0] == 0:
                 crps_list[ii] = np.nan
-                #raise Exception('COAsT: CRPS model neighbourhood contains no' +
-                #                ' points. Try increasing neighbourhood size.')
             else:
                 # Create model and observation CDF objects
                 mod_cdf = CDF(mod_subset, cdf_type=cdf_type)
-                obs_cdf = CDF(obs[obs_var], cdf_type=cdf_type)
+                obs_cdf = CDF(obs[obs_var][ii], cdf_type='empirical')
                 
                 # Calculate CRPS and put into output array
                 crps_list[ii] = mod_cdf.difference(obs_cdf)
-    
-        return crps_list
+                n_model_pts[ii] = mod_cdf.sample_size[0]
+
+        return crps_list, n_model_pts, contains_land, mod_cdf, obs_cdf
     
