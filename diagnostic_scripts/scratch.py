@@ -13,76 +13,97 @@ import dask
 
 #%%
 class Diagnostics:
-    def __init__(self, dataset: xa.Dataset, domain: COAsT):
+    def __init__(self, nemo: xa.Dataset, domain: COAsT ):
 
+        self.nemo   = nemo
+        self.domain = domain
+        
+        # These are bespoke to the internal tide problem        
         self.zt = None
         self.zd = None
-        self.depth_t = domain.dataset.e3t_0.cumsum( dim='z' ).squeeze() # size: nz,my,nx
-        self.depth_w = domain.dataset.e3w_0.cumsum( dim='z' ).squeeze() # size: nz,my,nx
+        
+        # This might be generally useful and could be somewhere more accessible?
+        self.strat = None
+        
+        # These would be generally useful and should be in the NEMO class
+        self.depth_t = domain.dataset.e3t_0.cumsum( dim='zdim' ).squeeze() # size: nz,my,nx
+        self.depth_w = domain.dataset.e3w_0.cumsum( dim='zdim' ).squeeze() # size: nz,my,nx
 
 
+        # Define the spatial dimensional size and check the dataset and domain arrays are the same size in zdim, ydim, xdim
+        self.nz = nemo.dataset.dims['zdim']
+        self.ny = nemo.dataset.dims['ydim']
+        self.nx = nemo.dataset.dims['xdim']
+        if domain.dataset.dims['zdim'] != self.nz:
+            print('zdim domain data size (%s) differs from nemo data size (%s)'
+                  %(domain.dataset.dims['zdim'], self.nz))
+        if domain.dataset.dims['ydim'] != self.ny:
+            print('ydim domain data size (%s) differs from nemo data size (%s)'
+                  %(domain.dataset.dims['ydim'], self.ny))
+        if domain.dataset.dims['xdim'] != self.nx:
+            print('xdim domain data size (%s) differs from nemo data size (%s)'
+                  %(domain.dataset.dims['xdim'], self.nx))
+            
+        # Create a dataset
+        
 
 
-    def difftpt2tpt(var,dim):
+    def difftpt2tpt(self, var, dim='zdim'):
         """
         Compute the Euler derivative of T-pt variable onto a T-pt.
         Input the dimension index for derivative
         """
-        return  0.5*( var.roll(dim=-1, roll_coords=True)
-                    - var.roll(dim=+1, roll_coords=True) )
+        if dim == 'zdim':
+            difference = 0.5*( var.roll(zdim=-1, roll_coords=True)
+                    - var.roll(zdim=+1, roll_coords=True) )
+        else:
+            print('Not expecting that dimension yet')
+        return difference
+    
+    
 
 
-    def get_stratification(self):
-        strat = difftpt2tpt( self.votemper, dim=deptht ) / difftpt2tpt( self.depth_t, dim='z' )
+    def get_stratification(self, var: xa.DataArray ):
+        self.strat = self.difftpt2tpt( var, dim='zdim' ) \
+                    / self.difftpt2tpt( self.depth_t, dim='zdim' )
+        self.zt = np.ones((self.nz, self.ny))
 
 
     def zd(var_name='votemper', var_grid='grid_T'):
         pass
 
 
-    def zt():
+    def zt( self ):
 
-        # load file size
-        try:
-            [time_size, depth_size, lat_size, lon_size] = self.dataset['votemper'].shape
-        except:
-            print('I assumed that votemper existed')
-
-        # load in background stratification data
-        N2_3d = fw.variables['N2_25h'][:] # (time_counter, depth, y, x). W-pts. Surface value == 0
+        # compute stratification 
+        self.get_stratification( self.nemo.dataset.votemper )
+        print('Using only temperature for stratification at the moment')
+        N2_3d = self.strat  # (tdim, zdim, ydim, xdim). T-pts. Surface value == 0
 
         # Ensure surface value is 0
         N2_3d[:,0,:,:] = 0
-
-        # Mask at level mbathy
-        print(np.shape(mbathy), lat_size,lon_size)
-        indexes = [[int(mbathy[JJ,II]), JJ,II] for JJ, II in [(JJ,II) for JJ in range(lat_size) for II in range(lon_size)]]
-        for index in indexes:
-            #print index
-            N2_3d[:,index[0],index[1],index[2]] = 999
-        N2_3d[np.where(N2_3d == 999)] = np.NaN
-
+        # Ensure bed value is 0
+        N2_3d[:,-1,:,:] = 0        
+        
+        # mask out the Nan values
+        N2_3d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
 
         # initialise variables
-        z_d = np.zeros((time_size,lat_size,lon_size)) # pycnocline depth
-        z_t = np.zeros((time_size,lat_size,lon_size)) # pycnocline thickness
+        z_d = np.zeros((self.nt, self.ny, self.nx)) # pycnocline depth
+        z_t = np.zeros((self.nt, self.ny, self.nx)) # pycnocline thickness
 
 
         # compute pycnocline depth, thickness and dissipation at pycnocline
         # Loop over time index to make it more simple.
     #    print 'Computing pycnocline timeseries depth, thickness and dissipation'
-        for time in range(time_size):
-            print('time step {} of {}'.format(time, time_size))
+        for time in range(self.nt):
+            print('time step {} of {}'.format(time, self.nt))
             N2 = N2_3d[time,:,:,:]
-            eps = eps_3d[time,:,:,:]
-
-
 
         #    if np.shape(N2) != np.shape(z):
         #        return 'inputs variables are different shapes', np.shape(N2), np.shape(z)
             if len(np.shape(N2)) != 3:
                 return 'input variable does not have the expected 3 dimensions:',  np.shape(N2)
-
 
             #
             # create list of dimension sizes to tile projection
@@ -101,22 +122,9 @@ class Diagnostics:
             intz2N2 = np.nansum( (zw-z_d_tile)**2 * N2 * e3w, axis=ax)
         #    intz2N2 = np.trapz( (z-z_d_tile)**2 * N2, z, axis=ax)
             z_t[time,:,:] = np.sqrt(intz2N2 / intN2)
-            z_t_tile = np.tile( z_t[time,:,:], tile_shape ).swapaxes(0,ax) # pycnocline thickness
 
-
-            pyc_mask = (zw >= z_d_tile-z_t_tile).astype(int) * \
-                       (zw <= z_d_tile+z_t_tile).astype(int)
-
-
-            ndims = np.shape(N2) # store to replace max array to shape of original array
-            maxarr = np.nanmax(N2*pyc_mask, axis=ax) # store to reshape final masked field with this collapsed dimension shape
-            eps_pyc[time,:,:] = np.zeros(np.shape(maxarr))*np.NaN
-
-            Nmask = (N2 == np.tile( maxarr, tile_shape ).swapaxes(0,ax) ).astype(int) # Generate boolean mask, could use *.astype(int)
-            eps_pyc[time,:,:] = np.sum( np.multiply(eps,Nmask) ,axis=ax) * np.sum( np.multiply(e3w,Nmask) ,axis=ax) # Picks out epsilon at the max N depth
-
-
-        return z_t
+        self.zt = z_t
+        self.zd = z_d
 
     
     def get_pyc_var(fw, zw, e3w,e3t, rho0, mbathy, ax=0):
@@ -150,34 +158,8 @@ class Diagnostics:
 
 
 
-def strat(var, grid):
-    """Compute the derivative on the provided grid"""
-
-    pass
 
 
-np.shape(sci_dom.dataset.e3t_0.cumsum(dim='z').squeeze())
-
-
-def difftpt2tpt(var,dim):
-    """
-    Compute the Euler derivative of T-pt variable onto a T-pt.
-    Input the dimension index for derivative
-    """
-    return  0.5*( var.roll(dim=-1, roll_coords=True) - var.roll(dim=+1, roll_coords=True) )
-
-tt = difftpt2tpt( sci_nwes.dataset.votemper, deptht )
-
-
-
-def difftpt2tpt(var):
-    """
-    Compute the Euler derivative of T-pt variable onto a T-pt.
-    Input the dimension index for derivative
-    """
-    return  0.5*( var.roll(deptht=-1, roll_coords=True) - var.roll(deptht=+1, roll_coords=True) )
-
-tt = difftpt2tpt( sci_nwes.dataset.votemper)
 
 
 
@@ -213,6 +195,7 @@ sci_dom.load(dir + fn_nemo_dom)
 sci.set_command_variables()
 sci_dom.set_command_variables()
 
+
 #%%
 
 
@@ -231,20 +214,42 @@ ind = sci_dom.subset_indices([50,-5], [70,10])
 
 sci_nwes = sci.isel(y=ind[0], x=ind[1]) #nwes = northwest europe shelf
 sci_nwes.set_command_variables()
+sci_nwes.set_command_dimensions()
+
 
 dom_nwes = sci_dom.isel(y=ind[0], x=ind[1]) #nwes = northwest europe shelf
 dom_nwes.set_command_variables()
+dom_nwes.set_command_dimensions()
+
 #%%
 
 
+# Create Diagnostics object
+IT = Diagnostics(sci_nwes, dom_nwes)
+# Construct stratification
+IT.get_stratification( sci_nwes.dataset.votemper ) # --> self.strat
+
+
+
+import matplotlib.pyplot as plt
+
+plt.pcolor( IT.strat[0,10,:,:]); plt.show()
+
+plt.plot( IT.strat[0,:,100,60],'+'); plt.show()
+
+plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
+    
+#%%
 
 def main():
+    pass
+    
+
+
+
+
     
     
-
-
-
-
-    Diagnostics(sci_nwes, dom_nwes).depth_t.shape
+    
     
 if __name__ == "__main__": main()
