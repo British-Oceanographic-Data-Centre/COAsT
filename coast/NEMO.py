@@ -3,7 +3,6 @@ import xarray as xa
 import numpy as np
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
-from .INTERNALTIDE import IT
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
@@ -25,6 +24,34 @@ class NEMO(COAsT):
         self.voce = None
         self.utau = None
         self.vtau = None
+
+    def set_command_dimensions(self):
+        """ A method to relabel the NEMO dimensions for consistent
+        and transparent use in this package:
+            tdim - time
+            zdim - depth
+            ydim - northish (accepting that grids can be rotated)
+            xdim - eastish (accepting that grids can be rotated)
+        """
+        try:
+            self.dataset = self.dataset.rename_dims({'time_counter':'tdim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'deptht':'zdim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'y':'ydim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'x':'xdim'})
+        except AttributeError as e:
+            print(str(e))
 
     def set_command_variables(self):
         """ A method to make accessing the following simpler
