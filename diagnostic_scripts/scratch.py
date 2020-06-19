@@ -242,6 +242,9 @@ def main():
     
     
 
+
+
+
     Diagnostics(sci_nwes, dom_nwes).depth_t.shape
     
 if __name__ == "__main__": main()
