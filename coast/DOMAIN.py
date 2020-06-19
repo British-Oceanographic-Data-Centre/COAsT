@@ -84,7 +84,8 @@ class DOMAIN(COAsT):
         except AttributeError as e:
             print(str(e))
 
-    def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
+                                   radius: float, grid_ref: str='T'):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
@@ -95,11 +96,13 @@ class DOMAIN(COAsT):
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
-
+        grid_ref = grid_ref.lower()
+        lonstr = 'glam' + grid_ref
+        latstr = 'gphi' + grid_ref
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat
-        lon = self.dataset.nav_lon
+        lat = self[latstr].isel(t=0)
+        lon = self[lonstr].isel(t=0)
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
@@ -137,6 +140,16 @@ class DOMAIN(COAsT):
         ff4 = ( lat < latbounds[1] ).astype(int)
         ff = ff1 * ff2 * ff3 * ff4
         return np.where(ff)
+    
+    def subset_indices_index_box(self, ind0_x: int, ind0_y: int,
+                                 n_x: int, n_y: int=-1):
+        """
+        """
+        if n_y <0:
+            n_y = n_x
+            
+        retur
+
 
     def find_j_i(self, lat: int, lon: int, grid_ref: str):
         """
