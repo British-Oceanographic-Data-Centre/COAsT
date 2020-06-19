@@ -20,6 +20,34 @@ class DOMAIN(COAsT):
         self.e2t = None
         self.e2f = None
 
+    def set_command_dimensions(self):
+        """ A method to relabel the domain dimensions for consistent
+        and transparent use in this package:
+            tdim - time
+            zdim - depth
+            ydim - northish (accepting that grids can be rotated)
+            xdim - eastish (accepting that grids can be rotated)
+        """
+        try:
+            self.dataset = self.dataset.rename_dims({'t':'tdim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'z':'zdim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'y':'ydim'})
+        except AttributeError as e:
+            print(str(e))
+
+        try:
+            self.dataset = self.dataset.rename_dims({'x':'xdim'})
+        except AttributeError as e:
+            print(str(e))
+
     def set_command_variables(self):
         """
          A method to make accessing the following simpler
@@ -117,7 +145,7 @@ class DOMAIN(COAsT):
         # Then these output tuples can be separated into x and y arrays if necessary.
 
         return indices
-    
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
@@ -126,7 +154,7 @@ class DOMAIN(COAsT):
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-        
+
         return: Indices corresponding to datapoints inside specified box
         """
         lon = self.nav_lon.copy()
