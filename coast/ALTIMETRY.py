@@ -6,41 +6,12 @@ import xarray as xa
 
 class ALTIMETRY(OBSERVATION):
 
-    def __init__(self):
+    def __init__(self, file, chunks: dict = None):
         super()
-        self.sla_filtered = None
-        self.sla_unfiltered = None
-        self.mdt = None
-        self.ocean_tide = None
-        self.latitude = None
-        self.longitude = None
-        self.time = None
-        # List of variables that are actually in the object (successfully read)
-        self.var_list = []
-        # Mapping of quick access variables to dataset variables
-        # {'referencing_var' : 'dataset_var'}.
-        self.var_dict = {'sla_filtered'   : 'sla_filtered',
-                         'sla_unfiltered' : 'sla_unfiltered',
-                         'mdt'            : 'mdt',
-                         'ocean_tide'     : 'ocean_tide',
-                         'longitude'      : 'longitude', 
-                         'latitude'       : 'latitude',
-                         'time'           : 'time'}
-
-    def set_command_variables(self):
-        """
-         A method to make accessing the following simpler
-        """
-        
-        for key, value in self.var_dict.items():
-            try:
-                setattr( self, key, self.dataset[value] )
-                self.var_list.append(key)
-            except AttributeError as e:
-                warn(str(e))
-                
+        self.load(file, chunks)
         self.adjust_longitudes()
-        
+
+
     def quick_plot(self, var: str=None):
         try:
             import cartopy.crs as ccrs  # mapping plots
@@ -63,7 +34,9 @@ class ALTIMETRY(OBSERVATION):
             cset = self.dataset.plot.scatter(x='longitude',y='latitude',hue=var)
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m', facecolor='none', name='coastline')
+        coast = NaturalEarthFeature(category='physical', scale='50m', 
+                                    facecolor=[0.8,0.8,0.8], name='coastline',
+                                    alpha=0.5)
         ax.add_feature(coast, edgecolor='gray')
 
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
