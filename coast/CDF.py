@@ -12,6 +12,7 @@ class CDF():
         self.cdf_type = cdf_type
         self.cdf_func = cdf_func
         self.sample   = sample
+        self.sample_size = sample.shape
         self.mu       = np.nanmean(sample)
         self.sigma    = np.nanstd(sample)
         self.disc_x   = None # Discrete CDF x-values
