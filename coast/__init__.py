@@ -8,3 +8,5 @@ from .OBSERVATION import OBSERVATION
 from .CDF import CDF
 from .CRPS import CRPS
 from .interpolate_along_dimension import interpolate_along_dimension
+from .STATS import STATS
+from .ERRORS import ERRORS
