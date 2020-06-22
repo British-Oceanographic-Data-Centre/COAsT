@@ -11,17 +11,26 @@ def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
 
 
 class COAsT:
-    def __init__(self, workers=2, threads=2, memory_limit_per_worker='2GB'):
+    def __init__(self, file = None, chunks: dict=None, multiple=False,
+                 workers=2, threads=2, memory_limit_per_worker='2GB'):
         # self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
         self.dataset = None
         # Radius of the earth in km
         self.earth_raids = 6371.007176
+        self.load_controller(file, chunks, multiple)
         
     def __getitem__(self, name: str):
         return self.dataset[name]
         
     def copy(self):
         return copy.copy(self)
+    
+    def load_controller(self, file, chunks, multiple):
+        if file is not None:
+            if multiple:
+                self.load_multiple(file, chunks)
+            else:
+                self.load(file, chunks)
 
     def load(self, file, chunks: dict = None):
         self.dataset = xr.open_dataset(file, chunks=chunks)

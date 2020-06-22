@@ -7,21 +7,9 @@ import matplotlib.pyplot as plt
 
 class NEMO(COAsT):
 
-    def __init__(self):
-        super()
-        self.ssh = None
-        self.nav_lat = None
-        self.nav_lon = None
-        self.botpres = None
-        self.toce = None
-        self.soce = None
-        self.e3t = None
-        self.e3u = None
-        self.e3v = None
-        self.uoce = None
-        self.voce = None
-        self.utau = None
-        self.vtau = None
+#    def __init__(self, file, chunks, multiple):
+#        super()
+#        self.load_controller(file, chunks, multiple)
 
     def set_command_variables(self):
         """ A method to make accessing the following simpler
