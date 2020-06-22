@@ -6,19 +6,9 @@ import xarray as xa
 
 class DOMAIN(COAsT):
 
-    def __init__(self):
-        super()
-        self.bathy_metry = None
-        self.nav_lat = None
-        self.nav_lon = None
-        self.e1u = None
-        self.e1v = None
-        self.e1t = None
-        self.e1f = None
-        self.e2u = None
-        self.e2v = None
-        self.e2t = None
-        self.e2f = None
+#    def __init__(self, file, chunks, multiple):
+#        self.load_controller(file, chunks, multiple)
+#        super()
 
     def set_command_variables(self):
         """
