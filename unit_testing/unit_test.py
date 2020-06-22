@@ -95,10 +95,6 @@ if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
     print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
 else:
     print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
-    
-altimetry.set_command_variables()
-sci.set_command_variables()
-sci_dom.set_command_variables()
 
 #-----------------------------------------------------------------------------#
 # ( 1d ) Load data from existing dataset                                          #
@@ -136,9 +132,9 @@ else:
 #                                                                             #
 subsec = subsec+1
 if sci.dataset['sossheig'].equals(sci['sossheig']):
-    print(str(sec) +chr(subsec) + " OK - __getitem__ works correctly ")
+    print(str(sec) +chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
 else:
-    print(str(sec) +chr(subsec) + " X - Problem with __getitem__ ")
+    print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
     
 #-----------------------------------------------------------------------------#
 # ( 2c ) Renaming variables inside a COAsT object                             #
@@ -257,7 +253,7 @@ except:
 #                                                                             #
 subsec = subsec+1
 
-crps = stat.crps('sossheig','sla_filtered', nh_radius=111)
+crps = stat.crps('sossheig','sla_filtered', nh_radius=30)
 
 if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
@@ -268,25 +264,27 @@ else:
 # ( 5c ) Plot geographical CRPS                                               #
 #                                                                             #
 subsec = subsec+1
-
-crps = stat.crps('sossheig','sla_filtered', nh_radius=111)
-
-if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
-    print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-else:
-    print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+plt.close('all')
+try:
+    fig, ax = crps.map_plot()
+    fig.savefig(dn_fig + 'crps_map_plot.png')
+    #plt.close(fig)
+    print(str(sec) + chr(subsec) + " OK - CRPS Map plot saved")
+except:
+    print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
     
 #-----------------------------------------------------------------------------#
 # ( 5d ) Plot CDF comparisons for CRPS                                        #
 #                                                                             #
 subsec = subsec+1
-
-crps = stat.crps('sossheig','sla_filtered', nh_radius=111)
-
-if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
-    print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-else:
-    print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+plt.close('all')
+try:
+    fig, ax = crps.cdf_plot(0)
+    fig.savefig(dn_fig + 'crps_cdf_plot.png')
+    #plt.close(fig)
+    print(str(sec) + chr(subsec) + " OK - CRPS CDF plot saved")
+except:
+    print(str(sec) + chr(subsec) + " X - CRPS CDF plot not saved")
 
 #################################################
 ## ( 6 ) Plotting Methods                          ##
@@ -307,3 +305,5 @@ try:
     print(str(sec) + chr(subsec) + " OK - Altimetry quick plot saved")
 except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
+    
+plt.close('all')
