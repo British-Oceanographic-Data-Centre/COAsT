@@ -14,7 +14,8 @@ class NEMO(COAsT):
         return
     
     def set_dimension_mapping(self):
-        self.dim_mapping = None
+        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
+                            'y':'y_dim', 'x':'x_dim'}
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
