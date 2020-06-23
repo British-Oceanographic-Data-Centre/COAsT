@@ -28,7 +28,8 @@ class STATS():
                     mod_var, obs_var, nh_radius, nh_type, cdf_type,
                     time_interp)
     
-    def errors(self, mod_var, obs_var):
+    def errors(self, mod_var, obs_var, space_interp: str='nearest',
+               time_interp: str='nearest'):
         return ERRORS(self.mod_data, self.mod_dom, self.obs_object,
-                    mod_var, obs_var)
+                    mod_var, obs_var, space_interp, time_interp)
         
