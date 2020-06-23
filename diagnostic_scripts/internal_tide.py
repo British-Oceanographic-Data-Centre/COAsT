@@ -1,6 +1,8 @@
-## scratch.py
+## internal_tide.py
 """
-Start to try and add pycnocline diagnostics to COAsT
+Script to demonstrate internal tide diagnostics using the COAsT package.
+
+This is a work in progress, more to demonstrate a concept than an exemplar of good coding or even the package's functionality
 """
 
 #%%
