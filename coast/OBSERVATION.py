@@ -5,9 +5,9 @@ import xarray as xa
 
 class OBSERVATION(COAsT):
 
-    def __init__(self):
-        super()
-        
+    def set_dimension_mapping(self):
+        self.dim_mapping = None
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
