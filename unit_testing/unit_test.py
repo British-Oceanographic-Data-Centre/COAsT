@@ -238,7 +238,7 @@ sec = sec+1
 subsec = 96
 
 #-----------------------------------------------------------------------------#
-# ( 5b ) Create STATS object                                                  #
+# ( 5a ) Create STATS object                                                  #
 #                                                                             #
 try:
     subsec = subsec+1
