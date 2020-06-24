@@ -18,7 +18,6 @@ class COAsT:
         self.earth_raids = 6371.007176 # Radius of the earth in km
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        
         if file is None:
             print("Object created but no file or directory specified: " + 
                   str(self) + " \n" +
@@ -42,6 +41,8 @@ class COAsT:
         else:
             self.load_single(file_or_dir, chunks)    
 
+    def __getitem__(self, name: str):
+        return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
         """ Loads a single file into COAsT object's dataset variable. """
@@ -131,6 +132,10 @@ class COAsT:
         obj_copy = self.copy()
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
+    
+    def rename(self, rename_dict, inplace: bool=None, **kwargs):
+        self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
+        return
 
     def subset(self, **kwargs):
         '''
