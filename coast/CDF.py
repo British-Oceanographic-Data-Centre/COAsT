@@ -1,6 +1,5 @@
 import xarray as xr
 import numpy as np
-from .COAsT import COAsT
 import matplotlib.pyplot as plt
 
 class CDF():
@@ -8,40 +7,65 @@ class CDF():
     An object for storing Cumulative Distribution Function information.
     '''
     
-    def __init__(self, sample, cdf_type='empirical', cdf_func = 'gaussian'):
+    def __init__(self, sample, cdf_type: str='empirical', 
+                 cdf_func: str='gaussian'):
+        """Initialisation of CDF object.
+
+        Args:
+            sample (array): Data sample over which to estimate CDF
+            cdf_type (str): Either 'empirical' or 'theoretical'.
+            cdf_func (str): Function type if cdf_type='theoretical'. Presently
+                            only 'gaussian'.
+
+        Returns:
+            New CDF object.
+        """
         self.cdf_type = cdf_type
         self.cdf_func = cdf_func
-        self.sample   = sample
+        sample   = np.sort(sample)
+        self.sample = sample[~np.isnan(sample)]
+        self.sample_size = len(sample)
         self.mu       = np.nanmean(sample)
         self.sigma    = np.nanstd(sample)
-        self.disc_x   = None # Discrete CDF x-values
-        self.disc_y   = None # Discrete CDF y-values
         self._cdf_type_options = ['empirical', 'theoretical']
         self._cdf_func_options = ['gaussian']
-        self.build_discrete_cdf()
-    
-    def build_discrete_cdf(self, x: np.ndarray=None, n_pts: int=1000):
-        '''
+        self.plot_xmin, self.plot_xmax = self.set_x_bounds()
         
-        '''
+    def set_x_bounds(self):
+        ''' Calculate x bounds for CDF plotting '''
         # Is input a single value (st. dev == 0)
         single_value = True if self.sigma == 0 else False
+        if single_value: 
+            self.cdf_type = 'empirical'
         
-        # Build discrete X values according to CDF function if x is unspecified
+        # Calculate x bounds as 5 std dev. either side of the mean
+        if single_value:
+            xmin = self.mu-1
+            xmax = self.mu+1
+        elif self.cdf_func == 'gaussian':
+            xmin = self.mu - 5*self.sigma
+            xmax = self.mu + 5*self.sigma
+        return xmin, xmax
+    
+    def build_discrete_cdf(self, x: np.ndarray=None, n_pts: int=1000):
+        """Builds a discrete CDF for plotting and direct comparison.
+
+        Args:
+            x (array): x-values over which to calculate discrete CDF values.
+                       If none, these will be determined using mu and sigma.
+            n_pts (int): n_pts to use for x if x=None.
+
+        Returns:
+            x and y arrays for discrete CDF.
+        """
+        
+        # Build discrete X bounds
         if x is None:
-            if single_value:
-                x = np.linspace(self.mu-1, self.mu+1, n_pts)
-            elif self.cdf_func == 'gaussian':
-                x = np.linspace( self.mu-5*self.sigma, self.mu+5*self.sigma, 
-                                n_pts)
-            
-        # Build discrete Y values according to CDF type, CDF function 
-        # (if theoretical) and sample.
-        if single_value: self.cdf_type = 'empirical'
+            x = np.linspace(self.plot_xmin, self.plot_xmax, n_pts)
         
         if self.cdf_type == "empirical":
             y = self.empirical_distribution(x, self.sample)
-            
+
         elif self.cdf_type == "theoretical": 
             if self.cdf_func == 'gaussian':
                 y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
@@ -51,9 +75,7 @@ class CDF():
         else:
             raise Exception('CDF Type must be empirical or theoretical')
 
-        self.disc_x = x
-        self.disc_y = y
-        return
+        return x, y
     
     def normal_distribution(self, mu: float=0, sigma: float=1, 
                             x: np.ndarray=None, n_pts: int=1000):
@@ -93,7 +115,7 @@ class CDF():
             raise NotImplementedError
         return np.array(cdf)
     
-    def empirical_distribution(self,x, sample):
+    def empirical_distribution(self, x, sample):
         """Estimates a CDF empirically.
 
         Keyword arguments:
@@ -111,24 +133,87 @@ class CDF():
             edf[x>ss] = edf[x>ss] + 1/n_sample
         return xr.DataArray(edf)
     
-    def difference(self, other):
-        """Calculated the CRPS of provided model and observed CDFs.
+    def crps(self, xa):
+        """Calculate CRPS as outlined in Hersbach et al. 2000
 
-        Keyword arguments:
-        cdf1 -- Discrete CDF of model data
-        cdf2   -- Discrete CDF of observation data
-        
-        return: A single squared difference between two CDFs.
+        Args:
+            xa (float): A single 'observation' value which to compare against
+                        CDF.
+
+        Returns:
+            A single CRPS value.
         """
-        xmin = min(self.disc_x[0], other.disc_x[0])
-        xmax = max(self.disc_x[-1], other.disc_x[-1])
-        common_x = np.linspace(xmin, xmax, 1000)
-        self.build_discrete_cdf(x=common_x)
-        other.build_discrete_cdf(x=common_x)
-        return np.trapz((other.disc_y - self.disc_x)**2, common_x)
+        
+        def calc(alpha, beta, p):
+            return alpha * p**2 + beta*(1 - p)**2
+        crps_sum = 0
+        sample = self.sample
+        sample_size = len(sample)
+        
+        for ii in range(0, sample_size-1):
+            if xa > sample[ii+1]:
+                alpha = sample[ii+1] - sample[ii]
+                beta = 0
+            elif xa < sample[ii]:
+                alpha = 0
+                beta = sample[ii+1] - sample[ii]
+            else:
+                alpha = xa - sample[ii]
+                beta = sample[ii+1] - xa
+            p = (ii+1)/sample_size
+            crps = calc(alpha, beta, p)
+            crps_sum = crps_sum + crps
+        if xa < sample[0]:
+            alpha = 0
+            beta = sample[0] - xa
+            crps = calc(alpha, beta, p)
+            crps_sum = crps_sum + crps
+        elif xa > sample[-1]:
+            alpha = xa - sample[-1]
+            beta = 0
+            crps = calc(alpha, beta, p)
+            crps_sum = crps_sum + crps
+            
+        return crps_sum
+    
+    def get_common_x(self, other, n_pts=1000):
+        """Generates a common x vector for two CDF objects."""
+        xmin = min(self.plot_xmin, other.plot_xmin)
+        xmax = max(self.plot_xmax, other.plot_xmax)
+        common_x = np.linspace(xmin, xmax, n_pts)
+        return common_x
     
     def quick_plot(self):
+        """ A quick plot showing the CDF contained in this object."""
         ax = plt.subplot(111)
-        ax.plot(self.disc_x, self.disc_y)
+        x,y = self.build_discrete_cdf()
+        ax.plot(x, y)
         ax.grid()
         return
+    
+    def diff_plot(self, other):
+        """Plots two CDFS on one plot, with the difference shaded"""
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        x = self.get_common_x(other)
+        dum, mod_y = self.build_discrete_cdf(x)
+        ax.plot(x, mod_y, c='k', linestyle='--')
+        dum, obs_y = other.build_discrete_cdf(x)
+        ax.plot(x, obs_y, linestyle='--')
+        ax.fill_between(x, mod_y, obs_y, alpha=0.5)
+        return fig, ax
+    
+        #    def square_difference(self, other):
+#        """Calculated the CRPS of provided model and observed CDFs.
+#
+#        Keyword arguments:
+#        cdf1 -- Discrete CDF of model data
+#        cdf2   -- Discrete CDF of observation data
+#        
+#        return: A single squared difference between two CDFs.
+#        """
+#        common_x = self.get_common_x(other)
+#        self.build_discrete_cdf(x=common_x)
+#        other.build_discrete_cdf(x=common_x)
+#        diff = np.trapz((other.disc_y - self.disc_y)**2, common_x)
+#        return diff
