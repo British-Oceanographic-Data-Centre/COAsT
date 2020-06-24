@@ -17,6 +17,9 @@ class COAsT:
         # Radius of the earth in km
         self.earth_raids = 6371.007176
         
+    def __getitem__(self, name: str):
+        return self.dataset[name]
+        
     def copy(self):
         return copy.copy(self)
 
@@ -59,6 +62,10 @@ class COAsT:
         obj_copy = self.copy()
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
+    
+    def rename(self, rename_dict, inplace: bool=None, **kwargs):
+        self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
+        return
 
     def subset(self, **kwargs):
         '''
