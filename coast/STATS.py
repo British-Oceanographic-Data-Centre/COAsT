@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
 from .CRPS import CRPS
-from .ERRORS import ERRORS
 
 class STATS():
     
