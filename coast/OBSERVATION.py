@@ -31,7 +31,7 @@ class OBSERVATION(COAsT):
         return indices[0]
     
     def adjust_longitudes(self, lonbounds=[-180,180]):
-        bool0 = self.longitude<lonbounds[0]
-        bool1 = self.longitude>lonbounds[1]
-        self.longitude[bool0] = self.longitude[bool0] + 360
-        self.longitude[bool1] = self.longitude[bool1] - 360
+        bool0 = self['longitude']<lonbounds[0]
+        bool1 = self['longitude']>lonbounds[1]
+        self['longitude'][bool0] = self['longitude'][bool0] + 360
+        self['longitude'][bool1] = self['longitude'][bool1] - 360

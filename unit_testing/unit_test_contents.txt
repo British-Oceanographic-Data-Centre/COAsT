@@ -21,8 +21,11 @@
     b. Indices by distance
     c. Subsetting entire COAsT object and return as copy
     
-5. CRPS Methods
-    a. Calculate single obs CRPS values using different methods
+5. STATS Methods
+    a. Create STATS object
+    b. Calculate single obs CRPS values using different methods
+    c. CRPS map plot
+    d. CRPS CDF plot
     
 6. Plotting Methods
     a. Altimetry quick_plot()
