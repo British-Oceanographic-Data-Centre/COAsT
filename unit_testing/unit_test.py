@@ -226,10 +226,8 @@ alt_tmp = altimetry_nwes.subset_as_copy(time=[0,1,2,3,4])
 crps_rad = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
                     nh_radius=111, nh_type = "radius", cdf_type = "empirical",
                     time_interp = "nearest", plot=False)
-crps_box = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
-                    nh_radius=1, nh_type = "box", cdf_type = "theoretical",
-                    time_interp = "nearest", plot=False)
-if len(crps_rad)==5 and len(crps_box)==5:
+
+if len(crps_rad)==5:
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
     print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
