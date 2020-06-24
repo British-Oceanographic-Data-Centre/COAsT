@@ -54,8 +54,7 @@ else:
 #                                                                             #
 subsec = subsec+1
 
-sci_dom = coast.DOMAIN()
-sci_dom.load(dn_files + fn_nemo_dom)
+sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
 
 # Test the data has loaded
 sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
@@ -84,8 +83,7 @@ if err_flag == False:
 #                                                                             #
 subsec = subsec+1
 
-altimetry = coast.ALTIMETRY()
-altimetry.load(dn_files + fn_altimetry)
+altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
 
 # Test the data has loaded using attribute comparison, as for NEMO_data
 alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
@@ -98,10 +96,6 @@ if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
     print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
 else:
     print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
-    
-altimetry.set_command_variables()
-sci.set_command_variables()
-sci_dom.set_command_variables()
 
 #-----------------------------------------------------------------------------#
 # ( 1d ) Load data from existing dataset                                          #
@@ -252,10 +246,8 @@ alt_tmp = altimetry_nwes.subset_as_copy(time=[0,1,2,3,4])
 crps_rad = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
                     nh_radius=111, nh_type = "radius", cdf_type = "empirical",
                     time_interp = "nearest", plot=False)
-crps_box = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
-                    nh_radius=1, nh_type = "box", cdf_type = "theoretical",
-                    time_interp = "nearest", plot=False)
-if len(crps_rad)==5 and len(crps_box)==5:
+
+if len(crps_rad)==5:
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
     print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
