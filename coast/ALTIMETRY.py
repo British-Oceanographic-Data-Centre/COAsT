@@ -6,12 +6,17 @@ import xarray as xa
 
 class ALTIMETRY(OBSERVATION):
 
-    def __init__(self, file, chunks: dict = None):
-        super()
-        self.load(file, chunks)
-        self.adjust_longitudes()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        return
+    
+    def set_dimension_mapping(self):
+        self.dim_mapping = None
+        
 
-
+    def set_variable_mapping(self):
+        self.var_mapping = None
+        
     def quick_plot(self, var: str=None):
         try:
             import cartopy.crs as ccrs  # mapping plots
