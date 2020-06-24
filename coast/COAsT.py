@@ -17,7 +17,15 @@ class COAsT:
         self.dataset = None
         self.earth_raids = 6371.007176 # Radius of the earth in km
         self.set_dimension_mapping()
-        self.load(file, chunks, multiple)
+        self.set_variable_mapping()
+        
+        if file is None:
+            print("Object created but no file or directory specified: " + 
+                  str(self) + " \n" +
+                  "Use COAsT.load() to load a netCDF file from file path or " +
+                  "directory into this object.")
+        else:
+            self.load(file, chunks, multiple)
 
     def load(self, file_or_dir, chunks:dict=None, multiple=False):
         """
@@ -29,20 +37,17 @@ class COAsT:
             multiple (bool): If true, load in multiple files from directory.
                              If false load a single file [default False]
         """
-        if file_or_dir is not None:
-            if multiple:
-                self.load_multiple(file_or_dir, chunks)
-            else:
-                self.load_single(file_or_dir, chunks)    
+        if multiple:
+            self.load_multiple(file_or_dir, chunks)
         else:
-            print("No file or directory specified: " + str(self) + " \n" +
-                  "Use COAsT.load() to load a netCDF file from file path or " +
-                  " directory into this object.")
+            self.load_single(file_or_dir, chunks)    
+
 
     def load_single(self, file, chunks: dict = None):
         """ Loads a single file into COAsT object's dataset variable. """
         self.dataset = xr.open_dataset(file, chunks=chunks)
         self.set_dimension_names(self.dim_mapping)
+        self.set_variable_names(self.var_mapping)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
         """ Loads multiple files from directory into dataset variable. """
@@ -50,6 +55,7 @@ class COAsT:
             directory_to_files, chunks=chunks, parallel=True, 
             combine="by_coords", compat='override')
         self.set_dimension_names(self.dim_mapping)
+        self.set_variable_names(self.var_mapping)
         
     def load_dataset(self, dataset):
         """        
@@ -61,6 +67,9 @@ class COAsT:
     
     def set_dimension_mapping(self):
         self.dim_mapping = None
+        
+    def set_variable_mapping(self):
+        self.var_mapping = None
         
     def set_dimension_names(self, dim_mapping: dict):
         """ 
@@ -76,7 +85,25 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_dims({ key : value })
             except:
-                print(str(self) + ': Problem mapping ' + key + ' to ' + value)
+                print(str(self) + ': Problem renaming dimension: ' + 
+                      key + ' -> ' + value)
+                
+    def set_variable_names(self, var_mapping: dict):
+        """ 
+        Relabel variables in COAsT object xarray.dataset to ensure
+        consistent naming throughout the COAsT package.
+        
+        Args:
+            var_mapping (dict): keys are variable names to change and values
+                                are new variable names
+        """
+        if var_mapping is None: return
+        for key, value in var_mapping.items():
+            try:
+                self.dataset = self.dataset.rename_vars({ key : value })
+            except:
+                print(str(self) + ': Problem renaming variable: ' + 
+                      key + ' -> ' + value)
         
     def copy(self):
         return copy.copy(self)

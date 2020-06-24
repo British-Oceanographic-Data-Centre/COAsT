@@ -13,17 +13,6 @@ class ALTIMETRY(OBSERVATION):
     
     def set_dimension_mapping(self):
         self.dim_mapping = None
-
-    def set_command_variables(self):
-        """
-         A method to make accessing the following simpler
-        """
         
-        for key, value in self.var_dict.items():
-            try:
-                setattr( self, key, self.dataset[value] )
-                self.var_list.append(key)
-            except AttributeError as e:
-                warn(str(e))
-                
-        self.adjust_longitudes()
+    def set_variable_mapping(self):
+        self.var_mapping = None
