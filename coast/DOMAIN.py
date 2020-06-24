@@ -11,8 +11,9 @@ class DOMAIN(COAsT):
         return
 
     def set_dimension_mapping(self):
-        self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
-                            'y':'y_dim', 'x':'x_dim'}
+        #self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
+        #                    'y':'y_dim', 'x':'x_dim'}
+        self.dim_mapping = None
 
     def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
         """
