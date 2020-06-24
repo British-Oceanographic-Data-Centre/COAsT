@@ -52,8 +52,7 @@ else:
 #                                                                             #
 subsec = subsec+1
 
-sci_dom = coast.DOMAIN()
-sci_dom.load(dn_files + fn_nemo_dom)
+sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
 
 # Test the data has loaded
 sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
