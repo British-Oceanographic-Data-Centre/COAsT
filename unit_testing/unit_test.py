@@ -54,7 +54,7 @@ else:
 #                                                                             #
 subsec = subsec+1
 
-sci_dom = coast.DOMAIN(dir + fn_nemo_dom)
+sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
 
 # Test the data has loaded
 sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
@@ -83,7 +83,7 @@ if err_flag == False:
 #                                                                             #
 subsec = subsec+1
 
-altimetry = coast.ALTIMETRY(dir + fn_altimetry)
+altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
 
 # Test the data has loaded using attribute comparison, as for NEMO_data
 alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
