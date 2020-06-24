@@ -7,82 +7,20 @@ import matplotlib.pyplot as plt
 
 class NEMO(COAsT):
 
-#    def __init__(self, file, chunks, multiple):
-#        super()
-#        self.load_controller(file, chunks, multiple)
-
-    def set_command_variables(self):
-        """ A method to make accessing the following simpler
-                ssh (t,y,x) - sea surface height above geoid - (m)
-                botpres (t,y,x) - sea water pressure at sea ﬂoor - (dbar)
-                toce (t,z,y,x) -  sea water potential temperature -  (degC)
-                soce (t,z,y,x) - sea water practical salinity - (degC)
-                e3t (t,z,y,x) - T-cell thickness - (m)
-                e3u (t,z,y,x) - U-cell thickness - (m)
-                e3v (t,z,y,x) - V-cell thickness - (m)
-                uoce (t,z,y,x) - sea water x-velocity (m/s)
-                voce (t,z,y,x) - sea water y-velocity (m/s)
-                utau(t,y,x) - wind stress x (N/m2)
-                vtau(t,y,x) - wind stress y (N/m2)
-        """
-        try:
-            self.nav_lon = self.dataset.nav_lon
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.nav_lat = self.dataset.nav_lat
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.ssh = self.dataset.sossheig
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.botpres = self.dataset.botpres
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.toce = self.dataset.voctemper
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.soce = self.dataset.soce
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e3t = self.dataset.e3t
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.e3u = self.dataset.e3u
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.e3v = self.dataset.e3v
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.uoce = self.dataset.uoce
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.voce = self.dataset.voce
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.utau = self.dataset.utau
-        except AttributeError as e:
-            print(str(e))
-        try:
-            self.vtau = self.dataset.vtau
-        except AttributeError as e:
-            print(str(e))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        return
+    
+    def set_dimension_mapping(self):
+        #self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
+        #                    'y':'y_dim', 'x':'x_dim'}
+        self.dim_mapping = None
+        
+    def set_variable_mapping(self):
+        #self.var_mapping = {'time_counter':'time',
+        #                    'votemper' : 'temperature',
+        #                    'temp' : 'temperature'}
+        self.var_mapping = None
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
