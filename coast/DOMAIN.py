@@ -29,22 +29,22 @@ class DOMAIN(COAsT):
             xdim - eastish (accepting that grids can be rotated)
         """
         try:
-            self.dataset = self.dataset.rename_dims({'t':'tdim'})
+            self.dataset = self.dataset.rename_dims({'t':'t_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'z':'zdim'})
+            self.dataset = self.dataset.rename_dims({'z':'z_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'y':'ydim'})
+            self.dataset = self.dataset.rename_dims({'y':'y_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'x':'xdim'})
+            self.dataset = self.dataset.rename_dims({'x':'x_dim'})
         except AttributeError as e:
             print(str(e))
 
