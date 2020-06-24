@@ -34,22 +34,22 @@ class NEMO(COAsT):
             xdim - eastish (accepting that grids can be rotated)
         """
         try:
-            self.dataset = self.dataset.rename_dims({'time_counter':'tdim'})
+            self.dataset = self.dataset.rename_dims({'time_counter':'t_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'deptht':'zdim'})
+            self.dataset = self.dataset.rename_dims({'deptht':'z_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'y':'ydim'})
+            self.dataset = self.dataset.rename_dims({'y':'y_dim'})
         except AttributeError as e:
             print(str(e))
 
         try:
-            self.dataset = self.dataset.rename_dims({'x':'xdim'})
+            self.dataset = self.dataset.rename_dims({'x':'x_dim'})
         except AttributeError as e:
             print(str(e))
 
