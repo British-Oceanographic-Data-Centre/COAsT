@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xa
 
 class ALTIMETRY(OBSERVATION):
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         return
@@ -39,7 +39,9 @@ class ALTIMETRY(OBSERVATION):
             cset = self.dataset.plot.scatter(x='longitude',y='latitude',hue=var)
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m', facecolor='none', name='coastline')
+        coast = NaturalEarthFeature(category='physical', scale='50m', 
+                                    facecolor=[0.8,0.8,0.8], name='coastline',
+                                    alpha=0.5)
         ax.add_feature(coast, edgecolor='gray')
 
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
