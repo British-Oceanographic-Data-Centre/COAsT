@@ -2,7 +2,10 @@
 """
 Script to demonstrate internal tide diagnostics using the COAsT package.
 
-This is a work in progress, more to demonstrate a concept than an exemplar of good coding or even the package's functionality
+This is a work in progress, more to demonstrate a concept than an exemplar of
+ good coding or even the package's functionality.
+
+This would form the template for HTML tutorials. 
 """
 
 #%%
@@ -28,36 +31,37 @@ class Diagnostics:
         self.strat = None
         
         # These would be generally useful and should be in the NEMO class
-        self.depth_t = domain.dataset.e3t_0.cumsum( dim='zdim' ).squeeze() # size: nz,my,nx
-        self.depth_w = domain.dataset.e3w_0.cumsum( dim='zdim' ).squeeze() # size: nz,my,nx
+        self.depth_t = domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
+        self.depth_w = domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
 
 
-        # Define the spatial dimensional size and check the dataset and domain arrays are the same size in zdim, ydim, xdim
-        self.nz = nemo.dataset.dims['zdim']
-        self.ny = nemo.dataset.dims['ydim']
-        self.nx = nemo.dataset.dims['xdim']
-        if domain.dataset.dims['zdim'] != self.nz:
-            print('zdim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['zdim'], self.nz))
-        if domain.dataset.dims['ydim'] != self.ny:
+        # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
+        self.nt = nemo.dataset.dims['t_dim']
+        self.nz = nemo.dataset.dims['z_dim']
+        self.ny = nemo.dataset.dims['y_dim']
+        self.nx = nemo.dataset.dims['x_dim']
+        if domain.dataset.dims['z_dim'] != self.nz:
+            print('z_dim domain data size (%s) differs from nemo data size (%s)'
+                  %(domain.dataset.dims['z_dim'], self.nz))
+        if domain.dataset.dims['y_dim'] != self.ny:
             print('ydim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['ydim'], self.ny))
-        if domain.dataset.dims['xdim'] != self.nx:
+                  %(domain.dataset.dims['y_dim'], self.ny))
+        if domain.dataset.dims['x_dim'] != self.nx:
             print('xdim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['xdim'], self.nx))
+                  %(domain.dataset.dims['x_dim'], self.nx))
             
         # Create a dataset
         
 
 
-    def difftpt2tpt(self, var, dim='zdim'):
+    def difftpt2tpt(self, var, dim='z_dim'):
         """
         Compute the Euler derivative of T-pt variable onto a T-pt.
         Input the dimension index for derivative
         """
-        if dim == 'zdim':
-            difference = 0.5*( var.roll(zdim=-1, roll_coords=True)
-                    - var.roll(zdim=+1, roll_coords=True) )
+        if dim == 'z_dim':
+            difference = 0.5*( var.roll(z_dim=-1, roll_coords=True)
+                    - var.roll(z_dim=+1, roll_coords=True) )
         else:
             print('Not expecting that dimension yet')
         return difference
@@ -66,76 +70,16 @@ class Diagnostics:
 
 
     def get_stratification(self, var: xa.DataArray ):
-        self.strat = self.difftpt2tpt( var, dim='zdim' ) \
-                    / self.difftpt2tpt( self.depth_t, dim='zdim' )
-        self.zt = np.ones((self.nz, self.ny))
+        self.strat = self.difftpt2tpt( var, dim='z_dim' ) \
+                    / self.difftpt2tpt( self.depth_t, dim='z_dim' )
 
 
-    def zd(var_name='votemper', var_grid='grid_T'):
-        pass
-
-
-    def zt( self ):
-
-        # compute stratification 
-        self.get_stratification( self.nemo.dataset.votemper )
-        print('Using only temperature for stratification at the moment')
-        N2_3d = self.strat  # (tdim, zdim, ydim, xdim). T-pts. Surface value == 0
-
-        # Ensure surface value is 0
-        N2_3d[:,0,:,:] = 0
-        # Ensure bed value is 0
-        N2_3d[:,-1,:,:] = 0        
-        
-        # mask out the Nan values
-        N2_3d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
-
-        # initialise variables
-        z_d = np.zeros((self.nt, self.ny, self.nx)) # pycnocline depth
-        z_t = np.zeros((self.nt, self.ny, self.nx)) # pycnocline thickness
-
-
-        # compute pycnocline depth, thickness and dissipation at pycnocline
-        # Loop over time index to make it more simple.
-    #    print 'Computing pycnocline timeseries depth, thickness and dissipation'
-        for time in range(self.nt):
-            print('time step {} of {}'.format(time, self.nt))
-            N2 = N2_3d[time,:,:,:]
-
-        #    if np.shape(N2) != np.shape(z):
-        #        return 'inputs variables are different shapes', np.shape(N2), np.shape(z)
-            if len(np.shape(N2)) != 3:
-                return 'input variable does not have the expected 3 dimensions:',  np.shape(N2)
-
-            #
-            # create list of dimension sizes to tile projection
-            tile_shape = [1 for i in range(len(np.shape(N2)))]
-            tile_shape[0] = np.shape(N2)[ax] # replace first dimension with the size of ax dimension (number of depth levels)
-                                             # [depth_size 1 ... 1]. Tile seems to work better with new dimensions at the front
-            #
-
-            intN2  = np.nansum( N2*e3w, axis=ax) # Note that N2[k=0] = 0, so ( N2*e3w )[k=0] = 0 (is good) even though e3w[k=0] inc atm
-            #zw = np.cumsum( 0, e3t, axis=ax ) # Would need to add a layer of zeros on top of this cumsum
-            intzN2 = np.nansum( zw*N2*e3w, axis=ax)
-
-            z_d[time,:,:] = intzN2 / intN2 # pycnocline depth
-            z_d_tile = np.tile( z_d[time,:,:], tile_shape ).swapaxes(0,ax)
-
-            intz2N2 = np.nansum( (zw-z_d_tile)**2 * N2 * e3w, axis=ax)
-        #    intz2N2 = np.trapz( (z-z_d_tile)**2 * N2, z, axis=ax)
-            z_t[time,:,:] = np.sqrt(intz2N2 / intN2)
-
-        self.zt = z_t
-        self.zd = z_d
-
-    
-    def get_pyc_var(fw, zw, e3w,e3t, rho0, mbathy, ax=0):
+    def get_pyc_vars(self):
         """
 
         Pycnocline depth: z_d = \int zN2 dz / \int N2 dz
         Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 N2 dz / \int N2 dz}
 
-        Use function to save memory
 
         Input:
             fw - handle for file with N2
@@ -147,14 +91,56 @@ class Diagnostics:
             ax - z dimension number
 
         Output:
-            z_d - (t,y,x) pycnocline depth
-            z_t - (t,y,x) pycnocline thickness
-    #        pyc_mask - (z,y,x) 1/0 mask. Unit in pycnocline band [z_d +/- z_t]
+            self.z_d - (t,y,x) pycnocline depth
+            self.z_t - (t,y,x) pycnocline thickness
         Useage:
-            [z_d, z_t] = get_pyc_var(fw, gdepw_0, e3w,e3t, rho0, ax=0)
+            ...
         """
-        diag = IT( mod_var_subset, )
-        return IT.zd(var_name='votemper', var_grid='grid_T')  #, IT.zt()
+
+        # compute stratification 
+        self.get_stratification( self.nemo.dataset.votemper )
+        print('Using only temperature for stratification at the moment')
+        N2_4d = self.strat  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
+
+        # Ensure surface value is 0
+        N2_4d[:,0,:,:] = 0
+        # Ensure bed value is 0
+        N2_4d[:,-1,:,:] = 0        
+        
+        # mask out the Nan values
+        N2_4d = N2_4d.where( xa.ufuncs.isnan(self.nemo.dataset.votemper), drop=True )
+        #N2_4d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
+
+        # initialise variables
+        z_d = np.zeros((self.nt, self.ny, self.nx)) # pycnocline depth
+        z_t = np.zeros((self.nt, self.ny, self.nx)) # pycnocline thickness
+
+        
+        # Broadcast to fill out missing (time) dimensions in grid data
+        _, depth_t_4d = xa.broadcast(N2_4d, self.depth_t)
+        _, depth_w_4d = xa.broadcast(N2_4d, self.depth_w)
+        _, e3t_0_4d = xa.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
+
+        
+        
+        # intergrate strat over depth
+        intN2  = ( N2_4d * e3t_0_4d ).sum( dim='z_dim', skipna=True)
+        # intergrate (depth * strat) over depth
+        intzN2 = (N2_4d * e3t_0_4d * depth_t_4d).sum( dim='z_dim', skipna=True)
+        
+
+        # compute pycnocline depth
+        z_d = intzN2 / intN2 # pycnocline depth
+        
+        # compute pycnocline thickness
+        intz2N2 = ( xa.ufuncs.square(depth_t_4d - z_d) * e3t_0_4d * N2_4d  ).sum( dim='z_dim', skipna=True )
+        #    intz2N2 = np.trapz( (z-z_d_tile)**2 * N2, z, axis=ax)
+        z_t = xa.ufuncs.sqrt(intz2N2 / intN2)
+
+        
+        self.zt = z_t
+        self.zd = z_d
+
 
 #%%
 
@@ -173,10 +159,8 @@ dir = "/Users/jeff/downloads/"
 
 fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
-fn_altimetry = 'COAsT_example_altimetry_data.nc'
 
-sec = 1
-subsec = 96 # Code for '`' (1 below 'a')
+
 
 #%%
 
@@ -231,7 +215,7 @@ IT = Diagnostics(sci_nwes, dom_nwes)
 # Construct stratification
 IT.get_stratification( sci_nwes.dataset.votemper ) # --> self.strat
 
-
+IT.get_pyc_vars
 
 import matplotlib.pyplot as plt
 
@@ -240,6 +224,8 @@ plt.pcolor( IT.strat[0,10,:,:]); plt.show()
 plt.plot( IT.strat[0,:,100,60],'+'); plt.show()
 
 plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
+
+IT.get_pyc_vars()
     
 #%%
 
