@@ -77,7 +77,6 @@ plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.title('temperature'); p
 plt.plot(IT_obj.zd[0,:,:],'+'); plt.title('pycnocline depth'); plt.show()
 
 
-#IT.get_pyc_vars()
 
 
 #%%
