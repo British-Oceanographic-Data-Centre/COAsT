@@ -46,9 +46,13 @@ class DIAGNOSTICS():
         self.strat = None
 
         # These would be generally useful and should be in the NEMO class
-        self.depth_t = domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
-        self.depth_w = domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
-
+        self.depth_t = xr.DataArray( domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_t.attrs['units'] = 'm' 
+        self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
+        
+        self.depth_w = xr.DataArray( domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_w.attrs['units'] = 'm' 
+        self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo.dataset.dims['t_dim']
@@ -85,6 +89,9 @@ class DIAGNOSTICS():
         """
         self.strat = self.difftpt2tpt( var, dim='z_dim' ) \
                     / self.difftpt2tpt( self.depth_t, dim='z_dim' )
+        self.strat.attrs['units'] = '[var]/m'
+        self.strat.attrs['standard_name'] = 'stratification'
+        
 
 
     def get_pyc_vars(self):
@@ -152,5 +159,10 @@ class DIAGNOSTICS():
         z_t = xr.ufuncs.sqrt(intz2N2 / intN2)
 
 
-        self.zt = z_t
-        self.zd = z_d
+        self.zt = xr.DataArray( z_t )
+        self.zt.attrs['units'] = 'm'
+        self.zt.attrs['standard_name'] = 'pycnocline thickness'
+        
+        self.zd = xr.DataArray( z_d )
+        self.zd.attrs['units'] = 'm'
+        self.zd.attrs['standard_name'] = 'pycnocline depth'
