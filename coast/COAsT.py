@@ -1,6 +1,6 @@
 from dask import delayed
 from dask import array
-import xarray as xa
+import xarray as xr
 import numpy as np
 from dask.distributed import Client
 from warnings import warn
