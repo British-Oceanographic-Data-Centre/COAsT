@@ -11,26 +11,21 @@ class DIAGNOSTICS():
     for calculation of dynamical diagnostics. The object is
     initialized by passing it COAsT variables of model data, model domain.
 
-    CRPS can then be calculated using the
-    CRPS.calculate() function. This will return an array of CRPS values
-    (if desired) or will store them inside the object. They can be accessed
-    from the object by calling CRPS.crps or CRPS['crps']
-
     Example basic usage::
 
     # Create Diagnostics object
     IT_obj = Diagnostics(sci_nwes, dom_nwes)
     # Construct stratification
     IT_obj.get_stratification( sci_nwes.dataset.votemper ) # --> self.strat
-    
+
     IT_obj.get_pyc_vars()
-    
+
     import matplotlib.pyplot as plt
-    
+
     plt.pcolor( IT_obj.strat[0,10,:,:]); plt.show()
-    
+
     plt.plot( IT_obj.strat[0,:,100,60],'+'); plt.show()
-    
+
     plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
     '''
     def __init__(self, nemo: xr.Dataset, domain: xr.Dataset):
@@ -107,19 +102,12 @@ class DIAGNOSTICS():
         Pycnocline depth: z_d = \int zN2 dz / \int N2 dz
         Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 N2 dz / \int N2 dz}
 
-
-        Input:
-            fw - handle for file with N2
-                N2 - 3D stratification +ve [z,y,x]. W-pts. Surface value is zero
-            zw - 3D depth on W-pts [z,y,x]. gdepw. Never use the top and bottom values because of masking of other variables.
-            e2w
-            e2t
-            mbathy - used to mask bathymetry [y,x]
-            ax - z dimension number
+        Computes stratification on T-points
+        Computes pycnocline variables with T-points depths and thicknesses
 
         Output:
-            self.z_d - (t,y,x) pycnocline depth
-            self.z_t - (t,y,x) pycnocline thickness
+            self.zd - (t,y,x) pycnocline depth
+            self.zt - (t,y,x) pycnocline thickness
         Useage:
             ...
         """
@@ -148,7 +136,6 @@ class DIAGNOSTICS():
         _, depth_t_4d = xr.broadcast(N2_4d, self.domain.depth_t)
         _, depth_w_4d = xr.broadcast(N2_4d, self.domain.depth_w)
         _, e3t_0_4d   = xr.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
-
 
 
         # intergrate strat over depth
