@@ -6,113 +6,17 @@ import xarray as xa
 
 class DOMAIN(COAsT):
 
-    def __init__(self):
-        super()
-        self.bathy_metry = None
-        self.nav_lat = None
-        self.nav_lon = None
-        self.e1u = None
-        self.e1v = None
-        self.e1t = None
-        self.e1f = None
-        self.e2u = None
-        self.e2v = None
-        self.e2t = None
-        self.e2f = None
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        return
 
-    def set_command_dimensions(self):
-        """ A method to relabel the domain dimensions for consistent
-        and transparent use in this package:
-            tdim - time
-            zdim - depth
-            ydim - northish (accepting that grids can be rotated)
-            xdim - eastish (accepting that grids can be rotated)
-        """
-        try:
-            self.dataset = self.dataset.rename_dims({'t':'t_dim'})
-        except AttributeError as e:
-            print(str(e))
+    def set_dimension_mapping(self):
+        #self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
+        #                    'y':'y_dim', 'x':'x_dim'}
+        self.dim_mapping = None
 
-        try:
-            self.dataset = self.dataset.rename_dims({'z':'z_dim'})
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.dataset = self.dataset.rename_dims({'y':'y_dim'})
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.dataset = self.dataset.rename_dims({'x':'x_dim'})
-        except AttributeError as e:
-            print(str(e))
-
-    def set_command_variables(self):
-        """
-         A method to make accessing the following simpler
-                bathy_metry (t,y,x) - float - (m i.e. metres)
-                nav_lat (y,x) - float - (deg)
-                nav_lon (y,x) - float - (deg)
-                e1u, e1v, e1t, e1f (t,y,x) - double - (m)
-                e2u, e2v, e2t, e2f (t,y,x) - double - (m)
-        """
-        try:
-            self.bathy_metry = self.dataset.bathy_metry
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.nav_lat = self.dataset.nav_lat
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.nav_lon = self.dataset.nav_lon
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.e1u = self.dataset.e1u
-        except AttributeError as e:
-            warn(str(e))
-
-        try:
-            self.e1v = self.dataset.e1v
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e1t = self.dataset.e1t
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e1f = self.dataset.e1f
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e2u = self.dataset.e2u
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e2v = self.dataset.e2v
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e2t = self.dataset.e2t
-        except AttributeError as e:
-            print(str(e))
-
-        try:
-            self.e2f = self.dataset.e2f
-        except AttributeError as e:
-            print(str(e))
-
-    def subset_indices_by_distance(self, centre_lon, centre_lat, radius):
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
+                                   radius: float, grid_ref: str='T'):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
@@ -123,11 +27,13 @@ class DOMAIN(COAsT):
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
-
+        grid_ref = grid_ref.lower()
+        lonstr = 'glam' + grid_ref
+        latstr = 'gphi' + grid_ref
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset.nav_lat
-        lon = self.dataset.nav_lon
+        lat = self[latstr].isel(t=0)
+        lon = self[lonstr].isel(t=0)
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
@@ -157,14 +63,24 @@ class DOMAIN(COAsT):
 
         return: Indices corresponding to datapoints inside specified box
         """
-        lon = self.nav_lon.copy()
-        lat = self.nav_lat
+        lon = self.dataset.nav_lon.copy()
+        lat = self.dataset.nav_lat
         ff1 = ( lon > lonbounds[0] ).astype(int)
         ff2 = ( lon < lonbounds[1] ).astype(int)
         ff3 = ( lat > latbounds[0] ).astype(int)
         ff4 = ( lat < latbounds[1] ).astype(int)
         ff = ff1 * ff2 * ff3 * ff4
         return np.where(ff)
+    
+    def subset_indices_index_box(self, ind0_x: int, ind0_y: int,
+                                 n_x: int, n_y: int=-1):
+        """
+        """
+        if n_y <0:
+            n_y = n_x
+            
+        return
+
 
     def find_j_i(self, lat: int, lon: int, grid_ref: str):
         """
