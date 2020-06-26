@@ -119,7 +119,7 @@ class Diagnostics:
         # Broadcast to fill out missing (time) dimensions in grid data
         _, depth_t_4d = xa.broadcast(N2_4d, self.depth_t)
         _, depth_w_4d = xa.broadcast(N2_4d, self.depth_w)
-        _, e3t_0_4d = xa.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
+        _, e3t_0_4d   = xa.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
 
         
         
@@ -226,6 +226,9 @@ plt.plot( IT.strat[0,:,100,60],'+'); plt.show()
 plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
 
 IT.get_pyc_vars()
+
+plt.pcolor( IT.zd[5,:,:]); plt.show()
+
     
 #%%
 
