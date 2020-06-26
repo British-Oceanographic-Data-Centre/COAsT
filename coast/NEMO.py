@@ -12,9 +12,9 @@ class NEMO(COAsT):
         return
     
     def set_dimension_mapping(self):
-        #self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
-        #                    'y':'y_dim', 'x':'x_dim'}
-        self.dim_mapping = None
+        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
+                            'y':'y_dim', 'x':'x_dim'}
+        #self.dim_mapping = None
         
     def set_variable_mapping(self):
         #self.var_mapping = {'time_counter':'time',
