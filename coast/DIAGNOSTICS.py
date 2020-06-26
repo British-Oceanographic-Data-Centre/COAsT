@@ -45,14 +45,17 @@ class DIAGNOSTICS():
         # This might be generally useful and could be somewhere more accessible?
         self.strat = None
 
+        self.domain.construct_depths_from_spacings() # compute depths on t and w points
+        """
         # These would be generally useful and should be in the NEMO class
         self.depth_t = xr.DataArray( domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
-        self.depth_t.attrs['units'] = 'm' 
+        self.depth_t.attrs['units'] = 'm'
         self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
-        
+
         self.depth_w = xr.DataArray( domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
-        self.depth_w.attrs['units'] = 'm' 
+        self.depth_w.attrs['units'] = 'm'
         self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
+        """
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo.dataset.dims['t_dim']
@@ -85,13 +88,17 @@ class DIAGNOSTICS():
 
     def get_stratification(self, var: xr.DataArray ):
         """
-        Compute centered vertical difference
+        Compute centered vertical difference on T-points
         """
         self.strat = self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.depth_t, dim='z_dim' )
-        self.strat.attrs['units'] = '[var]/m'
-        self.strat.attrs['standard_name'] = 'stratification'
-        
+                    / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
+
+        # Add attributes
+        if 'standard_name' not in var.attrs.keys(): var.attrs['standard_name'] = '[var]'
+        if 'units' not in var.attrs.keys(): var.attrs['units'] = '[var]'
+        self.strat.attrs['units'] = var.units + '/m'
+        self.strat.attrs['standard_name'] = var.standard_name + ' stratification'
+
 
 
     def get_pyc_vars(self):
@@ -138,8 +145,8 @@ class DIAGNOSTICS():
 
 
         # Broadcast to fill out missing (time) dimensions in grid data
-        _, depth_t_4d = xr.broadcast(N2_4d, self.depth_t)
-        _, depth_w_4d = xr.broadcast(N2_4d, self.depth_w)
+        _, depth_t_4d = xr.broadcast(N2_4d, self.domain.depth_t)
+        _, depth_w_4d = xr.broadcast(N2_4d, self.domain.depth_w)
         _, e3t_0_4d   = xr.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
 
 
@@ -162,7 +169,7 @@ class DIAGNOSTICS():
         self.zt = xr.DataArray( z_t )
         self.zt.attrs['units'] = 'm'
         self.zt.attrs['standard_name'] = 'pycnocline thickness'
-        
+
         self.zd = xr.DataArray( z_d )
         self.zd.attrs['units'] = 'm'
         self.zd.attrs['standard_name'] = 'pycnocline depth'
