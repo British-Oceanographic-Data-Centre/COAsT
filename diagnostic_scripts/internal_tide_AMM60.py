@@ -173,7 +173,29 @@ plt.colorbar()
 plt.plot(lon[JJ,II], lat[JJ,II], 'k+')
 plt.show()
 
+#%%
 
+# Extract a depth section of data
+yi,xi,line_len = dom_nwes.transect_indices([51,3],[62,3], grid_ref='t')
+# Extract the variable
+data_sec = sci_nwes.get_subset_as_xarray("thetao",xi,yi)
+# Extract the depth section
+#_, dom_nwes.glamt_4d = xr.broadcast( sci_nwes.dataset.thetao, dom_nwes.dataset.glamt.squeeze())
+
+dep_sec = xr.DataArray( dom_nwes.get_subset_as_xarray("e3t_0",xi,yi).
+                         cumsum( dim='z_dim' ).squeeze() ) 
+# Extract the lat section
+_, lat_sec = xr.broadcast( data_sec, dom_nwes.get_subset_as_xarray("gphit",xi,yi).squeeze() )
+
+#%%
+
+plt.pcolormesh(  lat_sec, dep_sec, data_sec)
+plt.title('section')
+plt.xlim([51,62])
+#plt.clim([0, 50])
+plt.gca().invert_yaxis()
+plt.colorbar()
+plt.show()
 
 #%%
 def main():
