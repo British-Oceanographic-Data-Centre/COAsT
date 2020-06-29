@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 from warnings import warn
+import copy
 import matplotlib.pyplot as plt
 #from .CRPS import CRPS
 #from .interpolate_along_dimension import interpolate_along_dimension
@@ -111,18 +112,22 @@ class DIAGNOSTICS():
         """
 
         # compute stratification
-        self.get_stratification( self.nemo.dataset.votemper )
-
+        #self.get_stratification( self.nemo.dataset.votemper )
+        self.get_stratification( self.nemo.dataset.thetao )
+        
         print('Using only temperature for stratification at the moment')
-        N2_4d = self.strat  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
+        N2_4d = copy.copy(self.strat)  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
 
         # Ensure surface value is 0
         N2_4d[:,0,:,:] = 0
+
         # Ensure bed value is 0
         N2_4d[:,-1,:,:] = 0
 
+
         # mask out the Nan values
-        N2_4d = N2_4d.where( xr.ufuncs.isnan(self.nemo.dataset.votemper), drop=True )
+        #N2_4d = N2_4d.where( xr.ufuncs.isnan(self.nemo.dataset.votemper), drop=True )
+        N2_4d = N2_4d.where( ~xr.ufuncs.isnan(self.nemo.dataset.thetao), drop=True )
         #N2_4d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
 
         # initialise variables
@@ -131,12 +136,11 @@ class DIAGNOSTICS():
 
 
         # Broadcast to fill out missing (time) dimensions in grid data
-        _, depth_t_4d = xr.broadcast(N2_4d, self.depth_t)
-        _, depth_w_4d = xr.broadcast(N2_4d, self.depth_w)
-        _, e3t_0_4d   = xr.broadcast(N2_4d, self.domain.dataset.e3t_0.squeeze())
+        _, depth_t_4d = xr.broadcast(self.strat, self.depth_t)
+        _, depth_w_4d = xr.broadcast(self.strat, self.depth_w)
+        _, e3t_0_4d   = xr.broadcast(self.strat, self.domain.dataset.e3t_0.squeeze())
 
-
-
+        
         # intergrate strat over depth
         intN2  = ( N2_4d * e3t_0_4d ).sum( dim='z_dim', skipna=True)
         # intergrate (depth * strat) over depth
