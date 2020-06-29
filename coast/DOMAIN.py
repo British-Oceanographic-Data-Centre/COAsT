@@ -1,7 +1,7 @@
 from .COAsT import COAsT
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 
 class DOMAIN(COAsT):
@@ -11,11 +11,21 @@ class DOMAIN(COAsT):
         return
 
     def set_dimension_mapping(self):
-        self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
+        self.dim_mapping = {'t':'t_dim', 'z':'z_dim',
                             'y':'y_dim', 'x':'x_dim'}
         #self.dim_mapping = None
 
-    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
+    def construct_depths_from_spacings(self):
+        # NEMO4 constucts depths from verical spacing variables
+        self.depth_t = xr.DataArray( self.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_t.attrs['units'] = 'm'
+        self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
+
+        self.depth_w = xr.DataArray( self.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_w.attrs['units'] = 'm'
+        self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
+
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float,
                                    radius: float, grid_ref: str='T'):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
@@ -71,14 +81,14 @@ class DOMAIN(COAsT):
         ff4 = ( lat < latbounds[1] ).astype(int)
         ff = ff1 * ff2 * ff3 * ff4
         return np.where(ff)
-    
+
     def subset_indices_index_box(self, ind0_x: int, ind0_y: int,
                                  n_x: int, n_y: int=-1):
         """
         """
         if n_y <0:
             n_y = n_x
-            
+
         return
 
 
@@ -95,7 +105,7 @@ class DOMAIN(COAsT):
 
         internal_lat = f"gphi{grid_ref}"
         internal_lon = f"glam{grid_ref}"
-        dist2 = xa.ufuncs.square(self.dataset[internal_lat] - lat) + xa.ufuncs.square(self.dataset[internal_lon] - lon)
+        dist2 = xr.ufuncs.square(self.dataset[internal_lat] - lat) + xr.ufuncs.square(self.dataset[internal_lon] - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
