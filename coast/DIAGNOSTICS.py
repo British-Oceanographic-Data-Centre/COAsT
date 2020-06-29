@@ -12,26 +12,21 @@ class DIAGNOSTICS():
     for calculation of dynamical diagnostics. The object is
     initialized by passing it COAsT variables of model data, model domain.
 
-    CRPS can then be calculated using the
-    CRPS.calculate() function. This will return an array of CRPS values
-    (if desired) or will store them inside the object. They can be accessed
-    from the object by calling CRPS.crps or CRPS['crps']
-
     Example basic usage::
 
     # Create Diagnostics object
     IT_obj = Diagnostics(sci_nwes, dom_nwes)
     # Construct stratification
     IT_obj.get_stratification( sci_nwes.dataset.votemper ) # --> self.strat
-    
+
     IT_obj.get_pyc_vars()
-    
+
     import matplotlib.pyplot as plt
-    
+
     plt.pcolor( IT_obj.strat[0,10,:,:]); plt.show()
-    
+
     plt.plot( IT_obj.strat[0,:,100,60],'+'); plt.show()
-    
+
     plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
     '''
     def __init__(self, nemo: xr.Dataset, domain: xr.Dataset):
@@ -46,10 +41,17 @@ class DIAGNOSTICS():
         # This might be generally useful and could be somewhere more accessible?
         self.strat = None
 
+        self.domain.construct_depths_from_spacings() # compute depths on t and w points
+        """
         # These would be generally useful and should be in the NEMO class
-        self.depth_t = domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
-        self.depth_w = domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() # size: nz,my,nx
+        self.depth_t = xr.DataArray( domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_t.attrs['units'] = 'm'
+        self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
 
+        self.depth_w = xr.DataArray( domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_w.attrs['units'] = 'm'
+        self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
+        """
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo.dataset.dims['t_dim']
@@ -82,10 +84,17 @@ class DIAGNOSTICS():
 
     def get_stratification(self, var: xr.DataArray ):
         """
-        Compute centered vertical difference
+        Compute centered vertical difference on T-points
         """
         self.strat = self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.depth_t, dim='z_dim' )
+                    / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
+
+        # Add attributes
+        if 'standard_name' not in var.attrs.keys(): var.attrs['standard_name'] = '[var]'
+        if 'units' not in var.attrs.keys(): var.attrs['units'] = '[var]'
+        self.strat.attrs['units'] = var.units + '/m'
+        self.strat.attrs['standard_name'] = var.standard_name + ' stratification'
+
 
 
     def get_pyc_vars(self):
@@ -94,19 +103,12 @@ class DIAGNOSTICS():
         Pycnocline depth: z_d = \int zN2 dz / \int N2 dz
         Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 N2 dz / \int N2 dz}
 
-
-        Input:
-            fw - handle for file with N2
-                N2 - 3D stratification +ve [z,y,x]. W-pts. Surface value is zero
-            zw - 3D depth on W-pts [z,y,x]. gdepw. Never use the top and bottom values because of masking of other variables.
-            e2w
-            e2t
-            mbathy - used to mask bathymetry [y,x]
-            ax - z dimension number
+        Computes stratification on T-points
+        Computes pycnocline variables with T-points depths and thicknesses
 
         Output:
-            self.z_d - (t,y,x) pycnocline depth
-            self.z_t - (t,y,x) pycnocline thickness
+            self.zd - (t,y,x) pycnocline depth
+            self.zt - (t,y,x) pycnocline thickness
         Useage:
             ...
         """
@@ -156,5 +158,10 @@ class DIAGNOSTICS():
         z_t = xr.ufuncs.sqrt(intz2N2 / intN2)
 
 
-        self.zt = z_t
-        self.zd = z_d
+        self.zt = xr.DataArray( z_t )
+        self.zt.attrs['units'] = 'm'
+        self.zt.attrs['standard_name'] = 'pycnocline thickness'
+
+        self.zd = xr.DataArray( z_d )
+        self.zd.attrs['units'] = 'm'
+        self.zd.attrs['standard_name'] = 'pycnocline depth'
