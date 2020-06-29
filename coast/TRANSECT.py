@@ -1,22 +1,25 @@
 from .COAsT import COAsT
-from dask import array
+from scipy.ndimage import convolve1d
+from scipy import interpolate
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage import convolve1d
-from scipy import interpolate
 
-
+# =============================================================================
+# The TRANSECT module is a place for code related to transects only
+# =============================================================================
 
 class Transect:
     
-    
-    def __init__(self, domain: DOMAIN, point_A: tuple, point_B: tuple,
-                 dataset_T: NEMO=None, dataset_U: NEMO=None, dataset_V: NEMO=None):
+    def __init__(self, domain: COAsT, point_A: tuple, point_B: tuple,
+                 dataset_T: COAsT=None, dataset_U: COAsT=None, dataset_V: COAsT=None):
         '''
-        Class defining a transect between point A and point B with time dimension, 
-        depth dimension and transect dimension. Data is subsetted along these dimensions.
-        Point A should be of lower latitude than point B.
+        Class defining a generic transect type, which is a 3d dataset between a point A and 
+        a point B, with a time dimension, a depth dimension and a transect dimension. The 
+        transect dimension defines the points along the transect.
+        The model Data is subsetted in its entirety along these dimensions.
+        
+        Note that Point A should be of lower latitude than point B.
         
         Example usage:
             point_A = (54,-15)
@@ -50,8 +53,8 @@ class Transect:
         self.y_idx = tran_y
         self.x_idx = tran_x
         self.len = len(tran_y)
-        self.flux_across_AB = None # (time,depth_index,transect_segment_index)
-        self.vol_flux_across_AB = None # (time,transect_segment_index)
+        self.normal_velocities = None
+        self.depth_integrated_transport_across_AB = None # (time,transect_segment_index)
         
         # dataset along the transect
         da_tran_y = xr.DataArray( tran_y, dims=['transect_dim'])
@@ -93,7 +96,7 @@ class Transect:
         tran_y = np.asarray(tran_y)
         tran_x = np.asarray(tran_x)
         
-        # Redefine transect tso that each point on the transect is seperated
+        # Redefine transect so that each point on the transect is seperated
         # from its neighbours by a single index change in y or x, but not both
         dist_option_1 = domain.dataset.e2f.values[0, tran_y, tran_x] + domain.dataset.e1f.values[0, tran_y+1, tran_x]
         dist_option_2 = domain.dataset.e2f.values[0, tran_y, tran_x+1] + domain.dataset.e1f.values[0, tran_y, tran_x]
@@ -114,18 +117,19 @@ class Transect:
         """
     
         Computes the flow through the transect at each segment and stores:
-        transect normal velocity in   
-        volume flux for each segment over the entire water column in transect.vol_flux_column_across_AB
+        Transect normal velocities at each grid point in Transect.normal_velocities,
+        Depth integrated volume transport across the transect at each transect segment in 
+        Transect.depth_integrated_transport_across_AB
         
         Return 
         -----------
-        volume flux at each level across the entire transect
-        volume flux over the entire column acros the entire transect
-
+        Transect normal velocities at each grid point (m/s)
+        Depth integrated volume transport across the transect at each transect segment (Sv)
         """
         
-        flux = np.ma.zeros(np.shape(self.data_U.vozocrtx))
-        vol_flux = np.ma.zeros( np.shape(self.data_U.vozocrtx[:,0,:] ))        
+        velocity = np.ma.zeros(np.shape(self.data_U.vozocrtx))
+        vol_transport = np.ma.zeros(np.shape(self.data_U.vozocrtx))
+        depth_integrated_transport = np.ma.zeros( np.shape(self.data_U.vozocrtx[:,0,:] ))        
         
         dy = np.diff(self.y_idx)
         dx = np.diff(self.x_idx)
@@ -133,50 +137,110 @@ class Transect:
         for idx in np.arange(0, self.len-1):            
             if dy[idx] > 0:
                 # u flux (+ in)
-                flux[:,:,idx] = self.data_U.vozocrtx[:,:,idx+1].to_masked_array() * self.domain.e2u[0,idx+1].to_masked_array()
-                vol_flux[:,idx] = np.sum( flux[:,:,idx] * self.data_U.e3u[:,:,idx+1].to_masked_array(), axis=1 ) 
+                velocity[:,:,idx] = self.data_U.vozocrtx[:,:,idx+1].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e2u[0,idx+1].to_masked_array() *
+                                          self.data_U.e3u[:,:,idx+1].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
             elif dx[idx] > 0:
-                # v flux (- in)
-                flux[:,:,idx] = -self.data_V.vomecrty[:,:,idx+1].to_masked_array() * self.domain.e1v[0,idx+1].to_masked_array()
-                vol_flux[:,idx] = np.sum( flux[:,:,idx] * self.data_V.e3v[:,:,idx+1].to_masked_array(), axis=1 )           
+                # v flux (- in) 
+                velocity[:,:,idx] = - self.data_V.vomecrty[:,:,idx+1].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e1v[0,idx+1].to_masked_array() *
+                                          self.data_V.e3v[:,:,idx+1].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
             elif dx[idx] < 0:
                 # v flux (+ in)
-                flux[:,:,idx] = self.data_V.vomecrty[:,:,idx].to_masked_array() * self.domain.e1v[0,idx].to_masked_array()
-                vol_flux[:,idx] = np.sum( flux[:,:,idx] * self.data_V.e3v[:,:,idx].to_masked_array(), axis=1 )
+                velocity[:,:,idx] = self.data_V.vomecrty[:,:,idx].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e1v[0,idx].to_masked_array() *
+                                          self.data_V.e3v[:,:,idx].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
         
-        self.flux_across_AB = flux
-        self.vol_flux_across_AB = vol_flux / 1000000.
-        return ( np.sum(self.flux_across_AB, axis=2), np.sum(self.vol_flux_across_AB, axis=1) )  
+        self.normal_velocities = velocity
+        self.depth_integrated_transport_across_AB = depth_integrated_transport / 1000000.
+        return ( self.normal_velocities, self.depth_integrated_transport_across_AB )  
     
 
     def moving_average(self, array_to_smooth, window=5, axis=-1):
+        '''
+        Returns the input array smoothed along the given axis using convolusion
+        '''
         return convolve1d( array_to_smooth, np.ones(window), axis=axis ) / window
     
-    def spatial_slice_plot(self, variable_slice, depth, smoothing_window=0, diverging_colorbar=True):  
-        variable_slice = self.moving_average(variable_slice, smoothing_window, axis=-1)
-        uniform_depth = np.arange(0, np.nanmax(depth), 2)
-        uniform_depth_variable_slice = np.zeros( (len(uniform_depth), self.len) )
+    def interpolate_slice(self, variable_slice, depth, interpolated_depth=None ):
+        '''
+        Linearly interpolates the variable at a single time along the z_dim, which must be the
+        first axis.
+
+        Parameters
+        ----------
+        variable_slice : Variable to interpolate (z_dim, transect_dim)
+        depth : The depth at each z point for each point along the transect
+        interpolated_depth : (optional) desired depth profile to interpolate to. If not supplied
+            a uniform depth profile uniformaly spaced between zero and variable max depth will be used
+            with a spacing of 2 metres.
+
+        Returns
+        -------
+        interpolated_depth_variable_slice : Interpolated variable
+        interpolated_depth : Interpolation depth
+
+        '''
+        if interpolated_depth is None:
+            interpolated_depth = np.arange(0, np.nanmax(depth), 2)
+            
+        interpolated_depth_variable_slice = np.zeros( (len(interpolated_depth), self.len) )
         for i in np.arange(0, self.len ):
             depth_func = interpolate.interp1d( depth[:,i], variable_slice[:,i], axis=0, bounds_error=False )        
-            uniform_depth_variable_slice[:,i] = depth_func( uniform_depth )
+            interpolated_depth_variable_slice[:,i] = depth_func( interpolated_depth )
+            
+        return (interpolated_depth_variable_slice, interpolated_depth )
+    
+    def spatial_slice_plot(self, variable_slice, depth, smoothing_window=0, diverging_colorbar=True, colorbarlabel:str=None,
+                           title:str=None):  
+        '''
+            Quick plot routine of a variable along the transect. The variable is regridded onto uniformaly spaced
+            vertical coordinates. An option is provided to smooth the regridded variables along the transect. The
+            diverging colorbar option will centre the colorbar at zero.
+    
+        Parameters
+        ---------------
+        variable_slice: variable at a single time with dimensions (z_dim, transect_dim)
+        depth: the depth field at each point
+        smoothing_window: smoothing via convolusion, larger number applies greater smoothing
+        diverging_colorbar: True sets the colorbar limits to centre zero with a diverging colormap
         
-        ss,zz = np.meshgrid(uniform_depth, np.arange(0,np.shape(uniform_depth_variable_slice)[1]))
+        '''
+        
+        interpolated_depth_variable_slice, interpolated_depth = self.interpolate_slice(variable_slice, depth)
+        interpolated_depth_variable_slice = self.moving_average(interpolated_depth_variable_slice, smoothing_window, axis=-1)
+        ss,zz = np.meshgrid(interpolated_depth, np.arange(0,np.shape(interpolated_depth_variable_slice)[1]))
         fig,ax=plt.subplots()
         if diverging_colorbar:
-            lim = np.nanmax(np.abs(uniform_depth_variable_slice))
-            pcol = ax.pcolormesh( zz,ss, np.transpose(uniform_depth_variable_slice),cmap='seismic',vmin=-lim,vmax=lim)
+            lim = np.nanmax(np.abs(interpolated_depth_variable_slice))
+            pcol = ax.pcolormesh( zz,ss, np.transpose(interpolated_depth_variable_slice),cmap='seismic',vmin=-lim,vmax=lim)
         else:
-            pcol = ax.pcolormesh( zz,ss, np.transpose(uniform_depth_variable_slice),cmap='jet')
-        plt.gca().invert_yaxis()
-        fig.colorbar(pcol)
-        plt.ylabel("Depth (m)")
+            pcol = ax.pcolormesh( zz,ss, np.transpose(interpolated_depth_variable_slice),cmap='jet')
+        
+        CB = plt.colorbar(pcol)
+        CB.ax.set_ylabel(colorbarlabel)
+        ax.set_ylabel("Depth (m)")
+        ax.set_title(title)
         ax.set_xticks([0,variable_slice.shape[1]])
-        ax.set_xticklabels(['A','B'])
+        ax.set_xticklabels(['A','B'])        
+        plt.gca().invert_yaxis()
+        
     
-    def transect_line_plot(self, variable, smoothing_window=0):
+    def transect_line_plot(self, variable, smoothing_window=0, y_label:str=None,
+                           title:str=None):
+        '''
+        A simple line plot of the variable at a single time along the transect. Smoothing can be applied
+        via convolusion, where a larger number applies greater smoothing.
+
+        '''
         fig,ax = plt.subplots()
         ax.plot(self.moving_average(variable, smoothing_window))
         ax.set_xticks([0,len(variable)])
         ax.set_xticklabels(['A','B'])
+        ax.set_ylabel(y_label)
+        ax.set_title(title)
         
         
