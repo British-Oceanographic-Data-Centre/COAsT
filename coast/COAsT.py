@@ -218,9 +218,9 @@ class COAsT:
         dy = xr.DataArray(points_y)
 
         if time_counter is None:
-            smaller = self.dataset[var].isel(x=dx, y=dy)
+            smaller = self.dataset[var].isel(x_dim=dx, y_dim=dy)
         else:
-            smaller = self.dataset[var].isel(time_counter=time_counter, x=dx, y=dy)
+            smaller = self.dataset[var].isel(t_dim=time_counter, x_dim=dx, y_dim=dy)
 
         return smaller
 
