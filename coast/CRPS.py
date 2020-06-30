@@ -135,6 +135,7 @@ class CRPS():
             # observation times?
             mod_subset = weights[ii][xr.DataArray(subset_indices[0]),
                                      xr.DataArray(subset_indices[1])]
+
             if any(np.isnan(mod_subset)):
                 contains_land[ii] = True
 
