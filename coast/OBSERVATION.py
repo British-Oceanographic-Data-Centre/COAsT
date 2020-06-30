@@ -1,13 +1,13 @@
 from .COAsT import COAsT
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 class OBSERVATION(COAsT):
 
-    def __init__(self):
-        super()
-        
+    def set_dimension_mapping(self):
+        self.dim_mapping = None
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
@@ -19,8 +19,8 @@ class OBSERVATION(COAsT):
         
         return: Indices corresponding to datapoints inside specified box
         """
-        lon = self.longitude.copy()
-        lat = self.latitude
+        lon = self.dataset.longitude.copy()
+        lat = self.dataset.latitude
         lon[lon>180] = lon[lon>180] - 360
         lon[lon<-180] = lon[lon<-180] + 360
         ff1 = ( lon > lonbounds[0] ).astype(int)
@@ -31,7 +31,7 @@ class OBSERVATION(COAsT):
         return indices[0]
     
     def adjust_longitudes(self, lonbounds=[-180,180]):
-        bool0 = self.longitude<lonbounds[0]
-        bool1 = self.longitude>lonbounds[1]
-        self.longitude[bool0] = self.longitude[bool0] + 360
-        self.longitude[bool1] = self.longitude[bool1] - 360
+        bool0 = self['longitude']<lonbounds[0]
+        bool1 = self['longitude']>lonbounds[1]
+        self['longitude'][bool0] = self['longitude'][bool0] + 360
+        self['longitude'][bool1] = self['longitude'][bool1] - 360
