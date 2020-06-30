@@ -1,7 +1,7 @@
 from .COAsT import COAsT
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 
 class DOMAIN(COAsT):
@@ -42,7 +42,7 @@ class DOMAIN(COAsT):
         dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
-        # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
+        # nemo_dist = xr.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
 
         # Get boolean array where the distance is less than the specified radius
         # using np.where
@@ -96,7 +96,7 @@ class DOMAIN(COAsT):
 
         internal_lat = f"gphi{grid_ref}"
         internal_lon = f"glam{grid_ref}"
-        dist2 = xa.ufuncs.square(self.dataset[internal_lat] - lat) + xa.ufuncs.square(self.dataset[internal_lon] - lon)
+        dist2 = xr.ufuncs.square(self.dataset[internal_lat] - lat) + xr.ufuncs.square(self.dataset[internal_lon] - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
