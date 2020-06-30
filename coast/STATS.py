@@ -1,5 +1,5 @@
 import numpy as np
-import xarray as xr
+import xarray as xa
 from warnings import warn
 import matplotlib.pyplot as plt
 from .CDF import CDF

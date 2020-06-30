@@ -11,9 +11,10 @@ ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 import coast
 import numpy as np
 import xarray as xr
+import matplotlib.pyplot as plt
 
-
-dir = "example_files/"
+dn_files = "./example_files/"
+dn_fig = 'unit_testing/figures/'
 fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
@@ -30,9 +31,7 @@ subsec = 96 # Code for '`' (1 below 'a')
 #                                                                             #
 subsec = subsec+1
 
-sci = coast.NEMO() 
-sci.load(dir + fn_nemo_dat)
-
+sci = coast.NEMO(dn_files + fn_nemo_dat) 
 
 # Test the data has loaded
 sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
@@ -53,8 +52,7 @@ else:
 #                                                                             #
 subsec = subsec+1
 
-sci_dom = coast.DOMAIN()
-sci_dom.load(dir + fn_nemo_dom)
+sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
 
 # Test the data has loaded
 sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
@@ -83,8 +81,7 @@ if err_flag == False:
 #                                                                             #
 subsec = subsec+1
 
-altimetry = coast.ALTIMETRY()
-altimetry.load(dir + fn_altimetry)
+altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
 
 # Test the data has loaded using attribute comparison, as for NEMO_data
 alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
@@ -97,21 +94,17 @@ if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
     print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
 else:
     print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
-    
-altimetry.set_command_variables()
-sci.set_command_variables()
-sci_dom.set_command_variables()
 
 #-----------------------------------------------------------------------------#
 # ( 1d ) Load data from existing dataset                                          #
 # 
 subsec = subsec+1
 
-ds = xr.open_dataset(dir + fn_nemo_dat)
+ds = xr.open_dataset(dn_files + fn_nemo_dat)
 sci_load_ds = coast.NEMO()
 sci_load_ds.load_dataset(ds)
 sci_load_file = coast.NEMO() 
-sci_load_file.load(dir + fn_nemo_dat)
+sci_load_file.load(dn_files + fn_nemo_dat)
 if sci_load_ds.dataset.identical(sci_load_file.dataset):
     print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
 else:
@@ -132,6 +125,25 @@ if altimetry_copy.dataset == altimetry.dataset:
     print(str(sec) +chr(subsec) + " OK - Copied COAsT object ")
 else:
     print(str(sec) +chr(subsec) + " X - Copy Failed ")
+    
+#-----------------------------------------------------------------------------#
+# ( 2b ) COAsT __getitem__ returns variable                                   #
+#                                                                             #
+subsec = subsec+1
+if sci.dataset['sossheig'].equals(sci['sossheig']):
+    print(str(sec) +chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
+else:
+    print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
+    
+#-----------------------------------------------------------------------------#
+# ( 2c ) Renaming variables inside a COAsT object                             #
+#                                                                             #
+subsec = subsec+1
+altimetry_copy.rename({'sla_filtered':'renamed'})
+if altimetry['sla_filtered'].equals(altimetry_copy['renamed']):
+    print(str(sec) +chr(subsec) + " OK - Renaming of variable in dataset ")
+else:
+    print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
 
 
 #################################################
@@ -219,23 +231,78 @@ else:
     print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 
 #################################################
-## ( 5 ) CRPS Methods                          ##
+## ( 5 ) STATS Methods                         ##
 #################################################
 sec = sec+1
 subsec = 96
 
 #-----------------------------------------------------------------------------#
-# ( 5a ) Calculate single obs CRPS values                                     #
+# ( 5a ) Create STATS object                                                  #
+#                                                                             #
+try:
+    subsec = subsec+1
+    stat = coast.STATS(sci, sci_dom, altimetry_nwes)
+    print(str(sec) + chr(subsec) + " OK - STATS object created")
+except:
+    print(str(sec) + chr(subsec) + " OK - Probleam creating STATS object")
+    
+
+#-----------------------------------------------------------------------------#
+# ( 5b ) Calculate single obs CRPS values                                     #
 #                                                                             #
 subsec = subsec+1
-alt_tmp = altimetry_nwes.subset_as_copy(time=[0,1,2,3,4])
-crps_rad = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
-                    nh_radius=111, nh_type = "radius", cdf_type = "empirical",
-                    time_interp = "nearest", plot=False)
-crps_box = sci.crps_sonf('sossheig', sci_dom, alt_tmp, 'sla_filtered',
-                    nh_radius=1, nh_type = "box", cdf_type = "theoretical",
-                    time_interp = "nearest", plot=False)
-if len(crps_rad)==5 and len(crps_box)==5:
+
+crps = stat.crps('sossheig','sla_filtered', nh_radius=30)
+
+if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
     print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+    
+#-----------------------------------------------------------------------------#
+# ( 5c ) Plot geographical CRPS                                               #
+#                                                                             #
+subsec = subsec+1
+plt.close('all')
+try:
+    fig, ax = crps.map_plot()
+    fig.savefig(dn_fig + 'crps_map_plot.png')
+    #plt.close(fig)
+    print(str(sec) + chr(subsec) + " OK - CRPS Map plot saved")
+except:
+    print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
+    
+#-----------------------------------------------------------------------------#
+# ( 5d ) Plot CDF comparisons for CRPS                                        #
+#                                                                             #
+subsec = subsec+1
+plt.close('all')
+try:
+    fig, ax = crps.cdf_plot(0)
+    fig.savefig(dn_fig + 'crps_cdf_plot.png')
+    #plt.close(fig)
+    print(str(sec) + chr(subsec) + " OK - CRPS CDF plot saved")
+except:
+    print(str(sec) + chr(subsec) + " X - CRPS CDF plot not saved")
+
+#################################################
+## ( 6 ) Plotting Methods                          ##
+#################################################
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 6a ) Altimetry quick_plot()                                               #
+#                                                                             #
+subsec = subsec+1
+plt.close('all')
+
+try:
+    fig, ax = altimetry.quick_plot('sla_filtered')
+    fig.savefig(dn_fig + 'altimetry_quick_plot.png')
+    #plt.close(fig)
+    print(str(sec) + chr(subsec) + " OK - Altimetry quick plot saved")
+except:
+    print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
+    
+plt.close('all')
