@@ -2,7 +2,7 @@ from .COAsT import COAsT
 from .OBSERVATION import OBSERVATION
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 class ALTIMETRY(OBSERVATION):
 
