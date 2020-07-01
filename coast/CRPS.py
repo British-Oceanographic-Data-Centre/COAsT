@@ -1,5 +1,5 @@
 import numpy as np
-import xarray as xa
+import xarray as xr
 from warnings import warn
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
@@ -133,8 +133,9 @@ class CRPS():
             
             # Subset model data in time and space: What is the model doing at
             # observation times?
-            mod_subset = weights[ii][xa.DataArray(subset_indices[0]), 
-                                     xa.DataArray(subset_indices[1])]   
+            mod_subset = weights[ii][xr.DataArray(subset_indices[0]),
+                                     xr.DataArray(subset_indices[1])]
+
             if any(np.isnan(mod_subset)):
                 contains_land[ii] = True
 
