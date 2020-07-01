@@ -138,8 +138,8 @@ class DIAGNOSTICS():
 
 
         # Broadcast to fill out missing (time) dimensions in grid data
-        _, depth_t_4d = xr.broadcast(self.strat, self.depth_t)
-        _, depth_w_4d = xr.broadcast(self.strat, self.depth_w)
+        _, depth_t_4d = xr.broadcast(self.strat, self.domain.depth_t)
+        _, depth_w_4d = xr.broadcast(self.strat, self.domain.depth_w)
         _, e3t_0_4d   = xr.broadcast(self.strat, self.domain.dataset.e3t_0.squeeze())
 
         
