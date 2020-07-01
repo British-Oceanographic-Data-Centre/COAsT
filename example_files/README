@@ -1,0 +1,8 @@
+This folder contains example netCDF data.
+  
+COAsT_example_NEMO_data.nc (25M)
+COAsT_example_NEMO_domain.nc (39M)
+COAsT_example_altimetry_data.nc (600K)
+
+At present the data is in the git repo. Later it will need to be obtained as
+an ftp request from a remote storage location.
