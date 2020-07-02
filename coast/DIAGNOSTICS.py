@@ -73,6 +73,22 @@ class DIAGNOSTICS():
 
         self includes the domain information
         var has an attribute stating the grid.
+
+
+        The derivative is computed as a 1st-order centred difference following the NEMO
+         manual.
+
+        The returned object has dimensions and coordinates names that match the parent.
+
+        The returned object has a undated attributes for its:
+         grid, name, units.
+
+        The dimension sizes are the same as the parent, with a zero at the end value.
+
+        For terrain following coordinates the depth coordinate is a vector of
+         ordered depths. In this case the d/dz inherits depth coordinates are the same
+          as the parent, except the surface value, which is zero.
+
         """
         var_derivative = None
         new_grid = ""
