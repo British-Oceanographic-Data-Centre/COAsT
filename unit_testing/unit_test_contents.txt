@@ -15,7 +15,8 @@
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
     c. Renaming variables inside a COAsT object
-    
+    d. Computing a vertical spatial derivative
+
 3. Transect Methods
     a. Determine and extract transect indices
     b. Transport velocity and depth calculations 
