@@ -93,6 +93,57 @@ class DIAGNOSTICS():
         return difference
 
 
+    def diff_w_r_t(self, var : xr.DataArray, dim='z_dim'):
+        """
+        Differentiate input var with respect to the grid it is on over the
+        given dimension
+
+        return new variable with appropriate attributes:
+            units
+            grid
+            standard_name
+
+        self includes the domain information
+        var has an attribute stating the grid.
+        """
+        var_derivative = None
+        new_grid = ""
+        new_standard_name = ""
+        new_units = ""
+
+        nt = var.sizes['t_dim']
+        nz = var.sizes['z_dim']
+        ny = var.sizes['y_dim']
+        nx = var.sizes['x_dim']
+
+        if (var.attrs['grid'] == 't-grid') and (dim == 'z_dim'):
+            new_grid = 'w-grid'
+            # create new DataArray with the same dimensions as the parent
+            # Crucially have a coordinate value that is appropriate to the target location.
+            blank = xr.DataArray(np.zeros((nt,1,ny,nx)),
+                        coords={ 'deptht': ('z_dim',[0])},
+                        dims=var.dims)
+            # Add blank slice to the 'surface'. Concat over the 'dim' coords
+            diff = xr.concat([blank, var.diff(dim)], dim)
+            diff_ndim, e3w_ndim = xr.broadcast( diff, self.domain.dataset.e3w_0.squeeze() )
+            # Finally compute the derivative
+            var_derivative = diff_ndim / e3w_ndim
+
+        else:
+            print('Not expecting that possibility')
+            pass
+
+        # Define new attributes
+        new_standard_name = 'd('+var._name+')/d('+dim+')'
+        new_units = var.attrs['units']+'/'+'['+dim+' coord units]'
+        # Convert to a xr.DataArray and return
+        return xr.DataArray( var_derivative,
+                            dims=var.dims,
+                            attrs={'grid' : new_grid,
+                                   'units': new_units,
+                                   'standard_name': new_standard_name})
+
+
     def get_stratification(self, var: xr.DataArray ):
         """
         Compute centered vertical difference on T-points
