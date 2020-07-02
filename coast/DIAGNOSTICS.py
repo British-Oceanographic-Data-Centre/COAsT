@@ -127,7 +127,7 @@ class DIAGNOSTICS():
             diff = xr.concat([blank, var.diff(dim)], dim)
             diff_ndim, e3w_ndim = xr.broadcast( diff, self.domain.dataset.e3w_0.squeeze() )
             # Finally compute the derivative
-            var_derivative = diff_ndim / e3w_ndim
+            var_derivative = - diff_ndim / e3w_ndim
 
         else:
             print('Not expecting that possibility')
