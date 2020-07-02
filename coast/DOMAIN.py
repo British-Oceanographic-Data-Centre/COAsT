@@ -169,7 +169,7 @@ class DOMAIN(COAsT):
 
 
 
-    def get_depth( e3t, e3w=None ):
+    def get_depth(self, e3t: np.ndarray, e3w: np.ndarray=None ):
         """
         Returns the depth at t and w points.
         If the w point scale factors are missing an approximation is made.
