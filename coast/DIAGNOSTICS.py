@@ -61,7 +61,7 @@ class DIAGNOSTICS():
                   %(domain.dataset.dims['x_dim'], self.nx))
 
 
-    def diff_w_r_t(self, var : xr.DataArray, dim='z_dim'):
+    def differentiate(self, var : xr.DataArray, dim='z_dim'):
         """
         Differentiate input var with respect to the grid it is on over the
         given dimension

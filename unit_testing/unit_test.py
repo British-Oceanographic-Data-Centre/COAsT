@@ -150,7 +150,7 @@ else:
 #                                                                             #
 subsec = subsec+1
 IT_obj = coast.DIAGNOSTICS(sci, sci_dom)
-dTdz = IT_obj.diff_w_r_t( sci.dataset.temperature , dim='z_dim')
+dTdz = IT_obj.differentiate( sci.dataset.temperature , dim='z_dim')
 
 plt.close('all')
 plt.plot( sci.dataset.temperature[0,:,100,100],
