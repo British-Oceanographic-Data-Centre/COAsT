@@ -41,7 +41,18 @@ class DIAGNOSTICS():
         # This might be generally useful and could be somewhere more accessible?
         self.strat = None
 
+        """
+        # Jeff's original hack job for depth variables
         self.domain.construct_depths_from_spacings() # compute depths on t and w points
+        # Anthony's original numpy method for depth variables
+        self.domain.depth_t, self.domain.depth_w = self.domain.get_depth(
+                                                    self.domain.dataset.e3t_0.values,
+                                                    self.domain.dataset.e3w_0.values)
+        """
+        # xarray method for parsing depth variables:  # --> domain.depth_t , domain.depth_w
+        self.domain.get_depth_as_xr(self.domain.dataset.e3t_0,
+                                    self.domain.dataset.e3w_0)
+
         """
         # These would be generally useful and should be in the NEMO class
         self.depth_t = xr.DataArray( domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
