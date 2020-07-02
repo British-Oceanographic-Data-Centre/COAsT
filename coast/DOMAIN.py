@@ -208,25 +208,24 @@ class DOMAIN(COAsT):
         """
         depth_t = np.ma.empty_like( e3t.values )
         depth_w = np.ma.empty_like( e3t.values )
-        print('shape',np.shape(depth_t))
         depth_w[:,0,:,:] = 0.0
-        depth_w[:,1:,:,:] = np.cumsum( e3t, axis=1 )[:,:-1,:,:]
+        depth_w[:,1:,:,:] = np.cumsum( e3t.values, axis=1 )[:,:-1,:,:]
+
         if e3w is not None:
-            depth_t[:,0,:,:] = 0.5 * e3w[:,0,:,:]
-            depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w[:,1:,:,:], axis=1 )
+            depth_t[:,0,:,:] = 0.5 * e3w.values[:,0,:,:]
+            depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w.values[:,1:,:,:], axis=1 )
         else:
             depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
             depth_t[:,-1,:,:] = np.nan
 
-        depth_t_xr = xr.DataArray( np.ma.masked_invalid(depth_t),
+        self.depth_t = xr.DataArray( np.ma.masked_invalid(depth_t),
                             dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
                             attrs={'grid' : 't',
                                    'units':'m',
                                    'standard_name': 'depth on t-points'})
 
-        depth_w_xr = xr.DataArray( np.ma.masked_invalid(depth_w),
+        self.depth_w = xr.DataArray( np.ma.masked_invalid(depth_w),
                             dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
                             attrs={'grid': 'w',
                                    'units':'m',
                                    'standard_name': 'depth on w-points'})
-        return depth_t_xr, depth_w_xr
