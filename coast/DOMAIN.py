@@ -9,6 +9,8 @@ class DOMAIN(COAsT):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.depth_t = None
+        self.depth_w = None
         return
 
     def set_dimension_mapping(self):
@@ -122,10 +124,11 @@ class DOMAIN(COAsT):
         [j1, i1] = self.find_j_i(start[0], start[1], letter)  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
-        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1))
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
 
         jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
+        
         return jj1, ii1, line_length
 
     def subset_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
@@ -148,3 +151,44 @@ class DOMAIN(COAsT):
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
         return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))
+    
+    # def set_depth_for_enveloping_bathymetry(self, e3t, e3w=None):
+    #     """
+    #     Sets depth_t and depth_w attributes. They are the depth at t and w points for 
+    #     coordinates where the depth of the levels changes at each time step. 
+    #     The scale factors for the t and w points are required to
+    #     calculate this. If the w point scale factors are missing an approximation is made.
+        
+    #     :param e3t: vertical scale factors at t points
+    #     :param e3w: (optional) vertical scale factors at w points.
+    #     :return: None
+    #     """
+    #     depth_t, depth_w = time_dependent_depth( e3t, e3w )
+    #     self.depth_t = depth_t
+    #     self.depth_w = depth_w
+
+
+
+    def get_depth( e3t, e3w=None ):
+        """
+        Returns the depth at t and w points.
+        If the w point scale factors are missing an approximation is made.
+
+        :param e3t: vertical scale factors at t points
+        :param e3w: (optional) vertical scale factors at w points.
+        :return: tuple of 2 4d arrays (time,z_dim,y_dim,x_dim) containing depth at t
+                    and w points respectively
+        """
+
+        depth_t = np.ma.empty_like( e3t )
+        depth_w = np.ma.empty_like( e3t )
+        depth_w[:,0,:,:] = 0.0
+        depth_w[:,1:,:,:] = np.cumsum( e3t, axis=1 )[:,:-1,:,:]
+        if e3w is not None:
+            depth_t[:,0,:,:] = 0.5 * e3w[:,0,:,:]
+            depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w[:,1:,:,:], axis=1 )
+        else:
+            depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
+            depth_t[:,-1,:,:] = np.nan
+
+        return (np.ma.masked_invalid(depth_t), np.ma.masked_invalid(depth_w))    
