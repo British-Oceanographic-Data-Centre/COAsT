@@ -145,6 +145,30 @@ if altimetry['sla_filtered'].equals(altimetry_copy['renamed']):
 else:
     print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
 
+#-----------------------------------------------------------------------------#
+# ( 2d ) Computing a vertical spatial derivative                              #
+#                                                                             #
+subsec = subsec+1
+IT_obj = coast.DIAGNOSTICS(sci, sci_dom)
+dTdz = IT_obj.diff_w_r_t( sci.dataset.temperature , dim='z_dim')
+
+plt.close('all')
+plt.plot( sci.dataset.temperature[0,:,100,100],
+    sci_dom.depth_t[0,:,100,100],'+', label='Temperature [degC]' )
+plt.plot( 1000*dTdz[0,:,100,100],
+    sci_dom.depth_w[0,:,100,100],'+',
+    label='1E3*' + dTdz.standard_name+' ['+dTdz.units+']')
+plt.gca().invert_yaxis()
+plt.yscale('log')
+plt.ylabel('depth (m)')
+plt.legend()
+plt.savefig(dn_fig + 'dTdz_plot.png')
+print(str(sec) +chr(subsec) + " OK - dTdz_plot.png plot saved ")
+
+if (dTdz.grid == 'w-grid') and (dTdz.deptht.values[0] == 0):
+    print(str(sec) +chr(subsec) + " OK - setting derivative attributes ")
+else:
+    print(str(sec) +chr(subsec) + " X - setting derivative attributes failed ")
 
 #################################################
 ## ( 3 ) Test Transect related methods         ##
