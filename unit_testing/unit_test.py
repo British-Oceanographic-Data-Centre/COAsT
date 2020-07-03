@@ -114,7 +114,6 @@ else:
 # ( 1e ) Set NEMO variable name                                          #
 #
 subsec = subsec+1
-sci_load_ds.dims
 sci = coast.NEMO(dn_files + fn_nemo_dat)
 try:
     sci.dataset.temperature
