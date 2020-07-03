@@ -221,7 +221,7 @@ subsec = 96
 subsec = subsec+1
 
 # Extact the variable
-data_t =  sci.get_subset_as_xarray("votemper", xt_ref, yt_ref)
+data_t =  sci.get_subset_as_xarray("temperature", xt_ref, yt_ref)
 
 # Test shape and exteme values
 
