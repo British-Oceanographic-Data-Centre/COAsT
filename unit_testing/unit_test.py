@@ -110,6 +110,37 @@ if sci_load_ds.dataset.identical(sci_load_file.dataset):
 else:
     print(str(sec) + chr(subsec) + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()")
 
+#-----------------------------------------------------------------------------#
+# ( 1e ) Set NEMO variable name                                          #
+#
+subsec = subsec+1
+sci_load_ds.dims
+sci = coast.NEMO(dn_files + fn_nemo_dat)
+try:
+    sci.dataset.temperature
+except NameError:
+    print(str(sec) + chr(subsec) + " X - variable name (to temperature) not reset")
+else:
+    print(str(sec) + chr(subsec) + " OK - variable name reset (to temperature)")
+
+#-----------------------------------------------------------------------------#
+# ( 1f ) Set NEMO grid attributes - dimension names                                          #
+#
+subsec = subsec+1
+if sci.dataset.temperature.dims == ('t_dim', 'z_dim', 'y_dim', 'x_dim'):
+    print(str(sec) + chr(subsec) + " OK - dimension names reset")
+else:
+    print(str(sec) + chr(subsec) + " X - dimension names not reset")
+
+#-----------------------------------------------------------------------------#
+# ( 1g ) Set NEMO grid attributes - grid_ref                                         #
+#
+subsec = subsec+1
+if sci.dataset.temperature.grid_ref == 't-grid':
+    print(str(sec) + chr(subsec) + " OK - grid attribute set")
+else:
+    print(str(sec) + chr(subsec) + " X - grid attribute not set")
+
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
