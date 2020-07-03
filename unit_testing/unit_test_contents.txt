@@ -6,8 +6,11 @@
     a. Loading NEMO data file
     b. Loading NEMO domain file
     c. Loading Altimetry file
-    d. Load data from existing dataset 
-    
+    d. Load data from existing dataset
+    e. Set NEMO variable name
+    f. Set NEMO grid attribute - dimension names
+    g. Set NEMO grid attribute - grid_ref
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
