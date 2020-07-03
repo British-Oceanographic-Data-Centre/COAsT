@@ -18,7 +18,7 @@ class COAsT:
         self.earth_raids = 6371.007176 # Radius of the earth in km
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        self.set_grid_attributes()
+        self.set_grid_ref_attr()
         if file is None:
             print("Object created but no file or directory specified: " + 
                   str(self) + " \n" +
@@ -50,7 +50,7 @@ class COAsT:
         self.dataset = xr.open_dataset(file, chunks=chunks)
         self.set_dimension_names(self.dim_mapping)
         self.set_variable_names(self.var_mapping)
-        self.set_variable_grid_attributes(self.grid_attr_mapping)
+        self.set_variable_grid_ref_attribute(self.grid_ref_attr_mapping)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
         """ Loads multiple files from directory into dataset variable. """
@@ -59,7 +59,7 @@ class COAsT:
             combine="by_coords", compat='override')
         self.set_dimension_names(self.dim_mapping)
         self.set_variable_names(self.var_mapping)
-        self.set_variable_grid_attributes(self.grid_attr_mapping)
+        self.set_variable_grid_ref_attribute(self.grid_ref_attr_mapping)
 
     def load_dataset(self, dataset):
         """        
@@ -74,9 +74,9 @@ class COAsT:
         
     def set_variable_mapping(self):
         self.var_mapping = None
-        
-    def set_grid_attributes(self):
-        self.grid_attr_mapping = None
+
+    def set_grid_ref_attr(self):
+        self.grid_ref_attr_mapping = None
 
     def set_dimension_names(self, dim_mapping: dict):
         """ 
@@ -111,19 +111,19 @@ class COAsT:
             except:
                 print(str(self) + ': Problem renaming variable: ' + 
                       key + ' -> ' + value)
-        
-    def set_variable_grid_attributes(self, grid_attr_mapping: dict):
+
+    def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
         Set attributes for variables to access within package.
         Set grid attributes to identify with grid variable is associated with.
         """
-        if grid_attr_mapping is None: return
-        for key, value in grid_attr_mapping.items():
+        if grid_ref_attr_mapping is None: return
+        for key, value in grid_ref_attr_mapping.items():
             try:
-                self.dataset[key].attrs['grid'] = value
+                self.dataset[key].attrs['grid_ref'] = value
             except:
                 print(str(self) + ': Problem assigning ' + key +
-                        'grid attribute ' + value)
+                        'grid_ref attribute ' + value)
 
     def copy(self):
         return copy.copy(self)
