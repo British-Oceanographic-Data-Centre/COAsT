@@ -22,16 +22,14 @@ class NEMO(COAsT):
                             'temp' : 'temperature'}
         #self.var_mapping = None
 
-    def set_grid_attributes(self):
-        self.grid_attr_mapping = {'temperature' : 't-grid',
+    def set_grid_ref_attr(self):
+        self.grid_ref_attr_mapping = {'temperature' : 't-grid',
                                 'coast_name_for_u_velocity' : 'u-grid',
                                 'coast_name_for_v_velocity' : 'v-grid',
                                 'coast_name_for_w_velocity' : 'w-grid',
                                 'coast_name_for_vorticity'  : 'f-grid' }
-        #self.grid_attr_mapping = None
+        #self.grid_ref_attr_mapping = None
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
-    
-    
