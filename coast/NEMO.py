@@ -11,7 +11,7 @@ class NEMO(COAsT):
     #    super().__init__(*args, **kwargs)
     #    return
     
-    def __init__(self, fn_data, fn_domain=None, grid_ref='t',
+    def __init__(self, fn_data, fn_domain=None, grid_ref='t-grid',
                  chunks: dict=None, multiple=False,
                  workers=2, threads=2, memory_limit_per_worker='2GB'):
         self.dataset = None
@@ -29,7 +29,6 @@ class NEMO(COAsT):
                   " will be available")
         else:
             dataset_domain = self.load_domain(fn_domain, chunks)
-            self.tmp = dataset_domain
             self.merge_domain_into_dataset(dataset_domain)
             
     def set_dimension_mapping(self):
@@ -42,6 +41,7 @@ class NEMO(COAsT):
         self.var_mapping = {'time_counter':'time',
                             'votemper' : 'temperature',
                             'temp' : 'temperature'}
+        # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0', 
                                    'glamt':'glam', 'glamu':'glam', 
                                    'glamv':'glam','glamf':'glam',
@@ -69,12 +69,16 @@ class NEMO(COAsT):
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
         
         # Define grid specific variables to pull across
-        if self.grid_ref == 'u': 
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'e3uw_0']
-        elif self.grid_ref == 'v': 
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'e3vw_0']
-        elif self.grid_ref == 't': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0']    
+        if self.grid_ref == 'u-grid': 
+            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0'] #What about e3vw
+        elif self.grid_ref == 'v-grid': 
+            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0']
+        elif self.grid_ref == 't-grid': 
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0']
+        elif self.grid_ref == 'w-grid': 
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0']
+        elif self.grid_ref == 'f-grid': 
+            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0']  
             
         # Rename dimensions
         for key, value in self.dim_mapping_domain.items():
