@@ -10,3 +10,4 @@ COAsT/__pycache__/
 COAsT.egg-info/
 
 *.png
+COAsT/example_files/*.nc
