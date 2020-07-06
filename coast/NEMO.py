@@ -6,10 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class NEMO(COAsT):
-
-    #def __init__(self, *args, **kwargs):
-    #    super().__init__(*args, **kwargs)
-    #    return
     
     def __init__(self, fn_data, fn_domain=None, grid_ref='t-grid',
                  chunks: dict=None, multiple=False,
@@ -43,10 +39,10 @@ class NEMO(COAsT):
                             'temp' : 'temperature'}
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0', 
-                                   'glamt':'glam', 'glamu':'glam', 
-                                   'glamv':'glam','glamf':'glam',
-                                   'gphit':'gphi', 'gphiu':'gphi', 
-                                   'gphiv':'gphi', 'gphiv':'gphi',
+                                   'glamt':'longitude', 'glamu':'longitude', 
+                                   'glamv':'longitude','glamf':'longitude',
+                                   'gphit':'latitude', 'gphiu':'latitude', 
+                                   'gphiv':'latitude', 'gphiv':'latitude',
                                    'e1t':'e1', 'e1u':'e1', 
                                    'e1v':'e1', 'e1f':'e1',
                                    'e2t':'e2', 'e2u':'e2', 
@@ -64,6 +60,7 @@ class NEMO(COAsT):
    
     def merge_domain_into_dataset(self, dataset_domain):
         ''' Merge domain dataset variables into self.dataset, using grid_ref'''
+        
         # Define grid independent variables to pull across
         not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
@@ -89,31 +86,26 @@ class NEMO(COAsT):
             
         all_vars = grid_vars + not_grid_vars
             
-        # Create temporary dummy dataset with grid specific variables
-        #try:
-        #    tmp_dataset = dataset_domain[grid_vars]
-        #except:
-        #    raise Exception('Necessary variables not found in domain file.')
-        
-        # Pull across grid independent variables into tmp dataset 1 by 1
         for var in all_vars:
             try:
-                #tmp_dataset = xr.merge([tmp_dataset, dataset_domain[varii]])
                 new_name = self.var_mapping_domain[var]
                 self.dataset[new_name] = dataset_domain[var].squeeze()
             except:
                 pass
             
-        # Rename variables in dummy dataset
-        #for key, value in self.var_mapping_domain.items():
-        #    try:
-        #        #tmp_dataset = tmp_dataset.rename_vars({ key : value })
-        #        self.dataset[value] = tmp_dataset[key]
-        #    except:
-        #        pass
-            
-        # Merge temporary dataset into original dataset
-        #self.dataset = xr.merge([self.dataset, tmp_dataset])
+        # Reset & set specified coordinates
+        coord_vars = ['longitude', 'latitude', 'time', 'deptht']
+        self.dataset = self.dataset.reset_coords()
+        self.dataset = self.dataset.set_coords(coord_vars)
+        
+        # Delete specified variables
+        delete_vars = ['nav_lat', 'nav_lon']
+        for var in delete_vars:
+            try:
+                self.dataset = self.dataset.drop(var)
+            except:
+                pass
+        
 
     def __getitem__(self, name: str):
         return self.dataset[name]
