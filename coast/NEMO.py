@@ -96,19 +96,21 @@ class NEMO(COAsT):
         # Pull across grid independent variables into tmp dataset 1 by 1
         for varii in not_grid_vars:
             try:
-                tmp_dataset = xr.merge([tmp_dataset, dataset_domain[varii]])
+                #tmp_dataset = xr.merge([tmp_dataset, dataset_domain[varii]])
+                tmp_dataset[varii] = dataset_domain[varii]
             except:
                 pass
             
         # Rename variables in dummy dataset
         for key, value in self.var_mapping_domain.items():
             try:
-                tmp_dataset = tmp_dataset.rename_vars({ key : value })
+                #tmp_dataset = tmp_dataset.rename_vars({ key : value })
+                self.dataset[value] = tmp_dataset[key]
             except:
                 pass
             
         # Merge temporary dataset into original dataset
-        self.dataset = xr.merge([self.dataset, tmp_dataset])
+        #self.dataset = xr.merge([self.dataset, tmp_dataset])
 
     def __getitem__(self, name: str):
         return self.dataset[name]
