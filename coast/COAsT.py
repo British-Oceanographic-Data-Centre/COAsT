@@ -18,7 +18,7 @@ class COAsT:
         self.earth_raids = 6371.007176 # Radius of the earth in km
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        self.set_grid_ref_attr()
+        #self.set_grid_ref_attr()
         if file is None:
             print("Object created but no file or directory specified: " + 
                   str(self) + " \n" +
@@ -48,18 +48,12 @@ class COAsT:
     def load_single(self, file, chunks: dict = None):
         """ Loads a single file into COAsT object's dataset variable. """
         self.dataset = xr.open_dataset(file, chunks=chunks)
-        self.set_dimension_names(self.dim_mapping)
-        self.set_variable_names(self.var_mapping)
-        self.set_variable_grid_ref_attribute(self.grid_ref_attr_mapping)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
         """ Loads multiple files from directory into dataset variable. """
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, 
             combine="by_coords", compat='override')
-        self.set_dimension_names(self.dim_mapping)
-        self.set_variable_names(self.var_mapping)
-        self.set_variable_grid_ref_attribute(self.grid_ref_attr_mapping)
 
     def load_dataset(self, dataset):
         """        
