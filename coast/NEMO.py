@@ -58,6 +58,14 @@ class NEMO(COAsT):
         # Load xarrat dataset
         dataset_domain = xr.open_dataset(fn_domain)
         self.domain_loaded = True
+        # Rename dimensions
+        for key, value in self.dim_mapping_domain.items():
+            try:
+                dataset_domain = dataset_domain.rename_dims({ key : value })
+            except:
+                print('pass: {}: {}', key, value)
+                pass
+
         return dataset_domain
    
     def merge_domain_into_dataset(self, dataset_domain):
@@ -78,13 +86,6 @@ class NEMO(COAsT):
             grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0']
         elif self.grid_ref == 'f-grid': 
             grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0']  
-            
-        # Rename dimensions
-        for key, value in self.dim_mapping_domain.items():
-            try:
-                dataset_domain = dataset_domain.rename_dims({ key : value })
-            except:
-                pass
             
         all_vars = grid_vars + not_grid_vars
             
