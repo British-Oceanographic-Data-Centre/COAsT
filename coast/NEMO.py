@@ -65,7 +65,7 @@ class NEMO(COAsT):
     def merge_domain_into_dataset(self, dataset_domain):
         ''' Merge domain dataset variables into self.dataset, using grid_ref'''
         # Define grid independent variables to pull across
-        not_grid_vars = ['time_counter', 'jpiglo', 'jpjglo','jpkglo','jperio',
+        not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
         
         # Define grid specific variables to pull across
@@ -87,27 +87,30 @@ class NEMO(COAsT):
             except:
                 pass
             
+        all_vars = grid_vars + not_grid_vars
+            
         # Create temporary dummy dataset with grid specific variables
-        try:
-            tmp_dataset = dataset_domain[grid_vars]
-        except:
-            raise Exception('Necessary variables not found in domain file.')
+        #try:
+        #    tmp_dataset = dataset_domain[grid_vars]
+        #except:
+        #    raise Exception('Necessary variables not found in domain file.')
         
         # Pull across grid independent variables into tmp dataset 1 by 1
-        for varii in not_grid_vars:
+        for var in all_vars:
             try:
                 #tmp_dataset = xr.merge([tmp_dataset, dataset_domain[varii]])
-                tmp_dataset[varii] = dataset_domain[varii]
+                new_name = self.var_mapping_domain[var]
+                self.dataset[new_name] = dataset_domain[var].squeeze()
             except:
                 pass
             
         # Rename variables in dummy dataset
-        for key, value in self.var_mapping_domain.items():
-            try:
-                #tmp_dataset = tmp_dataset.rename_vars({ key : value })
-                self.dataset[value] = tmp_dataset[key]
-            except:
-                pass
+        #for key, value in self.var_mapping_domain.items():
+        #    try:
+        #        #tmp_dataset = tmp_dataset.rename_vars({ key : value })
+        #        self.dataset[value] = tmp_dataset[key]
+        #    except:
+        #        pass
             
         # Merge temporary dataset into original dataset
         #self.dataset = xr.merge([self.dataset, tmp_dataset])
