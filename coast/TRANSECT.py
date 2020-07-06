@@ -53,12 +53,13 @@ class Transect:
         self.y_idx = tran_y
         self.x_idx = tran_x
         self.len = len(tran_y)
+        self.data = xr.Dataset()
         self.normal_velocities = None
         self.depth_integrated_transport_across_AB = None # (time,transect_segment_index)
         
         # dataset along the transect
-        da_tran_y = xr.DataArray( tran_y, dims=['transect_dim'])
-        da_tran_x = xr.DataArray( tran_x, dims=['transect_dim'])
+        da_tran_y = xr.DataArray( tran_y, dims=['s_dim_f_grid'])
+        da_tran_x = xr.DataArray( tran_x, dims=['s_dim_f_grid'])
         self.data_T = dataset_T.dataset.isel(y=da_tran_y, x=da_tran_x)
         self.data_U = dataset_U.dataset.isel(y=da_tran_y, x=da_tran_x)
         self.data_V = dataset_V.dataset.isel(y=da_tran_y, x=da_tran_x)
@@ -129,7 +130,8 @@ class Transect:
         
         velocity = np.ma.zeros(np.shape(self.data_U.vozocrtx))
         vol_transport = np.ma.zeros(np.shape(self.data_U.vozocrtx))
-        depth_integrated_transport = np.ma.zeros( np.shape(self.data_U.vozocrtx[:,0,:] ))        
+        depth_integrated_transport = np.ma.zeros( np.shape(self.data_U.vozocrtx[:,0,:] )) 
+        depth = np.ma.zeros(np.shape(self.data_U.vozocrtx))
         
         dy = np.diff(self.y_idx)
         dx = np.diff(self.x_idx)
@@ -141,22 +143,44 @@ class Transect:
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e2u[0,idx+1].to_masked_array() *
                                           self.data_U.e3u[:,:,idx+1].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                # To be updated once s-coordinate depth calculation complete following redesign of classes
+                depth[:,:,idx] = self.domain.depth_t_0[:,:,idx+1]
             elif dx[idx] > 0:
                 # v flux (- in) 
                 velocity[:,:,idx] = - self.data_V.vomecrty[:,:,idx+1].to_masked_array()
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e1v[0,idx+1].to_masked_array() *
                                           self.data_V.e3v[:,:,idx+1].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                # To be updated once s-coordinate depth calculation complete following redesign of classes
+                depth[:,:,idx] = self.domain.depth_t_0[:,:,idx+1]
             elif dx[idx] < 0:
                 # v flux (+ in)
                 velocity[:,:,idx] = self.data_V.vomecrty[:,:,idx].to_masked_array()
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.domain.e1v[0,idx].to_masked_array() *
                                           self.data_V.e3v[:,:,idx].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                # To be updated once s-coordinate depth calculation complete following redesign of classes
+                depth[:,:,idx] = self.domain.depth_t_0[:,:,idx]
         
-        self.normal_velocities = velocity
-        self.depth_integrated_transport_across_AB = depth_integrated_transport / 1000000.
-        return ( self.normal_velocities, self.depth_integrated_transport_across_AB )  
+        coordinates = {'time_dim': self.data_U.time_counter.values, 'z_dim': self.domain.z.values,
+                       's_dim_normal_velocity_grid': np.arange(0,self.len-1)}
+        dimensions = ['time_dim', 'z_dim', 's_dim_normal_velocity_grid']
+        
+        self.data = self.data.assign( normal_velocities = 
+                        xr.DataArray( velocity[:,:,:-1], coords=coordinates, dims=dimensions ) )
+        
+        self.data = self.data.assign( depth = 
+                                     xr.DataArray( depth[:,:,:-1], coords=coordinates, dims=dimensions ) )
+    
+        coordinates = {'time_dim': self.data_U.time_counter.values, 
+                       's_dim_normal_velocity_grid': np.arange(0,self.len-1)}
+        dimensions = ['time_dim', 's_dim_normal_velocity_grid']
+        self.data = self.data.assign( depth_integrated_transport_across_AB = 
+                                    xr.DataArray( depth_integrated_transport[:,:-1] / 1000000., 
+                                    coords=coordinates, dims=dimensions ) )
+                
+        
+        return ( self.data.normal_velocities, self.data.depth_integrated_transport_across_AB )  
     
 
     def moving_average(self, array_to_smooth, window=5, axis=-1):
@@ -187,60 +211,94 @@ class Transect:
         if interpolated_depth is None:
             interpolated_depth = np.arange(0, np.nanmax(depth), 2)
             
-        interpolated_depth_variable_slice = np.zeros( (len(interpolated_depth), self.len) )
-        for i in np.arange(0, self.len ):
+        interpolated_depth_variable_slice = np.zeros( (len(interpolated_depth), variable_slice.shape[-1]) )
+        for i in np.arange(0, variable_slice.shape[-1] ):
             depth_func = interpolate.interp1d( depth[:,i], variable_slice[:,i], axis=0, bounds_error=False )        
             interpolated_depth_variable_slice[:,i] = depth_func( interpolated_depth )
             
         return (interpolated_depth_variable_slice, interpolated_depth )
     
-    def spatial_slice_plot(self, variable_slice, depth, smoothing_window=0, diverging_colorbar=True, colorbarlabel:str=None,
-                           title:str=None):  
+    
+    def plot_normal_velocity(self, time, plot_info: dict, cmap, smoothing_window=0):  
         '''
-            Quick plot routine of a variable along the transect. The variable is regridded onto uniformaly spaced
-            vertical coordinates. An option is provided to smooth the regridded variables along the transect. The
-            diverging colorbar option will centre the colorbar at zero.
+            Quick plot routine of velocity across the transect AB at a specific time.
+            An option is provided to smooth the velocities along the transect.
     
         Parameters
         ---------------
-        variable_slice: variable at a single time with dimensions (z_dim, transect_dim)
-        depth: the depth field at each point
+        time: either as integer index or actual time as a string.
+        plot_info: dictionary of infomation {'fig_size': value, 'title': value, 'vmin':value, 'vmax':value}
+        Note that if vmin and max are not set then the colourbar will be centred at zero
         smoothing_window: smoothing via convolusion, larger number applies greater smoothing
-        diverging_colorbar: True sets the colorbar limits to centre zero with a diverging colormap
+
         
         '''
+        try:
+            data = self.data.sel(time_dim = time)
+        except KeyError:
+            data = self.data.isel(time_dim = time)        
         
-        interpolated_depth_variable_slice, interpolated_depth = self.interpolate_slice(variable_slice, depth)
-        interpolated_depth_variable_slice = self.moving_average(interpolated_depth_variable_slice, smoothing_window, axis=-1)
-        ss,zz = np.meshgrid(interpolated_depth, np.arange(0,np.shape(interpolated_depth_variable_slice)[1]))
-        fig,ax=plt.subplots()
-        if diverging_colorbar:
-            lim = np.nanmax(np.abs(interpolated_depth_variable_slice))
-            pcol = ax.pcolormesh( zz,ss, np.transpose(interpolated_depth_variable_slice),cmap='seismic',vmin=-lim,vmax=lim)
+        if smoothing_window != 0:
+            normal_velocities_in, depth = self.interpolate_slice( data.normal_velocities, data.depth )            
+            normal_velocities = self.moving_average(normal_velocities_in, smoothing_window, axis=-1)
+            s_dim_2d = np.broadcast_to( data.s_dim_normal_velocity_grid, normal_velocities.shape  )
         else:
-            pcol = ax.pcolormesh( zz,ss, np.transpose(interpolated_depth_variable_slice),cmap='jet')
+            normal_velocities = data.normal_velocities
+            depth = data.depth
+            _ , s_dim_2d = xr.broadcast( depth, data.s_dim_normal_velocity_grid  )
+                    
         
-        CB = plt.colorbar(pcol)
-        CB.ax.set_ylabel(colorbarlabel)
-        ax.set_ylabel("Depth (m)")
-        ax.set_title(title)
-        ax.set_xticks([0,variable_slice.shape[1]])
-        ax.set_xticklabels(['A','B'])        
+        fig = plt.figure()
+        plt.rcParams['figure.figsize'] = plot_info['fig_size']
+
+        ax = fig.add_subplot(411)
+        plt.pcolormesh(s_dim_2d, depth, normal_velocities, cmap=cmap)
+            
+        plt.title(plot_info['title'])
+        plt.ylabel('Depth [m]')
+        try:
+            plt.clim(vmin=plot_info['vmin'], vmax=plot_info['vmax'])
+        except KeyError:
+            lim = np.nanmax(np.abs(normal_velocities))
+            plt.clim(vmin=-lim, vmax=lim)
+        plt.xticks([0,data.s_dim_normal_velocity_grid.values[-1]],['A','B'])
+        plt.colorbar(label='Velocities across AB [m/s]')
         plt.gca().invert_yaxis()
+
+        return plt
         
     
-    def transect_line_plot(self, variable, smoothing_window=0, y_label:str=None,
-                           title:str=None):
+    def plot_depth_integrated_transport(self, time, plot_info: dict, smoothing_window=0):
         '''
-        A simple line plot of the variable at a single time along the transect. Smoothing can be applied
-        via convolusion, where a larger number applies greater smoothing.
+            Quick plot routine of depth integrated transport across the transect AB at a specific time.
+            An option is provided to smooth along the transect via convolution.
+    
+        Parameters
+        ---------------
+        time: either as integer index or actual time as a string.
+        plot_info: dictionary of infomation {'fig_size': value, 'title': value}
+        smoothing_window: smoothing via convolusion, larger number applies greater smoothing
+        returns: pyplot object
+        '''
+        try:
+            data = self.data.sel(time_dim = time)
+        except KeyError:
+            data = self.data.isel(time_dim = time)            
+        
+        if smoothing_window != 0    
+            transport = self.moving_average(data.depth_integrated_transport_across_AB, smoothing_window, axis=-1)
+        else:
+            transport = data.depth_integrated_transport_across_AB
+        
+        fig = plt.figure()
+        plt.rcParams['figure.figsize'] = plot_info['fig_size']
 
-        '''
-        fig,ax = plt.subplots()
-        ax.plot(self.moving_average(variable, smoothing_window))
-        ax.set_xticks([0,len(variable)])
-        ax.set_xticklabels(['A','B'])
-        ax.set_ylabel(y_label)
-        ax.set_title(title)
+        ax = fig.add_subplot(411)
+        plt.plot( data.s_dim_normal_velocity_grid, transport )
+
+        plt.title(plot_info['title'])
+        plt.xticks([0,data.s_dim_normal_velocity_grid.values[-1]],['A','B'])
+        plt.ylabel('Volume transport across AB [SV]')
+        return plt
         
         
