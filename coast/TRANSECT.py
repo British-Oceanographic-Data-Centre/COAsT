@@ -3,7 +3,7 @@ from scipy.ndimage import convolve1d
 from scipy import interpolate
 import xarray as xr
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 # =============================================================================
 # The TRANSECT module is a place for code related to transects only
@@ -223,13 +223,17 @@ class Transect:
         '''
             Quick plot routine of velocity across the transect AB at a specific time.
             An option is provided to smooth the velocities along the transect.
+            NOTE: For smoothing use even integers to smooth the x and y velocities together
+    
+    
     
         Parameters
         ---------------
         time: either as integer index or actual time as a string.
         plot_info: dictionary of infomation {'fig_size': value, 'title': value, 'vmin':value, 'vmax':value}
         Note that if vmin and max are not set then the colourbar will be centred at zero
-        smoothing_window: smoothing via convolusion, larger number applies greater smoothing
+        smoothing_window: smoothing via convolusion, larger number applies greater smoothing, recommended
+        to use even integers
 
         
         '''
@@ -247,11 +251,11 @@ class Transect:
             depth = data.depth
             _ , s_dim_2d = xr.broadcast( depth, data.s_dim_normal_velocity_grid  )
                     
-        
-        fig = plt.figure()
-        plt.rcParams['figure.figsize'] = plot_info['fig_size']
+        import matplotlib.pyplot as plt
+        plt.close('all')
+        fig = plt.figure(figsize=plot_info['fig_size'])
+        ax = fig.gca()
 
-        ax = fig.add_subplot(411)
         plt.pcolormesh(s_dim_2d, depth, normal_velocities, cmap=cmap)
             
         plt.title(plot_info['title'])
@@ -265,19 +269,22 @@ class Transect:
         plt.colorbar(label='Velocities across AB [m/s]')
         plt.gca().invert_yaxis()
 
-        return plt
+        plt.show()
+        return fig,ax
         
     
     def plot_depth_integrated_transport(self, time, plot_info: dict, smoothing_window=0):
         '''
             Quick plot routine of depth integrated transport across the transect AB at a specific time.
-            An option is provided to smooth along the transect via convolution.
+            An option is provided to smooth along the transect via convolution, 
+            NOTE: For smoothing use even integers to smooth the x and y velocities together
     
         Parameters
         ---------------
         time: either as integer index or actual time as a string.
         plot_info: dictionary of infomation {'fig_size': value, 'title': value}
-        smoothing_window: smoothing via convolusion, larger number applies greater smoothing
+        smoothing_window: smoothing via convolusion, larger number applies greater smoothing. 
+        Recommended to use even integers.
         returns: pyplot object
         '''
         try:
@@ -285,20 +292,22 @@ class Transect:
         except KeyError:
             data = self.data.isel(time_dim = time)            
         
-        if smoothing_window != 0    
+        if smoothing_window != 0:    
             transport = self.moving_average(data.depth_integrated_transport_across_AB, smoothing_window, axis=-1)
         else:
             transport = data.depth_integrated_transport_across_AB
         
-        fig = plt.figure()
-        plt.rcParams['figure.figsize'] = plot_info['fig_size']
+        import matplotlib.pyplot as plt
+        plt.close('all')
+        fig = plt.figure(figsize=plot_info['fig_size'])
+        ax = fig.gca()
 
-        ax = fig.add_subplot(411)
         plt.plot( data.s_dim_normal_velocity_grid, transport )
 
         plt.title(plot_info['title'])
         plt.xticks([0,data.s_dim_normal_velocity_grid.values[-1]],['A','B'])
         plt.ylabel('Volume transport across AB [SV]')
-        return plt
+        plt.show()
+        return fig,ax
         
         
