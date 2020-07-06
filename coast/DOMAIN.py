@@ -46,7 +46,7 @@ class DOMAIN(COAsT):
         dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
 
         # Reshape distance array back to original 2-dimensional form
-        # nemo_dist = xa.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
+        # nemo_dist = xr.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
 
         # Get boolean array where the distance is less than the specified radius
         # using np.where
