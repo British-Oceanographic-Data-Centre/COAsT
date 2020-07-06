@@ -112,9 +112,9 @@ class CRPS():
         contains_land = np.zeros( n_nh , dtype=bool)
         
         # Time interpolation weights object
-        weights = interpolate_along_dimension(mod_var, 
-                                              obs_var['time'], 'time_counter', 
-                                              method = time_interp)
+#        weights = interpolate_along_dimension(mod_var, 
+#                                              obs_var['time'], 't_dim', 
+#                                              method = time_interp)
         
         nh_indices = np.arange(0,n_nh)
         
@@ -133,7 +133,8 @@ class CRPS():
             
             # Subset model data in time and space: What is the model doing at
             # observation times?
-            mod_subset = weights[ii][xr.DataArray(subset_indices[0]),
+            mod_subset = mod_var.interp(t_dim=obs_var['time'][ii])
+            mod_subset = mod_var[xr.DataArray(subset_indices[0]),
                                      xr.DataArray(subset_indices[1])]
 
             if any(np.isnan(mod_subset)):
