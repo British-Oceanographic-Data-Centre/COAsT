@@ -1,5 +1,5 @@
 from .COAsT import COAsT
-import xarray as xa
+import xarray as xr
 import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz

@@ -1,7 +1,7 @@
 from .COAsT import COAsT
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 class OBSERVATION(COAsT):
 
