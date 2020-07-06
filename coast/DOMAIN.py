@@ -1,7 +1,7 @@
 from .COAsT import COAsT
 from warnings import warn
 import numpy as np
-import xarray as xa
+import xarray as xr
 
 
 class DOMAIN(COAsT):
@@ -9,8 +9,10 @@ class DOMAIN(COAsT):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.depth_t = None
-        self.depth_w = None
+        # Get depths at time zero
+        self.set_timezero_depth()
+
+
         return
 
     def set_dimension_mapping(self):
@@ -98,7 +100,7 @@ class DOMAIN(COAsT):
 
         internal_lat = f"gphi{grid_ref}"
         internal_lon = f"glam{grid_ref}"
-        dist2 = xa.ufuncs.square(self.dataset[internal_lat] - lat) + xa.ufuncs.square(self.dataset[internal_lon] - lon)
+        dist2 = xr.ufuncs.square(self.dataset[internal_lat] - lat) + xr.ufuncs.square(self.dataset[internal_lon] - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
@@ -151,44 +153,22 @@ class DOMAIN(COAsT):
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
         return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))
-    
-    # def set_depth_for_enveloping_bathymetry(self, e3t, e3w=None):
-    #     """
-    #     Sets depth_t and depth_w attributes. They are the depth at t and w points for 
-    #     coordinates where the depth of the levels changes at each time step. 
-    #     The scale factors for the t and w points are required to
-    #     calculate this. If the w point scale factors are missing an approximation is made.
+
+    def set_timezero_depth(self):
+        """
+        Sets the depths at time zero along the vertical t and w levels. 
+        Added to self.dataset.depth_t_0 and self.dataset.depth_w_0
+
+        """
         
-    #     :param e3t: vertical scale factors at t points
-    #     :param e3w: (optional) vertical scale factors at w points.
-    #     :return: None
-    #     """
-    #     depth_t, depth_w = time_dependent_depth( e3t, e3w )
-    #     self.depth_t = depth_t
-    #     self.depth_w = depth_w
+        depth_t = np.zeros_like( self.dataset.e3w_0 )  
+        depth_t[:,0,:,:] = 0.5 * self.dataset.e3w_0[:,0,:,:]    
+        depth_t[:,1:,:,:] = depth_t[:,0,:,:] + np.cumsum( self.dataset.e3w_0[:,1:,:,:], axis=1 ) 
+        self.dataset['depth_t_0'] = xr.DataArray(depth_t, dims=self.dataset.e3w_0.dims)
         
+        depth_w = np.zeros_like( self.dataset.e3t_0 ) 
+        depth_w[:,0,:,:] = 0.0
+        depth_w[:,1:,:,:] = np.cumsum( self.dataset.e3t_0, axis=1 )[:,:-1,:,:]
+        self.dataset['depth_w_0'] = xr.DataArray(depth_w, dims=self.dataset.e3t_0.dims)
 
-
-def get_depth( e3t, e3w=None ):
-    """
-    Returns the depth at t and w points.
-    If the w point scale factors are missing an approximation is made.
-    
-    :param e3t: vertical scale factors at t points
-    :param e3w: (optional) vertical scale factors at w points.
-    :return: tuple of 2 4d arrays (time,z_dim,y_dim,x_dim) containing depth at t
-                and w points respectively
-    """
-
-    depth_t = np.ma.empty_like( e3t ) 
-    depth_w = np.ma.empty_like( e3t ) 
-    depth_w[:,0,:,:] = 0.0
-    depth_w[:,1:,:,:] = np.cumsum( e3t, axis=1 )[:,:-1,:,:]
-    if e3w is not None: 
-        depth_t[:,0,:,:] = 0.5 * e3w[:,0,:,:]    
-        depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w[:,1:,:,:], axis=1 )   
-    else:
-        depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
-        depth_t[:,-1,:,:] = np.nan
-
-    return (np.ma.masked_invalid(depth_t), np.ma.masked_invalid(depth_w))    
+        return
