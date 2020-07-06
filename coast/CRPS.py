@@ -22,7 +22,7 @@ class CRPS():
     '''
     
     def __init__(self, mod_data, mod_dom, obs_object, 
-                 mod_var:str, obs_var:str,
+                 mod_var_str:str, obs_var_str:str,
                  nh_radius: float=111, nh_type: str="radius", 
                  cdf_type: str="empirical", time_interp:str="nearest"):
         """Initialisation of CRPS object.
@@ -51,8 +51,8 @@ class CRPS():
         self.nh_type     = nh_type
         self.cdf_type    = cdf_type
         self.time_interp = time_interp
-        self.mod_var     = mod_var
-        self.obs_var     = obs_var
+        self.mod_var_str = mod_var_str
+        self.obs_var_str = obs_var_str
         self.longitude   = obs_object['longitude']
         self.latitude    = obs_object['latitude']
         # Output variables
@@ -70,10 +70,7 @@ class CRPS():
 
     def calculate(self):
         """Calculate CRPS values for specified variables/methods/radii."""
-        tmp = self.calculate_sonf(self.mod_data[self.mod_var],
-                                  self.mod_dom, self.obs_object[self.obs_var],
-                                  self.nh_radius, self.nh_type, self.cdf_type,
-                                  self.time_interp)
+        tmp = self.calculate_sonf()
         self.crps = tmp[0]
         self.n_model_pts = tmp[1]
         self.contains_land = tmp[2]
@@ -81,8 +78,7 @@ class CRPS():
         self.mean_noland = np.nanmean(tmp[0][tmp[2]==0])
         return 
     
-    def calculate_sonf(self, mod_var, mod_dom, obs_var, 
-                       nh_radius, nh_type, cdf_type, time_interp):
+    def calculate_sonf(self):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
     
         Calculatues the Continuous Ranked Probability Score (CRPS) using
