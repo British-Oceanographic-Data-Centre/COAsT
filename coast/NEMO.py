@@ -125,4 +125,4 @@ class NEMO(COAsT):
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
-        return smaller        return smaller        return smaller        return smaller        return smaller
+        return smaller
