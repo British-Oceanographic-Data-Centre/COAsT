@@ -1,3 +1,4 @@
+from .COAsT import COAsT
 import numpy as np
 import xarray as xr
 from warnings import warn
@@ -5,7 +6,7 @@ import copy
 #from .CRPS import CRPS
 #from .interpolate_along_dimension import interpolate_along_dimension
 
-class DIAGNOSTICS():
+class DIAGNOSTICS(COAsT):
     '''
     Object for handling and storing necessary information, methods and outputs
     for calculation of dynamical diagnostics. The object is
@@ -34,23 +35,15 @@ class DIAGNOSTICS():
         self.domain = domain
 
         # These are bespoke to the internal tide problem
-        self.zt = None
-        self.zd = None
+        self.dataset = nemo.dataset
+        #self.zt = None
+        #self.zd = None
 
         # This might be generally useful and could be somewhere more accessible?
-        self.strat = None
+        #self.strat = None
 
         self.domain.construct_depths_from_spacings() # compute depths on t and w points
-        """
-        # These would be generally useful and should be in the NEMO class
-        self.depth_t = xr.DataArray( domain.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
-        self.depth_t.attrs['units'] = 'm'
-        self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
 
-        self.depth_w = xr.DataArray( domain.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
-        self.depth_w.attrs['units'] = 'm'
-        self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
-        """
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo.dataset.dims['t_dim']
@@ -85,14 +78,14 @@ class DIAGNOSTICS():
         """
         Compute centered vertical difference on T-points
         """
-        self.strat = self.difftpt2tpt( var, dim='z_dim' ) \
+        self.dataset['strat'] = self.difftpt2tpt( var, dim='z_dim' ) \
                     / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
 
         # Add attributes
         if 'standard_name' not in var.attrs.keys(): var.attrs['standard_name'] = '[var]'
         if 'units' not in var.attrs.keys(): var.attrs['units'] = '[var]'
-        self.strat.attrs['units'] = var.units + '/m'
-        self.strat.attrs['standard_name'] = var.standard_name + ' stratification'
+        self.dataset.strat.attrs['units'] = var.units + '/m'
+        self.dataset.strat.attrs['standard_name'] = var.standard_name + ' stratification'
 
 
     def get_density(self, T: xr.DataArray, S: xr.DataArray):
@@ -105,7 +98,7 @@ class DIAGNOSTICS():
         T0 = 10 # degC
         #p0 = 101.3 # dbar
         
-        self.rho = rho0 + alpha*( S - S0 ) + beta*( T - T0 ) #+ k*( p - p0 )
+        self.dataset['rho'] = rho0 + alpha*( S - S0 ) + beta*( T - T0 ) #+ k*( p - p0 )
         
         
 
@@ -127,10 +120,12 @@ class DIAGNOSTICS():
 
         # compute stratification
         #self.get_stratification( self.nemo.dataset.votemper )
-        self.get_stratification( self.nemo.dataset.thetao )
-        
-        print('Using only temperature for stratification at the moment')
-        N2_4d = copy.copy(self.strat)  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
+        #self.get_stratification( self.nemo.dataset.thetao )
+        #print('Using only temperature for stratification at the moment')
+
+        self.get_stratification( self.dataset.rho  ) # --> self.strat
+
+        N2_4d = copy.copy(self.dataset.strat)  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
 
         # Ensure surface value is 0
         N2_4d[:,0,:,:] = 0
@@ -150,9 +145,9 @@ class DIAGNOSTICS():
 
 
         # Broadcast to fill out missing (time) dimensions in grid data
-        _, depth_t_4d = xr.broadcast(self.strat, self.domain.depth_t)
-        _, depth_w_4d = xr.broadcast(self.strat, self.domain.depth_w)
-        _, e3t_0_4d   = xr.broadcast(self.strat, self.domain.dataset.e3t_0.squeeze())
+        _, depth_t_4d = xr.broadcast(self.dataset.strat, self.domain.depth_t)
+        _, depth_w_4d = xr.broadcast(self.dataset.strat, self.domain.depth_w)
+        _, e3t_0_4d   = xr.broadcast(self.dataset.strat, self.domain.dataset.e3t_0.squeeze())
 
         
         # intergrate strat over depth
@@ -170,13 +165,13 @@ class DIAGNOSTICS():
         z_t = xr.ufuncs.sqrt(intz2N2 / intN2)
 
 
-        self.zt = xr.DataArray( z_t )
-        self.zt.attrs['units'] = 'm'
-        self.zt.attrs['standard_name'] = 'pycnocline thickness'
+        self.dataset['zt'] = xr.DataArray( z_t )
+        self.dataset.zt.attrs['units'] = 'm'
+        self.dataset.zt.attrs['standard_name'] = 'pycnocline thickness'
 
-        self.zd = xr.DataArray( z_d )
-        self.zd.attrs['units'] = 'm'
-        self.zd.attrs['standard_name'] = 'pycnocline depth'
+        self.dataset['zd'] = xr.DataArray( z_d )
+        self.dataset.zd.attrs['units'] = 'm'
+        self.dataset.zd.attrs['standard_name'] = 'pycnocline depth'
         
     def quick_plot(self, var : xr.DataArray = None):
         #try:
