@@ -1,11 +1,8 @@
-## internal_tide.py
+## ANChor_plots_of_NSea_pycnocline.py
 """
-Script to demonstrate internal tide diagnostics using the COAsT package.
 
-This is a work in progress, more to demonstrate a concept than an exemplar of
- good coding or even the package's functionality.
-
-This would form the template for HTML tutorials.
+DEV_jelt/NEMO_diag/ANChor
+This needs to move to the above
 """
 
 #%%
@@ -86,9 +83,14 @@ if(1):
 #dom = coast.DOMAIN("/projectsa/accord/BoBEAS/INPUTS/domain_cfg.nc")
 
 #sci = coast.NEMO("/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/AMM60_1d_20100130_20100203_grid_T.nc")
-sci = coast.NEMO("/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/AMM60_1d_20100704_20100708_grid_T.nc") 
+#sci = coast.NEMO("/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/AMM60_1d_20100704_20100708_grid_T.nc") 
+sci = coast.NEMO("/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/AMM60_1d_201007*_grid_T.nc", multiple=True) 
 dom = coast.DOMAIN("/projectsa/FASTNEt/jelt/AMM60/mesh_mask.nc")
-
+#%%
+#ds = xr.open_mfdataset("/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/AMM60_1d_201007*_grid_T.nc")
+#sci_load_ds = coast.NEMO()
+#sci_load_ds.load_dataset(ds)
+#sci = sci_load_ds
 #################################################
 ## subset of data and domain ##
 #################################################
@@ -220,8 +222,7 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 
 cmap = plt.get_cmap('BrBG_r')
 new_cmap = truncate_colormap(cmap, 0.2, 0.8)
-
-import numpy.ma as ma
+new_cmap.set_bad(color = 'grey')
 
 H = IT_obj.domain.depth_t[-1,:,:].squeeze()
 zd = IT_obj.zd.mean(dim='t_dim')
@@ -230,19 +231,17 @@ fig = plt.figure()
 plt.rcParams['figure.figsize'] = (8.0, 8.0)
 
 
-spacing = 15
-
 ax = fig.add_subplot(111)
-#clim = [-10**-6,10**-6]
 cz = plt.contour( lon, lat, H, levels=[11, 80, 200, 800],
             colors=['k','k','k', 'k'],
             linewidths=[1,2,1,1])
-plt.contourf( lon, lat, ma.masked_where(H<11, zd),
+
+plt.pcolormesh( lon, lat, H.where(H > 11), cmap=new_cmap) # grey land
+plt.contourf( lon, lat, zd,
              levels=np.arange(0,40.+10.,10.),
              extend='max',
              cmap=new_cmap)
 plt.clim([0,40.])
-
 
 plt.xlim([-3,11])
 plt.ylim([51,62])
