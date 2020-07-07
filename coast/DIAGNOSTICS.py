@@ -2,7 +2,6 @@ import numpy as np
 import xarray as xr
 from warnings import warn
 import copy
-import matplotlib.pyplot as plt
 #from .CRPS import CRPS
 #from .interpolate_along_dimension import interpolate_along_dimension
 
@@ -80,7 +79,7 @@ class DIAGNOSTICS():
         else:
             print('Not expecting that dimension yet')
         return difference
-
+    
 
     def get_stratification(self, var: xr.DataArray ):
         """
@@ -165,3 +164,31 @@ class DIAGNOSTICS():
         self.zd = xr.DataArray( z_d )
         self.zd.attrs['units'] = 'm'
         self.zd.attrs['standard_name'] = 'pycnocline depth'
+        
+    def quick_plot(self):
+        #try:
+        #    import cartopy.crs as ccrs  # mapping plots
+        #    import cartopy.feature  # add rivers, regional boundaries etc
+        #    from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+        #    from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
+        #except ImportError:
+        #    import sys
+        #    warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+        #    sys.exit(-1)
+            
+        import matplotlib.pyplot as plt
+        #fig = plt.figure(figsize=(10, 10))
+        #ax = fig.gca()
+        #ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+        
+        for var in [self.zt, self.zd]:
+            plt.figure(figsize=(10, 10))
+            plt.pcolormesh( self.domain.dataset.glamt.squeeze(), 
+                           self.domain.dataset.gphit.squeeze(),
+                           var.mean(dim = 't_dim') )
+            plt.title(var.attrs['standard_name'] +  ' (' + var.attrs['units'] + ')')
+            plt.xlabel('longitude')
+            plt.ylabel('latitude')
+            plt.clim([0, 50])
+            plt.colorbar()
+            plt.show()
