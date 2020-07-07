@@ -95,6 +95,19 @@ class DIAGNOSTICS():
         self.strat.attrs['standard_name'] = var.standard_name + ' stratification'
 
 
+    def get_density(self, T: xr.DataArray, S: xr.DataArray):
+        """ Compute a density from temperature, salinity """
+        rho0 = 1027 # kg / m3
+        alpha = 0.78 # kg / m3 / psu
+        beta = 0.15 # kg / m3 / K 
+        #k = 4.5 E-3 # kg / m3 / dbar
+        S0 = 35 # psu
+        T0 = 10 # degC
+        #p0 = 101.3 # dbar
+        
+        self.rho = rho0 + alpha*( S - S0 ) + beta*( T - T0 ) #+ k*( p - p0 )
+        
+        
 
     def get_pyc_vars(self):
         """
@@ -165,7 +178,7 @@ class DIAGNOSTICS():
         self.zd.attrs['units'] = 'm'
         self.zd.attrs['standard_name'] = 'pycnocline depth'
         
-    def quick_plot(self):
+    def quick_plot(self, var : xr.DataArray = None):
         #try:
         #    import cartopy.crs as ccrs  # mapping plots
         #    import cartopy.feature  # add rivers, regional boundaries etc
@@ -181,7 +194,12 @@ class DIAGNOSTICS():
         #ax = fig.gca()
         #ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
         
-        for var in [self.zt, self.zd]:
+        if var is None:
+            var_lst = [self.zt, self.zd]
+        else: 
+            var_lst = var
+            
+        for var in var_lst:
             plt.figure(figsize=(10, 10))
             plt.pcolormesh( self.domain.dataset.glamt.squeeze(), 
                            self.domain.dataset.gphit.squeeze(),
