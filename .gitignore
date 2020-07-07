@@ -12,3 +12,5 @@ COAsT.egg-info/
 *.png
 
 .ipynb_checkpoints/
+
+example_files/*.nc
