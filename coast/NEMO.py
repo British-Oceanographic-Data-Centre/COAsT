@@ -9,6 +9,7 @@ class NEMO(COAsT):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         return
 
     def set_dimension_mapping(self):
