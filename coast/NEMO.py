@@ -99,7 +99,11 @@ class NEMO(COAsT):
         # Reset & set specified coordinates
         coord_vars = ['longitude', 'latitude', 'time', 'depth_0']
         self.dataset = self.dataset.reset_coords()
-        self.dataset = self.dataset.set_coords(coord_vars)
+        for var in coord_vars:
+            try:
+                self.dataset = self.dataset.set_coords(var)
+            except:
+                pass
         
         # Delete specified variables
         delete_vars = ['nav_lat', 'nav_lon', 'deptht']
