@@ -23,4 +23,4 @@ nemo_v = coast.NEMO( NEMO_PATH + 'V_grid.nc', DOMAIN_PATH, grid_ref='v-grid' )
 nemo_f = coast.NEMO( DOMAIN_PATH, grid_ref='f-grid' )
 
 nemo_t.dataset
-nemo_f_dataset
+nemo_f.dataset
