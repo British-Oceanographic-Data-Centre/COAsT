@@ -17,10 +17,11 @@ ________________________________________________________________________________
 ** Notes on Object Structure and Loading (for contributors):
 
 COAsT is an object-orientated package, meaning that data is stored within Python object
-structures. In addition to data storage, these object contain methods which allow for 
-manipulation of this data.  An example of such an object is the NEMO object, which allows 
-for the storage and manipulation of NEMO output and domain data. It is important to
-understand how to load data using COAsT and the structure of the resulting objects.
+structures. In addition to data storage, these objects contain methods (subroutines)
+which allow for manipulation of this data.  An example of such an object is the NEMO 
+object, which allows for the storage and manipulation of NEMO output and domain data. It 
+is important to understand how to load data using COAsT and the structure of the resulting 
+objects.
 
 A NEMO object is created and initialised by passing it the paths of the domain and data 
 files. Ideally, the grid type should also be specified (T, U, V or F in the case of NEMO). 
@@ -32,15 +33,15 @@ import coast
 fn_data = '<path to T-grid data file(s)>'
 fn_domain = '<path to domain file>'
 
-data = coast.NEMO(fn_data, fn_domain, grid_ref='T')
+data = coast.NEMO(fn_data, fn_domain, grid_ref='t-grid')
 ```
 
-Ideally, NEMO output data should be in grid-specific files (standard and can be achieved
-using NEMOs .xml functionality). The whole domain file is supplied, however only grid
-specific variables are placed into the NEMO object. A NEMO object therefore contains
-grid-specific data and all corresponding grid variables. One of the file names can be
-omitted (to get a data-only or grid only object), however functionality in this case will
-be limited.
+Ideally, NEMO output data should be in grid-specific files, i.e. containing output
+variables situated on a NEMO T, U, V or F grid. The whole domain file is supplied, 
+however only grid specific variables are placed into the NEMO object. A NEMO object 
+therefore contains grid-specific data and all corresponding grid variables. One of the 
+file names can beomitted (to get a data-only or grid only object), however functionality
+in this case will be limited.
 
 Once loaded, data is stored inside the object using an xarray.dataset object. Following
 on from the previous code example, this can be viewed by calling:
