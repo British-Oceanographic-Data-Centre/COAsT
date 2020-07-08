@@ -27,7 +27,6 @@ class NEMO(COAsT):
         else:
             dataset_domain = self.load_domain(fn_domain, chunks)
             self.set_timezero_depths(dataset_domain)
-            #self.construct_depths(dataset_domain)
             self.merge_domain_into_dataset(dataset_domain)
             
     def set_dimension_mapping(self):
@@ -131,76 +130,6 @@ class NEMO(COAsT):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
-    # def construct_depths(self, dataset_domain):
-    #     # Construct depths
-    #     # xarray method for parsing depth variables:  # --> depth_t ,depth_w
-    #     if dataset_domain['ln_sco'].values == 1:
-    #         dataset_domain['deptht_0'], dataset_domain['depthw_0'] = \
-    #             self.get_depth_as_xr(dataset_domain.e3t_0, dataset_domain.e3w_0)
-    #     else:
-    #         print('Reconstruct depths for grids with ln_sco = 1. Not tried other grids yet')
-    #     return
-
-    # def get_depth(self, e3t: np.ndarray, e3w: np.ndarray=None ):
-    #     """
-    #     Returns the depth at t and w points.
-    #     If the w point scale factors are missing an approximation is made.
-    #     :param e3t: vertical scale factors at t points
-    #     :param e3w: (optional) vertical scale factors at w points.
-    #     :return: tuple of 2 4d arrays (time,z_dim,y_dim,x_dim) containing depth at t
-    #                 and w points respectively
-    #     """
-
-    #     depth_t = np.ma.empty_like( e3t )
-    #     depth_w = np.ma.empty_like( e3t )
-    #     depth_w[:,0,:,:] = 0.0
-    #     depth_w[:,1:,:,:] = np.cumsum( e3t, axis=1 )[:,:-1,:,:]
-    #     if e3w is not None:
-    #         depth_t[:,0,:,:] = 0.5 * e3w[:,0,:,:]
-    #         depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w[:,1:,:,:], axis=1 )
-    #     else:
-    #         depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
-    #         depth_t[:,-1,:,:] = np.nan
-
-    #     return (np.ma.masked_invalid(depth_t), np.ma.masked_invalid(depth_w))
-
-
-    # def get_depth_as_xr( self, e3t: xr.DataArray, e3w: xr.DataArray=None ):
-    #     """
-    #     Inputs and outputs as xarray DataArrays
-    #     Returns the depth at t and w points.
-    #     If the w point scale factors are missing an approximation is made.
-    #     :param e3t: vertical scale factors at t points
-    #     :param e3w: (optional) vertical scale factors at w points.
-    #     :return: tuple of 2 4d arrays (t_dim,z_dim,y_dim,x_dim) containing depth at t
-    #                 and w points respectively
-    #             if t_dim has only one value. This dimension is squeezed.
-    #     """
-    #     depth_t = np.ma.empty_like( e3t.values )
-    #     depth_w = np.ma.empty_like( e3t.values )
-    #     depth_w[:,0,:,:] = 0.0
-    #     depth_w[:,1:,:,:] = np.cumsum( e3t.values, axis=1 )[:,:-1,:,:]
-
-    #     if e3w is not None:
-    #         depth_t[:,0,:,:] = 0.5 * e3w.values[:,0,:,:]
-    #         depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w.values[:,1:,:,:], axis=1 )
-    #     else:
-    #         depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
-    #         depth_t[:,-1,:,:] = np.nan
-
-    #     depth_t_xr = xr.DataArray( np.ma.masked_invalid(depth_t),
-    #                         dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
-    #                         attrs={'grid' : 't',
-    #                                'units':'m',
-    #                                'standard_name': 'depth on t-points'}).squeeze()
-
-    #     depth_w_xr = xr.DataArray( np.ma.masked_invalid(depth_w),
-    #                         dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
-    #                         attrs={'grid': 'w',
-    #                                'units':'m',
-    #                                'standard_name': 'depth on w-points'}).squeeze()
-
-    #     return depth_t_xr, depth_w_xr
     
     def set_timezero_depths(self, dataset_domain):
         """
