@@ -222,7 +222,7 @@ try:
     fig,ax = tran.plot_normal_velocity(time='2010-01-02',cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.savefig(dn_fig + 'transect_velocities.png')
     plot_dict = {'fig_size':(5,3), 'title':'Transport across AB'}
-    tran.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
+    fig,ax = tran.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
     fig.savefig(dn_fig + 'transect_transport.png')
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
