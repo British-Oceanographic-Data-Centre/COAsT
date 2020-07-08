@@ -163,19 +163,70 @@ yt, xt, length_of_line = sci_dom.transect_indices([51,-5],[49,-9], grid_ref='t')
 # Test transect indices
 
 
-yt_ref = [164, 163, 162, 161, 161, 160, 159, 158, 157, 156, 155, 155, 154, 153,
-          152, 151, 150, 149, 149, 148, 147, 146, 145, 144, 143, 143, 142, 141,
-          140, 139, 138, 137, 137, 136, 135, 134]
-xt_ref = [134, 133, 132, 131, 130, 129, 128, 127, 126, 125, 124, 123, 122, 121,
-          120, 119, 118, 117, 115, 114, 113, 112, 111, 110, 109, 108, 107, 106,
-          105, 104, 103, 102, 101, 100, 99, 98]
-length_ref = 36
+yt_ref = [164, 163, 162, 162, 161, 160, 159, 158, 157, 156, 156, 155, 154,
+       153, 152, 152, 151, 150, 149, 148, 147, 146, 146, 145, 144, 143,
+       142, 142, 141, 140, 139, 138, 137, 136, 136, 135, 134]
+xt_ref = [134, 133, 132, 131, 130, 129, 128, 127, 126, 125, 124, 123, 122,
+       121, 120, 119, 118, 117, 116, 115, 114, 113, 112, 111, 110, 109,
+       108, 107, 106, 105, 104, 103, 102, 101, 100,  99,  98]
+length_ref = 37
 
 
 if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
     print(str(sec) + chr(subsec) + " OK - NEMO domain transect indices extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Issue with indices extraction from NEMO domain transect")
+
+#-----------------------------------------------------------------------------#
+# ( 3b ) Transport velocity and depth calculations                            #
+# 
+subsec = subsec+1
+
+DATA_PATH = "example_files/nemo_data_"
+nemo_t = coast.NEMO(DATA_PATH + "T_grid.nc")
+nemo_u = coast.NEMO(DATA_PATH + "U_grid.nc")
+nemo_v = coast.NEMO(DATA_PATH + "V_grid.nc")
+dom = coast.DOMAIN("example_files/COAsT_example_NEMO_domain.nc")
+
+# Create transect object
+tran = coast.Transect( dom, (54,-15), (56,-12), nemo_t, nemo_u, nemo_v )
+
+# Currently we don't have e3u and e3v vaiables so approximate using e3t
+e3u = xr.DataArray( tran.data_T.e3t_25h.values, 
+                   coords=[tran.data_U.time_counter.values, tran.data_U.depthu.values, tran.data_U.s_dim_f_grid.values],
+                   dims=['time_counter', 'depthu', 's_dim_normal_velocity_grid'])
+tran.data_U = tran.data_U.assign(e3u=e3u)
+e3v = xr.DataArray( tran.data_T.e3t_25h.values, 
+                   coords=[tran.data_V.time_counter.values, tran.data_V.depthv.values, tran.data_V.s_dim_f_grid.values],
+                   dims=['time_counter', 'depthv', 's_dim_normal_velocity_grid'])
+tran.data_V = tran.data_V.assign(e3v=e3v)
+
+output = tran.transport_across_AB()
+# Check the calculations are as expected
+if np.isclose(tran.data.depth_integrated_transport_across_AB.sum(), -49.19533238588342)  \
+        and np.isclose(tran.data.depth.sum(), 16116315.485839844) \
+        and np.isclose(np.nansum(tran.data.normal_velocities.values), -253.6484375): 
+    print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
+else:
+    print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
+    
+
+#-----------------------------------------------------------------------------#
+# ( 3c ) Transport and velocity plotting                                      #
+# 
+subsec = subsec+2
+
+plt.close('all')
+try:
+    plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
+    fig,ax = tran.plot_normal_velocity(time='2010-01-02',cmap="seismic",plot_info=plot_dict,smoothing_window=2)
+    fig.savefig(dn_fig + 'transect_velocities.png')
+    plot_dict = {'fig_size':(5,3), 'title':'Transport across AB'}
+    tran.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
+    fig.savefig(dn_fig + 'transect_transport.png')
+    print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
+except:
+    print(str(sec) + chr(subsec) + " X - TRANSECT velocity and transport plots not saved")
 
 
 #################################################
@@ -194,7 +245,7 @@ data_t =  sci.get_subset_as_xarray("votemper", xt_ref, yt_ref)
 
 # Test shape and exteme values
 
-if (np.shape(data_t) == (51, 36)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
+if (np.shape(data_t) == (51, 37)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
                                   and (np.nanmax(data_t) - 11.834961 < 1E-6):
     print(str(sec) + chr(subsec) + " OK - NEMO COAsT get_subset_as_xarray extracted expected array size and "
           + "extreme values")
