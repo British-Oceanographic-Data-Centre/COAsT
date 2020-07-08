@@ -87,21 +87,4 @@ class DOMAIN(COAsT):
 
         return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))
 
-    def set_timezero_depth(self):
-        """
-        Sets the depths at time zero along the vertical t and w levels. 
-        Added to self.dataset.depth_t_0 and self.dataset.depth_w_0
 
-        """
-        
-        depth_t = np.zeros_like( self.dataset.e3w_0 )  
-        depth_t[:,0,:,:] = 0.5 * self.dataset.e3w_0[:,0,:,:]    
-        depth_t[:,1:,:,:] = depth_t[:,0,:,:] + np.cumsum( self.dataset.e3w_0[:,1:,:,:], axis=1 ) 
-        self.dataset['depth_t_0'] = xr.DataArray(depth_t, dims=self.dataset.e3w_0.dims)
-        
-        depth_w = np.zeros_like( self.dataset.e3t_0 ) 
-        depth_w[:,0,:,:] = 0.0
-        depth_w[:,1:,:,:] = np.cumsum( self.dataset.e3t_0, axis=1 )[:,:-1,:,:]
-        self.dataset['depth_w_0'] = xr.DataArray(depth_w, dims=self.dataset.e3t_0.dims)
-
-        return
