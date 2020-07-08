@@ -18,6 +18,8 @@
     
 3. Transect Methods
     a. Determine and extract transect indices
+    b. Transport velocity and depth calculations 
+    c. Transport and velocity plotting  
 
 4. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable

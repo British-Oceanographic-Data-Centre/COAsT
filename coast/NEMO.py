@@ -129,7 +129,6 @@ class NEMO(COAsT):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
-
     def construct_depths(self, dataset_domain):
         # Construct depths
         # xarray method for parsing depth variables:  # --> depth_t ,depth_w
