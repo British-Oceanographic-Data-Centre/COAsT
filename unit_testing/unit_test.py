@@ -31,7 +31,7 @@ subsec = 96 # Code for '`' (1 below 'a')
 #                                                                             #
 subsec = subsec+1
 
-sci = coast.NEMO(dn_files + fn_nemo_dat) 
+sci = coast.NEMO(dn_files + fn_nemo_dat)
 
 # Test the data has loaded
 sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
@@ -42,7 +42,7 @@ sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
              ('uuid', '96cae459-d3a1-4f4f-b82b-9259179f95f7')])
 
 # checking is LHS is a subset of RHS
-if sci_attrs_ref.items() <= sci.dataset.attrs.items(): 
+if sci_attrs_ref.items() <= sci.dataset.attrs.items():
     print(str(sec) + chr(subsec) + " OK - NEMO data loaded: " + fn_nemo_dat)
 else:
     print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dat)
@@ -68,9 +68,9 @@ sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
 err_flag = False
 for key,val in sci_dom_attrs_ref.items():
     # There is somewhere a difference between the arrays
-    if (sci_dom.dataset.attrs[key] - val ).any(): 
+    if (sci_dom.dataset.attrs[key] - val ).any():
         print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dom)
-        print( sci_dom.dataset.attrs[key], ': ',val, ': ', 
+        print( sci_dom.dataset.attrs[key], ': ',val, ': ',
               (sci_dom.dataset.attrs[key] - val ).any())
         err_flag = True
 if err_flag == False:
@@ -90,31 +90,33 @@ alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
              ('Conventions', 'CF-1.6'),])
 
 # checking is LHS is a subset of RHS
-if alt_attrs_ref.items() <= altimetry.dataset.attrs.items(): 
+if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
     print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
 else:
     print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
 
 #-----------------------------------------------------------------------------#
 # ( 1d ) Load data from existing dataset                                          #
-# 
-subsec = subsec+1
+#
+try:
+    subsec = subsec+1
 
-ds = xr.open_dataset(dn_files + fn_nemo_dat)
-sci_load_ds = coast.NEMO()
-sci_load_ds.load_dataset(ds)
-sci_load_file = coast.NEMO() 
-sci_load_file.load(dn_files + fn_nemo_dat)
-if sci_load_ds.dataset.identical(sci_load_file.dataset):
-    print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
-else:
-    print(str(sec) + chr(subsec) + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()")
-
+    ds = xr.open_dataset(dn_files + fn_nemo_dat)
+    sci_load_ds = coast.NEMO()
+    sci_load_ds.load_dataset(ds)
+    sci_load_file = coast.NEMO()
+    sci_load_file.load(dn_files + fn_nemo_dat)
+    if sci_load_ds.dataset.identical(sci_load_file.dataset):
+        print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
+    else:
+        print(str(sec) + chr(subsec) + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
 #-----------------------------------------------------------------------------#
 # ( 1e ) Set NEMO variable name                                          #
 #
 subsec = subsec+1
-sci = coast.NEMO(dn_files + fn_nemo_dat)
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom)
 try:
     sci.dataset.temperature
 except NameError:
@@ -134,12 +136,14 @@ else:
 #-----------------------------------------------------------------------------#
 # ( 1g ) Set NEMO grid attributes - grid_ref                                         #
 #
-subsec = subsec+1
-if sci.dataset.temperature.grid_ref == 't-grid':
-    print(str(sec) + chr(subsec) + " OK - grid attribute set")
-else:
-    print(str(sec) + chr(subsec) + " X - grid attribute not set")
-
+try:
+    subsec = subsec+1
+    if sci.dataset.temperature.grid_ref == 't-grid':
+        print(str(sec) + chr(subsec) + " OK - grid attribute set")
+    else:
+        print(str(sec) + chr(subsec) + " X - grid attribute not set")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
@@ -155,7 +159,7 @@ if altimetry_copy.dataset == altimetry.dataset:
     print(str(sec) +chr(subsec) + " OK - Copied COAsT object ")
 else:
     print(str(sec) +chr(subsec) + " X - Copy Failed ")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 2b ) COAsT __getitem__ returns variable                                   #
 #                                                                             #
@@ -164,7 +168,7 @@ if sci.dataset['sossheig'].equals(sci['sossheig']):
     print(str(sec) +chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
 else:
     print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 2c ) Renaming variables inside a COAsT object                             #
 #                                                                             #
@@ -209,7 +213,7 @@ else:
 
 #-----------------------------------------------------------------------------#
 # ( 3b ) Transport velocity and depth calculations                            #
-# 
+#
 subsec = subsec+1
 
 DATA_PATH = "example_files/nemo_data_"
@@ -222,11 +226,11 @@ dom = coast.DOMAIN("example_files/COAsT_example_NEMO_domain.nc")
 tran = coast.Transect( dom, (54,-15), (56,-12), nemo_t, nemo_u, nemo_v )
 
 # Currently we don't have e3u and e3v vaiables so approximate using e3t
-e3u = xr.DataArray( tran.data_T.e3t_25h.values, 
+e3u = xr.DataArray( tran.data_T.e3t_25h.values,
                    coords=[tran.data_U.time_counter.values, tran.data_U.depthu.values, tran.data_U.s_dim_f_grid.values],
                    dims=['time_counter', 'depthu', 's_dim_normal_velocity_grid'])
 tran.data_U = tran.data_U.assign(e3u=e3u)
-e3v = xr.DataArray( tran.data_T.e3t_25h.values, 
+e3v = xr.DataArray( tran.data_T.e3t_25h.values,
                    coords=[tran.data_V.time_counter.values, tran.data_V.depthv.values, tran.data_V.s_dim_f_grid.values],
                    dims=['time_counter', 'depthv', 's_dim_normal_velocity_grid'])
 tran.data_V = tran.data_V.assign(e3v=e3v)
@@ -235,15 +239,15 @@ output = tran.transport_across_AB()
 # Check the calculations are as expected
 if np.isclose(tran.data.depth_integrated_transport_across_AB.sum(), -49.19533238588342)  \
         and np.isclose(tran.data.depth.sum(), 16116315.485839844) \
-        and np.isclose(np.nansum(tran.data.normal_velocities.values), -253.6484375): 
+        and np.isclose(np.nansum(tran.data.normal_velocities.values), -253.6484375):
     print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
 else:
     print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
-    
+
 
 #-----------------------------------------------------------------------------#
 # ( 3c ) Transport and velocity plotting                                      #
-# 
+#
 subsec = subsec+2
 
 plt.close('all')
@@ -281,7 +285,7 @@ if (np.shape(data_t) == (51, 37)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
           + "extreme values")
 else:
     print(str(sec) + chr(subsec) + " X - Issue with NEMO COAsT get_subset_as_xarray method")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 4b ) Indices by distance method                                           #
 #                                                                             #
@@ -298,7 +302,7 @@ if (np.shape(ind) == (2,674)) :
 else:
     print(str(sec) + chr(subsec) + "X - Issue with indices extraction from NEMO domain " \
           + "subset_indices_by_distance method")
-        
+
 #-----------------------------------------------------------------------------#
 # ( 4c ) Subsetting entire COAsT object and return as copy                    #
 #                                                                             #
@@ -326,7 +330,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - STATS object created")
 except:
     print(str(sec) + chr(subsec) + " OK - Probleam creating STATS object")
-    
+
 
 #-----------------------------------------------------------------------------#
 # ( 5b ) Calculate single obs CRPS values                                     #
@@ -339,7 +343,7 @@ if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
     print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
 else:
     print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 5c ) Plot geographical CRPS                                               #
 #                                                                             #
@@ -352,7 +356,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - CRPS Map plot saved")
 except:
     print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 5d ) Plot CDF comparisons for CRPS                                        #
 #                                                                             #
@@ -385,5 +389,5 @@ try:
     print(str(sec) + chr(subsec) + " OK - Altimetry quick plot saved")
 except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
-    
+
 plt.close('all')
