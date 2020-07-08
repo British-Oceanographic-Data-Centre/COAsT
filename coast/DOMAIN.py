@@ -9,6 +9,10 @@ class DOMAIN(COAsT):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Get depths at time zero
+        self.set_timezero_depth()
+
+
         return
 
     def set_dimension_mapping(self):
@@ -122,10 +126,11 @@ class DOMAIN(COAsT):
         [j1, i1] = self.find_j_i(start[0], start[1], letter)  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
-        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1))
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
 
         jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
+        
         return jj1, ii1, line_length
 
     def subset_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
@@ -148,3 +153,22 @@ class DOMAIN(COAsT):
         [j2, i2] = self.find_j_i(end[0], end[1], letter)  # lat , lon
 
         return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))
+
+    def set_timezero_depth(self):
+        """
+        Sets the depths at time zero along the vertical t and w levels. 
+        Added to self.dataset.depth_t_0 and self.dataset.depth_w_0
+
+        """
+        
+        depth_t = np.zeros_like( self.dataset.e3w_0 )  
+        depth_t[:,0,:,:] = 0.5 * self.dataset.e3w_0[:,0,:,:]    
+        depth_t[:,1:,:,:] = depth_t[:,0,:,:] + np.cumsum( self.dataset.e3w_0[:,1:,:,:], axis=1 ) 
+        self.dataset['depth_t_0'] = xr.DataArray(depth_t, dims=self.dataset.e3w_0.dims)
+        
+        depth_w = np.zeros_like( self.dataset.e3t_0 ) 
+        depth_w[:,0,:,:] = 0.0
+        depth_w[:,1:,:,:] = np.cumsum( self.dataset.e3t_0, axis=1 )[:,:-1,:,:]
+        self.dataset['depth_w_0'] = xr.DataArray(depth_w, dims=self.dataset.e3t_0.dims)
+
+        return
