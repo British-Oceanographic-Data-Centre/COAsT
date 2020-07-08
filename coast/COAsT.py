@@ -172,6 +172,55 @@ class COAsT:
 
     def distance_between_two_points(self):
         raise NotImplementedError
+        
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
+                                   radius: float):
+        """
+        This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
+
+        Distance is calculated as haversine - see `self.calculate_haversine_distance`
+
+        :param centre_lon: The longitude of the users central point
+        :param centre_lat: The latitude of the users central point
+        :param radius: The haversine distance (in km) from the central point
+        :return: All indices in a `tuple` with the haversine distance of the central point
+        """
+        lon_str = 'longitude'
+        lat_str = 'latitude'
+
+        # Flatten NEMO domain stuff.
+        lat = self[lat_str]
+        lon = self[lon_str]
+
+        # Calculate the distances between every model point and the specified
+        # centre. Calls another routine dist_haversine.
+
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
+        indices_bool = dist < radius
+        indices = np.where(indices_bool.compute())
+
+        return indices
+    
+    def subset_indices_lonlat_box(self, lonbounds, latbounds):
+        """Generates array indices for data which lies in a given lon/lat box.
+
+        Keyword arguments:
+        lon       -- Longitudes, 1D or 2D.
+        lat       -- Latitudes, 1D or 2D
+        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
+        latbounds -- Array of form [min_latitude, max_latitude]
+        
+        return: Indices corresponding to datapoints inside specified box
+        """
+        lon_str = 'longitude'
+        lat_str = 'latitude'
+        lon = self.dataset[lon_str].copy()
+        lat = self.dataset[lat_str]
+        ff = ( lon > lonbounds[0] ).astype(int)
+        ff = ff*( lon < lonbounds[1] ).astype(int)
+        ff = ff*( lat > latbounds[0] ).astype(int)
+        ff = ff*( lat < latbounds[1] ).astype(int)
+        return np.where(ff)
 
     def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):
         '''
