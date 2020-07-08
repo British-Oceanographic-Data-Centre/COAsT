@@ -12,79 +12,12 @@ class DOMAIN(COAsT):
         # Get depths at time zero
         self.set_timezero_depth()
 
-
         return
 
     def set_dimension_mapping(self):
         #self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
         #                    'y':'y_dim', 'x':'x_dim'}
         self.dim_mapping = None
-
-    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
-                                   radius: float, grid_ref: str='T'):
-        """
-        This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
-
-        Distance is calculated as haversine - see `self.calculate_haversine_distance`
-
-        :param centre_lon: The longitude of the users central point
-        :param centre_lat: The latitude of the users central point
-        :param radius: The haversine distance (in km) from the central point
-        :return: All indices in a `tuple` with the haversine distance of the central point
-        """
-        grid_ref = grid_ref.lower()
-        lonstr = 'glam' + grid_ref
-        latstr = 'gphi' + grid_ref
-
-        # Flatten NEMO domain stuff.
-        lat = self[latstr].isel(t=0)
-        lon = self[lonstr].isel(t=0)
-
-        # Calculate the distances between every model point and the specified
-        # centre. Calls another routine dist_haversine.
-
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
-
-        # Reshape distance array back to original 2-dimensional form
-        # nemo_dist = xr.DataArray(nemo_dist.data.reshape(self.dataset.nav_lat.shape), dims=['y', 'x'])
-
-        # Get boolean array where the distance is less than the specified radius
-        # using np.where
-        indices_bool = dist < radius
-        indices = np.where(indices_bool.compute())
-
-        # Then these output tuples can be separated into x and y arrays if necessary.
-
-        return indices
-    
-    def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """Generates array indices for data which lies in a given lon/lat box.
-
-        Keyword arguments:
-        lon       -- Longitudes, 1D or 2D.
-        lat       -- Latitudes, 1D or 2D
-        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
-        latbounds -- Array of form [min_latitude, max_latitude]
-        
-        return: Indices corresponding to datapoints inside specified box
-        """
-        lon = self.dataset.nav_lon.copy()
-        lat = self.dataset.nav_lat
-        ff1 = ( lon > lonbounds[0] ).astype(int)
-        ff2 = ( lon < lonbounds[1] ).astype(int)
-        ff3 = ( lat > latbounds[0] ).astype(int)
-        ff4 = ( lat < latbounds[1] ).astype(int)
-        ff = ff1 * ff2 * ff3 * ff4
-        return np.where(ff)
-    
-    def subset_indices_index_box(self, ind0_x: int, ind0_y: int,
-                                 n_x: int, n_y: int=-1):
-        """
-        """
-        if n_y <0:
-            n_y = n_x
-            
-        return
 
 
     def find_j_i(self, lat: int, lon: int, grid_ref: str):
