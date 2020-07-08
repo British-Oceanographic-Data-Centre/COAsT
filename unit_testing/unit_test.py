@@ -208,7 +208,7 @@ if np.isclose(tran.data.depth_integrated_transport_across_AB.sum(), -49.19533238
         and np.isclose(np.nansum(tran.data.normal_velocities.values), -253.6484375): 
     print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
 else:
-    print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities no good")
+    print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
     
 
 #-----------------------------------------------------------------------------#
@@ -223,7 +223,7 @@ try:
     fig.savefig(dn_fig + 'transect_velocities.png')
     plot_dict = {'fig_size':(5,3), 'title':'Transport across AB'}
     tran.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
-    fig.savefig(dn_fig + 'transect_transpor.png')
+    fig.savefig(dn_fig + 'transect_transport.png')
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + " X - TRANSECT velocity and transport plots not saved")
