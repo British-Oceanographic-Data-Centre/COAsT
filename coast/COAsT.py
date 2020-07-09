@@ -195,11 +195,12 @@ class COAsT:
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
+                                                 lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
-        return indices
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
     
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
