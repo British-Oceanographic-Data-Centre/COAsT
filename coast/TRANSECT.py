@@ -302,10 +302,10 @@ class Transect:
         fig = plt.figure(figsize=plot_info['fig_size'])
         ax = fig.gca()
 
-        plt.plot( data.depth_integrated_transport_across_AB, transport )
+        plt.plot( data.s_dim_normal_velocity_grid, transport )
 
         plt.title(plot_info['title'])
-        plt.xticks([0,data.depth_integrated_transport_across_AB.values[-1]],['A','B'])
+        plt.xticks([0,data.s_dim_normal_velocity_grid.values[-1]],['A','B'])
         plt.ylabel('Volume transport across AB [SV]')
         plt.show()
         return fig,ax
