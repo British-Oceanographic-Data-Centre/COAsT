@@ -52,29 +52,29 @@ else:
 #                                                                             #
 subsec = subsec+1
 
-sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
+# sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
 
-# Test the data has loaded
-sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
-             ('DOMAIN_number', 0),
-             ('DOMAIN_dimensions_ids', np.array([1, 2], dtype=np.int32)),
-             ('DOMAIN_size_global', np.array([297, 375], dtype=np.int32)),
-             ('DOMAIN_size_local', np.array([297, 375], dtype=np.int32)),
-             ('DOMAIN_position_first', np.array([1, 1], dtype=np.int32)),
-             ('DOMAIN_position_last', np.array([297, 375], dtype=np.int32)),
-             ('DOMAIN_halo_size_start', np.array([0, 0], dtype=np.int32)),
-             ('DOMAIN_halo_size_end', np.array([0, 0], dtype=np.int32)) ] )
+# # Test the data has loaded
+# sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
+#              ('DOMAIN_number', 0),
+#              ('DOMAIN_dimensions_ids', np.array([1, 2], dtype=np.int32)),
+#              ('DOMAIN_size_global', np.array([297, 375], dtype=np.int32)),
+#              ('DOMAIN_size_local', np.array([297, 375], dtype=np.int32)),
+#              ('DOMAIN_position_first', np.array([1, 1], dtype=np.int32)),
+#              ('DOMAIN_position_last', np.array([297, 375], dtype=np.int32)),
+#              ('DOMAIN_halo_size_start', np.array([0, 0], dtype=np.int32)),
+#              ('DOMAIN_halo_size_end', np.array([0, 0], dtype=np.int32)) ] )
 
-err_flag = False
-for key,val in sci_dom_attrs_ref.items():
-    # There is somewhere a difference between the arrays
-    if (sci_dom.dataset.attrs[key] - val ).any(): 
-        print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dom)
-        print( sci_dom.dataset.attrs[key], ': ',val, ': ', 
-              (sci_dom.dataset.attrs[key] - val ).any())
-        err_flag = True
-if err_flag == False:
-        print(str(sec) + chr(subsec) + " OK - NEMO domain data loaded: " + fn_nemo_dom)
+# err_flag = False
+# for key,val in sci_dom_attrs_ref.items():
+#     # There is somewhere a difference between the arrays
+#     if (sci_dom.dataset.attrs[key] - val ).any(): 
+#         print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dom)
+#         print( sci_dom.dataset.attrs[key], ': ',val, ': ', 
+#               (sci_dom.dataset.attrs[key] - val ).any())
+#         err_flag = True
+# if err_flag == False:
+#         print(str(sec) + chr(subsec) + " OK - NEMO domain data loaded: " + fn_nemo_dom)
 
 #-----------------------------------------------------------------------------#
 # ( 1c ) Load example altimetry data                                          #
