@@ -3,6 +3,7 @@ import xarray as xr
 from warnings import warn
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
+from .COAsT import COAsT
 
 class CRPS():
     '''
@@ -21,10 +22,10 @@ class CRPS():
         $ crps.map_plot() # Plots CRPS on map
     '''
     
-    def __init__(self, mod_data, mod_dom, obs_object, 
-                 mod_var_str:str, obs_var_str:str,
-                 nh_radius: float=111, nh_type: str="radius", 
-                 cdf_type: str="empirical", time_interp:str="nearest"):
+    def __init__(self, model: COAsT, observations: COAsT,
+                 var_name_mod:str, var_name_obs:str, nh_radius: float=20, 
+                 nh_type: str="radius", cdf_type: str="empirical", 
+                 time_interp: str="nearest"):
         """Initialisation of CRPS object.
 
         Args:
@@ -44,23 +45,22 @@ class CRPS():
             CRPS: Returns a new instance of a CRPS object.
         """
         #Input variables
-        self.mod_data    = mod_data
-        self.mod_dom     = mod_dom
-        self.obs_object  = obs_object
-        self.nh_radius   = nh_radius
-        self.nh_type     = nh_type
-        self.cdf_type    = cdf_type
-        self.time_interp = time_interp
-        self.mod_var_str = mod_var_str
-        self.obs_var_str = obs_var_str
-        self.longitude   = obs_object['longitude']
-        self.latitude    = obs_object['latitude']
+        self.model        = model
+        self.observations = observations
+        self.nh_radius    = nh_radius
+        self.nh_type      = nh_type
+        self.cdf_type     = cdf_type
+        self.time_interp  = time_interp
+        self.var_name_mod = var_name_mod
+        self.var_name_obs = var_name_obs
+        self.longitude    = observations['longitude']
+        self.latitude     = observations['latitude']
         # Output variables
-        self.crps        = None
-        self.n_model_pts = None
+        self.crps          = None
+        self.n_model_pts   = None
         self.contains_land = None
-        self.mean = None
-        self.mean_noland = None
+        self.mean          = None
+        self.mean_noland   = None
         self.calculate()
         return
     
@@ -86,66 +86,60 @@ class CRPS():
         uses a comparison between the probability distributions of a model 
         neighbourhood subset and a single observation. The CRPS is calculated 
         independently for each observation. 
-
-        Keyword arguments:
-        nemo_var_name -- COAsT variable string.
-        
-        
-        return: Array of CRPS scores for each observation supplied.
         """
+        # Get relevant data and rename time dimension for interpolation
+        mod_variable = self.model[self.var_name_mod].rename({'t_dim':'time'})
+        obs_variable = self.observations[self.var_name_obs]
         
-        # Define var_dict to determine which variable to use and define some
-        # function variables
-        if len(mod_var.dims) > 3:
-            raise Exception('COAsT: CRPS Input data must only have dims ' + 
-                            '(time, lon, lat)')
+        # Extract only x_dim, y_dim and t_dim dimensions. 
+        for dim in mod_variable.dims:
+            if dim not in ['x_dim', 'y_dim', 'time']:
+                mod_variable = mod_variable.isel(dim=0)
     
-        # Define output array and check for scalars being used as observations.
-        # If so, put obs into lists/arrays.
-        n_nh = obs_var.shape[0] # Number of neighbourhoods (n_nh)  
-        crps_list = np.zeros( n_nh )*np.nan
-        n_model_pts = np.zeros( n_nh )*np.nan
-        contains_land = np.zeros( n_nh , dtype=bool)
-        
-        # Time interpolation weights object
-#        weights = interpolate_along_dimension(mod_var, 
-#                                              obs_var['time'], 't_dim', 
-#                                              method = time_interp)
-        
-        nh_indices = np.arange(0,n_nh)
-        
+        # Define output array
+        n_neighbourhoods = obs_variable.shape[0] 
+        crps_list     = np.zeros( n_neighbourhoods )*np.nan
+        n_model_pts   = np.zeros( n_neighbourhoods )*np.nan
+        contains_land = np.zeros( n_neighbourhoods , dtype=bool)
+
         # Loop over neighbourhoods
-        for ii in nh_indices:
+        neighbourhood_indices = np.arange(0,n_neighbourhoods)
+        for ii in neighbourhood_indices:
             # Neighbourhood centre
-            cntr_lon = self.longitude[ii]
-            cntr_lat = self.latitude[ii]
+            cntr_lon = obs_variable.longitude[ii]
+            cntr_lat = obs_variable.latitude[ii]
+            print('['+str(ii)+']')
+            print(cntr_lon)
+            print(cntr_lat)
         
             # Get model neighbourhood subset using specified method
-            if nh_type == "radius":
-                subset_indices = mod_dom.subset_indices_by_distance(cntr_lon, 
-                                 cntr_lat, nh_radius)
-            elif nh_type == "box":
+            if self.nh_type == "radius":
+                subset_ind = self.model.subset_indices_by_distance(cntr_lon, 
+                             cntr_lat, self.nh_radius)
+            elif self.nh_type == "box":
                 raise NotImplementedError
             
-            # Subset model data in time and space: What is the model doing at
-            # observation times?
-            mod_subset = mod_var.interp(t_dim=obs_var['time'][ii])
-            mod_subset = mod_var[xr.DataArray(subset_indices[0]),
-                                     xr.DataArray(subset_indices[1])]
-
-            if any(np.isnan(mod_subset)):
-                contains_land[ii] = True
-
-            if mod_subset.shape[0] == 0:
+            if subset_ind[0].shape[0] == 0 or subset_ind[1].shape[0] == 0:
                 crps_list[ii] = np.nan
             else:
-                # Create model and observation CDF objects
-                mod_cdf = CDF(mod_subset, cdf_type=cdf_type)
-                obs_cdf = CDF([obs_var[ii]], cdf_type='empirical')
+                # Subset model data in time and space: model -> obs
+                mod_subset = mod_variable.isel(y_dim = subset_ind[0],
+                                               x_dim = subset_ind[1])
+                mod_subset = mod_subset.interp(time = obs_variable['time'][ii],
+                                               method = self.time_interp)
                 
-                # Calculate CRPS and put into output array
-                crps_list[ii] = mod_cdf.crps(obs_var[ii])
-                n_model_pts[ii] = int(mod_subset.shape[0])
+                if any(np.isnan(mod_subset)):
+                    contains_land[ii] = True
+                if all(np.isnan(mod_subset)):
+                    pass
+                else:
+                    # Create model and observation CDF objects
+                    mod_cdf = CDF(mod_subset, cdf_type = self.cdf_type)
+                    obs_cdf = CDF([obs_variable[ii]], cdf_type = 'empirical')
+                
+                    # Calculate CRPS and put into output array
+                    crps_list[ii] = mod_cdf.crps(obs_variable[ii])
+                    n_model_pts[ii] = int(mod_subset.shape[0])
 
         return crps_list, n_model_pts, contains_land, mod_cdf, obs_cdf
     

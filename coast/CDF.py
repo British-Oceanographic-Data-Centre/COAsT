@@ -202,18 +202,3 @@ class CDF():
         ax.plot(x, obs_y, linestyle='--')
         ax.fill_between(x, mod_y, obs_y, alpha=0.5)
         return fig, ax
-    
-        #    def square_difference(self, other):
-#        """Calculated the CRPS of provided model and observed CDFs.
-#
-#        Keyword arguments:
-#        cdf1 -- Discrete CDF of model data
-#        cdf2   -- Discrete CDF of observation data
-#        
-#        return: A single squared difference between two CDFs.
-#        """
-#        common_x = self.get_common_x(other)
-#        self.build_discrete_cdf(x=common_x)
-#        other.build_discrete_cdf(x=common_x)
-#        diff = np.trapz((other.disc_y - self.disc_y)**2, common_x)
-#        return diff
