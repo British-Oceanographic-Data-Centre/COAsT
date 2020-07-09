@@ -3,6 +3,7 @@ import numpy as np
 import xarray as xr
 from warnings import warn
 import copy
+import gsw
 #from .CRPS import CRPS
 #from .interpolate_along_dimension import interpolate_along_dimension
 
@@ -87,19 +88,17 @@ class DIAGNOSTICS(COAsT):
         self.dataset.strat.attrs['units'] = var.units + '/m'
         self.dataset.strat.attrs['standard_name'] = var.standard_name + ' stratification'
 
+    def get_deriv(self, var: xr.DataArray ):
+        """
+        Compute centered vertical difference on T-points
+        """
+        return self.difftpt2tpt( var, dim='z_dim' ) \
+                    / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
+                    
 
-    def get_density(self, T: xr.DataArray, S: xr.DataArray):
+    def get_density(self, T: xr.DataArray, S: xr.DataArray, z: xr.DataArray):
         """ Compute a density from temperature, salinity """
-        rho0 = 1027 # kg / m3
-        alpha = 0.78 # kg / m3 / psu
-        beta = 0.15 # kg / m3 / K 
-        #k = 4.5 E-3 # kg / m3 / dbar
-        S0 = 35 # psu
-        T0 = 10 # degC
-        #p0 = 101.3 # dbar
-        
-        self.dataset['rho'] = rho0 + alpha*( S - S0 ) + beta*( T - T0 ) #+ k*( p - p0 )
-        
+        self.dataset['rho'] = xr.DataArray( gsw.rho(S,T,z), dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
         
 
     def get_pyc_vars(self):
@@ -123,7 +122,7 @@ class DIAGNOSTICS(COAsT):
         #self.get_stratification( self.nemo.dataset.thetao )
         #print('Using only temperature for stratification at the moment')
 
-        self.get_stratification( self.dataset.rho  ) # --> self.strat
+        #self.get_stratification( self.dataset.rho  ) # --> self.strat
 
         N2_4d = copy.copy(self.dataset.strat)  # (t_dim, z_dim, ydim, xdim). T-pts. Surface value == 0
 
