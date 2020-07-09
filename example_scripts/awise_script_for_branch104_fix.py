@@ -20,7 +20,7 @@ ds_v = xr.open_dataset( NEMO_PATH + 'V_grid.nc' )
 nemo_t = coast.NEMO( NEMO_PATH + 'T_grid.nc', DOMAIN_PATH, grid_ref='t-grid' )
 nemo_u = coast.NEMO( NEMO_PATH + 'U_grid.nc', DOMAIN_PATH, grid_ref='u-grid' )
 nemo_v = coast.NEMO( NEMO_PATH + 'V_grid.nc', DOMAIN_PATH, grid_ref='v-grid' )
-nemo_f = coast.NEMO( DOMAIN_PATH, grid_ref='f-grid' )
+nemo_f = coast.NEMO( fn_domain=DOMAIN_PATH, grid_ref='f-grid' )
 
 nemo_t.dataset
 nemo_f.dataset
