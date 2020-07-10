@@ -30,7 +30,8 @@ class NEMO(COAsT):
             self.merge_domain_into_dataset(dataset_domain)
             
     def set_dimension_mapping(self):
-        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
+        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
+                            'depthu':'z_dim', 'depthv':'z_dim',
                             'y':'y_dim', 'x':'x_dim'}
         self.dim_mapping_domain = {'t':'t_dim0', 'x':'x_dim', 'y':'y_dim',
                                    'z':'z_dim'}
@@ -139,6 +140,7 @@ class NEMO(COAsT):
         The depths are assigned to NEMO.dataset.depth_0
 
         """
+
         try:
             if self.grid_ref == 't-grid':    
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
@@ -149,19 +151,70 @@ class NEMO(COAsT):
                 e3t_0 = np.squeeze( dataset_domain.e3t_0.values )
                 depth_0 = np.zeros_like( e3t_0 ) 
                 depth_0[0,:,:] = 0.0
-                depth_0[1:,:,:] = np.cumsum( e3t_0, axis=1 )[:-1,:,:]
+                depth_0[1:,:,:] = np.cumsum( e3t_0, axis=0 )[:-1,:,:]
             elif self.grid_ref == 'u-grid':
-                raise ValueError(str(self) + ": u-grid depth calculation not yet implemented")
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_u = 0.5 * ( e3w_0[:,:,:-1] + e3w_0[:,:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )  
+                depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]    
+                depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 ) 
             elif self.grid_ref == 'v-grid':
-                raise ValueError(str(self) + ": v-grid depth calculation not yet implemented")
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
+                depth_0 = np.zeros_like( e3w_0 )  
+                depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]    
+                depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 ) 
             elif self.grid_ref == 'f-grid':
-                raise ValueError(str(self) + ": f-grid depth calculation not yet implemented")
-            
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,1:,:-1] +
+                                     e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] )
+                depth_0 = np.zeros_like( e3w_0 ) 
+                depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]    
+                depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 ) 
+            else:
+                raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
+
             self.dataset['depth_0'] = xr.DataArray(depth_0,
                     dims=['z_dim', 'y_dim', 'x_dim'],
-                    attrs={'units':'m',
-                    'standard_name': 'depth at time zero on the {}'.format(self.grid_ref)})
+                    attrs={'Units':'m',
+                    'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
         except ValueError as err:
             print(err)
 
         return
+    
+    
+    def find_j_i(self, lat: int, lon: int):
+        """
+        A routine to find the nearest y x coordinates for a given latitude and longitude
+        Usage: [y,x] = find_j_i(49, -12)
+
+        :param lat: latitude
+        :param lon: longitude
+        :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
+        """
+
+        dist2 = xr.ufuncs.square(self.dataset.latitude - lat) + xr.ufuncs.square(self.dataset.longitude - lon)
+        [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [y, x]
+
+    
+    def transect_indices(self, start: tuple, end: tuple) -> tuple:
+        """
+        This method returns the indices of a simple straight line transect between two 
+        lat lon points defined on the NEMO object's grid_ref, i.e. t,u,v,f,w.
+
+        :type start: tuple A lat/lon pair
+        :type end: tuple A lat/lon pair
+        :return: array of y indices, array of x indices, number of indices in transect
+        """
+
+        [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
+        [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
+
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
+
+        jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
+        ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
+        
+        return jj1, ii1, line_length
