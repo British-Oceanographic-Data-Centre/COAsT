@@ -6,10 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class NEMO(COAsT):
+    """
+    Words to describe the NEMO class
     
+    kwargs -- define addition keyworded arguemts for domain file. E.g. ln_sco=1
+    if using s-scoord in an old domain file that does not carry this flag.
+    """
     def __init__(self, fn_data, fn_domain=None, grid_ref='t-grid',
                  chunks: dict=None, multiple=False,
-                 workers=2, threads=2, memory_limit_per_worker='2GB'):
+                 workers=2, threads=2, memory_limit_per_worker='2GB', **kwargs):
         self.dataset = None
         self.grid_ref = grid_ref.lower()
         self.domain_loaded = False
@@ -19,12 +24,18 @@ class NEMO(COAsT):
         self.load(fn_data, chunks, multiple)
         self.set_dimension_names(self.dim_mapping)
         self.set_variable_names(self.var_mapping)
-        
+                
         if fn_domain is None:
             print("No NEMO domain specified, only limited functionality"+ 
                   " will be available")
         else:
             dataset_domain = self.load_domain(fn_domain, chunks)
+            # Define extra domain attributes using kwargs dictionary
+            for key,value in kwargs.items():
+                dataset_domain[key] = value
+            print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
+            dataset_domain = self.trim_domain_size( dataset_domain )
+            print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
             self.construct_depths(dataset_domain)
             self.merge_domain_into_dataset(dataset_domain)
             
@@ -37,7 +48,9 @@ class NEMO(COAsT):
     def set_variable_mapping(self):
         self.var_mapping = {'time_counter':'time',
                             'votemper' : 'temperature',
-                            'temp' : 'temperature'}
+                            'thetao' : 'temperature',
+                            'temp' : 'temperature',
+                            'so' : 'salinity'}
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0', 
                                    'glamt':'longitude', 'glamu':'longitude', 
@@ -70,32 +83,30 @@ class NEMO(COAsT):
    
     def merge_domain_into_dataset(self, dataset_domain):
         ''' Merge domain dataset variables into self.dataset, using grid_ref'''
-        
         # Define grid independent variables to pull across
         not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
         
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid': 
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0'] #What about e3vw
+            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'deptht_0'] #What about e3vw
+            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
         elif self.grid_ref == 'v-grid': 
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0']
+            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'deptht_0']
+            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
         elif self.grid_ref == 't-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0']
         elif self.grid_ref == 'w-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
         elif self.grid_ref == 'f-grid': 
-            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0']  
+            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'deptht_0']  
+            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
             
         all_vars = grid_vars + not_grid_vars
-            
-        for var in all_vars:
-            try:
-                new_name = self.var_mapping_domain[var]
-                self.dataset[new_name] = dataset_domain[var].squeeze()
-            except:
-                pass
-            
+        
+        # Trim domain DataArray area if necessary. 
+        self.copy_domain_vars_to_dataset( dataset_domain, grid_vars )
+
         # Reset & set specified coordinates
         coord_vars = ['longitude', 'latitude', 'time', 'depth_0']
         self.dataset = self.dataset.reset_coords()
@@ -132,6 +143,7 @@ class NEMO(COAsT):
     def construct_depths(self, dataset_domain):
         # Construct depths
         # xarray method for parsing depth variables:  # --> depth_t ,depth_w
+        print("In construct_depths")
         if dataset_domain['ln_sco'].values == 1:
             dataset_domain['deptht_0'], dataset_domain['depthw_0'] = \
                 self.get_depth_as_xr(dataset_domain.e3t_0, dataset_domain.e3w_0)
@@ -199,3 +211,58 @@ class NEMO(COAsT):
                                    'standard_name': 'depth on w-points'}).squeeze()
 
         return depth_t_xr, depth_w_xr
+    
+    def trim_domain_size( self, dataset_domain ):
+        """
+        Trim the domain variables if the dataset object is a spatial subset
+        """
+        if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
+                or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
+            #print("The domain and dataset object are different sizes. Trim domain")
+            # Find the corners of the cut out domain.
+            [j0,i0] = self.find_j_i( self.dataset.nav_lat[0,0], 
+                                    self.dataset.nav_lon[0,0], dataset_domain )
+            [j1,i1] = self.find_j_i( self.dataset.nav_lat[-1,-1], 
+                                    self.dataset.nav_lon[-1,-1], dataset_domain )
+
+            dataset_subdomain = dataset_domain.isel( 
+                                        y_dim = slice(j0, j1 + 1),
+                                        x_dim = slice(i0, i1 + 1) ) 
+            #print (dataset_subdomain)
+            return dataset_subdomain
+        else:
+            return dataset_domain
+
+    def copy_domain_vars_to_dataset( self, dataset_domain, grid_vars ):
+        """
+        Map the domain coordand metric variables to the dataset object.
+        Expects the source and target DataArrays to be same sizes.
+        """
+        for var in grid_vars:        
+            try:
+                new_name = self.var_mapping_domain[var]
+                self.dataset[new_name] = dataset_domain[var].squeeze()                    
+                #print("map: {} --> {}".format( var, new_name))
+            except:
+                pass
+    
+    
+  
+                
+    def find_j_i(self, lat, lon, dataset_domain):
+        """
+        A routine to find the nearest y x coordinates for a given latitude and longitude
+        Usage: [y,x] = find_j_i(49, -12, t)
+
+        :param lat: latitude
+        :param lon: longitude
+        :param grid_ref: the gphi/glam version a user wishes to search over
+        :return: the y and x coordinates for the given grid_ref variable within the domain file
+        """
+
+        internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
+        dist2 = xr.ufuncs.square(internal_lat - lat) \
+                + xr.ufuncs.square(internal_lon - lon)
+        [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [y, x]
