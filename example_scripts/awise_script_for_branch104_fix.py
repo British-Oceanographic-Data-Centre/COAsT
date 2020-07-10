@@ -10,17 +10,21 @@ import coast
 import numpy as np
 import xarray as xr
 
-NEMO_PATH = 'example_files/nemo_data_'
-DOMAIN_PATH = 'example_files/COAsT_example_NEMO_domain.nc'
+dn_files = "./example_files/"
+dn_fig = 'unit_testing/figures/'
+fn_nemo_grid_t_dat = 'nemo_data_T_grid.nc'
+fn_nemo_grid_u_dat = 'nemo_data_U_grid.nc'
+fn_nemo_grid_v_dat = 'nemo_data_V_grid.nc'
+fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
+fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
+fn_altimetry = 'COAsT_example_altimetry_data.nc'
 
-ds_t = xr.open_dataset( NEMO_PATH + 'T_grid.nc' )
-ds_u = xr.open_dataset( NEMO_PATH + 'U_grid.nc' )
-ds_v = xr.open_dataset( NEMO_PATH + 'V_grid.nc' )
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat, 
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
+nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat, 
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
+nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 
-nemo_t = coast.NEMO( NEMO_PATH + 'T_grid.nc', DOMAIN_PATH, grid_ref='t-grid' )
-nemo_u = coast.NEMO( NEMO_PATH + 'U_grid.nc', DOMAIN_PATH, grid_ref='u-grid' )
-nemo_v = coast.NEMO( NEMO_PATH + 'V_grid.nc', DOMAIN_PATH, grid_ref='v-grid' )
-nemo_f = coast.NEMO( fn_domain=DOMAIN_PATH, grid_ref='f-grid' )
-
-nemo_t.dataset
-nemo_f.dataset
+tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
