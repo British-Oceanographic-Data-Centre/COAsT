@@ -27,6 +27,27 @@ subsec = 96 # Code for '`' (1 below 'a')
 #################################################
 
 #-----------------------------------------------------------------------------#
+# ( 1z ) Load a subregion dataset with a full domain                 #
+#                                                                             #
+subsec = subsec+1
+try:
+    dir = "/projectsa/COAsT/NEMO_example_data/AMM60/"
+    fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
+    amm60 = coast.NEMO(dir + fil_nam_AMM60, 
+                     dir + "mesh_mask.nc", ln_sco=1)
+    
+    # checking all the coordinates mapped correctly to the dataset object
+    if amm60.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
+        print(str(sec) + chr(subsec) + " OK - NEMO data subset loaded with correct coords: " + fil_nam_AMM60)
+    else:
+        print(str(sec) + chr(subsec) + " X - There is an issue with loading and subsetting the data " + fil_nam_AMM60)
+
+except:
+    print(str(sec) + chr(subsec) +" FAILED. Test data in: {}. Try on livljobs?".format(dir))
+
+
+
+#-----------------------------------------------------------------------------#
 # ( 1a ) Load example NEMO data (Temperature, Salinity, SSH)                  #
 #                                                                             #
 subsec = subsec+1
@@ -98,9 +119,8 @@ else:
 #-----------------------------------------------------------------------------#
 # ( 1d ) Load data from existing dataset                                          #
 #
-try:
     subsec = subsec+1
-
+try:
     ds = xr.open_dataset(dn_files + fn_nemo_dat)
     sci_load_ds = coast.NEMO()
     sci_load_ds.load_dataset(ds)
