@@ -3,6 +3,8 @@
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 1. Loading & Initialisation
+
+    ?. Load a subregion dataset with a domain file for the whole configuration
     a. Loading NEMO data file
     b. Loading NEMO domain file
     c. Loading Altimetry file
