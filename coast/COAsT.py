@@ -189,8 +189,8 @@ class COAsT:
         lat_str = 'latitude'
 
         # Flatten NEMO domain stuff.
-        lat = self[lat_str]
-        lon = self[lon_str]
+        lat = self.dataset[lat_str]
+        lon = self.dataset[lon_str]
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
