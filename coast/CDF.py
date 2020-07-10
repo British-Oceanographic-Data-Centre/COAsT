@@ -22,8 +22,7 @@ class CDF():
         """
         self.cdf_type = cdf_type
         self.cdf_func = cdf_func
-        sample   = np.sort(sample)
-        self.sample = sample[~np.isnan(sample)]
+        self.sample = sample
         self.sample_size = len(sample)
         self.mu       = np.nanmean(sample)
         self.sigma    = np.nanstd(sample)
@@ -147,10 +146,14 @@ class CDF():
         def calc(alpha, beta, p):
             return alpha * p**2 + beta*(1 - p)**2
         crps_sum = 0
-        sample = self.sample
+        sample = np.array(self.sample).flatten()
+        sample = sample[~np.isnan(sample)]
+        sample = np.sort(sample)
         sample_size = len(sample)
         
+        # All intervals within range of the sample distribution
         for ii in range(0, sample_size-1):
+            p = (ii+1)/sample_size
             if xa > sample[ii+1]:
                 alpha = sample[ii+1] - sample[ii]
                 beta = 0
@@ -160,15 +163,76 @@ class CDF():
             else:
                 alpha = xa - sample[ii]
                 beta = sample[ii+1] - xa
-            p = (ii+1)/sample_size
             crps = calc(alpha, beta, p)
             crps_sum = crps_sum + crps
+        # Intervals 0 and N, where p = 0 and 1 respectively
         if xa < sample[0]:
+            p=0
             alpha = 0
             beta = sample[0] - xa
             crps = calc(alpha, beta, p)
             crps_sum = crps_sum + crps
         elif xa > sample[-1]:
+            p=1
+            alpha = xa - sample[-1]
+            beta = 0
+            crps = calc(alpha, beta, p)
+            crps_sum = crps_sum + crps
+            
+        return crps_sum
+    
+    def crps_fast(self, xa):
+        """Faster version of crps method, using multiple numpy arrays.
+           For large sample sizes, this is considerably faster but uses more
+           memory.
+
+        Args:
+            xa (float): A single 'observation' value which to compare against
+                        CDF.
+
+        Returns:
+            A single CRPS value.
+        """
+        
+        def calc(alpha, beta, p):
+            return alpha * p**2 + beta*(1 - p)**2
+        xa = float(xa)
+        crps_sum = 0
+        sample = np.array(self.sample).flatten()
+        sample = sample[~np.isnan(sample)]
+        sample = np.sort(sample)
+        sample_size = len(sample)
+        
+        alpha = np.zeros(sample_size-1)
+        beta= np.zeros(sample_size-1)
+        # sample[1:] = upper bounds, and vice versa
+        
+        tmp = sample[1:] - sample[:-1]
+        tmp_logic = sample[1:]<xa
+        alpha[tmp_logic] = tmp[tmp_logic]
+                               
+        tmp_logic = sample[:-1]>xa
+        beta[tmp_logic] = tmp[tmp_logic]
+        
+        tmp_logic = ( sample[1:]>xa )*( sample[:-1]<xa )
+        tmp = xa - sample[:-1]
+        alpha[tmp_logic] = tmp[tmp_logic]
+        tmp = sample[1:] - xa
+        beta[tmp_logic] = tmp[tmp_logic]
+        
+        p = np.arange(1,sample_size)/sample_size
+        c = alpha*p**2 + beta*(1-p)**2
+        crps_sum = np.sum(c)
+        
+        # Intervals 0 and N, where p = 0 and 1 respectively
+        if xa < sample[0]:
+            p=0
+            alpha = 0
+            beta = sample[0] - xa
+            crps = calc(alpha, beta, p)
+            crps_sum = crps_sum + crps
+        elif xa > sample[-1]:
+            p=1
             alpha = xa - sample[-1]
             beta = 0
             crps = calc(alpha, beta, p)
