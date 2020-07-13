@@ -35,8 +35,7 @@ class NEMO(COAsT):
             for key,value in kwargs.items():
                 dataset_domain[key] = value
             dataset_domain = self.trim_domain_size( dataset_domain )
-            #self.construct_depths(dataset_domain)
-            self.set_timezero_depths(dataset_domain)
+            self.set_timezero_depths(dataset_domain) # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             
     def set_dimension_mapping(self):
@@ -47,11 +46,13 @@ class NEMO(COAsT):
                                    'z':'z_dim'}
 
     def set_variable_mapping(self):
+        # Variable names remapped  within NEMO object
         self.var_mapping = {'time_counter':'time',
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
                             'so' : 'salinity'}
+        # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0', 
                                    'glamt':'longitude', 'glamu':'longitude', 
@@ -65,7 +66,9 @@ class NEMO(COAsT):
                                    'ff_t':'ff', 'ff_f':'ff',
                                    'e3t_0':'e3_0', 'e3u_0':'e3_0',
                                    'e3v_0':'e3_0', 'e3f_0':'e3_0',
-                                   'deptht_0':'depth_0', 'depthw_0':'depth_0'}
+                                   'depthf_0':'depth_0',
+                                   'depthu_0':'depth_0', 'depthv_0':'depth_0',
+                                   'depthw_0':'depth_0', 'deptht_0':'depth_0'}
 
     def load_domain(self, fn_domain, chunks):
         ''' Loads domain file and renames dimensions with dim_mapping_domain'''
@@ -90,15 +93,15 @@ class NEMO(COAsT):
         
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid': 
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depth_0'] #What about e3vw
+            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
         elif self.grid_ref == 'v-grid': 
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depth_0']
+            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
         elif self.grid_ref == 't-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'depth_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0']
         elif self.grid_ref == 'w-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depth_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
         elif self.grid_ref == 'f-grid': 
-            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depth_0']  
+            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']  
             
         all_vars = grid_vars + not_grid_vars
         
@@ -115,6 +118,7 @@ class NEMO(COAsT):
                 pass
         
         # Delete specified variables
+        # MIGHT NEEWD TO DELETE OTHEHR DEPTH VARS ON OTHER GRIDS?    
         delete_vars = ['nav_lat', 'nav_lon', 'deptht']
         for var in delete_vars:
             try:
@@ -181,8 +185,8 @@ class NEMO(COAsT):
                 depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 ) 
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
-            # Write the depth_0 variable to the domain_dataset DataSet
-            dataset_domain['depth_0'] = xr.DataArray(depth_0,
+            # Write the depth_0 variable to the domain_dataset DataSet, with grid type
+            dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(depth_0,
                     dims=['z_dim', 'y_dim', 'x_dim'],
                     attrs={'Units':'m',
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
@@ -288,8 +292,8 @@ class NEMO(COAsT):
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            print("The domain [{},{}] and dataset object [{},{}] are ' + \
-                  'different sizes. Trim domain".format( 
+            print('The domain  and dataset objects are different sizes:', \
+                  ' [{},{}] cf [{},{}]. Trim domain.'.format( 
                   dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
                   self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
 
@@ -302,7 +306,6 @@ class NEMO(COAsT):
             dataset_subdomain = dataset_domain.isel( 
                                         y_dim = slice(j0, j1 + 1),
                                         x_dim = slice(i0, i1 + 1) ) 
-            #print (dataset_subdomain)
             return dataset_subdomain
         else:
             return dataset_domain
