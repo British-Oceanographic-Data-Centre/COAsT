@@ -30,10 +30,9 @@ class DIAGNOSTICS(COAsT):
 
     plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
     '''
-    def __init__(self, nemo: xr.Dataset, domain: xr.Dataset):
+    def __init__(self, nemo: xr.Dataset):
 
         self.nemo   = nemo
-        self.domain = domain
 
         # These are bespoke to the internal tide problem
         self.dataset = nemo.dataset
@@ -43,23 +42,23 @@ class DIAGNOSTICS(COAsT):
         # This might be generally useful and could be somewhere more accessible?
         #self.strat = None
 
-        self.domain.construct_depths_from_spacings() # compute depths on t and w points
-
+        #self.domain.construct_depths_from_spacings() # compute depths on t and w points
+        self.depth_0 = self.dataset.depth_0
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo.dataset.dims['t_dim']
         self.nz = nemo.dataset.dims['z_dim']
         self.ny = nemo.dataset.dims['y_dim']
         self.nx = nemo.dataset.dims['x_dim']
-        if domain.dataset.dims['z_dim'] != self.nz:
-            print('z_dim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['z_dim'], self.nz))
-        if domain.dataset.dims['y_dim'] != self.ny:
-            print('ydim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['y_dim'], self.ny))
-        if domain.dataset.dims['x_dim'] != self.nx:
-            print('xdim domain data size (%s) differs from nemo data size (%s)'
-                  %(domain.dataset.dims['x_dim'], self.nx))
+        #if domain.dataset.dims['z_dim'] != self.nz:
+        #    print('z_dim domain data size (%s) differs from nemo data size (%s)'
+        #          %(domain.dataset.dims['z_dim'], self.nz))
+        #if domain.dataset.dims['y_dim'] != self.ny:
+        #    print('ydim domain data size (%s) differs from nemo data size (%s)'
+        #          %(domain.dataset.dims['y_dim'], self.ny))
+        #if domain.dataset.dims['x_dim'] != self.nx:
+        #    print('xdim domain data size (%s) differs from nemo data size (%s)'
+        #          %(domain.dataset.dims['x_dim'], self.nx))
 
 
     def difftpt2tpt(self, var, dim='z_dim'):
@@ -80,7 +79,7 @@ class DIAGNOSTICS(COAsT):
         Compute centered vertical difference on T-points
         """
         self.dataset['strat'] = self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
+                    / self.difftpt2tpt( self.dataset.depth_0, dim='z_dim' )
 
         # Add attributes
         if 'standard_name' not in var.attrs.keys(): var.attrs['standard_name'] = '[var]'
@@ -93,7 +92,7 @@ class DIAGNOSTICS(COAsT):
         Compute centered vertical difference on T-points
         """
         return self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.domain.depth_t, dim='z_dim' )
+                    / self.difftpt2tpt( self.dataset.depth_0, dim='z_dim' )
                     
 
     def get_density(self, T: xr.DataArray, S: xr.DataArray, z: xr.DataArray):
@@ -134,8 +133,7 @@ class DIAGNOSTICS(COAsT):
 
 
         # mask out the Nan values
-        #N2_4d = N2_4d.where( xr.ufuncs.isnan(self.nemo.dataset.votemper), drop=True )
-        N2_4d = N2_4d.where( ~xr.ufuncs.isnan(self.nemo.dataset.thetao), drop=True )
+        N2_4d = N2_4d.where( ~xr.ufuncs.isnan(self.nemo.dataset.temperature), drop=True )
         #N2_4d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
 
         # initialise variables
@@ -144,22 +142,21 @@ class DIAGNOSTICS(COAsT):
 
 
         # Broadcast to fill out missing (time) dimensions in grid data
-        _, depth_t_4d = xr.broadcast(self.dataset.strat, self.domain.depth_t)
-        _, depth_w_4d = xr.broadcast(self.dataset.strat, self.domain.depth_w)
-        _, e3t_0_4d   = xr.broadcast(self.dataset.strat, self.domain.dataset.e3t_0.squeeze())
+        _, depth_0_4d = xr.broadcast(self.dataset.strat, self.dataset.depth_0)
+        _, e3_0_4d    = xr.broadcast(self.dataset.strat, self.dataset.e3_0.squeeze())
 
         
         # intergrate strat over depth
-        intN2  = ( N2_4d * e3t_0_4d ).sum( dim='z_dim', skipna=True)
+        intN2  = ( N2_4d * e3_0_4d ).sum( dim='z_dim', skipna=True)
         # intergrate (depth * strat) over depth
-        intzN2 = (N2_4d * e3t_0_4d * depth_t_4d).sum( dim='z_dim', skipna=True)
+        intzN2 = (N2_4d * e3_0_4d * depth_0_4d).sum( dim='z_dim', skipna=True)
 
 
         # compute pycnocline depth
         z_d = intzN2 / intN2 # pycnocline depth
 
         # compute pycnocline thickness
-        intz2N2 = ( xr.ufuncs.square(depth_t_4d - z_d) * e3t_0_4d * N2_4d  ).sum( dim='z_dim', skipna=True )
+        intz2N2 = ( xr.ufuncs.square(depth_0_4d - z_d) * e3_0_4d * N2_4d  ).sum( dim='z_dim', skipna=True )
         #    intz2N2 = np.trapz( (z-z_d_tile)**2 * N2, z, axis=ax)
         z_t = xr.ufuncs.sqrt(intz2N2 / intN2)
 
@@ -195,8 +192,8 @@ class DIAGNOSTICS(COAsT):
             
         for var in var_lst:
             plt.figure(figsize=(10, 10))
-            plt.pcolormesh( self.domain.dataset.glamt.squeeze(), 
-                           self.domain.dataset.gphit.squeeze(),
+            plt.pcolormesh( self.dataset.latitude.squeeze(), 
+                           self.dataset.longitude.squeeze(),
                            var.mean(dim = 't_dim') )
             plt.title(var.attrs['standard_name'] +  ' (' + var.attrs['units'] + ')')
             plt.xlabel('longitude')
