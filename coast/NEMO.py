@@ -49,6 +49,7 @@ class NEMO(COAsT):
         self.dim_mapping_domain = {'t':'t_dim0', 'x':'x_dim', 'y':'y_dim',
                                    'z':'z_dim'}
 
+
     def set_variable_mapping(self):
         # Variable names remapped  within NEMO object
         self.var_mapping = {'time_counter':'time',
@@ -145,7 +146,6 @@ class NEMO(COAsT):
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
-
     
     def set_timezero_depths(self, dataset_domain):
 
