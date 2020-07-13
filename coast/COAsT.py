@@ -53,7 +53,7 @@ class COAsT:
         """ Loads multiple files from directory into dataset variable. """
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, 
-            combine="by_coords", compat='override')
+            combine="by_coords") #, compat='override')
 
     def load_dataset(self, dataset):
         """        
