@@ -34,9 +34,7 @@ class NEMO(COAsT):
             # Define extra domain attributes using kwargs dictionary
             for key,value in kwargs.items():
                 dataset_domain[key] = value
-            print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
             dataset_domain = self.trim_domain_size( dataset_domain )
-            print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
             #self.construct_depths(dataset_domain)
             self.set_timezero_depths(dataset_domain)
             self.merge_domain_into_dataset(dataset_domain)
@@ -92,18 +90,15 @@ class NEMO(COAsT):
         
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid': 
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'deptht_0'] #What about e3vw
-            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
+            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depth_0'] #What about e3vw
         elif self.grid_ref == 'v-grid': 
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'deptht_0']
-            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
+            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depth_0']
         elif self.grid_ref == 't-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'depth_0']
         elif self.grid_ref == 'w-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depth_0']
         elif self.grid_ref == 'f-grid': 
-            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'deptht_0']  
-            print('CAUTION: ASSIGNING DEPTHS AT T-POINTS. Use depth coord for plotting only')
+            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depth_0']  
             
         all_vars = grid_vars + not_grid_vars
         
@@ -293,7 +288,11 @@ class NEMO(COAsT):
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            print("The domain and dataset object are different sizes. Trim domain")
+            print("The domain [{},{}] and dataset object [{},{}] are ' + \
+                  'different sizes. Trim domain".format( 
+                  dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
+                  self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
+
             # Find the corners of the cut out domain.
             [j0,i0] = self.find_j_i_domain( self.dataset.nav_lat[0,0], 
                                     self.dataset.nav_lon[0,0], dataset_domain )
