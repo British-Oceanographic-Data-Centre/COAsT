@@ -12,7 +12,7 @@ class NEMO(COAsT):
     kwargs -- define addition keyworded arguemts for domain file. E.g. ln_sco=1
     if using s-scoord in an old domain file that does not carry this flag.
     """
-    def __init__(self, fn_data, fn_domain=None, grid_ref='t-grid',
+    def __init__(self, fn_data=None, fn_domain=None, grid_ref='t-grid',
                  chunks: dict=None, multiple=False,
                  workers=2, threads=2, memory_limit_per_worker='2GB', **kwargs):
         self.dataset = xr.Dataset()
@@ -31,10 +31,14 @@ class NEMO(COAsT):
                   " will be available")
         else:
             dataset_domain = self.load_domain(fn_domain, chunks)
+            
             # Define extra domain attributes using kwargs dictionary
+            ## This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key,value in kwargs.items():
                 dataset_domain[key] = value
-            dataset_domain = self.trim_domain_size( dataset_domain )
+                
+            if fn_data is not None:
+                dataset_domain = self.trim_domain_size( dataset_domain )
             self.set_timezero_depths(dataset_domain) # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             
