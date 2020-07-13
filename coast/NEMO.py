@@ -71,6 +71,7 @@ class NEMO(COAsT):
                                    'ff_t':'ff', 'ff_f':'ff',
                                    'e3t_0':'e3_0', 'e3u_0':'e3_0',
                                    'e3v_0':'e3_0', 'e3f_0':'e3_0',
+                                   'tmask':'mask',
                                    'depthf_0':'depth_0',
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
                                    'depthw_0':'depth_0', 'deptht_0':'depth_0'}
@@ -102,7 +103,7 @@ class NEMO(COAsT):
         elif self.grid_ref == 'v-grid': 
             grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
         elif self.grid_ref == 't-grid': 
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0']
+            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
         elif self.grid_ref == 'w-grid': 
             grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
         elif self.grid_ref == 'f-grid': 
@@ -198,7 +199,22 @@ class NEMO(COAsT):
             print(err)
 
         return
-    
+
+    # Add subset method to NEMO class
+    def subset_indices(self, start: tuple, end: tuple) -> tuple:
+        """
+        based on transect_indices, this method looks to return all indices between the given points.
+        This results in a 'box' (Quadrilateral) of indices.
+        consequently the returned lists may have different lengths.
+        :param start: A lat/lon pair
+        :param end: A lat/lon pair
+        :return: list of y indices, list of x indices,
+        """
+
+        [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
+        [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
+
+        return list(np.arange(j1, j2+1)), list(np.arange(i1, i2+1))    
     
     def find_j_i(self, lat: float, lon: float):
         """
