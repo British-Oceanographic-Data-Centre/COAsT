@@ -3,11 +3,18 @@
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 1. Loading & Initialisation
+
+    ?. Load a subregion dataset with a domain file for the whole configuration
     a. Loading NEMO data file
     b. Loading NEMO domain file
     c. Loading Altimetry file
-    d. Load data from existing dataset 
-    
+    d. Load data from existing dataset
+    e. Set NEMO variable name
+    f. Set NEMO grid attribute - dimension names
+    g. Set NEMO grid attribute - grid_ref
+    gg. Load only domain data in NEMO  
+    ggg. Calculate depth_0 for t,u,v,w,f grids
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
@@ -15,6 +22,8 @@
     
 3. Transect Methods
     a. Determine and extract transect indices
+    b. Transport velocity and depth calculations 
+    c. Transport and velocity plotting  
 
 4. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable

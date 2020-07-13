@@ -10,7 +10,9 @@ COAsT/__pycache__/
 COAsT.egg-info/
 
 *.png
+example_files/*.nc
+example_scripts/temp*py
 
 .ipynb_checkpoints/
 
-example_files/*.nc
+
