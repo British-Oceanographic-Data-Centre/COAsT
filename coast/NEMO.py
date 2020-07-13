@@ -15,13 +15,14 @@ class NEMO(COAsT):
     def __init__(self, fn_data, fn_domain=None, grid_ref='t-grid',
                  chunks: dict=None, multiple=False,
                  workers=2, threads=2, memory_limit_per_worker='2GB', **kwargs):
-        self.dataset = None
+        self.dataset = xr.Dataset()
         self.grid_ref = grid_ref.lower()
         self.domain_loaded = False
         
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        self.load(fn_data, chunks, multiple)
+        if fn_data is not None:
+            self.load(fn_data, chunks, multiple)
         self.set_dimension_names(self.dim_mapping)
         self.set_variable_names(self.var_mapping)
                 
@@ -36,11 +37,13 @@ class NEMO(COAsT):
             print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
             dataset_domain = self.trim_domain_size( dataset_domain )
             print( dataset_domain['x_dim'].size, dataset_domain['y_dim'].size)    
-            self.construct_depths(dataset_domain)
+            #self.construct_depths(dataset_domain)
+            self.set_timezero_depths(dataset_domain)
             self.merge_domain_into_dataset(dataset_domain)
             
     def set_dimension_mapping(self):
-        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
+        self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim', 
+                            'depthu':'z_dim', 'depthv':'z_dim',
                             'y':'y_dim', 'x':'x_dim'}
         self.dim_mapping_domain = {'t':'t_dim0', 'x':'x_dim', 'y':'y_dim',
                                    'z':'z_dim'}
@@ -56,7 +59,7 @@ class NEMO(COAsT):
                                    'glamt':'longitude', 'glamu':'longitude', 
                                    'glamv':'longitude','glamf':'longitude',
                                    'gphit':'latitude', 'gphiu':'latitude', 
-                                   'gphiv':'latitude', 'gphiv':'latitude',
+                                   'gphiv':'latitude', 'gphif':'latitude',
                                    'e1t':'e1', 'e1u':'e1', 
                                    'e1v':'e1', 'e1f':'e1',
                                    'e2t':'e2', 'e2u':'e2', 
@@ -140,42 +143,114 @@ class NEMO(COAsT):
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
-    def construct_depths(self, dataset_domain):
-        # Construct depths
-        # xarray method for parsing depth variables:  # --> depth_t ,depth_w
-        print("In construct_depths")
-        if dataset_domain['ln_sco'].values == 1:
-            dataset_domain['deptht_0'], dataset_domain['depthw_0'] = \
-                self.get_depth_as_xr(dataset_domain.e3t_0, dataset_domain.e3w_0)
-        else:
-            print('Reconstruct depths for grids with ln_sco = 1. Not tried other grids yet')
+    
+    def set_timezero_depths(self, dataset_domain):
+
+        """
+        Calculates the depths at time zero (from the domain_cfg input file) 
+        for the appropriate grid.
+        
+        The depths are assigned to domain_dataset.depth_0
+
+        """
+
+        try:
+            if self.grid_ref == 't-grid':    
+                e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
+                depth_0 = np.zeros_like( e3w_0 )  
+                depth_0[0,:,:] = 0.5 * e3w_0[0,:,:]    
+                depth_0[1:,:,:] = depth_0[0,:,:] + np.cumsum( e3w_0[1:,:,:], axis=0 ) 
+            elif self.grid_ref == 'w-grid':            
+                e3t_0 = np.squeeze( dataset_domain.e3t_0.values )
+                depth_0 = np.zeros_like( e3t_0 ) 
+                depth_0[0,:,:] = 0.0
+                depth_0[1:,:,:] = np.cumsum( e3t_0, axis=0 )[:-1,:,:]
+            elif self.grid_ref == 'u-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_u = 0.5 * ( e3w_0[:,:,:-1] + e3w_0[:,:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )  
+                depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]    
+                depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 ) 
+            elif self.grid_ref == 'v-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
+                depth_0 = np.zeros_like( e3w_0 )  
+                depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]    
+                depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 ) 
+            elif self.grid_ref == 'f-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,1:,:-1] +
+                                     e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] )
+                depth_0 = np.zeros_like( e3w_0 ) 
+                depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]    
+                depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 ) 
+            else:
+                raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
+            # Write the depth_0 variable to the domain_dataset DataSet
+            dataset_domain['depth_0'] = xr.DataArray(depth_0,
+                    dims=['z_dim', 'y_dim', 'x_dim'],
+                    attrs={'Units':'m',
+                    'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
+        except ValueError as err:
+            print(err)
+
         return
-
-    def get_depth(self, e3t: np.ndarray, e3w: np.ndarray=None ):
+    
+    
+    def find_j_i(self, lat: int, lon: int):
         """
-        Returns the depth at t and w points.
-        If the w point scale factors are missing an approximation is made.
-        :param e3t: vertical scale factors at t points
-        :param e3w: (optional) vertical scale factors at w points.
-        :return: tuple of 2 4d arrays (time,z_dim,y_dim,x_dim) containing depth at t
-                    and w points respectively
+        A routine to find the nearest y x coordinates for a given latitude and longitude
+        Usage: [y,x] = find_j_i(49, -12)
+
+        :param lat: latitude
+        :param lon: longitude
+        :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
 
-        depth_t = np.ma.empty_like( e3t )
-        depth_w = np.ma.empty_like( e3t )
-        depth_w[:,0,:,:] = 0.0
-        depth_w[:,1:,:,:] = np.cumsum( e3t, axis=1 )[:,:-1,:,:]
-        if e3w is not None:
-            depth_t[:,0,:,:] = 0.5 * e3w[:,0,:,:]
-            depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w[:,1:,:,:], axis=1 )
-        else:
-            depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
-            depth_t[:,-1,:,:] = np.nan
+        dist2 = xr.ufuncs.square(self.dataset.latitude - lat) + xr.ufuncs.square(self.dataset.longitude - lon)
+        [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [y, x]
+      
+    def find_j_i_domain(self, lat, lon, dataset_domain):
+        """
+        A routine to find the nearest y x coordinates for a given latitude and longitude
+        Usage: [y,x] = find_j_i(49, -12, t)
 
-        return (np.ma.masked_invalid(depth_t), np.ma.masked_invalid(depth_w))
+        :param lat: latitude
+        :param lon: longitude
+        :param grid_ref: the gphi/glam version a user wishes to search over
+        :return: the y and x coordinates for the given grid_ref variable within the domain file
+        """
 
+        internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
+        dist2 = xr.ufuncs.square(internal_lat - lat) \
+                + xr.ufuncs.square(internal_lon - lon)
+        [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        return [y, x]
+    
+    def transect_indices(self, start: tuple, end: tuple) -> tuple:
+        """
+        This method returns the indices of a simple straight line transect between two 
+        lat lon points defined on the NEMO object's grid_ref, i.e. t,u,v,f,w.
 
-    def get_depth_as_xr( self, e3t: xr.DataArray, e3w: xr.DataArray=None ):
+        :type start: tuple A lat/lon pair
+        :type end: tuple A lat/lon pair
+        :return: array of y indices, array of x indices, number of indices in transect
+        """
+        
+        [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
+        [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
+
+        line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
+
+        jj1 = [int(jj) for jj in np.round(np.linspace(j1, j2, num=line_length))]
+        ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
+        
+        return jj1, ii1, line_length
+      
+
+    def get_depth_as_xr(self, e3t: np.ndarray, e3w: np.ndarray=None ):
         """
         Inputs and outputs as xarray DataArrays
         Returns the depth at t and w points.
@@ -185,7 +260,7 @@ class NEMO(COAsT):
         :return: tuple of 2 4d arrays (t_dim,z_dim,y_dim,x_dim) containing depth at t
                     and w points respectively
                 if t_dim has only one value. This dimension is squeezed.
-        """
+        """    
         depth_t = np.ma.empty_like( e3t.values )
         depth_w = np.ma.empty_like( e3t.values )
         depth_w[:,0,:,:] = 0.0
@@ -218,11 +293,11 @@ class NEMO(COAsT):
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            #print("The domain and dataset object are different sizes. Trim domain")
+            print("The domain and dataset object are different sizes. Trim domain")
             # Find the corners of the cut out domain.
-            [j0,i0] = self.find_j_i( self.dataset.nav_lat[0,0], 
+            [j0,i0] = self.find_j_i_domain( self.dataset.nav_lat[0,0], 
                                     self.dataset.nav_lon[0,0], dataset_domain )
-            [j1,i1] = self.find_j_i( self.dataset.nav_lat[-1,-1], 
+            [j1,i1] = self.find_j_i_domain( self.dataset.nav_lat[-1,-1], 
                                     self.dataset.nav_lon[-1,-1], dataset_domain )
 
             dataset_subdomain = dataset_domain.isel( 
@@ -246,23 +321,4 @@ class NEMO(COAsT):
             except:
                 pass
     
-    
-  
-                
-    def find_j_i(self, lat, lon, dataset_domain):
-        """
-        A routine to find the nearest y x coordinates for a given latitude and longitude
-        Usage: [y,x] = find_j_i(49, -12, t)
 
-        :param lat: latitude
-        :param lon: longitude
-        :param grid_ref: the gphi/glam version a user wishes to search over
-        :return: the y and x coordinates for the given grid_ref variable within the domain file
-        """
-
-        internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
-        dist2 = xr.ufuncs.square(internal_lat - lat) \
-                + xr.ufuncs.square(internal_lon - lon)
-        [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
-        return [y, x]
