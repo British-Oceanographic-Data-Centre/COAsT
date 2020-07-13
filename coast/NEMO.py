@@ -4,6 +4,7 @@ import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
+import gsw
 
 class NEMO(COAsT):
     
@@ -218,3 +219,55 @@ class NEMO(COAsT):
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
         
         return jj1, ii1, line_length
+    
+    
+    def construct_density(self, EOS='EOS10', z_levels=None):
+        
+        
+        try:
+            if EOS != 'EOS10': 
+                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+            if self.grid_ref != 't-grid':
+                raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
+                                 the tracer grid for NEMO.' )
+            if not self.dataset.ln_sco:
+                raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
+
+            if z_levels is None:
+                z_spacing = self.dataset.depth_0.mean( ('t_dim', 'x_dim', 'y_dim' ), skipna=True )
+                z_levels = np.arange
+            density = np.ma.zeros( ( len(z_fine), np.shape(lat)[0], np.shape(lat)[1]) )
+
+    for lat_i in np.arange( 0, np.shape(lat)[0] ):
+        for lon_i in np.arange( 0, np.shape(lon)[1] ): 
+            if np.alltrue( sal[tt, :, lat_i, lon_i].mask ):
+                density[:,lat_i,lon_i] = np.nan
+                density[:,lat_i,lon_i].mask = True
+            else:
+                temp_sal = sal[ tt, :, lat_i, lon_i ]
+                temp_temp = temp[ tt, :, lat_i, lon_i ]
+                if z_coord:  
+                    pres_abs = gsw.p_from_z( -dept, lat[lat_i, lon_i] ) # depth must be negative           
+                    S_abs = gsw.SA_from_SP( temp_sal, pres_abs, lon[ lat_i, lon_i ], lat[ lat_i, lon_i ] )   
+                    T_con = gsw.CT_from_pt( S_abs, temp_temp )
+                    
+                    density[:,lat_i,lon_i] = np.ma.masked_invalid( gsw.rho( S_abs, T_con, pres_abs ), np.nan )
+                else:
+                    temp_e3t = dept[ tt, :, lat_i, lon_i ] 
+                
+                    temp_sal_interp = interpolate.interp1d( temp_e3t[temp_sal.mask==False], temp_sal[temp_sal.mask==False], bounds_error=False, kind='linear',fill_value='extrapolate')
+                    temp_temp_interp = interpolate.interp1d( temp_e3t[temp_sal.mask==False], temp_temp[temp_sal.mask==False], bounds_error=False, kind='linear',fill_value='extrapolate')
+                    
+                    pres_abs = gsw.p_from_z( z_fine, lat[lat_i, lon_i] ) # depth must be negative           
+                    S_abs = gsw.SA_from_SP( temp_sal_interp(-z_fine), pres_abs, lon[ lat_i, lon_i ], lat[ lat_i, lon_i ] )   
+                    T_con = gsw.CT_from_pt( S_abs, temp_temp_interp(-z_fine) )
+                    
+                    bottom_valid_T_depth = temp_e3t[temp_sal.mask==False][-1]
+                    S_abs[-z_fine > bottom_valid_T_depth] = np.nan
+                    T_con[-z_fine > bottom_valid_T_depth] = np.nan
+                    density[:,lat_i,lon_i] = np.ma.masked_invalid( gsw.rho( S_abs, T_con, pres_abs ), np.nan )
+
+        except ValueError as err:
+            print(err)
+            
+        return
