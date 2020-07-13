@@ -14,6 +14,9 @@
     g. Set NEMO grid attribute - grid_ref
     gg. Load only domain data in NEMO  
     ggg. Calculate depth_0 for t,u,v,w,f grids
+    
+    h. Load NEMO that is a subregionn in the domain file
+    i. Load multi load for NEMO files
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
