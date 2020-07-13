@@ -8,6 +8,7 @@ class ALTIMETRY(OBSERVATION):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.observation_type = 'moving'
         return
     
     def set_dimension_mapping(self):
@@ -47,10 +48,10 @@ class ALTIMETRY(OBSERVATION):
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                           linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
 
-        gl.xlabels_top = False
-        gl.xlabels_bottom = True
-        gl.ylabels_right = False
-        gl.ylabels_left = True
+        gl.top_labels = False
+        gl.bottom_labels = True
+        gl.right_labels = False
+        gl.left_labels = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
 

@@ -86,8 +86,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_dims({ key : value })
             except:
-                print(str(self) + ': Problem renaming dimension: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming dimension: ' + 
+                #      key + ' -> ' + value)
                 
     def set_variable_names(self, var_mapping: dict):
         """ 
@@ -103,8 +104,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_vars({ key : value })
             except:
-                print(str(self) + ': Problem renaming variable: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming variable: ' + 
+                #      key + ' -> ' + value)
 
     def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
@@ -116,8 +118,9 @@ class COAsT:
             try:
                 self.dataset[key].attrs['grid_ref'] = value
             except:
-                print(str(self) + ': Problem assigning ' + key +
-                        'grid_ref attribute ' + value)
+                pass
+                #print(str(self) + ': Problem assigning ' + key +
+                #        'grid_ref attribute ' + value)
 
     def copy(self):
         return copy.copy(self)
@@ -189,17 +192,18 @@ class COAsT:
         lat_str = 'latitude'
 
         # Flatten NEMO domain stuff.
-        lat = self[lat_str]
-        lon = self[lon_str]
+        lat = self.dataset[lat_str]
+        lon = self.dataset[lon_str]
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
+                                                 lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
-        return indices
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
     
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
