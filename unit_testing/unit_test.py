@@ -35,7 +35,7 @@ subsec = 96 # Code for '`' (1 below 'a')
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat) 
+    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid') 
     
     # Test the data has loaded
     sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
@@ -54,39 +54,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
-# ( 1b ) Load example NEMO domain                                             #
-#                                                                             #
-subsec = subsec+1
-
-try:
-    sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
-    
-    # Test the data has loaded
-    sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
-                  ('DOMAIN_number', 0),
-                  ('DOMAIN_dimensions_ids', np.array([1, 2], dtype=np.int32)),
-                  ('DOMAIN_size_global', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_size_local', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_position_first', np.array([1, 1], dtype=np.int32)),
-                  ('DOMAIN_position_last', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_halo_size_start', np.array([0, 0], dtype=np.int32)),
-                  ('DOMAIN_halo_size_end', np.array([0, 0], dtype=np.int32)) ] )
-    
-    err_flag = False
-    for key,val in sci_dom_attrs_ref.items():
-        # There is somewhere a difference between the arrays
-        if (sci_dom.dataset.attrs[key] - val ).any(): 
-            print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dom)
-            print( sci_dom.dataset.attrs[key], ': ',val, ': ', 
-                  (sci_dom.dataset.attrs[key] - val ).any())
-            err_flag = True
-    if err_flag == False:
-            print(str(sec) + chr(subsec) + " OK - NEMO domain data loaded: " + fn_nemo_dom)
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
-
-#-----------------------------------------------------------------------------#
-# ( 1c ) Load example altimetry data                                          #
+# ( 1b ) Load example altimetry data                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -108,7 +76,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
-# ( 1d ) Load data from existing dataset                                      #
+# ( 1c ) Load data from existing dataset                                      #
 #                                                                             #
 subsec = subsec+1
 try:
@@ -128,7 +96,7 @@ except:
 #
 subsec = subsec+1
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat)
+    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref='t-grid')
     try:
         sci.dataset.temperature
     except NameError:
@@ -148,21 +116,9 @@ try:
         print(str(sec) + chr(subsec) + " X - dimension names not reset")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-#-----------------------------------------------------------------------------#
-# ( 1g ) Set NEMO grid attributes - grid_ref                                         #
-#
-
-subsec = subsec+1
-try:
-    if sci.dataset.temperature.grid_ref == 't-grid':
-        print(str(sec) + chr(subsec) + " OK - grid attribute set")
-    else:
-        print(str(sec) + chr(subsec) + " X - grid attribute not set")
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
     
 #-----------------------------------------------------------------------------#
-# ( 1gg ) Load only domain data in NEMO                #
+# ( 1f ) Load only domain data in NEMO                #
 #                                                                             #
 subsec = subsec+1
 
@@ -182,7 +138,7 @@ else:
     print(str(sec) + chr(subsec) + " X - NEMO didn't load domain data correctly")
 
 #-----------------------------------------------------------------------------#
-# ( 1ggg ) Calculate depth_0 for t,u,v,w,f grids                 #
+# ( 1g ) Calculate depth_0 for t,u,v,w,f grids                 #
 #                                                                             #
 subsec = subsec+1    
 
@@ -372,7 +328,7 @@ subsec = subsec+1
 try:
     # Find indices for points with 111 km from 0E, 51N
 
-    ind = sci_dom.subset_indices_by_distance(0,51,111)
+    ind = sci.subset_indices_by_distance(0,51,111)
     
     # Test size of indices array
     if (np.shape(ind) == (2,674)) :
@@ -400,7 +356,7 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 #################################################
-## ( 5 ) STATS Methods                         ##
+## ( 5 ) CRPS Methods                         ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -409,24 +365,30 @@ subsec = 96
 # ( 5a ) Calculate single obs CRPS values                                     #
 #                                                                             #
 subsec = subsec+1
-
-crps = coast.CRPS(sci, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
-
 try:
-    if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
-        print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-    else:
-        print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
-        
-        if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
+    nemo = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
+    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
+    
+    try:
+        if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
             print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
         else:
             print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+            
+            if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
+                print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
+            else:
+                print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+    except:
+        print(str(sec) + chr(subsec) +" FAILED")  
 except:
-    print(str(sec) + chr(subsec) +" FAILED")    
+    print(str(sec) + chr(subsec) +" FAILED")  
 
 #-----------------------------------------------------------------------------#
-# ( 5b ) Plot geographical CRPS                                               #
+# ( 5b ) CRPS Plots                                                           #
 #                                                                             #
 subsec = subsec+1
 plt.close('all')
@@ -438,10 +400,6 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
 
-#-----------------------------------------------------------------------------#
-# ( 5c ) Plot CDF comparisons for CRPS                                        #
-#                                                                             #
-subsec = subsec+1
 plt.close('all')
 try:
     fig, ax = crps.cdf_plot(0)

@@ -139,7 +139,7 @@ class CRPS():
                 # Subset model data in time and space: model -> obs
                 mod_subset = model_data.isel(y_dim = subset_ind[0],
                                                x_dim = subset_ind[1])
-                mod_subset = mod_subset.interp(time =obs_data['time'][ii],
+                mod_subset = mod_subset.interp(time = obs_data['time'][ii],
                                                    method = time_interp,
                                                    kwargs={'fill_value':'extrapolate'})
                 
@@ -158,7 +158,7 @@ class CRPS():
                     crps_list[ii] = mod_cdf.crps_fast(obs_data[ii])
                     n_model_pts[ii] = int(mod_subset.shape[0])
                     
-        print("\r Complete.                             ", end=" ", flush=True)
+        print("\r Complete.                             \n", end=" ", flush=True)
 
         return crps_list, n_model_pts, contains_land, mod_cdf, obs_cdf
     
