@@ -86,8 +86,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_dims({ key : value })
             except:
-                print(str(self) + ': Problem renaming dimension: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming dimension: ' + 
+                #      key + ' -> ' + value)
                 
     def set_variable_names(self, var_mapping: dict):
         """ 
@@ -103,8 +104,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_vars({ key : value })
             except:
-                print(str(self) + ': Problem renaming variable: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming variable: ' + 
+                #      key + ' -> ' + value)
 
     def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
@@ -116,8 +118,9 @@ class COAsT:
             try:
                 self.dataset[key].attrs['grid_ref'] = value
             except:
-                print(str(self) + ': Problem assigning ' + key +
-                        'grid_ref attribute ' + value)
+                pass
+                #print(str(self) + ': Problem assigning ' + key +
+                #        'grid_ref attribute ' + value)
 
     def copy(self):
         return copy.copy(self)
