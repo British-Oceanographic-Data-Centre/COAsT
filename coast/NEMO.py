@@ -25,7 +25,7 @@ class NEMO(COAsT):
             self.load(fn_data, chunks, multiple)
         self.set_dimension_names(self.dim_mapping)
         self.set_variable_names(self.var_mapping)
-                
+           
         if fn_domain is None:
             print("No NEMO domain specified, only limited functionality"+ 
                   " will be available")
@@ -196,7 +196,7 @@ class NEMO(COAsT):
         return
     
     
-    def find_j_i(self, lat: int, lon: int):
+    def find_j_i(self, lat: float, lon: float):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
         Usage: [y,x] = find_j_i(49, -12)
@@ -210,10 +210,10 @@ class NEMO(COAsT):
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
       
-    def find_j_i_domain(self, lat, lon, dataset_domain):
+    def find_j_i_domain(self, lat: float, lon: float, dataset_domain: xr.DataArray):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
-        Usage: [y,x] = find_j_i(49, -12, t)
+        Usage: [y,x] = find_j_i(49, -12, dataset_domain)
 
         :param lat: latitude
         :param lon: longitude
@@ -237,7 +237,7 @@ class NEMO(COAsT):
         :type end: tuple A lat/lon pair
         :return: array of y indices, array of x indices, number of indices in transect
         """
-        
+
         [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
 
@@ -247,44 +247,7 @@ class NEMO(COAsT):
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
         
         return jj1, ii1, line_length
-      
 
-    def get_depth_as_xr(self, e3t: np.ndarray, e3w: np.ndarray=None ):
-        """
-        Inputs and outputs as xarray DataArrays
-        Returns the depth at t and w points.
-        If the w point scale factors are missing an approximation is made.
-        :param e3t: vertical scale factors at t points
-        :param e3w: (optional) vertical scale factors at w points.
-        :return: tuple of 2 4d arrays (t_dim,z_dim,y_dim,x_dim) containing depth at t
-                    and w points respectively
-                if t_dim has only one value. This dimension is squeezed.
-        """    
-        depth_t = np.ma.empty_like( e3t.values )
-        depth_w = np.ma.empty_like( e3t.values )
-        depth_w[:,0,:,:] = 0.0
-        depth_w[:,1:,:,:] = np.cumsum( e3t.values, axis=1 )[:,:-1,:,:]
-
-        if e3w is not None:
-            depth_t[:,0,:,:] = 0.5 * e3w.values[:,0,:,:]
-            depth_t[:,1:,:,:] =  depth_t[:,0,:,:] + np.cumsum( e3w.values[:,1:,:,:], axis=1 )
-        else:
-            depth_t[:,:-1,:,:] = 0.5 * ( depth_w[:,:-1,:,:] + depth_w[:,1:,:,:] )
-            depth_t[:,-1,:,:] = np.nan
-
-        depth_t_xr = xr.DataArray( np.ma.masked_invalid(depth_t),
-                            dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
-                            attrs={'grid' : 't',
-                                   'units':'m',
-                                   'standard_name': 'depth on t-points'}).squeeze()
-
-        depth_w_xr = xr.DataArray( np.ma.masked_invalid(depth_w),
-                            dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'],
-                            attrs={'grid': 'w',
-                                   'units':'m',
-                                   'standard_name': 'depth on w-points'}).squeeze()
-
-        return depth_t_xr, depth_w_xr
     
     def trim_domain_size( self, dataset_domain ):
         """
