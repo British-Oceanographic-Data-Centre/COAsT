@@ -11,4 +11,4 @@ from .CRPS import CRPS
 from .interpolate_along_dimension import interpolate_along_dimension
 from .STATS import STATS
 #from .ERRORS import ERRORS
-#from .package import PACKAGE
+from .package import PACKAGE
