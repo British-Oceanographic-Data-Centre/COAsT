@@ -35,8 +35,8 @@ subsec = 96 # Code for '`' (1 below 'a')
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid') 
-    
+    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+
     # Test the data has loaded
     sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
                  ('description', 'ocean T grid variables, 25h meaned'),
@@ -44,9 +44,9 @@ try:
                  ('Conventions', 'CF-1.6'),
                  ('timeStamp', '2019-Dec-26 04:35:28 GMT'),
                  ('uuid', '96cae459-d3a1-4f4f-b82b-9259179f95f7')])
-    
+
     # checking is LHS is a subset of RHS
-    if sci_attrs_ref.items() <= sci.dataset.attrs.items(): 
+    if sci_attrs_ref.items() <= sci.dataset.attrs.items():
         print(str(sec) + chr(subsec) + " OK - NEMO data loaded: " + fn_nemo_dat)
     else:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dat)
@@ -60,15 +60,15 @@ subsec = subsec+1
 
 try:
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
-    
+
     # Test the data has loaded using attribute comparison, as for NEMO_data
     alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
                  ('date_created', '2019-02-20T11:20:56Z'),
                  ('institution', 'CLS, CNES'),
                  ('Conventions', 'CF-1.6'),])
-    
+
     # checking is LHS is a subset of RHS
-    if alt_attrs_ref.items() <= altimetry.dataset.attrs.items(): 
+    if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
         print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
     else:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
@@ -83,7 +83,7 @@ try:
     ds = xr.open_dataset(dn_files + fn_nemo_dat)
     sci_load_ds = coast.NEMO()
     sci_load_ds.load_dataset(ds)
-    sci_load_file = coast.NEMO() 
+    sci_load_file = coast.NEMO()
     sci_load_file.load(dn_files + fn_nemo_dat)
     if sci_load_ds.dataset.identical(sci_load_file.dataset):
         print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
@@ -116,7 +116,7 @@ try:
         print(str(sec) + chr(subsec) + " X - dimension names not reset")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 1f ) Load only domain data in NEMO                #
 #                                                                             #
@@ -131,7 +131,7 @@ if nemo_f.dataset._coord_names == {'depth_0', 'latitude', 'longitude'}:
         var_name_list.append(var_name)
     if var_name_list == ['e1', 'e2', 'e3_0']:
         pass_test = True
-        
+
 if pass_test:
     print(str(sec) + chr(subsec) + " OK - NEMO loaded domain data only")
 else:
@@ -140,18 +140,18 @@ else:
 #-----------------------------------------------------------------------------#
 # ( 1g ) Calculate depth_0 for t,u,v,w,f grids                 #
 #                                                                             #
-subsec = subsec+1    
+subsec = subsec+1
 
 try:
-    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
              fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
     if not np.isclose(np.nansum(nemo_t.dataset.depth_0.values), 1705804300.0):
-        raise ValueError(" X - NEMO depth_0 failed on t-grid failed")    
-    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat, 
+        raise ValueError(" X - NEMO depth_0 failed on t-grid failed")
+    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
              fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
     if not np.isclose(np.nansum(nemo_u.dataset.depth_0.values), 1705317600.0):
         raise ValueError(" X - NEMO depth_0 failed on u-grid failed")
-    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat, 
+    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
              fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
     if not np.isclose(np.nansum(nemo_v.dataset.depth_0.values), 1705419100.0):
         raise ValueError(" X - NEMO depth_0 failed on v-grid failed")
@@ -171,9 +171,9 @@ subsec = subsec+1
 try:
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60, 
+    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60,
                      dir_AMM60 + "mesh_mask.nc")
-    
+
     # checking all the coordinates mapped correctly to the dataset object
     if amm60.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
         print(str(sec) + chr(subsec) + ' OK - NEMO data subset loaded ', \
@@ -196,9 +196,9 @@ subsec = subsec+1
 try:
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60, 
+    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60,
                 dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
-    
+
     # checking all the coordinates mapped correctly to the dataset object
     if amm60.dataset.time.size == 30:
         print(str(sec) + chr(subsec) + ' OK - NEMO data loaded combine ', \
@@ -211,7 +211,7 @@ except:
     print(str(sec) + chr(subsec) + ' FAILED. Test data in: {}.', \
           ' Try on livljobs?'.format(dir))
 
-    
+
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
@@ -231,7 +231,7 @@ try:
         print(str(sec) +chr(subsec) + " X - Copy Failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-    
+
 #-----------------------------------------------------------------------------#
 # ( 2b ) COAsT __getitem__ returns variable                                   #
 #                                                                             #
@@ -243,7 +243,7 @@ try:
     else:
         print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
 except:
-    print(str(sec) + chr(subsec) +" FAILED")    
+    print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
 # ( 2c ) Renaming variables inside a COAsT object                             #
@@ -270,7 +270,7 @@ subsec = 96
 subsec = subsec+1
 
 # Extract transect indices
-nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
 yt, xt, length_of_line = nemo_t.transect_indices([51,-5],[49,-9])
 
@@ -294,11 +294,11 @@ else:
 #
 subsec = subsec+1
 
-nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat, 
+nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
-nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat, 
+nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 
@@ -306,11 +306,11 @@ nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 
 # Currently we don't have e3u and e3v vaiables so approximate using e3t
-e3u = xr.DataArray( tran.data_T.e3t_25h.values, 
+e3u = xr.DataArray( tran.data_T.e3t_25h.values,
                    coords={'time': tran.data_U.time},
                    dims=['t_dim', 'z_dim', 'r_dim'])
 tran.data_U = tran.data_U.assign(e3=e3u)
-e3v = xr.DataArray( tran.data_T.e3t_25h.values, 
+e3v = xr.DataArray( tran.data_T.e3t_25h.values,
                    coords={'time': tran.data_U.time},
                    dims=['t_dim', 'z_dim', 'r_dim'])
 tran.data_V = tran.data_V.assign(e3=e3v)
@@ -319,7 +319,7 @@ output = tran.transport_across_AB()
 # Check the calculations are as expected
 if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -49.19533238588342)  \
         and np.isclose(tran.data_tran.depth_0.sum(), 2301799.05444336) \
-        and np.isclose(np.nansum(tran.data_tran.normal_velocities.values), -253.6484375): 
+        and np.isclose(np.nansum(tran.data_tran.normal_velocities.values), -253.6484375):
 
     print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
 else:
@@ -358,7 +358,7 @@ subsec = subsec+1
 try:
     # Extact the variable
     data_t =  sci.get_subset_as_xarray("temperature", xt_ref, yt_ref)
-    
+
     # Test shape and exteme values
     if (np.shape(data_t) == (51, 37)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
                                       and (np.nanmax(data_t) - 11.834961 < 1E-6):
@@ -367,7 +367,7 @@ try:
     else:
         print(str(sec) + chr(subsec) + " X - Issue with NEMO COAsT get_subset_as_xarray method")
 except:
-    print(str(sec) + chr(subsec) +" FAILED")    
+    print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
 # ( 4b ) Indices by distance method                                           #
@@ -378,7 +378,7 @@ try:
     # Find indices for points with 111 km from 0E, 51N
 
     ind = sci.subset_indices_by_distance(0,51,111)
-    
+
     # Test size of indices array
     if (np.shape(ind) == (2,674)) :
         print(str(sec) + chr(subsec) + " OK - NEMO domain subset_indices_by_distance extracted expected " \
@@ -388,7 +388,7 @@ try:
         print(str(sec) + chr(subsec) + "X - Issue with indices extraction from NEMO domain " \
               + "subset_indices_by_distance method")
 except:
-    print(str(sec) + chr(subsec) +" FAILED")        
+    print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
 # ( 4c ) Subsetting entire COAsT object and return as copy                    #
@@ -397,7 +397,7 @@ subsec = subsec+1
 try:
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
     altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
-    
+
     if (altimetry_nwes.dataset.dims['time'] == 213) :
         print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
     else:
@@ -420,21 +420,21 @@ try:
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
     altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
     crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
-    
+
     try:
         if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
             print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
         else:
             print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
-            
+
             if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
                 print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
             else:
                 print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
     except:
-        print(str(sec) + chr(subsec) +" FAILED")  
+        print(str(sec) + chr(subsec) +" FAILED")
 except:
-    print(str(sec) + chr(subsec) +" FAILED")  
+    print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
 # ( 5b ) CRPS Plots                                                           #

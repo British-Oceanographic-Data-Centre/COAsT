@@ -21,16 +21,15 @@ class CRPS():
         $ crps_list = crps_obj.crps # Get crps values
         $ crps.map_plot() # Plots CRPS on map
     '''
-    
+
 ###############################################################################
 #######                       ~Initialisation~                          #######
 ###############################################################################
-    
-    def __init__(self, model: COAsT, observations: COAsT,
-                 var_name_mod:str, var_name_obs:str, nh_radius: float=20, 
-                 nh_type: str="radius", cdf_type: str="empirical", 
-                 time_interp: str="nearest"):
 
+    def __init__(self, model: COAsT, observations: COAsT,
+                 var_name_mod:str, var_name_obs:str, nh_radius: float=20,
+                 nh_type: str="radius", cdf_type: str="empirical",
+                 time_interp: str="nearest"):
         """Initialisation of CRPS object.
 
         Args:
@@ -60,24 +59,24 @@ class CRPS():
         self.var_name_mod = var_name_mod
         self.var_name_obs = var_name_obs
         self.dataset.attrs = {'title':'Continous Ranked Probability Score ' +
-                              'for model('+ var_name_mod + 
+                              'for model('+ var_name_mod +
                               ') vs observations(' + var_name_obs + '): '}
         # Output variables
         self.calculate()
         return
-    
+
 ###############################################################################
 #######                       ~General Routines~                        #######
 ###############################################################################
-    
+
     def __getitem__(self, varstr:str):
         """Gets variable from __dict__"""
         return self.__dict__[varstr]
 
     def calculate(self):
         """Calculate CRPS values for specified variables/methods/radii."""
-        tmp = self.calculate_sonf(self.model[self.var_name_mod], 
-                                  self.observations[self.var_name_obs], 
+        tmp = self.calculate_sonf(self.model[self.var_name_mod],
+                                  self.observations[self.var_name_obs],
                                   self.nh_radius, self.nh_type,
                                   self.cdf_type, self.time_interp)
         self.dataset['crps'] = tmp[0]
@@ -85,56 +84,54 @@ class CRPS():
         self.dataset['contains_land'] = tmp[2]
         self.dataset['mean'] = np.nanmean(tmp[0])
         self.dataset['mean_noland'] = np.nanmean(tmp[0][tmp[2]==0])
-        return 
-    
-    def calculate_sonf(self, model_data, obs_data, nh_radius: float, 
-                       nh_type: str, cdf_type:str, time_interp:str):
+        return
 
+    def calculate_sonf(self, model_data, obs_data, nh_radius: float,
+                       nh_type: str, cdf_type:str, time_interp:str):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
 
         Calculatues the Continuous Ranked Probability Score (CRPS) using
         a single-observation and neighbourhood forecast (SONF). The statistic
-        uses a comparison between the probability distributions of a model 
-        neighbourhood subset and a single observation. The CRPS is calculated 
-        independently for each observation. 
+        uses a comparison between the probability distributions of a model
+        neighbourhood subset and a single observation. The CRPS is calculated
+        independently for each observation.
         """
         # Get relevant data and rename time dimension for interpolation
         model_data = model_data.rename({'t_dim':'time'})
-        
-        # Extract only x_dim, y_dim and t_dim dimensions. 
+
+        # Extract only x_dim, y_dim and t_dim dimensions.
         # In case of other dimensions (e.g. depth), take first index
         for dim in model_data.dims:
             if dim not in ['x_dim', 'y_dim', 'time']:
                 model_data = model_data.isel(dim=0)
-    
+
         # Define output arrays
-        n_neighbourhoods = obs_data.shape[0] 
+        n_neighbourhoods = obs_data.shape[0]
         crps_list     = np.zeros( n_neighbourhoods )*np.nan
         n_model_pts   = np.zeros( n_neighbourhoods )*np.nan
         contains_land = np.zeros( n_neighbourhoods , dtype=bool)
         mod_cdf = None
         obs_cdf = None
 
-
         # Loop over neighbourhoods
         neighbourhood_indices = np.arange(0,n_neighbourhoods)
         for ii in neighbourhood_indices:
-            
-            print("\r Progress: [[ "+str(round(ii/n_neighbourhoods*100,2)) + 
+
+            print("\r Progress: [[ "+str(round(ii/n_neighbourhoods*100,2)) +
                   '% ]]', end=" ", flush=True)
-            
+
             # Neighbourhood centre
             cntr_lon = obs_data.longitude[ii]
             cntr_lat = obs_data.latitude[ii]
-        
+
             # Get model neighbourhood subset using specified method
             if nh_type == "radius":
                 subset_ind = self.subset_indices_by_distance(model_data.longitude,
-                                  model_data.latitude, cntr_lon, cntr_lat, 
+                                  model_data.latitude, cntr_lon, cntr_lat,
                                   nh_radius)
             elif nh_type == "box":
                 raise NotImplementedError
-            
+
             # Check that the model neighbourhood contains points
             if subset_ind[0].shape[0] == 0 or subset_ind[1].shape[0] == 0:
                 crps_list[ii] = np.nan
@@ -145,7 +142,7 @@ class CRPS():
                 mod_subset = mod_subset.interp(time = obs_data['time'][ii],
                                                    method = time_interp,
                                                    kwargs={'fill_value':'extrapolate'})
-                
+
                 #Check if neighbourhood contains a land value (TODO:mask)
                 if any(np.isnan(mod_subset)):
                     contains_land[ii] = True
@@ -156,17 +153,17 @@ class CRPS():
                     # Create model and observation CDF objects
                     mod_cdf = CDF(mod_subset, cdf_type = cdf_type)
                     obs_cdf = CDF([obs_data[ii]], cdf_type = 'empirical')
-                
+
                     # Calculate CRPS and put into output array
                     crps_list[ii] = mod_cdf.crps_fast(obs_data[ii])
                     n_model_pts[ii] = int(mod_subset.shape[0])
-                    
+
         print("\r Complete.                             \n", end=" ", flush=True)
 
         return crps_list, n_model_pts, contains_land, mod_cdf, obs_cdf
-    
+
     def subset_indices_by_distance(self, longitude, latitude,
-                                   centre_lon: float, centre_lat: float, 
+                                   centre_lon: float, centre_lat: float,
                                    radius: float):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
@@ -182,13 +179,13 @@ class CRPS():
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat,
                                                  longitude, latitude)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
-    
+
     def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):
         '''
         # Estimation of geographical distance using the Haversine function.
@@ -216,12 +213,12 @@ class CRPS():
         distance = 2 * 6371.007176 * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
 
         return distance
-    
-    
+
+
 ###############################################################################
 #######                       ~PLOTTING ROUTINES~                       #######
 ###############################################################################
-    
+
     def cdf_plot(self, index):
         """A comparison plot of the model and observation CDFs.
 
@@ -232,7 +229,7 @@ class CRPS():
             Figure and axes objects for the resulting image.
         """
         index=[index]
-        tmp = self.calculate_sonf(self.model[self.var_name_mod], 
+        tmp = self.calculate_sonf(self.model[self.var_name_mod],
                                   self.observations[self.var_name_obs][index],
                                   self.nh_radius, self.nh_type, self.cdf_type,
                                   self.time_interp)
@@ -273,7 +270,7 @@ class CRPS():
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-        plt.scatter(self.dataset.longitude, self.dataset.latitude, 
+        plt.scatter(self.dataset.longitude, self.dataset.latitude,
                     c=self.dataset[stats_var])
         plt.colorbar()
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
