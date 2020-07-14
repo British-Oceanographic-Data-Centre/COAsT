@@ -7,12 +7,29 @@ def get_package(package_path="package.json"):
     return SimpleNamespace(**package)
 
 
+def represent_ordered_dict(dumper, data):
+    import yaml
+
+    value = []
+
+    for item_key, item_value in data.items():
+        node_key = dumper.represent_data(item_key)
+        node_value = dumper.represent_data(item_value)
+
+        value.append((node_key, node_value))
+
+    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
+
+
 def generate_conda(directory="conda"):
     import yaml
     from os import path
+    from collections import OrderedDict
+
+    yaml.add_representer(OrderedDict, represent_ordered_dict)
 
     package = get_package()
-    package_metadata = {
+    package_metadata = OrderedDict({
         "package": {
             "name": package.name.lower(),
             "version": package.version
@@ -28,26 +45,25 @@ def generate_conda(directory="conda"):
             "host": package.install_requires,
             "run": package.install_requires
         },
+        # TODO --------------------
         "test": {
             "imports": [
                 "coast"
             ]
         },
+        # TODO --------------------
         "about": {
             "home": package.url,
             "license": package.license,
             "license_family": package.license_family,
-            "license_file": "",
             "summary": package.description,
-            "doc_url": "",
-            "dev_url": "",
         },
-        "extra": {
-            "recipe-maintainers": [
-                package.github
-            ]
-        }
-    }
+        # "extra": {
+        #     "recipe-maintainers": [
+        #         package.github
+        #     ]
+        # }
+    })
 
     yaml_path = path.join(directory, "meta.yaml")
     with open(yaml_path, "w") as meta_file:

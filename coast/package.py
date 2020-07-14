@@ -1,6 +1,9 @@
-{
+from types import SimpleNamespace
+
+
+PACKAGE = SimpleNamespace(**{
     "name": "COAsT",
-    "version": "0.2.1a10",
+    "version": "0.2.1a15",
     "description": "This is the Coast Ocean Assessment Tool",
     "url": "https://www.bodc.ac.uk",
     "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
@@ -31,12 +34,13 @@
         "xarray",
         "numpy",
         "matplotlib",
-        "netCDF4"
+        "netCDF4",
+        "numpy>=1.18"
     ],
     "python_requires": ">=3",
     "packages": [
         "coast"
     ],
-    "include_package_data": true,
+    "include_package_data": True,
     "github": "British-Oceanographic-Data-Centre"
-}
+})
