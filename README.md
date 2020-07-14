@@ -111,4 +111,3 @@ conventions. If you (as a contributor) add new objects to the toolbox, following
 the above template is strongly encouraged. This includes using xarray dataset/dataarray
 objects where possible, adopting an object oriented approach and adhering to naming 
 conventions.
-
