@@ -8,6 +8,7 @@ class ALTIMETRY(OBSERVATION):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.observation_type = 'moving'
         return
     
     def set_dimension_mapping(self):
