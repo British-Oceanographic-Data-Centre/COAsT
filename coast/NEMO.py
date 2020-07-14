@@ -22,8 +22,9 @@ class NEMO(COAsT):
         self.set_variable_names(self.var_mapping)
         
         if fn_domain is None:
-            print("No NEMO domain specified, only limited functionality"+ 
-                  " will be available")
+            pass
+            #print("No NEMO domain specified, only limited functionality"+ 
+            #      " will be available")
         else:
             dataset_domain = self.load_domain(fn_domain, chunks)
             self.set_timezero_depths(dataset_domain)
