@@ -14,5 +14,3 @@ example_files/*.nc
 example_scripts/temp*py
 
 .ipynb_checkpoints/
-
-

@@ -30,7 +30,6 @@ class CRPS():
                  var_name_mod:str, var_name_obs:str, nh_radius: float=20, 
                  nh_type: str="radius", cdf_type: str="empirical", 
                  time_interp: str="nearest"):
-
         """Initialisation of CRPS object.
 
         Args:
@@ -89,7 +88,6 @@ class CRPS():
     
     def calculate_sonf(self, model_data, obs_data, nh_radius: float, 
                        nh_type: str, cdf_type:str, time_interp:str):
-
         """Calculatues the Continuous Ranked Probability Score (CRPS)
 
         Calculatues the Continuous Ranked Probability Score (CRPS) using
@@ -114,7 +112,6 @@ class CRPS():
         contains_land = np.zeros( n_neighbourhoods , dtype=bool)
         mod_cdf = None
         obs_cdf = None
-
 
         # Loop over neighbourhoods
         neighbourhood_indices = np.arange(0,n_neighbourhoods)
