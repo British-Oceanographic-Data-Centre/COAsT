@@ -188,12 +188,10 @@ class COAsT:
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
-        lon_str = 'longitude'
-        lat_str = 'latitude'
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset[lat_str]
-        lon = self.dataset[lon_str]
+        lon = self.dataset.longitude
+        lat = self.dataset.latitude
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
