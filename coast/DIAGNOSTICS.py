@@ -130,6 +130,8 @@ class DIAGNOSTICS(COAsT):
 
         # Ensure bed value is 0
         N2_4d[:,-1,:,:] = 0
+        
+        # Bulk strat
 
 
         # mask out the Nan values
@@ -139,12 +141,17 @@ class DIAGNOSTICS(COAsT):
         # initialise variables
         z_d = np.zeros((self.nt, self.ny, self.nx)) # pycnocline depth
         z_t = np.zeros((self.nt, self.ny, self.nx)) # pycnocline thickness
-
+        #strat_m = np.zeros((self.nt, self.ny, self.nx)) # mask based on strat
+        
 
         # Broadcast to fill out missing (time) dimensions in grid data
         _, depth_0_4d = xr.broadcast(self.dataset.strat, self.dataset.depth_0)
         _, e3_0_4d    = xr.broadcast(self.dataset.strat, self.dataset.e3_0.squeeze())
 
+        # construct bulk stratification mask based on top to bottom stratification
+        bulk_strat = (N2_4d * self.dataset.e3_0).sum(dim='z_dim') \
+            / self.dataset.e3_0.sum(dim='z_dim')
+        #strat_m = strat_m.where ( bulk_strat < 3E-3, 1) # 0/1 for weak/stratified waters
         
         # intergrate strat over depth
         intN2  = ( N2_4d * e3_0_4d ).sum( dim='z_dim', skipna=True)
@@ -153,14 +160,16 @@ class DIAGNOSTICS(COAsT):
 
 
         # compute pycnocline depth
-        z_d = intzN2 / intN2 # pycnocline depth
+        #z_d = (intzN2 / intN2 ).where(bulk_strat > 1.5E-2, drop=False)# pycnocline depth
+        z_d = (intzN2 / intN2 )# pycnocline depth
 
         # compute pycnocline thickness
         intz2N2 = ( xr.ufuncs.square(depth_0_4d - z_d) * e3_0_4d * N2_4d  ).sum( dim='z_dim', skipna=True )
         #    intz2N2 = np.trapz( (z-z_d_tile)**2 * N2, z, axis=ax)
-        z_t = xr.ufuncs.sqrt(intz2N2 / intN2)
+        #z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ).where(bulk_strat > 1.5E-2, drop=False)
+        z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ) # pycnocline thickness
 
-
+        
         self.dataset['zt'] = xr.DataArray( z_t )
         self.dataset.zt.attrs['units'] = 'm'
         self.dataset.zt.attrs['standard_name'] = 'pycnocline thickness'
