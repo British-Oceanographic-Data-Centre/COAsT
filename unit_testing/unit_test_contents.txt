@@ -9,28 +9,30 @@
     d. Set NEMO variable name
     e. Set NEMO grid attribute - dimension names
     f. Load only Domain
-    g. Calculate depth_0 for t,u,v,w,f grids 
+    g. Calculate depth_0 for t,u,v,w,f grids
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
     c. Renaming variables inside a COAsT object
-    d. Computing a vertical spatial derivative
 
-3. Transect Methods
+3. Diagnostic Methods
+    a. Compute vertical spatial derivative
+
+4. Transect Methods
     a. Determine and extract transect indices
-    b. Transport velocity and depth calculations 
-    c. Transport and velocity plotting  
+    b. Transport velocity and depth calculations
+    c. Transport and velocity plotting
 
-4. Object Manipulation (e.g. indexing, subsetting)
+5. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
     b. Indices by distance
     c. Subsetting entire COAsT object and return as copy
-    
-5. CRPS Methods
+
+6. CRPS Methods
     a. Calculate single obs CRPS values using different methods
     b. CRPS map plot
     c. CRPS CDF plot
-    
-6. Plotting Methods
+
+7. Plotting Methods
     a. Altimetry quick_plot()
