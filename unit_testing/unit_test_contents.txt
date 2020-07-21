@@ -10,6 +10,8 @@
     e. Set NEMO grid attribute - dimension names
     f. Load only Domain
     g. Calculate depth_0 for t,u,v,w,f grids 
+    h. Load NEMO that is a subregionn in the domain file
+    i. Load multi load for NEMO files
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object

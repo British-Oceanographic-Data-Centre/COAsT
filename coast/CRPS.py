@@ -8,15 +8,15 @@ from .COAsT import COAsT
 class CRPS():
     '''
     Object for handling and storing necessary information, methods and outputs
-    for calculation of Continuous Ranked Probability Score. The object is 
+    for calculation of Continuous Ranked Probability Score. The object is
     initialized by passing it COAsT variables of model data, model domain and
-    and observation object. CRPS can then be calculated using the 
+    and observation object. CRPS can then be calculated using the
     CRPS.calculate() function. This will return an array of CRPS values
     (if desired) or will store them inside the object. They can be accessed
     from the object by calling CRPS.crps or CRPS['crps']
-    
+
     Example basic usage::
-        
+
         $ crps_obj = coast.CRPS(nemo_data, nemo_domain, altimetry)
         $ crps_list = crps_obj.crps # Get crps values
         $ crps.map_plot() # Plots CRPS on map
@@ -89,7 +89,7 @@ class CRPS():
     def calculate_sonf(self, model_data, obs_data, nh_radius: float, 
                        nh_type: str, cdf_type:str, time_interp:str):
         """Calculatues the Continuous Ranked Probability Score (CRPS)
-    
+
         Calculatues the Continuous Ranked Probability Score (CRPS) using
         a single-observation and neighbourhood forecast (SONF). The statistic
         uses a comparison between the probability distributions of a model 
@@ -241,12 +241,12 @@ class CRPS():
         fig, ax = mod_cdf.diff_plot(obs_cdf)
         titlestr = 'CRPS = ' + str(round( crps_tmp[0], 3)) + '\n'
         titlestr = titlestr + '# Model Points : ' + str(n_mod_pts[0]) + '  |  '
-        titlestr = titlestr + 'Contains land : ' + str(bool(contains_land[0])) 
+        titlestr = titlestr + 'Contains land : ' + str(bool(contains_land[0]))
         ax.set_title(titlestr)
         ax.grid()
         ax.legend(['Model', 'Observations'])
         return fig, ax
-    
+
     def map_plot(self, stats_var: str='crps'):
         """Plots CRPS (or other variables) at observation locations on a map
 
@@ -266,7 +266,7 @@ class CRPS():
             import sys
             warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
             sys.exit(-1)
-            
+
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -274,15 +274,15 @@ class CRPS():
                     c=self.dataset[stats_var])
         plt.colorbar()
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m', 
+        coast = NaturalEarthFeature(category='physical', scale='50m',
                                     facecolor='none', name='coastline')
         ax.add_feature(coast, edgecolor='gray')
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                           linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
-        gl.xlabels_top = False
-        gl.xlabels_bottom = True
-        gl.ylabels_right = False
-        gl.ylabels_left = True
+        gl.top_labels = False
+        gl.bottom_labels = True
+        gl.right_labels = False
+        gl.left_labels = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
         title_dict = {'crps': 'Continuous Rank Probability Score',
@@ -292,7 +292,6 @@ class CRPS():
             plt.title(title_dict[stats_var])
         except:
             pass
-        
+
         plt.show()
         return fig, ax
-    
