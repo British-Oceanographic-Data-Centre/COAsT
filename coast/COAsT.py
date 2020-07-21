@@ -5,6 +5,7 @@ import numpy as np
 from dask.distributed import Client
 from warnings import warn
 import copy
+import scipy as sp
 
 def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
