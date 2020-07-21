@@ -21,8 +21,7 @@ class FILTER_2D():
         if 't_dim' in dims:
             self.dataset = self.dataset.isel(t_dim=0)
         
-        filtered = self.gaussian_filter(self.dataset, 5, truncate=10)
-        self.dataset[var_name] = xr.DataArray(filtered)
+        self.filtered = self.gaussian_filter(self.dataset, 5, truncate=10)
 
         
     def gaussian_filter(self, array, sigma, **kwargs):
