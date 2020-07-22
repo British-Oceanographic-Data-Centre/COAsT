@@ -183,8 +183,8 @@ try:
               'loading and subsetting the data ' + fil_nam_AMM60)
 
 except:
-    print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.', \
-          ' Try on livljobs?'.format(dir))
+    print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.'\
+          .format(dir_AMM60), ' Try on livljobs')
 
 
 
@@ -208,10 +208,10 @@ try:
               'multiple data files ' + fil_names_AMM60)
 
 except:
-    print(str(sec) + chr(subsec) + ' FAILED. Test data in: {}.', \
-          ' Try on livljobs?'.format(dir))
+    print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.'\
+          .format(dir_AMM60), ' Try on livljobs')
 
-    
+
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
@@ -260,7 +260,7 @@ except:
 
 
 #################################################
-## ( 3 ) Test Transect related methods         ##
+## ( 3 ) Test Diagnostic methods               ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -269,26 +269,52 @@ subsec = 96
 # ( 3a ) Computing a vertical spatial derivative                              #
 #                                                                             #
 subsec = subsec+1
-IT_obj = coast.DIAGNOSTICS(sci)
-dTdz = IT_obj.differentiate( sci.dataset.temperature )
 
-plt.close('all')
-plt.plot( sci.dataset.temperature[0,:,100,100],
-    sci.dataset.depth_0[:,100,100],'+', label='Temperature [degC]' )
-plt.plot( 1000*dTdz[0,:,100,100],
-    sci.dataset.depth_0[:,100,100],'+',
-    label='1E3*' + dTdz.standard_name+' ['+dTdz.units+']')
-plt.gca().invert_yaxis()
-plt.yscale('log')
-plt.ylabel('depth (m)')
-plt.legend()
-plt.savefig(dn_fig + 'dTdz_plot.png')
-print(str(sec) +chr(subsec) + " OK - dTdz_plot.png plot saved ")
+# Initialise DataArrays
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+         fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+nemo_w = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='w-grid' )
 
-if (dTdz.grid == 'w-grid') and (dTdz.dataset.depth_0.values[0] == 0):
-    print(str(sec) +chr(subsec) + " OK - setting derivative attributes ")
-else:
+try:
+    log_str = ""
+    # Compute dT/dz
+    nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim' )
+    if nemo_w_1 is None: # Test whether object was returned
+        log_str += 'No object returned\n'
+    # Make sure the hardwired grid requirements are present
+    if not hasattr( nemo_w.dataset, 'depth_0' ):
+        log_str += 'Missing depth_0 variable\n'
+    if not hasattr( nemo_w.dataset, 'e3_0' ):
+        log_str += 'Missing e3_0 variable\n'
+    if not hasattr( nemo_w.dataset.depth_0, 'units' ):
+        log_str += 'Missing depth units\n'
+    # Test attributes of derivative. This are generated last so can indicate earlier problems
+    nemo_w_2 = nemo_t.differentiate( 'temperature', dim='z_dim', out_varstr='dTdz', out_obj=nemo_w )
+    if not nemo_w_2.dataset.dTdz.attrs == {'units': 'degC/m', 'standard_name': 'dTdz'}:
+        log_str += 'Did not write correct attributes\n'
+    # Test auto-naming derivative. Again test expected attributes.
+    nemo_w_3 = nemo_t.differentiate( 'temperature', dim='z_dim' )
+    if not nemo_w_3.dataset.dtemperature_dz.attrs == {'units': 'degC/m', 'standard_name': 'dtemperature_dz'}:
+        log_str += 'Problem with auto-naming derivative field\n'
+
+    ## Test numerical calculation. Differentiate f(z)=-z --> -1
+    # Construct a depth variable - needs to be 4D
+    nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'], nemo_t.dataset['temperature'] )
+    nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_varstr='dzdz' )
+    if not np.isclose( nemo_w_4.dataset.dzdz.isel(z_dim=slice(1,nemo_w_4.dataset.dzdz.sizes['z_dim'])).max(), -1 ) \
+        or not np.isclose( nemo_w_4.dataset.dzdz.isel(z_dim=slice(1,nemo_w_4.dataset.dzdz.sizes['z_dim'])).min(), -1 ):
+        log_str += 'Problem with numerical derivative of f(z)=-z\n'
+
+    if log_str == "":
+        print(str(sec) + chr(subsec) + " OK - NEMO.differentiate (for d/dz) method passes all tests")
+    else:
+        print(str(sec) + chr(subsec) + " X - NEMO.differentiate method failed: " + log_str)
+
+except:
     print(str(sec) +chr(subsec) + " X - setting derivative attributes failed ")
+
+
+
 
 
 #################################################
