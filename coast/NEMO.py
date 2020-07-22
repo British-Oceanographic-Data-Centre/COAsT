@@ -31,6 +31,7 @@ class NEMO(COAsT):
             #print("No NEMO domain specified, only limited functionality"+ 
             #      " will be available")
         else:
+            self.filename_domain = fn_domain # store domain fileanme
             dataset_domain = self.load_domain(fn_domain, chunks)
             
             # Define extra domain attributes using kwargs dictionary
