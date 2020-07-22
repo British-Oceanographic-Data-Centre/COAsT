@@ -70,8 +70,9 @@ class NEMO(COAsT):
                                    'e2t':'e2', 'e2u':'e2', 
                                    'e2v':'e2', 'e2f':'e2',
                                    'ff_t':'ff', 'ff_f':'ff',
-                                   'e3t_0':'e3_0', 'e3u_0':'e3_0',
-                                   'e3v_0':'e3_0', 'e3f_0':'e3_0',
+                                   'e3t_0':'e3_0', 'e3w_0':'e3_0',
+                                   'e3u_0':'e3_0', 'e3v_0':'e3_0',
+                                   'e3f_0':'e3_0',
                                    'tmask':'mask',
                                    'depthf_0':'depth_0',
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
@@ -194,7 +195,7 @@ class NEMO(COAsT):
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
             dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(depth_0,
                     dims=['z_dim', 'y_dim', 'x_dim'],
-                    attrs={'Units':'m',
+                    attrs={'units':'m',
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
         except ValueError as err:
             print(err)
