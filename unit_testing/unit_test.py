@@ -171,9 +171,9 @@ subsec = subsec+1
 try:
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60, 
+    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60,
                      dir_AMM60 + "mesh_mask.nc")
-    
+
     # checking all the coordinates mapped correctly to the dataset object
     if amm60.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
         print(str(sec) + chr(subsec) + ' OK - NEMO data subset loaded ', \
@@ -196,9 +196,9 @@ subsec = subsec+1
 try:
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60, 
+    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60,
                 dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
-    
+
     # checking all the coordinates mapped correctly to the dataset object
     if amm60.dataset.time.size == 30:
         print(str(sec) + chr(subsec) + ' OK - NEMO data loaded combine ', \
@@ -312,8 +312,6 @@ try:
 
 except:
     print(str(sec) +chr(subsec) + " X - setting derivative attributes failed ")
-
-
 
 
 
