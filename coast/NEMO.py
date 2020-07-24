@@ -345,6 +345,11 @@ class NEMO(COAsT):
         nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'], nemo_t.dataset['temperature'] )
         nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_varstr='dzdz' )
 
+        
+        Provide an existing target NEMO object and target variable name:
+        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim', out_varstr='dTdz', out_obj=nemo_w_1 )
+        
+        
         Parameters
         ----------
         in_varstr : str, name of variable to differentiate
