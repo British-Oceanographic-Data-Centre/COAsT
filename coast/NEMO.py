@@ -27,6 +27,7 @@ class NEMO(COAsT):
         self.set_variable_names(self.var_mapping)
            
         if fn_domain is None:
+            self.filename_domain = "" # empty store for domain fileanme
             pass
             #print("No NEMO domain specified, only limited functionality"+ 
             #      " will be available")
@@ -310,3 +311,107 @@ class NEMO(COAsT):
                 pass
     
 
+    def differentiate(self, in_varstr, dim='z_dim', out_varstr=None, out_obj=None):
+        """
+        Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
+        wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
+
+        Derivates are 1st order centre differences as this is what NEMO (and its
+        conservation properties use), rather than some fancy high order schemes.
+
+        Equations taken from 3.1.2 of the NEMOv4 handbook for the definition of
+        "grad q"
+
+        Currently the method does not accomodate all possible eventualities. It
+        covers:
+        1) d(grid_t)/dz --> grid_w
+
+        Returns  an object (with the appropriate target grid_ref) containing
+        derivative (out_varstr) as xr.DataArray
+
+        This is hardwired to expect:
+        1) depth_0 and e3_0 fields exist
+        2) xr.DataArrays are 4D
+        3) self.filename_domain if out_obj not specified
+
+        Example usage:
+        --------------
+        # Initialise DataArrays
+        nemo_t = coast.NEMO( fn_data, fn_domain, grid_ref='t-grid' )
+        # Compute dT/dz
+        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim' )
+
+        # For f(z)=-z. Compute df/dz = -1. Surface value is set to zero
+        nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'], nemo_t.dataset['temperature'] )
+        nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_varstr='dzdz' )
+
+        Parameters
+        ----------
+        in_varstr : str, name of variable to differentiate
+        dim : str, dimension to operate over. E.g. {'z_dim', 'y_dim', 'x_dim', 't_dim'}
+        out_varstr : str, (optional) name of the target xr.DataArray
+        out_obj : exiting NEMO obj to store xr.DataArray (optional)
+
+        """
+
+        new_units = ""
+
+        # Check in_varstr exists in self.
+        if hasattr( self.dataset, in_varstr ):
+            # self.dataset[in_varstr] exists
+
+            var = self.dataset[in_varstr] # for convenience
+
+            nt = var.sizes['t_dim']
+            nz = var.sizes['z_dim']
+            ny = var.sizes['y_dim']
+            nx = var.sizes['x_dim']
+
+            ## Compute d(t_grid)/dz --> w-grid
+            # Check grid_ref and dir. Determine target grid_ref.
+            if (self.grid_ref == 't-grid') and (dim == 'z_dim'):
+                out_grid = 'w-grid'
+
+                # If out_obj exists check grid_ref, else create out_obj.
+                if (out_obj is None) or (out_obj.grid_ref != out_grid):
+                    try:
+                        out_obj = NEMO( fn_domain=self.filename_domain, grid_ref=out_grid )
+                    except:
+                        print('Failed to create target NEMO obj. Perhaps self.',
+                                'filename_domain={} is empty?'
+                                .format(self.filename_domain))
+                    #print('make new target object (out_obj)')
+
+                # Check is out_varstr is defined, else create it
+                if out_varstr is None:
+                    out_varstr = 'd' + in_varstr + '_dz'
+                    #print('make new target variable name: out_str = {}'\
+                    #      .format(out_varstr))
+
+                # Create new DataArray with the same dimensions as the parent
+                # Crucially have a coordinate value that is appropriate to the target location.
+                blank = xr.zeros_like( var.isel(z_dim=[0]) ) # Using "z_dim=[0]" as a list preserves z-dimension
+                blank.coords['depth_0'] -= blank.coords['depth_0'] # reset coord vals to zero
+                # Add blank slice to the 'surface'. Concat over the 'dim' coords
+                diff = xr.concat([blank, var.diff(dim)], dim)
+                diff_ndim, e3w_ndim = xr.broadcast( diff, out_obj.dataset.e3_0.squeeze() )
+                # Compute the derivative
+                out_obj.dataset[out_varstr] = - diff_ndim / e3w_ndim
+
+                # Assign attributes
+                new_units = var.units+'/'+ out_obj.dataset.depth_0.units
+                # Convert to a xr.DataArray and return
+                out_obj.dataset[out_varstr].attrs = {
+                                           'units': new_units,
+                                           'standard_name': out_varstr}
+
+                # Return in object.
+                return out_obj
+
+            else:
+                print('Not ready for that combination of grid ({}) and ',\
+                'derivative ({})'.format(self.grid_ref, dim))
+                return None
+        else:
+            print('{} does not exist in self.dataset'.format(in_varstr))
+            return None
