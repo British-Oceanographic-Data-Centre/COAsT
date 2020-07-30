@@ -64,10 +64,13 @@ class Transect:
         # which is a paramterisation for x_dim and y_dim defining the transect
         da_tran_y_ind = xr.DataArray( tran_y_ind, dims=['r_dim'])
         da_tran_x_ind = xr.DataArray( tran_x_ind, dims=['r_dim'])
-        self.data_T = nemo_T.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
-        self.data_U = nemo_U.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
-        self.data_V = nemo_V.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
         self.data_F = nemo_F.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
+        if nemo_T is not None:
+            self.data_T = nemo_T.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
+        if nemo_U is not None:
+            self.data_U = nemo_U.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
+        if nemo_V is not None:
+            self.data_V = nemo_V.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
         # For calculations we need access to a halo of points around the transect
         # self.data_n = dataset.isel(y=tran_y+1,x=tran_x)  
         # self.data_e = dataset.isel(y=tran_y,x=tran_x+1) 

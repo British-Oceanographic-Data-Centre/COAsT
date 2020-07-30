@@ -6,7 +6,6 @@ import xarray as xr
 
 class DOMAIN(COAsT):
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Get depths at time zero
@@ -15,12 +14,19 @@ class DOMAIN(COAsT):
         return
 
     def set_dimension_mapping(self):
-        #self.dim_mapping = {'t':'t_dim', 'z':'z_dim', 
-        #                    'y':'y_dim', 'x':'x_dim'}
-        self.dim_mapping = None
+        self.dim_mapping = {'t':'t_dim', 'z':'z_dim',
+                            'y':'y_dim', 'x':'x_dim'}
+        #self.dim_mapping = None
 
+    def construct_depths_from_spacings(self):
+        # NEMO4 constucts depths from verical spacing variables
+        self.depth_t = xr.DataArray( self.dataset.e3t_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_t.attrs['units'] = 'm'
+        self.depth_t.attrs['standard_name'] = 'depth_at_t-points'
 
-
+        self.depth_w = xr.DataArray( self.dataset.e3w_0.cumsum( dim='z_dim' ).squeeze() ) # size: nz,my,nx
+        self.depth_w.attrs['units'] = 'm'
+        self.depth_w.attrs['standard_name'] = 'depth_at_w-points'
 
     def subset_indices(self, start: tuple, end: tuple, grid_ref: str = 'T') -> tuple:
         """
