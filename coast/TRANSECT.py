@@ -1,6 +1,7 @@
 from .COAsT import COAsT
 from scipy.ndimage import convolve1d
 from scipy import interpolate
+import gsw
 import xarray as xr
 import numpy as np
 
@@ -304,5 +305,111 @@ class Transect:
         plt.ylabel('Volume transport across AB [SV]')
         plt.show()
         return fig,ax
+    
+    
+    def construct_density_on_z_levels( self, EOS='EOS10', z_levels=None ):        
+        '''
+            For s-level model output this method recontructs the density 
+            onto z_levels along the transect. The z_levels and density field
+            are added to the data_T dataset attribute. 
+            
+            This method is useful when horizontal gradients of the density field 
+            are required. Z_levels can be specified, if they are not then the 
+            method will contruct a z_levels profile from the s_levels.
+            
+            Note that currently density can only be constructed using the EOS10
+            equation of state.
+
+        Parameters
+        ----------
+        EOS : equation of state, optional
+            DESCRIPTION. The default is 'EOS10'.
+        z_levels : dpeths of the z levels, should be a 1d ('z-dim') xarray.DataArray, optional
+            DESCRIPTION. The default is None.
+
+
+        Returns
+        -------
+        None.
+        adds attributes Transect.data_T.depth_z_levels and Transect.data_T.density_z_levels
+
+        '''        
+
+        
+        try:
+            if EOS != 'EOS10': 
+                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+            if self.data_T is None:
+                raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
+                                 the tracer grid for NEMO.' )
+            if not self.data_T.ln_sco.item():
+                raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
+    
+            if z_levels is None:
+                z_levels = self.data_T.depth_0.max(dim=(['r_dim']))                
+                z_levels_min = self.data_T.depth_0[0,:].max(dim=(['r_dim']))
+                z_levels[0] = z_levels_min
+            
+            try:    
+                shape_ds = ( self.data_T.t_dim.size, z_levels.size, 
+                                self.data_T.r_dim.size )
+                sal = self.data_T.vosaline.to_masked_array()
+                temp = self.data_T.temperature.to_masked_array()                
+            except AttributeError:
+                shape_ds = ( 1, z_levels.size, self.data_T.r_dim.size )
+                sal = self.data_T.vosaline.to_masked_array()[np.newaxis,...]
+                temp = self.data_T.temperature.to_masked_array()[np.newaxis,...]
+            
+            sal_z_levels = np.ma.zeros( shape_ds )
+            temp_z_levels = np.ma.zeros( shape_ds )
+            density_z_levels = np.ma.zeros( shape_ds )
+            
+            s_levels = self.data_T.depth_0.to_masked_array()
+            lat = self.data_T.latitude.values
+            lon = self.data_T.longitude.values
+    
+            for it in np.arange(0, shape_ds[0]):
+                for ir in self.data_T.r_dim:
+                    if np.all(np.isnan(sal[it,:,ir])):
+                        density_z_levels[it,:,ir] = np.nan
+                        density_z_levels[it,:,ir].mask = True
+                    else:                      
+                        sal_func = interpolate.interp1d( s_levels[:,ir], sal[it,:,ir], 
+                                    bounds_error=False, kind='linear')
+                        temp_func = interpolate.interp1d( s_levels[:,ir], temp[it,:,ir], 
+                                    bounds_error=False, kind='linear')
+                        
+                        sal_z_levels[it,:,ir] = sal_func(z_levels.values)
+                        temp_z_levels[it,:,ir] = temp_func(z_levels.values)
+                
+            
+            pressure_absolute = np.ma.masked_invalid(
+                gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
+                       
+            sal_absolute = gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat )  
+            sal_absolute[sal_absolute < 0]=np.nan
+            sal_absolute = np.ma.masked_invalid(sal_absolute)
+            temp_conservative = np.ma.masked_invalid(
+                gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
+    
+            density_z_levels = np.ma.masked_invalid( gsw.rho( 
+                sal_absolute, temp_conservative, pressure_absolute ) )
+            
+            coords={'depth_z_levels': (('z_dim'), z_levels.values),
+                    'latitude': (('r_dim'), self.data_T.latitude.values),
+                    'longitude': (('r_dim'), self.data_T.longitude.values)}
+            dims=['z_dim', 'r_dim']
+            
+            if shape_ds[0] != 1:
+                coords['time'] = (('t_dim'), self.data_T.time.values)
+                dims.insert(0, 't_dim')
+    
+            self.data_T['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
+                    coords=coords, dims=dims )
+
+        except AttributeError as err:
+            print(err)
+            
+        return
         
         
