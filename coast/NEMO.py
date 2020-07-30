@@ -225,167 +225,150 @@ class NEMO(COAsT):
         return jj1, ii1, line_length
     
     
-    def construct_density_onto_z( self, EOS='EOS10', z_levels=None ):        
-        
-        # Not that this is a performance intensive process and data should be subsetted prior
-        # to performing it. 
-        
+    def contruct_density( self, EOS='EOS10' ):
         try:
             if EOS != 'EOS10': 
                 raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
             if self.grid_ref != 't-grid':
                 raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
                                  the tracer grid for NEMO.' )
-            if not self.dataset.ln_sco.item():
-                raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
-
-            # If caller does not specify a depth profile to regrid onto then
-            # use the average depth_0 (across horiztonal space).
-            # NOTE: when time dependent depth is coded up we should use that instead
-            if z_levels is None:
-                z_levels = self.dataset.depth_0.max(dim=(['x_dim','y_dim']))
-            
-                #z_levels = self.dataset.depth_0.mean( ('x_dim', 'y_dim'), skipna=True )
-            
-            density = np.ma.zeros( ( self.dataset.t_dim.size, z_levels.size, 
-                                    self.dataset.y_dim.size, self.dataset.x_dim.size ) )
-            #density = np.ma.zeros( (1,z_levels.size, 1,1) )
-
-            #for it in self.dataset.t_dim:
-            for it in np.arange(0,1): 
-                #for iy in self.dataset.y_dim:
-                for iy in np.arange(172,173):
-                    #for ix in self.dataset.x_dim: 
-                    for ix in np.arange(154,155):
-                        if np.all(xr.ufuncs.isnan(self.dataset.vosaline[it,:,iy,ix]).values):
-                            density[it,:,iy,ix] = np.nan
-                            density[it,:,iy,ix].mask = True
-                        else:
-                            sal = self.dataset.vosaline[it,:,iy,ix].to_masked_array()
-                            temp = self.dataset.temperature[it,:,iy,ix].to_masked_array()
-                            s_levels = self.dataset.depth_0[:,iy,ix].to_masked_array()
-                            lat = self.dataset.latitude[iy, ix]
-                            lon = self.dataset.longitude[iy, ix]
-                        
-                            sal_func = interp1d( s_levels[sal.mask==False], sal[sal.mask==False], 
-                                        bounds_error=False, kind='linear', fill_value='extrapolate')
-                            temp_func = interp1d( s_levels[temp.mask==False], temp[temp.mask==False], 
-                                        bounds_error=False, kind='linear', fill_value='extrapolate')
-                            
-                            pressure_absolute = gsw.p_from_z( -z_levels, lat ) # depth must be negative           
-                            print(pressure_absolute)                            
-                            sal_absolute = gsw.SA_from_SP( sal_func( z_levels ), pressure_absolute, lon, lat )  
-                            # These values will end up being masked but negative values raise warnings.
-                            sal_absolute[sal_absolute < 0]=0 
-                            print(temp_func( z_levels ))
-                            print(sal_absolute)
-                            print(s_levels)
-                            
-                            temp_conservative = gsw.CT_from_pt( sal_absolute, temp_func( z_levels ) )
-
-                            # with warnings.catch_warnings():
-                            #     warnings.filterwarnings('error')
-                            #     try:
-                            #         pressure_absolute = gsw.p_from_z( -z_levels, lat ) # depth must be negative           
-                            #         sal_absolute = gsw.SA_from_SP( sal_func( z_levels ), pressure_absolute, lon, lat )   
-                            #         temp_conservative = gsw.CT_from_pt( sal_absolute, temp_func( z_levels ) )
-                            #     except Warning as e:
-                            #         print('ix: ' + str(ix) + ' iy: ' + str(iy))
-                            
-                            s_level_bottom = s_levels[s_levels.mask==False][-1]
-                            sal_absolute[z_levels > s_level_bottom] = np.nan
-                            temp_conservative[z_levels > s_level_bottom] = np.nan
-                            density[it,:,iy,ix] = np.ma.masked_invalid( gsw.rho( 
-                                sal_absolute, temp_conservative, pressure_absolute ), np.nan )
-
-            self.dataset['density_z_levels'] = xr.DataArray( density, 
-                    coords={'time': (('t_dim'), self.dataset.time.values),
-                            'depth_z_levels': (('z_dim'), z_levels.values),
-                            'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
-                            'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)},
-                    dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
-
-
-        except ValueError as err:
-            print(err)
-            
-        return
-    
-    def construct_density_on_z_levels( self, EOS='EOS10', z_levels=None ):        
         
-        # Not that this is a very time consuming process and data should be subsetted or averaged
-        # in space and or time prior to performing it rather than after. 
-        
-        try:
-            if EOS != 'EOS10': 
-                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
-            if self.grid_ref != 't-grid':
-                raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
-                                 the tracer grid for NEMO.' )
-            if not self.dataset.ln_sco.item():
-                raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
-    
-            if z_levels is None:
-                z_levels = self.dataset.depth_0.max(dim=(['x_dim','y_dim']))                
-                z_levels_min = self.dataset.depth_0[0,:,:].max(dim=(['x_dim','y_dim']))
-                z_levels[0] = z_levels_min
+            try:    
+                shape_ds = ( self.dataset.t_dim.size, self.dataset.z_dim.size, 
+                                self.dataset.y_dim.size, self.dataset.x_dim.size )
+                sal = self.dataset.vosaline.to_masked_array()
+                temp = self.dataset.temperature.to_masked_array()                
+            except AttributeError:
+                shape_ds = ( 1, self.dataset.z_dim.size, 
+                                self.dataset.y_dim.size, self.dataset.x_dim.size )
+                sal = self.dataset.vosaline.to_masked_array()[np.newaxis,...]
+                temp = self.dataset.temperature.to_masked_array()[np.newaxis,...]
             
-            sal_z_levels = np.ma.zeros( ( self.dataset.t_dim.size, z_levels.size, 
-                            self.dataset.y_dim.size, self.dataset.x_dim.size ) )
-            temp_z_levels = np.ma.zeros( ( self.dataset.t_dim.size, z_levels.size, 
-                            self.dataset.y_dim.size, self.dataset.x_dim.size ) )
-            density_z_levels = np.ma.zeros( ( self.dataset.t_dim.size, z_levels.size, 
-                            self.dataset.y_dim.size, self.dataset.x_dim.size ) )
+            density = np.ma.zeros( shape_ds )
             
-            sal = self.dataset.vosaline.to_masked_array()
-            temp = self.dataset.temperature.to_masked_array()
             s_levels = self.dataset.depth_0.to_masked_array()
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
-    
-            for it in self.dataset.t_dim:
-            #for it in np.arange(0,1): 
-                for iy in self.dataset.y_dim:
-                #for iy in np.arange(172,173):
-                    for ix in self.dataset.x_dim: 
-                    #for ix in np.arange(154,155):
-                        if np.all(xr.ufuncs.isnan(self.dataset.vosaline[it,:,iy,ix]).values):
-                            density_z_levels[it,:,iy,ix] = np.nan
-                            density_z_levels[it,:,iy,ix].mask = True
-                        else:                      
-                            sal_func = interp1d( s_levels[:,iy,ix], sal[it,:,iy,ix], 
-                                        bounds_error=False, kind='linear')
-                            temp_func = interp1d( s_levels[:,iy,ix], temp[it,:,iy,ix], 
-                                        bounds_error=False, kind='linear')
-                            
-                            sal_z_levels[it,:,iy,ix] = sal_func(z_levels.values)
-                            temp_z_levels[it,:,iy,ix] = temp_func(z_levels.values)
-                
             
             pressure_absolute = np.ma.masked_invalid(
-                gsw.p_from_z( -z_levels.values[:,np.newaxis,np.newaxis], lat ) ) # depth must be negative           
+                gsw.p_from_z( -s_levels, lat ) ) # depth must be negative    
                        
-            sal_absolute = gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat )  
+            sal_absolute = gsw.SA_from_SP( sal, pressure_absolute, lon, lat )  
+            
             # These values will end up being masked but negative values raise warnings.
             sal_absolute[sal_absolute < 0]=np.nan
             sal_absolute = np.ma.masked_invalid(sal_absolute)
             temp_conservative = np.ma.masked_invalid(
-                gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
-    
-            density_z_levels = np.ma.masked_invalid( gsw.rho( 
-                sal_absolute, temp_conservative, pressure_absolute ), np.nan )
-    
-            self.dataset['density_z_levels'] = xr.DataArray( density_z_levels, 
-                    coords={'time': (('t_dim'), self.dataset.time.values),
-                            'depth_z_levels': (('z_dim'), z_levels.values),
-                            'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
-                            'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)},
-                    dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
-
-
-        except ValueError as err:
-            print(err)
+                gsw.CT_from_pt( sal_absolute, temp ) )
             
-        return
+            density = np.ma.masked_invalid( gsw.rho( 
+                sal_absolute, temp_conservative, pressure_absolute ) )
+            
+            coords={'depth_0': (('z_dim','y_dim','x_dim'), self.dataset.depth_0.values),
+                    'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
+                    'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)}
+            dims=['z_dim', 'y_dim', 'x_dim']
+            
+            if shape_ds[0] != 1:
+                coords['time'] = (('t_dim'), self.dataset.time.values)
+                dims.insert(0, 't_dim')
+    
+            self.dataset['density'] = xr.DataArray( np.squeeze(density), 
+                    coords=coords, dims=dims )
+            
+        except AttributeError as err:
+            print(err)
+                                 
+                                 
+    
+    # def construct_density_on_z_levels( self, EOS='EOS10', z_levels=None ):        
+        
+    #     # Not that this is a very time consuming process and data should be subsetted or averaged
+    #     # in space and or time prior to performing it rather than after. 
+        
+    #     try:
+    #         if EOS != 'EOS10': 
+    #             raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+    #         if self.grid_ref != 't-grid':
+    #             raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
+    #                              the tracer grid for NEMO.' )
+    #         if not self.dataset.ln_sco.item():
+    #             raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
+    
+    #         if z_levels is None:
+    #             z_levels = self.dataset.depth_0.max(dim=(['x_dim','y_dim']))                
+    #             z_levels_min = self.dataset.depth_0[0,:,:].max(dim=(['x_dim','y_dim']))
+    #             z_levels[0] = z_levels_min
+            
+    #         try:    
+    #             shape_ds = ( self.dataset.t_dim.size, z_levels.size, 
+    #                             self.dataset.y_dim.size, self.dataset.x_dim.size )
+    #             sal = self.dataset.vosaline.to_masked_array()
+    #             temp = self.dataset.temperature.to_masked_array()                
+    #         except AttributeError:
+    #             shape_ds = ( 1, z_levels.size, 
+    #                             self.dataset.y_dim.size, self.dataset.x_dim.size )
+    #             sal = self.dataset.vosaline.to_masked_array()[np.newaxis,...]
+    #             temp = self.dataset.temperature.to_masked_array()[np.newaxis,...]
+            
+    #         sal_z_levels = np.ma.zeros( shape_ds )
+    #         temp_z_levels = np.ma.zeros( shape_ds )
+    #         density_z_levels = np.ma.zeros( shape_ds )
+            
+    #         s_levels = self.dataset.depth_0.to_masked_array()
+    #         lat = self.dataset.latitude.values
+    #         lon = self.dataset.longitude.values
+    
+    #         for it in np.arange(0, shape_ds[0]):
+    #         #for it in np.arange(0,1): 
+    #             for iy in self.dataset.y_dim:
+    #             #for iy in np.arange(172,173):
+    #                 for ix in self.dataset.x_dim: 
+    #                 #for ix in np.arange(154,155):
+    #                     if np.all(np.isnan(sal[it,:,iy,ix])):
+    #                         density_z_levels[it,:,iy,ix] = np.nan
+    #                         density_z_levels[it,:,iy,ix].mask = True
+    #                     else:                      
+    #                         sal_func = interp1d( s_levels[:,iy,ix], sal[it,:,iy,ix], 
+    #                                     bounds_error=False, kind='linear')
+    #                         temp_func = interp1d( s_levels[:,iy,ix], temp[it,:,iy,ix], 
+    #                                     bounds_error=False, kind='linear')
+                            
+    #                         sal_z_levels[it,:,iy,ix] = sal_func(z_levels.values)
+    #                         temp_z_levels[it,:,iy,ix] = temp_func(z_levels.values)
+                
+            
+    #         pressure_absolute = np.ma.masked_invalid(
+    #             gsw.p_from_z( -z_levels.values[:,np.newaxis,np.newaxis], lat ) ) # depth must be negative           
+                       
+    #         sal_absolute = gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat )  
+    #         # These values will end up being masked but negative values raise warnings.
+    #         sal_absolute[sal_absolute < 0]=np.nan
+    #         sal_absolute = np.ma.masked_invalid(sal_absolute)
+    #         temp_conservative = np.ma.masked_invalid(
+    #             gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
+    
+    #         density_z_levels = np.ma.masked_invalid( gsw.rho( 
+    #             sal_absolute, temp_conservative, pressure_absolute ) )
+            
+    #         if shape_ds[0] == 1:
+    #             coords={'depth_z_levels': (('z_dim'), z_levels.values),
+    #                         'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
+    #                         'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)}
+    #             dims=['z_dim', 'y_dim', 'x_dim']
+    #         else:
+    #             coords={'time': (('t_dim'), self.dataset.time.values),
+    #                         'depth_z_levels': (('z_dim'), z_levels.values),
+    #                         'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
+    #                         'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)}
+    #             dims=['t_dim', 'z_dim', 'y_dim', 'x_dim']
+    
+    #         self.dataset['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
+    #                 coords=coords, dims=dims )
+
+    #     except AttributeError as err:
+    #         print(err)
+            
+    #     return
 
  

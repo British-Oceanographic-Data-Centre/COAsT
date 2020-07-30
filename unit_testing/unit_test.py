@@ -210,6 +210,7 @@ except ValueError as err:
             print(str(sec) + chr(subsec) + str(err))
 
 
+
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
@@ -342,6 +343,26 @@ try:
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + " X - TRANSECT velocity and transport plots not saved")
+
+#-----------------------------------------------------------------------------#
+# ( 3d ) Construct density on z_levels along transect                         #
+#
+subsec = subsec+1
+tran.construct_density_on_z_levels()
+try:
+    if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
+                20142532.548826512 ): 
+        raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
+    tran.data_T = tran.data_T.drop('density_z_levels')
+    z_levels = tran.data_T.depth_z_levels.copy()
+    tran.data_T = tran.data_T.drop('depth_z_levels')
+    tran.construct_density_on_z_levels( z_levels=z_levels )
+    if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
+                20142532.548826512 ): 
+        raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
+    print(str(sec) + chr(subsec) + ' OK - TRANSECT density on z-levels correct')
+except ValueError as err:
+    print(err)
 
 
 #################################################
