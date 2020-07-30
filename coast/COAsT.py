@@ -53,7 +53,7 @@ class COAsT:
         """ Loads multiple files from directory into dataset variable. """
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, 
-            combine="by_coords", compat='override')
+            combine="by_coords") #, compat='override')
 
     def load_dataset(self, dataset):
         """        
@@ -86,8 +86,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_dims({ key : value })
             except:
-                print(str(self) + ': Problem renaming dimension: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming dimension: ' + 
+                #      key + ' -> ' + value)
                 
     def set_variable_names(self, var_mapping: dict):
         """ 
@@ -103,8 +104,9 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_vars({ key : value })
             except:
-                print(str(self) + ': Problem renaming variable: ' + 
-                      key + ' -> ' + value)
+                pass
+                #print(str(self) + ': Problem renaming variable: ' + 
+                #      key + ' -> ' + value)
 
     def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
@@ -116,8 +118,9 @@ class COAsT:
             try:
                 self.dataset[key].attrs['grid_ref'] = value
             except:
-                print(str(self) + ': Problem assigning ' + key +
-                        'grid_ref attribute ' + value)
+                pass
+                #print(str(self) + ': Problem assigning ' + key +
+                #        'grid_ref attribute ' + value)
 
     def copy(self):
         return copy.copy(self)
@@ -185,21 +188,20 @@ class COAsT:
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
-        lon_str = 'longitude'
-        lat_str = 'latitude'
 
         # Flatten NEMO domain stuff.
-        lat = self[lat_str]
-        lon = self[lon_str]
+        lon = self.dataset.longitude
+        lat = self.dataset.latitude
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
+                                                 lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
-        return indices
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
     
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
@@ -280,7 +282,7 @@ class COAsT:
         dy = xr.DataArray(points_y)
 
         if time_counter is None:
-            smaller = self.dataset[var].isel(x=dx, y=dy)
+            smaller = self.dataset[var].isel(x_dim=dx, y_dim=dy)
         else:
             smaller = self.dataset[var].isel(t_dim=time_counter, x_dim=dx, y_dim=dy)
 

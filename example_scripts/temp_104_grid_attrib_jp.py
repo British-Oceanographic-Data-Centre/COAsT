@@ -7,7 +7,8 @@ In the absence of a unit test
 """
 
 import coast
-
+import numpy as np
+import xarray as xr
 
 dir = 'example_files/'
 fn_dom = dir + 'COAsT_example_NEMO_domain.nc'
