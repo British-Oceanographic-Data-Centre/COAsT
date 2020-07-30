@@ -35,7 +35,7 @@ subsec = 96 # Code for '`' (1 below 'a')
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat) 
+    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid') 
     
     # Test the data has loaded
     sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
@@ -54,40 +54,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
-# ( 1b ) Load example NEMO domain                                             #
-#                                                                             #
-subsec = subsec+1
-
-try:
-    sci_dom = coast.DOMAIN(dn_files + fn_nemo_dom)
-    
-    # Test the data has loaded
-    sci_dom_attrs_ref = dict([('DOMAIN_number_total', 1),
-                  ('DOMAIN_number', 0),
-                  ('DOMAIN_dimensions_ids', np.array([1, 2], dtype=np.int32)),
-                  ('DOMAIN_size_global', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_size_local', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_position_first', np.array([1, 1], dtype=np.int32)),
-                  ('DOMAIN_position_last', np.array([297, 375], dtype=np.int32)),
-                  ('DOMAIN_halo_size_start', np.array([0, 0], dtype=np.int32)),
-                  ('DOMAIN_halo_size_end', np.array([0, 0], dtype=np.int32)) ] )
-    
-    err_flag = False
-    for key,val in sci_dom_attrs_ref.items():
-        # There is somewhere a difference between the arrays
-        if (sci_dom.dataset.attrs[key] - val ).any(): 
-            print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dom)
-            print( sci_dom.dataset.attrs[key], ': ',val, ': ', 
-                  (sci_dom.dataset.attrs[key] - val ).any())
-            err_flag = True
-    if err_flag == False:
-            print(str(sec) + chr(subsec) + " OK - NEMO domain data loaded: " + fn_nemo_dom)
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
-    
-
-#-----------------------------------------------------------------------------#
-# ( 1c ) Load example altimetry data                                          #
+# ( 1b ) Load example altimetry data                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -109,7 +76,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
-# ( 1d ) Load data from existing dataset                                      #
+# ( 1c ) Load data from existing dataset                                      #
 #                                                                             #
 subsec = subsec+1
 try:
@@ -125,12 +92,11 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 #-----------------------------------------------------------------------------#
-# ( 1e ) Set NEMO variable name                                          #
+# ( 1d ) Set NEMO variable name                                          #
 #
 subsec = subsec+1
-
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat)
+    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref='t-grid')
     try:
         sci.dataset.temperature
     except NameError:
@@ -140,7 +106,7 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 #-----------------------------------------------------------------------------#
-# ( 1f ) Set NEMO grid attributes - dimension names                                          #
+# ( 1e ) Set NEMO grid attributes - dimension names                                          #
 #
 subsec = subsec+1
 try:
@@ -150,21 +116,9 @@ try:
         print(str(sec) + chr(subsec) + " X - dimension names not reset")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-#-----------------------------------------------------------------------------#
-# ( 1g ) Set NEMO grid attributes - grid_ref                                         #
-#
-
-subsec = subsec+1
-try:
-    if sci.dataset.temperature.grid_ref == 't-grid':
-        print(str(sec) + chr(subsec) + " OK - grid attribute set")
-    else:
-        print(str(sec) + chr(subsec) + " X - grid attribute not set")
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
     
 #-----------------------------------------------------------------------------#
-# ( 1gg ) Load only domain data in NEMO                #
+# ( 1f ) Load only domain data in NEMO                #
 #                                                                             #
 subsec = subsec+1
 
@@ -184,7 +138,7 @@ else:
     print(str(sec) + chr(subsec) + " X - NEMO didn't load domain data correctly")
 
 #-----------------------------------------------------------------------------#
-# ( 1ggg ) Calculate depth_0 for t,u,v,w,f grids                 #
+# ( 1g ) Calculate depth_0 for t,u,v,w,f grids                 #
 #                                                                             #
 subsec = subsec+1    
 
@@ -209,6 +163,51 @@ try:
 except ValueError as err:
             print(str(sec) + chr(subsec) + str(err))
 
+#-----------------------------------------------------------------------------#
+# ( 1h ) Load a subregion dataset with a full domain                 #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
+    fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
+    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60, 
+                     dir_AMM60 + "mesh_mask.nc")
+    
+    # checking all the coordinates mapped correctly to the dataset object
+    if amm60.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
+        print(str(sec) + chr(subsec) + ' OK - NEMO data subset loaded ', \
+              'with correct coords: ' + fil_nam_AMM60)
+    else:
+        print(str(sec) + chr(subsec) + ' X - There is an issue with ', \
+              'loading and subsetting the data ' + fil_nam_AMM60)
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.', \
+          ' Try on livljobs?'.format(dir))
+
+#-----------------------------------------------------------------------------#
+# ( 1i ) Load and combine (by time) multiple files                 #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
+    fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
+    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60, 
+                dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
+    
+    # checking all the coordinates mapped correctly to the dataset object
+    if amm60.dataset.time.size == 30:
+        print(str(sec) + chr(subsec) + ' OK - NEMO data loaded combine ', \
+              'over time: ' + fil_names_AMM60)
+    else:
+        print(str(sec) + chr(subsec) + ' X - There is an issue with loading',\
+              'multiple data files ' + fil_names_AMM60)
+
+except:
+    print(str(sec) + chr(subsec) + ' FAILED. Test data in: {}.', \
+          ' Try on livljobs?'.format(dir))
 
 
 #################################################
@@ -285,6 +284,10 @@ length_ref = 37
 
 if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
     print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
+if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
+    print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
+if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
+    print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from NEMO")
 
@@ -324,13 +327,11 @@ if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -49.195
 else:
     print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
 
-
 #-----------------------------------------------------------------------------#
 # ( 3c ) Transport and velocity plotting                                      #
 #
 subsec = subsec+2
 
-plt.close('all')
 try:
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
@@ -342,7 +343,7 @@ try:
     fig.savefig(dn_fig + 'transect_transport.png')
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
-    print(str(sec) + chr(subsec) + " X - TRANSECT velocity and transport plots not saved")
+    print(str(sec) + chr(subsec) + " !!!")
 
 #-----------------------------------------------------------------------------#
 # ( 3d ) Construct density on z_levels along transect                         #
@@ -381,7 +382,6 @@ try:
     data_t =  sci.get_subset_as_xarray("temperature", xt_ref, yt_ref)
     
     # Test shape and exteme values
-    
     if (np.shape(data_t) == (51, 37)) and (np.nanmin(data_t) - 11.267578 < 1E-6) \
                                       and (np.nanmax(data_t) - 11.834961 < 1E-6):
         print(str(sec) + chr(subsec) + " OK - NEMO COAsT get_subset_as_xarray extracted expected array size and "
@@ -398,13 +398,15 @@ subsec = subsec+1
 
 try:
     # Find indices for points with 111 km from 0E, 51N
-    ind = sci_dom.subset_indices_by_distance(0,51,111)
+
+    ind = sci.subset_indices_by_distance(0,51,111)
     
     # Test size of indices array
     if (np.shape(ind) == (2,674)) :
         print(str(sec) + chr(subsec) + " OK - NEMO domain subset_indices_by_distance extracted expected " \
               + "size of indices")
     else:
+
         print(str(sec) + chr(subsec) + "X - Issue with indices extraction from NEMO domain " \
               + "subset_indices_by_distance method")
 except:
@@ -425,39 +427,37 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 #################################################
-## ( 5 ) STATS Methods                         ##
+## ( 5 ) CRPS Methods                         ##
 #################################################
 sec = sec+1
 subsec = 96
 
 #-----------------------------------------------------------------------------#
-# ( 5a ) Create STATS object                                                  #
-#                                                                             #
-try:
-    subsec = subsec+1
-    stat = coast.STATS(sci, sci_dom, altimetry_nwes)
-    print(str(sec) + chr(subsec) + " OK - STATS object created")
-except:
-    print(str(sec) + chr(subsec) + " OK - Probleam creating STATS object")
-
-
-#-----------------------------------------------------------------------------#
-# ( 5b ) Calculate single obs CRPS values                                     #
+# ( 5a ) Calculate single obs CRPS values                                     #
 #                                                                             #
 subsec = subsec+1
-
 try:
-    crps = stat.crps('sossheig','sla_filtered', nh_radius=30)
+    nemo = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
+    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
     
-    if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
-        print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-    else:
-        print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+    try:
+        if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
+            print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
+        else:
+            if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
+                print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
+            else:
+                print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+    except:
+        print(str(sec) + chr(subsec) +" FAILED")  
 except:
-    print(str(sec) + chr(subsec) +" FAILED")    
+    print(str(sec) + chr(subsec) +" FAILED")  
 
 #-----------------------------------------------------------------------------#
-# ( 5c ) Plot geographical CRPS                                               #
+# ( 5b ) CRPS Plots                                                           #
 #                                                                             #
 subsec = subsec+1
 plt.close('all')
@@ -469,10 +469,6 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
 
-#-----------------------------------------------------------------------------#
-# ( 5d ) Plot CDF comparisons for CRPS                                        #
-#                                                                             #
-subsec = subsec+1
 plt.close('all')
 try:
     fig, ax = crps.cdf_plot(0)
