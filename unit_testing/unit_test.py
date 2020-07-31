@@ -306,10 +306,6 @@ length_ref = 37
 
 if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
     print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
-if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
-    print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
-if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
-    print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from NEMO")
 
@@ -478,6 +474,8 @@ try:
         if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
             print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
         else:
+            print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
+            
             if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
                 print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
             else:
