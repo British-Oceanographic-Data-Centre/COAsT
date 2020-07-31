@@ -310,14 +310,14 @@ class Transect:
         return fig,ax
     
     
-    def construct_density_on_z_levels( self, EOS='EOS10', z_levels=None ):        
+    def construct_density_on_z_levels( self, EOS='EOS10'):#, z_levels=None ):        
         '''
             For s-level model output this method recontructs the density 
             onto z_levels along the transect. The z_levels and density field
             are added to the data_T dataset attribute. 
             
             This method is useful when horizontal gradients of the density field 
-            are required. Z_levels can be specified, if they are not then the 
+            are required. Currently Z_levels cannot be specified, the 
             method will contruct a z_levels profile from the s_levels.
             
             Note that currently density can only be constructed using the EOS10
@@ -327,8 +327,6 @@ class Transect:
         ----------
         EOS : equation of state, optional
             DESCRIPTION. The default is 'EOS10'.
-        z_levels : dpeths of the z levels, should be a 1d ('z-dim') xarray.DataArray, optional
-            DESCRIPTION. The default is None.
 
 
         Returns
@@ -345,13 +343,20 @@ class Transect:
             if self.data_T is None:
                 raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
                                  the tracer grid for NEMO.' )
-            if not self.data_T.ln_sco.item():
-                raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
+          #  if not self.data_T.ln_sco.item():
+           #     raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
     
-            if z_levels is None:
-                z_levels = self.data_T.depth_0.max(dim=(['r_dim']))                
-                z_levels_min = self.data_T.depth_0[0,:].max(dim=(['r_dim']))
-                z_levels[0] = z_levels_min
+            #if z_levels is None:
+            z_levels = self.data_T.depth_0.max(dim=(['r_dim']))                
+            z_levels_min = self.data_T.depth_0[0,:].max(dim=(['r_dim']))
+            z_levels[0] = z_levels_min
+            #else:
+             #   z_max = self.data_T.depth_0.max(dim=(['r_dim','z_dim'])).item()
+              #  z_min = self.data_T.depth_0[0,:].max(dim=(['r_dim'])).item()
+               # z_levels = z_levels[z_levels<=z_max]
+                #z_levels = z_levels[z_levels>=z_min]
+                
+                
             
             try:    
                 shape_ds = ( self.data_T.t_dim.size, z_levels.size, 
@@ -384,14 +389,16 @@ class Transect:
                         
                         sal_z_levels[it,:,ir] = sal_func(z_levels.values)
                         temp_z_levels[it,:,ir] = temp_func(z_levels.values)
+                        
                 
             
             pressure_absolute = np.ma.masked_invalid(
                 gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
                        
-            sal_absolute = gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat )  
-            sal_absolute[sal_absolute < 0]=np.nan
-            sal_absolute = np.ma.masked_invalid(sal_absolute)
+            sal_absolute = np.ma.masked_invalid(
+                gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
+            sal_absolute = np.ma.masked_less(sal_absolute,0)
+
             temp_conservative = np.ma.masked_invalid(
                 gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
     
