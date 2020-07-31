@@ -256,6 +256,28 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
+#-----------------------------------------------------------------------------#
+# ( 2d ) Construct  density                                                   #
+#                                                                             #
+subsec = subsec+1
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+nemo_t.construct_density()
+yt, xt, length_of_line = nemo_t.transect_indices([54,-15],[56,-12])
+
+try:
+    if not np.allclose( nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt,dims=['r_dim']), 
+                        y_dim=xr.DataArray(yt,dims=['r_dim'])).sum(
+                        dim=['t_dim','r_dim','z_dim']).item(),
+                        11185010.518671108 ): 
+        raise ValueError(str(sec) + chr(subsec) + ' X - Density incorrect')
+    print(str(sec) + chr(subsec) + ' OK - Density correct')
+except ValueError as err:
+    print(err)
+densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt,dims=['r_dim']), 
+                        y_dim=xr.DataArray(yt,dims=['r_dim']))
+
+
 #################################################
 ## ( 3 ) Test Transect related methods         ##
 #################################################
@@ -330,7 +352,7 @@ else:
 #-----------------------------------------------------------------------------#
 # ( 3c ) Transport and velocity plotting                                      #
 #
-subsec = subsec+2
+subsec = subsec+1
 
 try:
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
@@ -354,17 +376,26 @@ try:
     if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
                 20142532.548826512 ): 
         raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
-    tran.data_T = tran.data_T.drop('density_z_levels')
-    z_levels = tran.data_T.depth_z_levels.copy()
-    tran.data_T = tran.data_T.drop('depth_z_levels')
-    tran.construct_density_on_z_levels( z_levels=z_levels )
-    if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
-                20142532.548826512 ): 
-        raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
+    # tran.data_T = tran.data_T.drop('density_z_levels')
+    # z_levels = tran.data_T.depth_z_levels.copy()
+    # tran.data_T = tran.data_T.drop('depth_z_levels')
+    # tran.construct_density_on_z_levels( z_levels=z_levels )
+    # if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
+    #             20142532.548826512 ): 
+    #     raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
     print(str(sec) + chr(subsec) + ' OK - TRANSECT density on z-levels correct')
 except ValueError as err:
     print(err)
 
+fig, (ax1,ax2) = plt.subplots(1,2, figsize=(14,4))
+densitycopy.isel(t_dim=0).plot.pcolormesh(
+            ax=ax1,yincrease=False,y='depth_0')
+ax1.set_xticks([0,30])
+ax1.set_xticklabels(['A','B'])
+tran.data_T.density_z_levels.isel(t_dim=0).plot.pcolormesh(
+    ax=ax2,yincrease=False, y='depth_z_levels')
+plt.xticks([0,57],['A','B'])
+plt.show()
 
 #################################################
 ## ( 4 ) Object Manipulation (e.g. subsetting) ##
