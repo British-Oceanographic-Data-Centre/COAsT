@@ -17,11 +17,13 @@
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
     c. Renaming variables inside a COAsT object
+    d. Construct density method inside NEMO class 
     
 3. Transect Methods
     a. Determine and extract transect indices
     b. Transport velocity and depth calculations 
     c. Transport and velocity plotting  
+    d. Contrust density on z-levels along the transect. Compare with 2d.
 
 4. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
