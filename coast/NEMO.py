@@ -314,13 +314,12 @@ class NEMO(COAsT):
         """
         Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
         wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
-        
-        Derivates are 1st order centre differences as this is what NEMO (and its
-        conservation properties use), rather than some fancy high order schemes.
-        
-        Equations taken from 3.1.2 of the NEMOv4 handbook for the definition of
-        "grad q"
-        
+
+        Derivatives are calculated using the approach adopted in NEMO,
+        specifically using the 1st order accurate central difference
+        approximation. For reference see section 3.1.2 (sec. Discrete operators)
+        of the NEMO v4 Handbook.
+
         Currently the method does not accomodate all possible eventualities. It
         covers:
         1) d(grid_t)/dz --> grid_w
