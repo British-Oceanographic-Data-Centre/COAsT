@@ -59,6 +59,7 @@ class NEMO(COAsT):
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
+                            'vosaline' : 'salinity',
                             'so' : 'salinity'}
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
