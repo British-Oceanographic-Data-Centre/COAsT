@@ -420,7 +420,7 @@ except:
     print(str(sec) + chr(subsec) + " !!!")
 
 #-----------------------------------------------------------------------------#
-# ( 3d ) Construct density on z_levels along transect                         #
+# ( 4d ) Construct density on z_levels along transect                         #
 #
 subsec = subsec+1
 tran.construct_density_on_z_levels()
