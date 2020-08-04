@@ -312,12 +312,17 @@ class Transect:
     
     def construct_density_on_z_levels( self, EOS='EOS10'):#, z_levels=None ):        
         '''
-            For s-level model output this method recontructs the density 
+            For s-level model output this method recontructs the in-situ density 
             onto z_levels along the transect. The z_levels and density field
             are added to the data_T dataset attribute. 
             
+            Requirements: The supplied t-grid dataset must contain the 
+            Practical Salinity and the Potential Temperature variables. The depth_0
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
+            
             This method is useful when horizontal gradients of the density field 
-            are required. Currently Z_levels cannot be specified, the 
+            are required. Currently z_levels cannot be specified, the 
             method will contruct a z_levels profile from the s_levels.
             
             Note that currently density can only be constructed using the EOS10
@@ -361,11 +366,11 @@ class Transect:
             try:    
                 shape_ds = ( self.data_T.t_dim.size, z_levels.size, 
                                 self.data_T.r_dim.size )
-                sal = self.data_T.vosaline.to_masked_array()
+                sal = self.data_T.salinity.to_masked_array()
                 temp = self.data_T.temperature.to_masked_array()                
             except AttributeError:
                 shape_ds = ( 1, z_levels.size, self.data_T.r_dim.size )
-                sal = self.data_T.vosaline.to_masked_array()[np.newaxis,...]
+                sal = self.data_T.salinity.to_masked_array()[np.newaxis,...]
                 temp = self.data_T.temperature.to_masked_array()[np.newaxis,...]
             
             sal_z_levels = np.ma.zeros( shape_ds )
@@ -390,18 +395,17 @@ class Transect:
                         sal_z_levels[it,:,ir] = sal_func(z_levels.values)
                         temp_z_levels[it,:,ir] = temp_func(z_levels.values)
                         
-                
-            
+            # Absolute Pressure    
             pressure_absolute = np.ma.masked_invalid(
                 gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
-                       
+            # Absolute Salinity           
             sal_absolute = np.ma.masked_invalid(
                 gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
             sal_absolute = np.ma.masked_less(sal_absolute,0)
-
+            # Conservative Temperature
             temp_conservative = np.ma.masked_invalid(
                 gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
-    
+            # In-situ density
             density_z_levels = np.ma.masked_invalid( gsw.rho( 
                 sal_absolute, temp_conservative, pressure_absolute ) )
             
@@ -409,13 +413,14 @@ class Transect:
                     'latitude': (('r_dim'), self.data_T.latitude.values),
                     'longitude': (('r_dim'), self.data_T.longitude.values)}
             dims=['z_dim', 'r_dim']
+            attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
             
             if shape_ds[0] != 1:
                 coords['time'] = (('t_dim'), self.data_T.time.values)
                 dims.insert(0, 't_dim')
-    
+              
             self.data_T['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
-                    coords=coords, dims=dims )
+                    coords=coords, dims=dims, attrs=attributes )
 
         except AttributeError as err:
             print(err)
