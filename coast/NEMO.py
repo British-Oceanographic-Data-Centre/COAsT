@@ -4,7 +4,11 @@ import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
-
+import gsw
+from scipy.interpolate import interp1d
+from scipy.interpolate import griddata
+import warnings
+  
 class NEMO(COAsT):
     """
     Words to describe the NEMO class
@@ -59,7 +63,8 @@ class NEMO(COAsT):
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
-                            'so' : 'salinity'}
+                            'so' : 'salinity',
+                            'vosaline' : 'salinity'}
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0',
@@ -78,7 +83,8 @@ class NEMO(COAsT):
                                    'tmask':'mask',
                                    'depthf_0':'depth_0',
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
-                                   'depthw_0':'depth_0', 'deptht_0':'depth_0'}
+                                   'depthw_0':'depth_0', 'deptht_0':'depth_0',
+                                   'ln_sco':'ln_sco'}
 
     def load_domain(self, fn_domain, chunks):
         ''' Loads domain file and renames dimensions with dim_mapping_domain'''
@@ -271,7 +277,89 @@ class NEMO(COAsT):
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
 
         return jj1, ii1, line_length
+    
+    
+    def construct_density( self, EOS='EOS10' ):
+        
+        '''
+            Constructs the in-situ density using the salinity, temperture and 
+            depth_0 fields and adds a density attribute to the t-grdi dataset 
+            
+            Requirements: The supplied t-grid dataset must contain the 
+            Practical Salinity and the Potential Temperature variables. The depth_0
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
+            
+            Note that currently density can only be constructed using the EOS10
+            equation of state.
 
+        Parameters
+        ----------
+        EOS : equation of state, optional
+            DESCRIPTION. The default is 'EOS10'.
+
+
+        Returns
+        -------
+        None.
+        adds attribute NEMO.dataset.density
+
+        '''  
+        
+        try:
+            if EOS != 'EOS10': 
+                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+            if self.grid_ref != 't-grid':
+                raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
+                                 the tracer grid for NEMO.' )
+        
+            try:    
+                shape_ds = ( self.dataset.t_dim.size, self.dataset.z_dim.size, 
+                                self.dataset.y_dim.size, self.dataset.x_dim.size )
+                sal = self.dataset.salinity.to_masked_array()
+                temp = self.dataset.temperature.to_masked_array()                
+            except AttributeError:
+                shape_ds = ( 1, self.dataset.z_dim.size, 
+                                self.dataset.y_dim.size, self.dataset.x_dim.size )
+                sal = self.dataset.salinity.to_masked_array()[np.newaxis,...]
+                temp = self.dataset.temperature.to_masked_array()[np.newaxis,...]
+            
+            density = np.ma.zeros( shape_ds )
+            
+            s_levels = self.dataset.depth_0.to_masked_array()
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
+            # Absolute Pressure 
+            pressure_absolute = np.ma.masked_invalid(
+                gsw.p_from_z( -s_levels, lat ) ) # depth must be negative    
+            # Absolute Salinity            
+            sal_absolute = np.ma.masked_invalid(
+                gsw.SA_from_SP( sal, pressure_absolute, lon, lat ) )
+            sal_absolute = np.ma.masked_less(sal_absolute,0)
+            # Conservative Temperature
+            temp_conservative = np.ma.masked_invalid(
+                gsw.CT_from_pt( sal_absolute, temp ) )
+            # In-situ density
+            density = np.ma.masked_invalid( gsw.rho( 
+                sal_absolute, temp_conservative, pressure_absolute ) )
+            
+            coords={'depth_0': (('z_dim','y_dim','x_dim'), self.dataset.depth_0.values),
+                    'latitude': (('y_dim','x_dim'), self.dataset.latitude.values),
+                    'longitude': (('y_dim','x_dim'), self.dataset.longitude.values)}
+            dims=['z_dim', 'y_dim', 'x_dim']
+            attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density'}
+            
+            if shape_ds[0] != 1:
+                coords['time'] = (('t_dim'), self.dataset.time.values)
+                dims.insert(0, 't_dim')
+    
+            self.dataset['density'] = xr.DataArray( np.squeeze(density), 
+                    coords=coords, dims=dims, attrs=attributes )
+            
+        except AttributeError as err:
+            print(err)
+                                 
+    
 
     def trim_domain_size( self, dataset_domain ):
         """
