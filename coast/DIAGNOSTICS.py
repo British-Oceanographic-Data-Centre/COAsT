@@ -135,7 +135,7 @@ class DIAGNOSTICS(COAsT):
 
 
         # mask out the Nan values
-        N2_4d = N2_4d.where( ~xr.ufuncs.isnan(self.nemo.dataset.temperature), drop=True )
+        N2_4d = N2_4d.where( ~xr.ufuncs.isnan(self.nemo.dataset.temperature), drop=False )
         #N2_4d[ np.where( np.isnan(self.nemo.dataset.votemper) ) ] = np.NaN
 
         # initialise variables
@@ -148,9 +148,9 @@ class DIAGNOSTICS(COAsT):
         _, depth_0_4d = xr.broadcast(self.dataset.strat, self.dataset.depth_0)
         _, e3_0_4d    = xr.broadcast(self.dataset.strat, self.dataset.e3_0.squeeze())
 
-        # construct bulk stratification mask based on top to bottom stratification
-        bulk_strat = (N2_4d * self.dataset.e3_0).sum(dim='z_dim') \
-            / self.dataset.e3_0.sum(dim='z_dim')
+        # construct bulk stratification mask based on top to bottom stratification              
+        bulk_strat = (N2_4d * e3_0_4d).sum(dim='z_dim') \
+            / e3_0_4d.sum(dim='z_dim')
         #strat_m = strat_m.where ( bulk_strat < 3E-3, 1) # 0/1 for weak/stratified waters
         
         # intergrate strat over depth
