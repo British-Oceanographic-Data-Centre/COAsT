@@ -30,9 +30,9 @@ class DIAGNOSTICS(COAsT):
 
     plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
     '''
-    def __init__(self, nemo: xr.Dataset):
+    def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset = None):
 
-        self.nemo   = nemo
+        self.dataset = xr.Dataset()
 
         # These are bespoke to the internal tide problem
         self.dataset = nemo.dataset
@@ -46,10 +46,10 @@ class DIAGNOSTICS(COAsT):
         self.depth_0 = self.dataset.depth_0
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
-        self.nt = nemo.dataset.dims['t_dim']
-        self.nz = nemo.dataset.dims['z_dim']
-        self.ny = nemo.dataset.dims['y_dim']
-        self.nx = nemo.dataset.dims['x_dim']
+        self.nt = nemo_t.dataset.dims['t_dim']
+        self.nz = nemo_t.dataset.dims['z_dim']
+        self.ny = nemo_t.dataset.dims['y_dim']
+        self.nx = nemo_t.dataset.dims['x_dim']
         #if domain.dataset.dims['z_dim'] != self.nz:
         #    print('z_dim domain data size (%s) differs from nemo data size (%s)'
         #          %(domain.dataset.dims['z_dim'], self.nz))
@@ -178,32 +178,138 @@ class DIAGNOSTICS(COAsT):
         self.dataset.zd.attrs['units'] = 'm'
         self.dataset.zd.attrs['standard_name'] = 'pycnocline depth'
         
+
+    def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):
+        """
+        Computes pycnocline variables with w-points depths and thicknesses
+
+        Pycnocline depth: z_d = \int z.strat dz / \int strat dz
+        Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 strat dz / \int strat dz}
+            where strat = d(density)/dz
+
+        Parameters
+        ----------
+        nemo_t : xr.Dataset
+            nemo object on t-points.
+        nemo_w : xr.Dataset, optional
+            nemo object on w-points.
+
+        Output
+        ------    
+        self.dataset.pycno_depth - (t,y,x) pycnocline depth
+        self.dataset.pycno_thick - (t,y,x) pycnocline thickness
+        
+        Returns
+        -------
+        None.
+        """
+        #%% Contruct in-situ density if not already done
+        if not hasattr(nemo_t.dataset, 'density'):
+            nemo_t.construct_density( EOS='EOS10' )
+
+        #%% Construct stratification if not already done. t-pts --> w-pts
+        if not hasattr(nemo_w.dataset, 'rho_dz'):
+            nemo_w = nemo_t.differentiate( 'density', dim='z_dim', out_varstr='rho_dz', out_obj=nemo_w ) # --> sci_nwes_w.rho_dz
+        
+        # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
+        nt = nemo_t.dataset.dims['t_dim']
+        nz = nemo_t.dataset.dims['z_dim']
+        ny = nemo_t.dataset.dims['y_dim']
+        nx = nemo_t.dataset.dims['x_dim']
+
+        # compute stratification
+        #self.get_stratification( self.nemo.dataset.votemper )
+        #self.get_stratification( self.nemo.dataset.thetao )
+        #print('Using only temperature for stratification at the moment')
+
+        #self.get_stratification( self.dataset.rho  ) # --> self.strat
+
+        strat = copy.copy(nemo_w.dataset.rho_dz)  # (t_dim, z_dim, ydim, xdim). w-pts.
+
+        # Ensure surface value is 0
+        strat[:,0,:,:] = 0
+
+        # Ensure bed value is 0
+        strat[:,-1,:,:] = 0
+        
+
+        # mask out the Nan values
+        strat = strat.where( ~xr.ufuncs.isnan(nemo_w.dataset.rho_dz), drop=False )
+
+        # initialise variables
+        z_d = np.zeros((nt, ny, nx)) # pycnocline depth
+        z_t = np.zeros((nt, ny, nx)) # pycnocline thickness
+        #strat_m = np.zeros((self.nt, self.ny, self.nx)) # mask based on strat
+        
+
+        # Broadcast to fill out missing (time) dimensions in grid data
+        _, depth_0_4d = xr.broadcast(strat, nemo_w.dataset.depth_0)
+        _, e3_0_4d    = xr.broadcast(strat, nemo_w.dataset.e3_0.squeeze())
+
+        
+        # intergrate strat over depth
+        intN2  = ( strat * e3_0_4d ).sum( dim='z_dim', skipna=True)
+        # intergrate (depth * strat) over depth
+        intzN2 = (strat * e3_0_4d * depth_0_4d).sum( dim='z_dim', skipna=True)
+
+
+        # compute pycnocline depth
+        #z_d = (intzN2 / intN2 ).where(bulk_strat > 1.5E-2, drop=False)# pycnocline depth
+        z_d = (intzN2 / intN2 )# pycnocline depth
+
+        # compute pycnocline thickness
+        intz2N2 = ( xr.ufuncs.square(depth_0_4d - z_d) * e3_0_4d * strat  ).sum( dim='z_dim', skipna=True )
+        #z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ).where(bulk_strat > 1.5E-2, drop=False)
+        z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ) # pycnocline thickness
+
+        coords = {'time': (('t_dim'), nemo_t.dataset.time.values),
+                    'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
+                    'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)}
+        dims = ['t_dim', 'y_dim', 'x_dim']        
+
+        self.dataset['pycno_thick'] = xr.DataArray( z_t,
+                    coords=coords, dims=dims) 
+        self.dataset.pycno_thick.attrs['units'] = 'm'
+        self.dataset.pycno_thick.attrs['standard_name'] = 'pycnocline thickness'
+
+        self.dataset['pycno_depth'] = xr.DataArray( z_d,
+                    coords=coords, dims=dims )
+        self.dataset.pycno_depth.attrs['units'] = 'm'
+        self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'        
+        
+
     def quick_plot(self, var : xr.DataArray = None):
-        #try:
-        #    import cartopy.crs as ccrs  # mapping plots
-        #    import cartopy.feature  # add rivers, regional boundaries etc
-        #    from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
-        #    from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
-        #except ImportError:
-        #    import sys
-        #    warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
-        #    sys.exit(-1)
+        """
+
+        Map plot for pycnocline depth and thickness variables.
+        
+        Parameters
+        ----------
+        var : xr.DataArray, optional
+            Pass variable to plot. The default is None. In which case both
+            pycno_depth and pycno_thick are plotted.
+
+        Returns
+        -------
+        None.
+
+        """
             
         import matplotlib.pyplot as plt
-        #fig = plt.figure(figsize=(10, 10))
-        #ax = fig.gca()
-        #ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
         
         if var is None:
-            var_lst = [self.zt, self.zd]
+            var_lst = [self.dataset.pycno_depth, self.dataset.pycno_thick]
         else: 
             var_lst = var
             
         for var in var_lst:
             plt.figure(figsize=(10, 10))
-            plt.pcolormesh( self.dataset.latitude.squeeze(), 
-                           self.dataset.longitude.squeeze(),
+            plt.pcolormesh( self.dataset.longitude.squeeze(), 
+                           self.dataset.latitude.squeeze(),
                            var.mean(dim = 't_dim') )
+            #plt.contourf( self.dataset.longitude.squeeze(), 
+            #               self.dataset.latitude.squeeze(),
+            #               var.mean(dim = 't_dim'), levels=(0,10,20,30,40) )
             plt.title(var.attrs['standard_name'] +  ' (' + var.attrs['units'] + ')')
             plt.xlabel('longitude')
             plt.ylabel('latitude')
