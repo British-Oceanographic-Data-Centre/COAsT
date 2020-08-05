@@ -283,7 +283,7 @@ class NEMO(COAsT):
         
         '''
             Constructs the in-situ density using the salinity, temperture and 
-            depth_0 fields and adds a density attribute to the t-grdi dataset 
+            depth_0 fields and adds a density attribute to the t-grid dataset 
             
             Requirements: The supplied t-grid dataset must contain the 
             Practical Salinity and the Potential Temperature variables. The depth_0
