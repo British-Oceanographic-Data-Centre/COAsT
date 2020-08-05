@@ -292,7 +292,7 @@ try:
         log_str += 'Did not write correct attributes\n'
     # Test auto-naming derivative. Again test expected attributes.
     nemo_w_3 = nemo_t.differentiate( 'temperature', dim='z_dim' )
-    if not nemo_w_3.dataset.dtemperature_dz.attrs == {'units': 'degC/m', 'standard_name': 'dtemperature_dz'}:
+    if not nemo_w_3.dataset.temperature_dz.attrs == {'units': 'degC/m', 'standard_name': 'temperature_dz'}:
         log_str += 'Problem with auto-naming derivative field\n'
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
