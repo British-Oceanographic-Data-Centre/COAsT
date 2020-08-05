@@ -478,7 +478,7 @@ class NEMO(COAsT):
 
                 # Check is out_varstr is defined, else create it
                 if out_varstr is None:
-                    out_varstr = 'd' + in_varstr + '_dz'
+                    out_varstr = in_varstr + '_dz'
                     #print('make new target variable name: out_str = {}'\
                     #      .format(out_varstr))
 
