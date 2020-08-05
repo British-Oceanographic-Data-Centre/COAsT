@@ -419,6 +419,9 @@ class NEMO(COAsT):
         1) depth_0 and e3_0 fields exist
         2) xr.DataArrays are 4D
         3) self.filename_domain if out_obj not specified
+        4) If out_obj is not specified, one is built that is  the size of
+            self.filename_domain. I.e. automatic subsetting of out_obj is not
+            supported.
         
         Example usage:
         --------------
