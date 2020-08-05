@@ -370,10 +370,10 @@ class NEMO(COAsT):
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            print('The domain  and dataset objects are different sizes:', \
-                  ' [{},{}] cf [{},{}]. Trim domain.'.format(
-                  dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
-                  self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
+            #print('The domain  and dataset objects are different sizes:', \
+            #      ' [{},{}] cf [{},{}]. Trim domain.'.format(
+            #      dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
+            #      self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
 
             # Find the corners of the cut out domain.
             [j0,i0] = self.find_j_i_domain( self.dataset.nav_lat[0,0],
@@ -512,3 +512,5 @@ class NEMO(COAsT):
         else:
             print('{} does not exist in self.dataset'.format(in_varstr))
             return None
+        
+        
