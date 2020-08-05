@@ -95,9 +95,9 @@ class DIAGNOSTICS(COAsT):
                     / self.difftpt2tpt( self.dataset.depth_0, dim='z_dim' )
                     
 
-    def get_density(self, T: xr.DataArray, S: xr.DataArray, z: xr.DataArray):
-        """ Compute a density from temperature, salinity """
-        self.dataset['rho'] = xr.DataArray( gsw.rho(S,T,z), dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
+    #def get_density(self, T: xr.DataArray, S: xr.DataArray, z: xr.DataArray):
+    #    """ Compute a density from temperature, salinity """
+    #    self.dataset['rho'] = xr.DataArray( gsw.rho(S,T,z), dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
         
 
     def get_pyc_vars(self):
