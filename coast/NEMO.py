@@ -364,6 +364,9 @@ class NEMO(COAsT):
     def trim_domain_size( self, dataset_domain ):
         """
         Trim the domain variables if the dataset object is a spatial subset
+        
+        Note: This breaks if the SW & NW corner values of nav_lat and nav_lon 
+        are masked, as can happen if on land...
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
