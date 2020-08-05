@@ -8,33 +8,25 @@ import gsw
 #from .interpolate_along_dimension import interpolate_along_dimension
 
 class DIAGNOSTICS(COAsT):
-    '''
+    """
     Object for handling and storing necessary information, methods and outputs
-    for calculation of dynamical diagnostics. The object is
-    initialized by passing it COAsT variables of model data, model domain.
+    for calculation of dynamical diagnostics.
+        
+    Parameters
+    ----------
+        nemo_t : xr.Dataset
+            nemo object on t-points.
+        nemo_w : xr.Dataset, optional
+            nemo object on w-points. 
 
-
-    A w-grid object is automatically generated unless the t-grid object has 
-    been spatially subsetted, in which case the w-grid object must be passed.
-    
-    Example basic usage::
-
-    # Create Diagnostics object
-    IT_obj = Diagnostics(sci_nwes, dom_nwes)
-    # Construct stratification
-    IT_obj.get_stratification( sci_nwes.dataset.votemper ) # --> self.strat
-
-    IT_obj.get_pyc_vars()
-
-    import matplotlib.pyplot as plt
-
-    plt.pcolor( IT_obj.strat[0,10,:,:]); plt.show()
-
-    plt.plot( IT_obj.strat[0,:,100,60],'+'); plt.show()
-
-    plt.plot(sci_nwes.dataset.votemper[0,:,100,60],'+'); plt.show()
-    '''
-    def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset = None):
+    Example basic usage:
+        # Create Diagnostics object
+        IT_obj = Diagnostics(sci_nwes_t, scu_nwes_w)
+        IT_obj.construct_pycnocline_vars( sci_nwes_t, sci_nwes_w ) # --> self.zd and self.zt
+        # Make maps of pycnocline thickness and depth
+        IT_obj.quick_plot()
+    """
+    def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):
 
         self.dataset = xr.Dataset()
 
