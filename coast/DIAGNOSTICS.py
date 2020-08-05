@@ -38,71 +38,12 @@ class DIAGNOSTICS(COAsT):
 
         self.dataset = xr.Dataset()
 
-        # These are bespoke to the internal tide problem
-        self.dataset = nemo.dataset
-        #self.zt = None
-        #self.zd = None
-
-        # This might be generally useful and could be somewhere more accessible?
-        #self.strat = None
-
-        #self.domain.construct_depths_from_spacings() # compute depths on t and w points
-        self.depth_0 = self.dataset.depth_0
-
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo_t.dataset.dims['t_dim']
         self.nz = nemo_t.dataset.dims['z_dim']
         self.ny = nemo_t.dataset.dims['y_dim']
         self.nx = nemo_t.dataset.dims['x_dim']
-        #if domain.dataset.dims['z_dim'] != self.nz:
-        #    print('z_dim domain data size (%s) differs from nemo data size (%s)'
-        #          %(domain.dataset.dims['z_dim'], self.nz))
-        #if domain.dataset.dims['y_dim'] != self.ny:
-        #    print('ydim domain data size (%s) differs from nemo data size (%s)'
-        #          %(domain.dataset.dims['y_dim'], self.ny))
-        #if domain.dataset.dims['x_dim'] != self.nx:
-        #    print('xdim domain data size (%s) differs from nemo data size (%s)'
-        #          %(domain.dataset.dims['x_dim'], self.nx))
-
-
-    def difftpt2tpt(self, var, dim='z_dim'):
-        """
-        Compute the Euler derivative of T-pt variable onto a T-pt.
-        Input the dimension index for derivative
-        """
-        if dim == 'z_dim':
-            difference = 0.5*( var.roll(z_dim=-1, roll_coords=True)
-                    - var.roll(z_dim=+1, roll_coords=True) )
-        else:
-            print('Not expecting that dimension yet')
-        return difference
     
-
-    def get_stratification(self, var: xr.DataArray ):
-        """
-        Compute centered vertical difference on T-points
-        """
-        self.dataset['strat'] = self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.dataset.depth_0, dim='z_dim' )
-
-        # Add attributes
-        if 'standard_name' not in var.attrs.keys(): var.attrs['standard_name'] = '[var]'
-        if 'units' not in var.attrs.keys(): var.attrs['units'] = '[var]'
-        self.dataset.strat.attrs['units'] = var.units + '/m'
-        self.dataset.strat.attrs['standard_name'] = var.standard_name + ' stratification'
-
-    def get_deriv(self, var: xr.DataArray ):
-        """
-        Compute centered vertical difference on T-points
-        """
-        return self.difftpt2tpt( var, dim='z_dim' ) \
-                    / self.difftpt2tpt( self.dataset.depth_0, dim='z_dim' )
-                    
-
-    #def get_density(self, T: xr.DataArray, S: xr.DataArray, z: xr.DataArray):
-    #    """ Compute a density from temperature, salinity """
-    #    self.dataset['rho'] = xr.DataArray( gsw.rho(S,T,z), dims=['t_dim', 'z_dim', 'y_dim', 'x_dim'] )
-        
 
     def get_pyc_vars(self):
         """
