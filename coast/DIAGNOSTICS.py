@@ -13,6 +13,10 @@ class DIAGNOSTICS(COAsT):
     for calculation of dynamical diagnostics. The object is
     initialized by passing it COAsT variables of model data, model domain.
 
+
+    A w-grid object is automatically generated unless the t-grid object has 
+    been spatially subsetted, in which case the w-grid object must be passed.
+    
     Example basic usage::
 
     # Create Diagnostics object
