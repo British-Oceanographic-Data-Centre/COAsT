@@ -12,6 +12,7 @@ import coast
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
+import datetime
 
 dn_files = "./example_files/"
 dn_fig = 'unit_testing/figures/'
@@ -21,6 +22,7 @@ fn_nemo_grid_v_dat = 'nemo_data_V_grid.nc'
 fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
+fn_tidegauge = 'fukaura-fukaura-japan-jma'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -583,4 +585,22 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
 
+plt.close('all')
+
+#-----------------------------------------------------------------------------#
+# ( 1j ) Load in and view tide gauge data for specified date range            #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    tg = coast.TIDEGAUGE()
+    date0 = datetime.datetime(1972,1,1)
+    date1 = datetime.datetime(1972,12,1)
+    tg.read_gesla_to_dataset(dn_files + fn_tidegauge, date0, date1)
+    fig, ax = tg.quick_plot(date_start = datetime.datetime(1972,4,1), 
+                  date_end=datetime.datetime(1972,4,5), plot_line=True)
+    fig.savefig(dn_fig + 'tidegauge_quick_plot.png')
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
 plt.close('all')
