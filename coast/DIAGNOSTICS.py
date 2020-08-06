@@ -172,10 +172,15 @@ class DIAGNOSTICS(COAsT):
 
         # mask out the Nan values
         strat = strat.where( ~xr.ufuncs.isnan(nemo_w.dataset.rho_dz), drop=False )
+        
+        # create mask with a stratification threshold
+        strat_m = nemo_w.dataset.latitude * 0 + 1 # create a stratification mask: [1/0] = strat/un-strat
+        strat_m = strat_m.where( strat.max(dim='z_dim').squeeze() > 0.01, 0, drop=False)
+
 
         # initialise variables
-        z_d = np.zeros((nt, ny, nx)) # pycnocline depth
-        z_t = np.zeros((nt, ny, nx)) # pycnocline thickness
+        zd = np.zeros((nt, ny, nx)) # pycnocline depth
+        zt = np.zeros((nt, ny, nx)) # pycnocline thickness
         #strat_m = np.zeros((self.nt, self.ny, self.nx)) # mask based on strat
         
 
@@ -192,28 +197,42 @@ class DIAGNOSTICS(COAsT):
 
         # compute pycnocline depth
         #z_d = (intzN2 / intN2 ).where(bulk_strat > 1.5E-2, drop=False)# pycnocline depth
-        z_d = (intzN2 / intN2 )# pycnocline depth
+        zd = (intzN2 / intN2 )# pycnocline depth
 
         # compute pycnocline thickness
-        intz2N2 = ( xr.ufuncs.square(depth_0_4d - z_d) * e3_0_4d * strat  ).sum( dim='z_dim', skipna=True )
+        intz2N2 = ( xr.ufuncs.square(depth_0_4d - zd) * e3_0_4d * strat  ).sum( dim='z_dim', skipna=True )
         #z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ).where(bulk_strat > 1.5E-2, drop=False)
-        z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ) # pycnocline thickness
+        zt = ( xr.ufuncs.sqrt(intz2N2 / intN2) ) # pycnocline thickness
 
         coords = {'time': (('t_dim'), nemo_t.dataset.time.values),
                     'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
                     'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)}
         dims = ['t_dim', 'y_dim', 'x_dim']        
 
-        self.dataset['pycno_thick'] = xr.DataArray( z_t,
+        self.dataset['pycno_thick'] = xr.DataArray( zt,
                     coords=coords, dims=dims) 
         self.dataset.pycno_thick.attrs['units'] = 'm'
         self.dataset.pycno_thick.attrs['standard_name'] = 'pycnocline thickness'
 
-        self.dataset['pycno_depth'] = xr.DataArray( z_d,
+        self.dataset['pycno_depth'] = xr.DataArray( zd,
                     coords=coords, dims=dims )
         self.dataset.pycno_depth.attrs['units'] = 'm'
         self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'        
         
+       
+        #%% Mask pynocline quantities
+        zd_m = zd.where( strat_m > 0, -999, drop=False ) 
+        zt_m = zt.where( strat_m > 0, -999, drop=False ) 
+
+        self.dataset['pycno_thick_masked'] = xr.DataArray( zt_m,
+                    coords=coords, dims=dims) 
+        self.dataset.pycno_thick.attrs['units'] = 'm'
+        self.dataset.pycno_thick.attrs['standard_name'] = 'masked pycnocline thickness'
+
+        self.dataset['pycno_depth_masked'] = xr.DataArray( zd_m,
+                    coords=coords, dims=dims )
+        self.dataset.pycno_depth.attrs['units'] = 'm'
+        self.dataset.pycno_depth.attrs['standard_name'] = 'masked pycnocline depth'  
 
     def quick_plot(self, var : xr.DataArray = None):
         """
