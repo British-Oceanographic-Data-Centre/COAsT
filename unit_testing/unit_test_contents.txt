@@ -4,30 +4,39 @@
 
 1. Loading & Initialisation
     a. Loading NEMO data file
-    b. Loading NEMO domain file
-    c. Loading Altimetry file
-    d. Load data from existing dataset 
-    
+    b. Loading Altimetry file
+    c. Load data from existing dataset
+    d. Set NEMO variable name
+    e. Set NEMO grid attribute - dimension names
+    f. Load only Domain
+    g. Calculate depth_0 for t,u,v,w,f grids 
+    h. Load NEMO that is a subregionn in the domain file
+    i. Load multi load for NEMO files
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
     c. Renaming variables inside a COAsT object
-    
-3. Transect Methods
-    a. Determine and extract transect indices
-    b. Transport velocity and depth calculations 
-    c. Transport and velocity plotting  
 
-4. Object Manipulation (e.g. indexing, subsetting)
+3. Diagnostic Methods
+    a. Compute vertical spatial derivative
+    b. Construct density method inside NEMO class
+
+4. Transect Methods
+    a. Determine and extract transect indices
+    b. Transport velocity and depth calculations
+    c. Transport and velocity plotting
+    d. Contrust density on z-levels along the transect. Compare with item 3b.
+
+5. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
     b. Indices by distance
     c. Subsetting entire COAsT object and return as copy
-    
-5. STATS Methods
-    a. Create STATS object
-    b. Calculate single obs CRPS values using different methods
-    c. CRPS map plot
-    d. CRPS CDF plot
-    
-6. Plotting Methods
+
+6. CRPS Methods
+    a. Calculate single obs CRPS values using different methods
+    b. CRPS map plot
+    c. CRPS CDF plot
+
+7. Plotting Methods
     a. Altimetry quick_plot()
