@@ -27,13 +27,13 @@ class ALTIMETRY(OBSERVATION):
         self.observation_type = 'moving'
         self.dataset = self.dataset.rename_dims(self.dim_mapping)
         return
-    
+
     def set_dimension_mapping(self):
         self.dim_mapping = {'time':'t_dim'}
 
     def set_variable_mapping(self):
         self.var_mapping = None
-        
+
     def quick_plot(self, var: str=None):
         try:
             import cartopy.crs as ccrs  # mapping plots
@@ -44,19 +44,19 @@ class ALTIMETRY(OBSERVATION):
             import sys
             warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
             sys.exit(-1)
-            
+
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-        
+
         if var is None:
             cset = self.dataset.plot.scatter(x='longitude',y='latitude')
         else:
             cset = self.dataset.plot.scatter(x='longitude',y='latitude',hue=var)
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m', 
+        coast = NaturalEarthFeature(category='physical', scale='50m',
                                     facecolor=[0.8,0.8,0.8], name='coastline',
                                     alpha=0.5)
         ax.add_feature(coast, edgecolor='gray')
@@ -64,15 +64,16 @@ class ALTIMETRY(OBSERVATION):
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                           linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
 
-        gl.xlabels_top = False
-        gl.xlabels_bottom = True
-        gl.ylabels_right = False
-        gl.ylabels_left = True
+        gl.top_labels = False
+        gl.bottom_labels = True
+        gl.right_labels = False
+        gl.left_labels = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
 
         plt.show()
         return fig, ax
+<<<<<<< HEAD
     
     def obs_operator(self, model, mod_var_name:str, 
                                 time_interp = 'nearest'):
@@ -128,3 +129,5 @@ class ALTIMETRY(OBSERVATION):
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
         return
+=======
+>>>>>>> develop
