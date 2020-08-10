@@ -1,31 +1,23 @@
 from setuptools import setup
-from coast import PACKAGE
+from metadata import get_package
 
-
-def get_package(package_path="package.json"):
-    from types import SimpleNamespace
-    import json
-
-    with open(package_path, "r") as package_file:
-        _package = json.load(package_file)
-    return SimpleNamespace(**_package)
-
+package = get_package()
 
 setup(
-    name=PACKAGE.name,
-    version=PACKAGE.version,
-    description=PACKAGE.description,
-    url=PACKAGE.url,
-    download_url=PACKAGE.download_url,
-    author=PACKAGE.author,
-    author_email=PACKAGE.author_email,
-    license=PACKAGE.license,  # TODO,
-    setup_requires=PACKAGE.setup_requires,
-    classifiers=PACKAGE.classifiers,
-    keywords=PACKAGE.keywords,
-    project_urls=PACKAGE.project_urls,
-    install_requires=PACKAGE.install_requires,
-    python_requires=PACKAGE.python_requires,
-    packages=PACKAGE.packages,
-    include_package_data=PACKAGE.include_package_data
+    name=package.name,
+    version=package.version,
+    description=package.description,
+    url=package.url,
+    download_url=package.download_url,
+    author=package.author,
+    author_email=package.author_email,
+    license=package.license,  # TODO,
+    setup_requires=package.setup_requires,
+    classifiers=package.classifiers,
+    keywords=package.keywords,
+    project_urls=package.project_urls,
+    install_requires=package.install_requires,
+    python_requires=package.python_requires,
+    packages=package.packages,
+    include_package_data=package.include_package_data
 )
