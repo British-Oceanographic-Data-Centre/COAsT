@@ -73,7 +73,6 @@ class ALTIMETRY(OBSERVATION):
 
         plt.show()
         return fig, ax
-<<<<<<< HEAD
     
     def obs_operator(self, model, mod_var_name:str, 
                                 time_interp = 'nearest'):
@@ -129,5 +128,3 @@ class ALTIMETRY(OBSERVATION):
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
         return
-=======
->>>>>>> develop
