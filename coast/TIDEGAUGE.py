@@ -45,7 +45,7 @@ class TIDEGAUGE():
                 if line_count==0:
                     pass
                 elif line_count == 1: # Name of tide gauge site
-                    dataset.attrs['site_name'] = line.split()[3]
+                    dataset.attrs['site_name'] = line[12:]
                 elif line_count == 4: # Latitude
                     dataset.attrs['latitude'] = float(line.split()[2])
                 elif line_count == 5: # Longitude
