@@ -54,7 +54,7 @@ class COAsT:
         """ Loads multiple files from directory into dataset variable. """
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, 
-            combine="by_coords", compat='override')
+            combine="by_coords") #, compat='override')
 
     def load_dataset(self, dataset):
         """        
@@ -191,8 +191,8 @@ class COAsT:
         """
 
         # Flatten NEMO domain stuff.
-        lat = self.dataset.latitude
         lon = self.dataset.longitude
+        lat = self.dataset.latitude
 
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
@@ -283,7 +283,7 @@ class COAsT:
         dy = xr.DataArray(points_y)
 
         if time_counter is None:
-            smaller = self.dataset[var].isel(x=dx, y=dy)
+            smaller = self.dataset[var].isel(x_dim=dx, y_dim=dy)
         else:
             smaller = self.dataset[var].isel(t_dim=time_counter, x_dim=dx, y_dim=dy)
 
