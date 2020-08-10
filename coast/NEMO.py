@@ -246,7 +246,7 @@ class NEMO(COAsT):
         -------
         Array of x indices, Array of y indices
         '''
-        # Cast lat/lon to numpy arrays
+        # Cast lat/lon to numpy arrays in case xarray things
         new_lons = np.array(new_lons)
         new_lats = np.array(new_lats)
         mod_lon = np.array(model_dataset.longitude).flatten()
@@ -282,16 +282,18 @@ class NEMO(COAsT):
     def interpolate_in_space(self, model_array, new_lons, new_lats):
         '''
         Interpolates a provided xarray.DataArray in space to new longitudes
-        and latitudes using a nearest neighbour method.
+        and latitudes using a nearest neighbour method (BallTree).
         
         Example Useage
         ----------
-
+        # Get an interpolated DataArray for temperature onto two locations
+        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                                 [0,1], [45,46])
         Parameters
         ----------
         model_array (xr.DataArray): Model variable DataArray to interpolate
-        new_lons (array): Array of longitudes (degrees) to compare with model
-        new_lats (array): Array of latitudes (degrees) to compare with model
+        new_lons (1Darray): Array of longitudes (degrees) to compare with model
+        new_lats (1Darray): Array of latitudes (degrees) to compare with model
         
         Returns
         -------
@@ -309,8 +311,8 @@ class NEMO(COAsT):
     def interpolate_in_time(self, model_array, new_times, 
                                interp_method = 'nearest', extrapolate=True):
         '''
-        Interpolates a provided xarray.DataArray in space to new longitudes
-        and latitudes using a specified scipy.interpolate method.
+        Interpolates a provided xarray.DataArray in time to new python
+        datetimes using a specified scipy.interpolate method.
         
         Example Useage
         ----------
