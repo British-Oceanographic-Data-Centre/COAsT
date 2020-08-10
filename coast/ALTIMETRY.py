@@ -26,7 +26,7 @@ class ALTIMETRY(OBSERVATION):
         super().__init__(*args, **kwargs)
         self.observation_type = 'moving'
         self.dataset = self.dataset.rename_dims(self.dim_mapping)
-        self.dataset.attrs = {}
+        #self.dataset.attrs = {}
         return
 
     def set_dimension_mapping(self):

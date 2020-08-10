@@ -501,16 +501,16 @@ except:
 subsec = subsec+1
 try:
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
 
-    if (altimetry_nwes.dataset.dims['time'] == 213) :
+    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
         print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
     else:
         print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 #################################################
-## ( 6 ) CRPS Methods                         ##
+## ( 6 ) Validation Methods                    ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -523,7 +523,7 @@ try:
     nemo = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
     crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
 
     try:
@@ -562,6 +562,27 @@ try:
     print(str(sec) + chr(subsec) + " OK - CRPS CDF plot saved")
 except:
     print(str(sec) + chr(subsec) + " X - CRPS CDF plot not saved")
+    
+#-----------------------------------------------------------------------------#
+# ( 6b ) Interpolate model to altimetry                                       #
+#                                                                             #
+subsec = subsec+1
+plt.close('all')
+
+try:
+    altimetry_nwes.obs_operator(sci, 'sossheig')
+    # Check new variable is in altimetry dataset and isn't all NaNs
+    try:
+        test = altimetry_nwes.dataset.interp_sossheig
+        if False in np.isnan(altimetry_nwes.dataset.interp_sossheig):
+            print(str(sec) + chr(subsec) + " OK - SSH interpolated to altimetry")
+        else:
+            print(str(sec) + chr(subsec) + " OK - X - Interpolation to altimetry failed")
+    except:
+        print(str(sec) + chr(subsec) + " X - Interpolation to altimetry failed")
+except:
+    print(str(sec) + chr(subsec) + " FAILED")
+
 
 #################################################
 ## ( 7 ) Plotting Methods                          ##
