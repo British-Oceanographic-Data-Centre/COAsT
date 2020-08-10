@@ -74,7 +74,7 @@ class ALTIMETRY(OBSERVATION):
         plt.show()
         return fig, ax
     
-    def interpolate_model_to_obs(self, model, mod_var_name:str, 
+    def obs_operator(self, model, mod_var_name:str, 
                                 time_interp = 'nearest'):
         '''
         For interpolating a model dataarray onto altimetry locations and times.
@@ -82,10 +82,11 @@ class ALTIMETRY(OBSERVATION):
         For ALTIMETRY, the interpolation is done independently in two steps:
             1. Horizontal space
             2. Time
-        Model data is taken at the surface (depth = 0). 
+        Model data is taken at the surface if necessary (0 index). 
     
         Example usage:
         --------------
+        altimetry.obs_operator(nemo_obj, 'sossheig')
 
         Parameters
         ----------
