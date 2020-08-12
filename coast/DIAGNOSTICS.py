@@ -116,7 +116,7 @@ class DIAGNOSTICS(COAsT):
         self.dataset.zd.attrs['standard_name'] = 'pycnocline depth'
         
 
-    def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):
+    def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset, strat_thres = -0.01):
         """
         Computes pycnocline variables with w-points depths and thicknesses
 
@@ -130,15 +130,35 @@ class DIAGNOSTICS(COAsT):
             nemo object on t-points.
         nemo_w : xr.Dataset, optional
             nemo object on w-points.
+        strat_thres: float - Optional
+            limiting stratification (rho_dz < 0) to trigger masking of mixed waters
 
         Output
         ------    
         self.dataset.pycno_depth - (t,y,x) pycnocline depth
         self.dataset.pycno_thick - (t,y,x) pycnocline thickness
+        self.dataset.pycno_depth_masked - (t,y,x) pycnocline depth, masked
+                in weakly stratified water beyond strat_thres
+        self.dataset.pycno_thick_masked - (t,y,x) pycnocline thickness, masked
+                in weakly stratified water beyond strat_thres
+        self.dataset.mask - (t,y,x) [1/0] stratified/unstrafied
+                water column according to strat_thres not being met anywhere 
+                in the column
         
         Returns
         -------
         None.
+        
+        
+        Example Usage
+        -------------
+        # initialise Internal Tide object
+        IT = coast.DIAGNOSTICS(sci_nwes_t, sci_nwes_w)  
+        # Construct pycnocline variables: depth and thickness
+        IT.construct_pycnocline_vars( sci_nwes_t, sci_nwes_w )
+        # Plot pycnocline depth and thickness
+        IT.quickplot()
+
         """
         #%% Contruct in-situ density if not already done
         if not hasattr(nemo_t.dataset, 'density'):
@@ -154,61 +174,49 @@ class DIAGNOSTICS(COAsT):
         ny = nemo_t.dataset.dims['y_dim']
         nx = nemo_t.dataset.dims['x_dim']
 
-        # compute stratification
-        #self.get_stratification( self.nemo.dataset.votemper )
-        #self.get_stratification( self.nemo.dataset.thetao )
-        #print('Using only temperature for stratification at the moment')
-
-        #self.get_stratification( self.dataset.rho  ) # --> self.strat
-
+        ## Create a mask for weakly stratified waters
+        # Preprocess stratification
         strat = copy.copy(nemo_w.dataset.rho_dz)  # (t_dim, z_dim, ydim, xdim). w-pts.
-
         # Ensure surface value is 0
         strat[:,0,:,:] = 0
-
         # Ensure bed value is 0
         strat[:,-1,:,:] = 0
-        
-
         # mask out the Nan values
         strat = strat.where( ~xr.ufuncs.isnan(nemo_w.dataset.rho_dz), drop=False )
-        
         # create mask with a stratification threshold
         strat_m = nemo_w.dataset.latitude * 0 + 1 # create a stratification mask: [1/0] = strat/un-strat
-        strat_m = strat_m.where( strat.max(dim='z_dim').squeeze() > 0.01, 0, drop=False)
+        strat_m = strat_m.where( strat.min(dim='z_dim').squeeze() < strat_thres, 0, drop=False)
+        strat_m = strat_m.transpose("t_dim", "y_dim", "x_dim", transpose_coords=True)
 
-
-        # initialise variables
+        ## Compute statification variables 
+        # initialise pycnocline variables
         zd = np.zeros((nt, ny, nx)) # pycnocline depth
-        zt = np.zeros((nt, ny, nx)) # pycnocline thickness
-        #strat_m = np.zeros((self.nt, self.ny, self.nx)) # mask based on strat
+        zt = np.zeros((nt, ny, nx)) # pycnocline thickness 
         
-
+        ## Construct intermediate variables
         # Broadcast to fill out missing (time) dimensions in grid data
         _, depth_0_4d = xr.broadcast(strat, nemo_w.dataset.depth_0)
         _, e3_0_4d    = xr.broadcast(strat, nemo_w.dataset.e3_0.squeeze())
 
-        
         # intergrate strat over depth
         intN2  = ( strat * e3_0_4d ).sum( dim='z_dim', skipna=True)
         # intergrate (depth * strat) over depth
         intzN2 = (strat * e3_0_4d * depth_0_4d).sum( dim='z_dim', skipna=True)
 
-
         # compute pycnocline depth
-        #z_d = (intzN2 / intN2 ).where(bulk_strat > 1.5E-2, drop=False)# pycnocline depth
         zd = (intzN2 / intN2 )# pycnocline depth
 
         # compute pycnocline thickness
         intz2N2 = ( xr.ufuncs.square(depth_0_4d - zd) * e3_0_4d * strat  ).sum( dim='z_dim', skipna=True )
-        #z_t = ( xr.ufuncs.sqrt(intz2N2 / intN2) ).where(bulk_strat > 1.5E-2, drop=False)
         zt = ( xr.ufuncs.sqrt(intz2N2 / intN2) ) # pycnocline thickness
 
+        # Define xarray attributes
         coords = {'time': (('t_dim'), nemo_t.dataset.time.values),
                     'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
                     'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)}
         dims = ['t_dim', 'y_dim', 'x_dim']        
 
+        # Save a xarray objects
         self.dataset['pycno_thick'] = xr.DataArray( zt,
                     coords=coords, dims=dims) 
         self.dataset.pycno_thick.attrs['units'] = 'm'
@@ -220,19 +228,24 @@ class DIAGNOSTICS(COAsT):
         self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'        
         
        
-        #%% Mask pynocline quantities
-        zd_m = zd.where( strat_m > 0, -999, drop=False ) 
-        zt_m = zt.where( strat_m > 0, -999, drop=False ) 
+        #%% Mask pycnocline variables in weak stratification
+        #zd_m = zd.where( strat_m > 0, -999, drop=False ) 
+        #zt_m = zt.where( strat_m > 0, -999, drop=False ) 
+        zd_m = zd.where( strat_m > 0 ) 
+        zt_m = zt.where( strat_m > 0 ) 
 
+        self.dataset['mask'] = xr.DataArray( strat_m,
+                    coords=coords, dims=dims) 
+        
         self.dataset['pycno_thick_masked'] = xr.DataArray( zt_m,
                     coords=coords, dims=dims) 
-        self.dataset.pycno_thick.attrs['units'] = 'm'
-        self.dataset.pycno_thick.attrs['standard_name'] = 'masked pycnocline thickness'
+        self.dataset.pycno_thick_masked.attrs['units'] = 'm'
+        self.dataset.pycno_thick_masked.attrs['standard_name'] = 'masked pycnocline thickness'
 
         self.dataset['pycno_depth_masked'] = xr.DataArray( zd_m,
                     coords=coords, dims=dims )
-        self.dataset.pycno_depth.attrs['units'] = 'm'
-        self.dataset.pycno_depth.attrs['standard_name'] = 'masked pycnocline depth'  
+        self.dataset.pycno_depth_masked.attrs['units'] = 'm'
+        self.dataset.pycno_depth_masked.attrs['standard_name'] = 'masked pycnocline depth'  
 
     def quick_plot(self, var : xr.DataArray = None):
         """
@@ -248,16 +261,20 @@ class DIAGNOSTICS(COAsT):
         Returns
         -------
         None.
+        
+        Example Usage
+        -------------
+        IT_obj.quick_plot( 'pycno_depth_masked' )
 
         """
             
         import matplotlib.pyplot as plt
         
         if var is None:
-            var_lst = [self.dataset.pycno_depth, self.dataset.pycno_thick]
+            var_lst = [self.dataset.pycno_depth_masked, self.dataset.pycno_thick]
         else: 
-            var_lst = var
-            
+            var_lst = [self.dataset[var]]
+
         for var in var_lst:
             plt.figure(figsize=(10, 10))
             plt.pcolormesh( self.dataset.longitude.squeeze(), 
