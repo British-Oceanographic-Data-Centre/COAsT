@@ -314,7 +314,7 @@ except:
 
 
 #-----------------------------------------------------------------------------#
-# ( 3b ) Construct  density                                                   #
+# ( 3b ) Construct density                                                    #
 #                                                                             #
 subsec = subsec+1
 nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
@@ -333,6 +333,65 @@ except ValueError as err:
     print(err)
 densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt,dims=['r_dim']),
                         y_dim=xr.DataArray(yt,dims=['r_dim']))
+
+#-----------------------------------------------------------------------------#
+# ( 3c ) Construct pycnocline depth and thickness                             #
+#                                                                             #
+subsec = subsec+1
+
+nemo_t = None; nemo_w = None
+nemo_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat_summer, 
+                    dn_files + fn_nemo_dom, grid_ref='t-grid')
+# create an empty w-grid object, to store stratification
+nemo_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, grid_ref='w-grid')
+try:
+    log_str = ""
+    # initialise Internal Tide object
+    IT = coast.DIAGNOSTICS(nemo_t, nemo_w) 
+    if IT is None: # Test whether object was returned
+        log_str += 'No object returned\n'
+    # Construct pycnocline variables: depth and thickness
+    IT.construct_pycnocline_vars( nemo_t, nemo_w )
+    
+    if not hasattr( nemo_t.dataset, 'density' ):
+        log_str += 'Did not create density variable\n'    
+    if not hasattr( nemo_w.dataset, 'rho_dz' ):
+        log_str += 'Did not create rho_dz variable\n'    
+    
+    if not hasattr( IT.dataset, 'pycno_depth' ):
+        log_str += 'Missing pycno_depth variable\n'
+    if not hasattr( IT.dataset, 'pycno_depth_masked' ):
+        log_str += 'Missing pycno_depth_masked variable\n'
+    if not hasattr( IT.dataset, 'pycno_thick' ):
+        log_str += 'Missing pycno_thick variable\n'
+    if not hasattr( IT.dataset, 'pycno_thick_masked' ):
+        log_str += 'Missing pycno_thick_masked variable\n'
+    if not hasattr( IT.dataset, 'mask' ):
+        log_str += 'Missing mask variable\n'
+
+    # Check the calculations are as expected
+    if np.isclose(IT.dataset.pycno_depth.sum(), 3.74214231e+08)  \
+        and np.isclose(IT.dataset.pycno_thick.sum(), 2.44203298e+08) \
+        and np.isclose(IT.dataset.mask.sum(), 450580) \
+        and np.isclose(IT.dataset.pycno_depth_masked.sum(), 3.71876949e+08) \
+        and np.isclose(IT.dataset.pycno_thick_masked.sum(), 2.42926865e+08):
+            print(str(sec) + chr(subsec) + " OK - pyncocline depth and thickness good")
+            
+except:
+    print(str(sec) +chr(subsec) + " X - computing pycnocline depth and thickness failed ")
+
+
+#-----------------------------------------------------------------------------#
+# ( 3d ) Plot pycnocline depth                                                #
+#
+subsec = subsec+1                                                                             #
+try:
+    fig,ax = IT.quick_plot( 'pycno_depth_masked' )
+    fig.tight_layout()
+    fig.savefig(dn_fig + 'pycno_depth.png')
+    print(str(sec) + chr(subsec) + " OK - pycnocline depth plot saved")
+except:
+    print(str(sec) + chr(subsec) + "X - quickplot() failed")
 
 
 #################################################
