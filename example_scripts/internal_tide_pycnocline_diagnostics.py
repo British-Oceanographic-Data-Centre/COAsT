@@ -149,6 +149,11 @@ plt.show()
 
 #%% Plot profile of density and stratification with pycno_depth in deep water
 #############################################################################
+"""
+When the stratification is not nearly two-layer, then then there is no sharp
+pycnocline for the  1st and 2nd moments to pick out. You end up with a thick 
+pycnocline and reduced precision on the depth.
+"""
 [JJ,II] = sci_nwes_t.find_j_i( lat= 60, lon=2.5)
 zd_plus = IT.dataset.pycno_depth[0,JJ,II] + IT.dataset.pycno_thick[0,JJ,II]
 zd_minus = IT.dataset.pycno_depth[0,JJ,II] - IT.dataset.pycno_thick[0,JJ,II]
