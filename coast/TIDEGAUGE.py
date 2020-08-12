@@ -15,10 +15,32 @@ class TIDEGAUGE():
         self.dataset = None
         return
     
-    def read_gesla_to_dataset(self, fn_gesla, date_start=None, date_end=None):
+    def read_gesla_all(self):
+        return
+    
+    def read_gesla_radius(self):
+        return
+    
+    def read_gesla_list(self, file_list, date_start, date_end):
+        
+        dataset_list = []
+        site_names = []
+        
+        for fn in file_list:
+            tmp_dataset = self.read_gesla_to_dataset(fn, date_start,
+                                date_end)
+            dataset_list.append()
+            
+        # Establish commonalities between datasets
+        
+        
+        return
+    
+    def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
         '''
         For reading from a single GESLA2 (Format version 3.0) file into an
         xarray dataset. Formatting according to Woodworth et al. (2017).
+        Website: https://www.gesla.org/
         Parameters
         ----------
         fn_gesla (str) : path to gesla tide gauge file
@@ -29,9 +51,90 @@ class TIDEGAUGE():
         -------
         xarray.Dataset object.
         '''
+        try:
+            header_dict = self.read_gesla_header_v3(fn_gesla)
+            dataset = self.read_gesla_data_v3(fn_gesla, date_start, date_end)
+        except:
+            raise Exception('Problem reading GESLA file: ' + fn_gesla)
+        # Attributes
+        dataset.attrs = header_dict
+        
+        # Assign local dataset to object-scope dataset
+        self.dataset = dataset
+        
+        return
+    
+    def read_gesla_header_v3(self, fn_gesla):
+        '''
+        Reads header from a GESLA file (format version 3.0).
+        
+        Parameters
+        ----------
+        fn_gesla (str) : path to gesla tide gauge file
+       
+        Returns
+        -------
+        dictionary of attributes
+        '''
+        fid = open(fn_gesla)
+        
+        # Read lines one by one (hopefully formatting is consistent)
+        fid.readline() # Skip first line
+        # Geographical stuff
+        site_name = fid.readline().split()[3:]
+        site_name = '_'.join(site_name)
+        country = fid.readline().split()[2:]
+        country = '_'.join(country)
+        contributor = fid.readline().split()[2:]
+        contributor = '_'.join(contributor)
+        # Coordinates
+        latitude = float(fid.readline().split()[2])
+        longitude = float(fid.readline().split()[2])
+        coordinate_system = fid.readline().split()[3]
+        # Dates
+        start_date = fid.readline().split()[3:5] 
+        start_date = ' '.join(start_date)
+        start_date = pd.to_datetime(start_date)
+        end_date = fid.readline().split()[3:5]
+        end_date = ' '.join(end_date)
+        end_date = pd.to_datetime(end_date)
+        time_zone_hours = float(fid.readline().split()[4])
+        # Other
+        fid.readline() #Datum
+        fid.readline() #Instrument
+        precision = float(fid.readline().split()[2])
+        null_value = float( fid.readline().split()[3])
+
+        fid.close()
+        # Put all header info into an attributes dictionary
+        header_dict = {'site_name' : site_name, 'country':country, 
+                       'contributor':contributor, 'latitude':latitude,
+                       'longitude':longitude, 
+                       'coordinate_system':coordinate_system,
+                       'original_start_date':start_date, 
+                       'original_end_date': end_date,
+                       'time_zone_hours':time_zone_hours, 
+                       'precision':precision, 'null_value':null_value}
+        return header_dict
+    
+    def read_gesla_data_v3(self, fn_gesla, date_start=None, date_end=None,
+                           header_length:int=32):
+        '''
+        Reads observation data from a GESLA file (format version 3.0).
+        
+        Parameters
+        ----------
+        fn_gesla (str) : path to gesla tide gauge file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+        header_length (int) : number of lines in header (to skip when reading)
+       
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+        '''
         # Initialise empty dataset and lists
         dataset = xr.Dataset()
-        lines = []
         time = []
         sea_level = []
         qc_flags = []
@@ -39,30 +142,13 @@ class TIDEGAUGE():
         with open(fn_gesla) as file:
             line_count = 0
             for line in file:
-                lines.append(line)
-                
-                # Header info
-                if line_count==0:
-                    pass
-                elif line_count == 1: # Name of tide gauge site
-                    dataset.attrs['site_name'] = line[12:]
-                elif line_count == 4: # Latitude
-                    dataset.attrs['latitude'] = float(line.split()[2])
-                elif line_count == 5: # Longitude
-                    dataset.attrs['longitude'] = float(line.split()[2])
-                elif line_count == 9: # Time zone adjustment
-                    dataset.attrs['time_zone_hours'] = float(line.split()[4])
-                elif line_count == 12: # Precision
-                    dataset.attrs['precision'] = float(line.split()[2])
-                elif line_count == 13: # Null value
-                    null_value = line.split()[3]
-                    dataset.attrs['null_value'] = float(null_value)
                 # Read all data. Date boundaries are set later.
-                elif line_count>31:
+                if line_count>header_length:
                     working_line = line.split()
-                    time.append(working_line[0] + ' ' + working_line[1])
-                    sea_level.append(float(working_line[2]))
-                    qc_flags.append(int(working_line[3]))
+                    if working_line[0] != '#':
+                        time.append(working_line[0] + ' ' + working_line[1])
+                        sea_level.append(float(working_line[2]))
+                        qc_flags.append(int(working_line[3]))
                     
                 line_count = line_count + 1
              
@@ -92,13 +178,8 @@ class TIDEGAUGE():
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
         dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
         
-        # Attributes
-        dataset.attrs['Source'] = 'Gesla 2 Database'
-        
         # Assign local dataset to object-scope dataset
-        self.dataset = dataset
-        
-        return #dataset
+        return dataset
     
     def quick_plot(self, date_start=None, date_end=None, qc_colors=True,
                    plot_line = False):
