@@ -49,6 +49,11 @@ class Transect:
             self.point_A = point_A
             self.point_B = point_B
             
+        self.nemo_F = nemo_F
+        self.nemo_U = nemo_U
+        self.nemo_V = nemo_V
+        self.nemo_T = nemo_T
+            
         # Get points on transect
         tran_y_ind, tran_x_ind = self.get_transect_indices( nemo_F )
                 
@@ -57,8 +62,8 @@ class Transect:
         self.x_ind = tran_x_ind
         self.len = len(tran_y_ind)
         self.data_tran = xr.Dataset()
-        #self.normal_velocities = None
-        #self.depth_integrated_transport_across_AB = None # (time,transect_segment_index)
+        
+
         
         # Subset the nemo data along the transect creating a new dimension (r_dim),
         # which is a paramterisation for x_dim and y_dim defining the transect
@@ -76,6 +81,10 @@ class Transect:
         # self.data_e = dataset.isel(y=tran_y,x=tran_x+1) 
         # self.data_s = dataset.isel(y=tran_y-1,x=tran_x) 
         # self.data_w = dataset.isel(y=tran_y,x=tran_x-1) 
+        
+
+        
+        
         
         
  
@@ -159,14 +168,8 @@ class Transect:
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
                 depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
         
-        
         dimensions = ['t_dim', 'z_dim', 'r_dim']
         
-  #      self.data_tran['depth_0'] = xr.DataArray( depth_0[:,:-1], dims=['z_dim', 'r_dim'], 
-   #                attrs={'Units':'m', 'standard_name': 'Initial depth at time zero',
-    #                'long_name': 'Initial depth at time zero defined at the normal velocity grid points on the transect'})
- 
-   
         self.data_tran['normal_velocities'] = xr.DataArray( velocity[:,:,:-1], 
                     coords={'time': (('t_dim'), self.data_U.time.values),'depth_0': (('z_dim','r_dim'), depth_0[:,:-1])},
                     dims=['t_dim', 'z_dim', 'r_dim'] )        
@@ -180,6 +183,189 @@ class Transect:
         self.data_tran.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points on the transect'
                         
         return  
+    
+   
+    def interpolate_tracers_to_fgrid(self, method='simple'):
+        if self.nemo_T is not None:
+            # Simple averaging to obtain the tracer quantities at f-points.
+            if method == 'simple':
+                y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
+                x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
+                y_ind_n = xr.DataArray( self.y_ind+1, dims=['r_dim'] )
+                x_ind_e = xr.DataArray( self.x_ind+1, dims=['r_dim'] )
+                    
+                temp = self.nemo_T.dataset.temperature
+                sal = self.nemo_T.dataset.salinity
+                    
+                self.data_F['temperature'] = 0.25*( temp.isel(y_dim = y_ind, x_dim = x_ind) +
+                        temp.isel(y_dim = y_ind_n, x_dim = x_ind) + 
+                        temp.isel(y_dim = y_ind, x_dim = x_ind_e) +
+                        temp.isel(y_dim = y_ind_n, x_dim = x_ind_e) )
+                    
+                self.data_F['salinity'] = 0.25*( sal.isel(y_dim = y_ind, x_dim = x_ind) +
+                        sal.isel(y_dim = y_ind_n, x_dim = x_ind) + 
+                        sal.isel(y_dim = y_ind, x_dim = x_ind_e) +
+                        sal.isel(y_dim = y_ind_n, x_dim = x_ind_e) )
+        else:
+            raise AttributeError(str(self) + ': A nemo object with data for t-grid variables ' +
+                        'must have been assigned to attribute "nemo_T".')
+
+
+    
+   
+    def geostrophic_transport(self):
+        
+        # =============================================================================
+        # Simple averaging to obtain the tracer quantities at f-points.
+        # NOTE this may need to be revisited. On an irregular grid, and at high 
+        # latitudes, this may introduce an error due to the curvature of the grid           
+        # =============================================================================
+        try:            
+            self.interpolate_tracers_to_fgrid()
+        except AttributeError as err:
+            print(err)
+            return
+            
+        self.construct_density_zlevel_fgrid()                        
+        
+        dy = np.diff(self.y_ind)
+        dx = np.diff(self.x_ind)
+        # Loop through each point along the transact
+        for idx in np.arange(0, self.len-1):            
+            if dy[idx] > 0:
+                # u flux (+ in)
+                self.data_F.t
+                
+                
+                velocity[:,:,idx] = self.data_U.vozocrtx[:,:,idx+1].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_U.e2[idx+1].to_masked_array() *
+                                          self.data_U.e3[:,:,idx+1].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                depth_0[:,idx] = self.data_U.depth_0[:,idx+1].to_masked_array()
+            elif dx[idx] > 0:
+                # v flux (- in) 
+                velocity[:,:,idx] = - self.data_V.vomecrty[:,:,idx+1].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_V.e1[idx+1].to_masked_array() *
+                                          self.data_V.e3[:,:,idx+1].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                depth_0[:,idx] = self.data_V.depth_0[:,idx+1].to_masked_array()
+            elif dx[idx] < 0:
+                # v flux (+ in)
+                velocity[:,:,idx] = self.data_V.vomecrty[:,:,idx].to_masked_array()
+                vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_V.e1[idx].to_masked_array() *
+                                          self.data_V.e3[:,:,idx].to_masked_array() )
+                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+                depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
+        
+        
+     def construct_density_zlevel_fgrid( self, EOS='EOS10'):   
+        '''
+            This method is for calculating density on the f-grid on z-levels. With
+            the intention to calculate horizontal density gradients at velocity points
+            perpendicular to the transect.
+            
+            For s-level model output this method recontructs the in-situ density 
+            onto z_levels along the transect on the f-grid. The z_levels and density field
+            are added to the data_F dataset attribute. 
+            
+            Requirements: The supplied t-grid dataset must contain the 
+            Practical Salinity and the Potential Temperature variables. The depth_0
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
+            These salinity and temperature fields must haven been interpolated onto
+            the f-grid prior to calling this method.
+            
+            Note that currently density can only be constructed using the EOS10
+            equation of state.
+
+        Parameters
+        ----------
+        EOS : equation of state, optional
+            DESCRIPTION. The default is 'EOS10'.
+
+
+        Returns
+        -------
+        None.
+        adds attributes Transect.data_F.depth_z_levels and Transect.data_F.density_z_levels
+
+        '''        
+
+        
+        try:
+            if EOS != 'EOS10': 
+                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+            if self.data_F is None:
+                raise ValueError(str(self) + ': Density calculation can only be performed  \
+                                 by this method if an f-grid NEMO object has been passed in.' )
+
+            z_levels = self.data_F.depth_0.max(dim=(['r_dim']))                
+            z_levels_min = self.data_F.depth_0[0,:].max(dim=(['r_dim']))
+            z_levels[0] = z_levels_min                     
+            
+            try:    
+                shape_ds = ( self.data_F.t_dim.size, z_levels.size, 
+                                self.data_F.r_dim.size )
+                sal = self.data_F.salinity.to_masked_array()
+                temp = self.data_F.temperature.to_masked_array()                
+            except AttributeError:
+                shape_ds = ( 1, z_levels.size, self.data_F.r_dim.size )
+                sal = self.data_F.salinity.to_masked_array()[np.newaxis,...]
+                temp = self.data_F.temperature.to_masked_array()[np.newaxis,...]
+            
+            sal_z_levels = np.ma.zeros( shape_ds )
+            temp_z_levels = np.ma.zeros( shape_ds )
+            density_z_levels = np.ma.zeros( shape_ds )
+            
+            s_levels = self.data_F.depth_0.to_masked_array()
+            lat = self.data_F.latitude.values
+            lon = self.data_F.longitude.values
+    
+            for it in np.arange(0, shape_ds[0]):
+                for ir in self.data_F.r_dim:
+                    if np.all(np.isnan(sal[it,:,ir])):
+                        density_z_levels[it,:,ir] = np.nan
+                        density_z_levels[it,:,ir].mask = True
+                    else:                      
+                        sal_func = interpolate.interp1d( s_levels[:,ir], sal[it,:,ir], 
+                                    bounds_error=False, kind='linear')
+                        temp_func = interpolate.interp1d( s_levels[:,ir], temp[it,:,ir], 
+                                    bounds_error=False, kind='linear')
+                        
+                        sal_z_levels[it,:,ir] = sal_func(z_levels.values)
+                        temp_z_levels[it,:,ir] = temp_func(z_levels.values)
+                        
+            # Absolute Pressure    
+            pressure_absolute = np.ma.masked_invalid(
+                gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
+            # Absolute Salinity           
+            sal_absolute = np.ma.masked_invalid(
+                gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
+            sal_absolute = np.ma.masked_less(sal_absolute,0)
+            # Conservative Temperature
+            temp_conservative = np.ma.masked_invalid(
+                gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
+            # In-situ density
+            density_z_levels = np.ma.masked_invalid( gsw.rho( 
+                sal_absolute, temp_conservative, pressure_absolute ) )
+            
+            coords={'depth_z_levels': (('z_dim'), z_levels.values),
+                    'latitude': (('r_dim'), self.data_F.latitude.values),
+                    'longitude': (('r_dim'), self.data_F.longitude.values)}
+            dims=['z_dim', 'r_dim']
+            attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
+            
+            if shape_ds[0] != 1:
+                coords['time'] = (('t_dim'), self.data_F.time.values)
+                dims.insert(0, 't_dim')
+              
+            self.data_F['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
+                    coords=coords, dims=dims, attrs=attributes )
+
+        except AttributeError as err:
+            print(err)
+            
+        return       
     
 
     def moving_average(self, array_to_smooth, window=2, axis=-1):
@@ -346,8 +532,9 @@ class Transect:
             if EOS != 'EOS10': 
                 raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
             if self.data_T is None:
-                raise ValueError(str(self) + ': Density calculation can only be performed for a t-grid object,\
-                                 the tracer grid for NEMO.' )
+                raise ValueError(str(self) + ': Density calculation can only be performed \
+                    when a t-grid object has been assigned to the nemo_T attribute. This\
+                    can be done at initialisation.' )
           #  if not self.data_T.ln_sco.item():
            #     raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
     
@@ -359,9 +546,7 @@ class Transect:
              #   z_max = self.data_T.depth_0.max(dim=(['r_dim','z_dim'])).item()
               #  z_min = self.data_T.depth_0[0,:].max(dim=(['r_dim'])).item()
                # z_levels = z_levels[z_levels<=z_max]
-                #z_levels = z_levels[z_levels>=z_min]
-                
-                
+                #z_levels = z_levels[z_levels>=z_min]                     
             
             try:    
                 shape_ds = ( self.data_T.t_dim.size, z_levels.size, 
@@ -426,5 +611,9 @@ class Transect:
             print(err)
             
         return
+    
+    
+    
+        
         
         
