@@ -33,7 +33,7 @@
     b. Indices by distance
     c. Subsetting entire COAsT object and return as copy
 
-6. CRPS Methods
+6. Validation Methods
     a. Calculate single obs CRPS values using different methods
     b. CRPS map plot
     c. CRPS CDF plot
