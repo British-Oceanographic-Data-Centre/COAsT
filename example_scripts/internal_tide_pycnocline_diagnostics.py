@@ -53,11 +53,13 @@ except:
     
     # create an empty w-grid object, to store stratification
     sci_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, grid_ref='w-grid')
+print('* Loaded ',config, ' data')
 
 #################################################
 #%% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
+print('* Extract North Sea subdomain')
 ind_sci = sci_t.subset_indices([51,-4], [62,15])
 sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1]) #nwes = northwest europe shelf
 ind_sci = sci_w.subset_indices([51,-4], [62,15])
@@ -74,20 +76,26 @@ else:
     sci_nwes_t.dataset['salinity_m'] = sci_nwes_t.dataset.salinity
 
 
-#%% Contruct in-situ density and stratification
+#%% Construct in-situ density and stratification
+print('* Construct in-situ density and stratification')
 sci_nwes_t.construct_density( EOS='EOS10' )
 
 #%% Construct stratification. t-pts --> w-pts
+print('* Construct stratification. t-pts --> w-pts')
 sci_nwes_w = sci_nwes_t.differentiate( 'density', dim='z_dim', out_varstr='rho_dz', out_obj=sci_nwes_w ) # --> sci_nwes_w.rho_dz
  
 #################################################
 #%% Create Diagnostics object
+print('* Create DIAGNOSTICS object')
 IT = coast.DIAGNOSTICS(sci_nwes_t, sci_nwes_w)    
 
 #%%  Construct pycnocline variables: depth and thickness
+print('* Compute density and rho_dz if they didn''t exist')
+print('* Compute 1st and 2nd moments of stratification as pycnocline vars')
 IT.construct_pycnocline_vars( sci_nwes_t, sci_nwes_w )
 
 #%%  Plot pycnocline variables: depth and thickness
+print('* Sample quick plot')
 IT.quick_plot()
 
 
@@ -95,10 +103,10 @@ IT.quick_plot()
 
    
 #%% Make transects
-# This is an abuse of the transect code...
+print('* Construct transects to inspect stratification. This is an abuse of the transect code...')
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 tran = coast.Transect( (51, 2.5), (61, 2.5), nemo_F = sci_nwes_w, nemo_T = sci_nwes_t, nemo_U = IT )
-print('I have forced the w-pt nemo data into the f-point Transect slot and the w-pts IT object into the u-point Transet slot')
+print(' - I have forced the w-pt nemo data into the f-point Transect slot and the w-pts IT object into the u-point Transet slot\n')
 
 lat_sec = tran.data_T.latitude.expand_dims(dim={'z_dim':IT.nz})
 dep_sec = tran.data_T.depth_0
@@ -117,7 +125,7 @@ zt_m_sec = tran.data_U.pycno_thick_masked.mean(dim='t_dim', skipna=False)
 
 #%% Plot sections
 #################
-
+print('* Plot sections with pycnocline depth and thickness overlayed')
 plt.pcolormesh(  lat_sec, dep_sec, rho_sec)
 plt.title('density section')
 plt.xlim([51,62])
@@ -149,11 +157,10 @@ plt.show()
 
 #%% Plot profile of density and stratification with pycno_depth in deep water
 #############################################################################
-"""
-When the stratification is not nearly two-layer, then then there is no sharp
-pycnocline for the  1st and 2nd moments to pick out. You end up with a thick 
-pycnocline and reduced precision on the depth.
-"""
+print("* Plot profile of density and stratification with pycno_depth in deep water")
+print(" - When the stratification is not nearly two-layer, then then there is no sharp pycnocline for the  1st and 2nd moments to pick out. You end up with a thick \
+pycnocline and reduced precision on the depth\n")
+
 [JJ,II] = sci_nwes_t.find_j_i( lat= 60, lon=2.5)
 zd_plus = IT.dataset.pycno_depth[0,JJ,II] + IT.dataset.pycno_thick[0,JJ,II]
 zd_minus = IT.dataset.pycno_depth[0,JJ,II] - IT.dataset.pycno_thick[0,JJ,II]
@@ -178,7 +185,8 @@ plt.show()
 
 
 #%% Map pretty plots of North Sea pycnocline depth
-
+print("* Map pretty plots of North Sea pycnocline depth")
+print(" - we expect a RunTimeError here")
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     new_cmap = colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
@@ -225,13 +233,15 @@ labels = [str(int(cz.levels[i]))+'m' for i in range(1,len(cz.levels))]
 
 plt.legend( lines, labels, loc="lower right")
 
+# I expect to see RuntimeWarnings in this block
 title_str = IT.dataset['time'].mean(dim='t_dim').dt.strftime("%b %Y: ").values \
-        + IT.dataset.pycno_depth.standard_name \
-        + " (" \
-        + IT.dataset.pycno_depth.units \
-        + ")"
+    + IT.dataset.pycno_depth.standard_name \
+    + " (" \
+    + IT.dataset.pycno_depth.units \
+    + ")"
 plt.title(title_str)
 plt.xlabel('longitude'); plt.ylabel('latitude')
+plt.show()
 
 #fig.savefig(fig_dir+'pycno_depth.png', dpi=120)
 
