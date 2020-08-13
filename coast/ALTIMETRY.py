@@ -104,6 +104,10 @@ class ALTIMETRY(OBSERVATION):
         # Get data arrays
         mod_var = model.dataset[mod_var_name]
         
+        # Depth interpolation -> for now just take 0 index
+        if 'z_dim' in mod_var.dims:
+            mod_var = mod_var.isel(z_dim=0).squeeze()
+        
         # Cast lat/lon to numpy arrays
         obs_lon = np.array(self.dataset.longitude).flatten()
         obs_lat = np.array(self.dataset.latitude).flatten()
@@ -111,19 +115,16 @@ class ALTIMETRY(OBSERVATION):
         interpolated = model.interpolate_in_space(mod_var, obs_lon, 
                                                         obs_lat)
         
-        # Depth interpolation -> for now just take 0 index
-        if 'z_dim' in mod_var.dims:
-            interpolated = interpolated.isel(z_dim=0).squeeze()
         # Interpolate in time if t_dim exists in model array
         if 't_dim' in mod_var.dims:
             interpolated = model.interpolate_in_time(interpolated, 
                                                      self.dataset.time,
                                                      interp_method=time_interp)
-        # Take diagonal from interpolated array (which contains too many points)
-        diag_len = interpolated.shape[0]
-        diag_ind = xr.DataArray(np.arange(0, diag_len))
-        interpolated = interpolated.isel(interp_dim=diag_ind, t_dim=diag_ind)
-        interpolated = interpolated.swap_dims({'dim_0':'t_dim'})
+            # Take diagonal from interpolated array (which contains too many points)
+            diag_len = interpolated.shape[0]
+            diag_ind = xr.DataArray(np.arange(0, diag_len))
+            interpolated = interpolated.isel(interp_dim=diag_ind, t_dim=diag_ind)
+            interpolated = interpolated.swap_dims({'dim_0':'t_dim'})
 
         # Store interpolated array in dataset
         new_var_name = 'interp_' + mod_var_name

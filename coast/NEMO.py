@@ -374,7 +374,10 @@ class NEMO(COAsT):
         
         Example Useage
         ----------
-
+        # Get an interpolated DataArray for temperature onto altimetry times
+        new_times = altimetry.dataset.time
+        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                                 new_times)
         Parameters
         ----------
         model_array (xr.DataArray): Model variable DataArray to interpolate
