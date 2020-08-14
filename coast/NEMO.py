@@ -410,7 +410,7 @@ class NEMO(COAsT):
         
         '''
             Constructs the in-situ density using the salinity, temperture and 
-            depth_0 fields and adds a density attribute to the t-grdi dataset 
+            depth_0 fields and adds a density attribute to the t-grid dataset 
             
             Requirements: The supplied t-grid dataset must contain the 
             Practical Salinity and the Potential Temperature variables. The depth_0
@@ -491,6 +491,9 @@ class NEMO(COAsT):
     def trim_domain_size( self, dataset_domain ):
         """
         Trim the domain variables if the dataset object is a spatial subset
+        
+        Note: This breaks if the SW & NW corner values of nav_lat and nav_lon 
+        are masked, as can happen if on land...
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
@@ -546,6 +549,9 @@ class NEMO(COAsT):
         1) depth_0 and e3_0 fields exist
         2) xr.DataArrays are 4D
         3) self.filename_domain if out_obj not specified
+        4) If out_obj is not specified, one is built that is  the size of
+            self.filename_domain. I.e. automatic subsetting of out_obj is not
+            supported.
         
         Example usage:
         --------------
@@ -602,7 +608,7 @@ class NEMO(COAsT):
 
                 # Check is out_varstr is defined, else create it
                 if out_varstr is None:
-                    out_varstr = 'd' + in_varstr + '_dz'
+                    out_varstr = in_varstr + '_dz'
                     #print('make new target variable name: out_str = {}'\
                     #      .format(out_varstr))
 
