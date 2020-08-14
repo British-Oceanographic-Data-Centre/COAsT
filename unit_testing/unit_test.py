@@ -16,10 +16,12 @@ import datetime
 
 dn_files = "./example_files/"
 dn_fig = 'unit_testing/figures/'
+fn_nemo_grid_t_dat_summer = 'nemo_data_T_grid_Aug2015.nc'
 fn_nemo_grid_t_dat = 'nemo_data_T_grid.nc'
 fn_nemo_grid_u_dat = 'nemo_data_U_grid.nc'
 fn_nemo_grid_v_dat = 'nemo_data_V_grid.nc'
 fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
+fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
 
@@ -165,50 +167,49 @@ except ValueError as err:
             print(str(sec) + chr(subsec) + str(err))
 
 #-----------------------------------------------------------------------------#
-# ( 1h ) Load a subregion dataset with a full domain                 #
+# ( 1h ) Load a subregion dataset with a full domain (AMM7)                #
 #                                                                             #
 subsec = subsec+1
 
 try:
-    dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
-    fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_nam_AMM60,
-                     dir_AMM60 + "mesh_mask.nc")
+
+    amm7 = coast.NEMO(dn_files + fn_nemo_dat_subset,
+                     dn_files + fn_nemo_dom)
 
     # checking all the coordinates mapped correctly to the dataset object
-    if amm60.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
+    if amm7.dataset._coord_names == {'depth_0', 'latitude', 'longitude', 'time'}:
         print(str(sec) + chr(subsec) + ' OK - NEMO data subset loaded ', \
-              'with correct coords: ' + fil_nam_AMM60)
+              'with correct coords: ' + fn_nemo_dat_subset)
     else:
         print(str(sec) + chr(subsec) + ' X - There is an issue with ', \
-              'loading and subsetting the data ' + fil_nam_AMM60)
+              'loading and subsetting the data ' + fn_nemo_dat_subset)
 
 except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.'\
-          .format(dir_AMM60), ' Try on livljobs')
+          .format(fn_nemo_dat_subset) )
+
 
 #-----------------------------------------------------------------------------#
-# ( 1i ) Load and combine (by time) multiple files                 #
+# ( 1i ) Load and combine (by time) multiple files  (AMM7)               #
 #                                                                             #
 subsec = subsec+1
 
 try:
-    dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
-    fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
-    amm60 = coast.NEMO(dir_AMM60 + fil_names_AMM60,
-                dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
+    file_names_amm7 = "nemo_data_T_grid*.nc"
+    amm7 = coast.NEMO(dn_files + file_names_amm7,
+                dn_files + fn_nemo_dom, grid_ref='t-grid', multiple=True)
 
     # checking all the coordinates mapped correctly to the dataset object
-    if amm60.dataset.time.size == 30:
+    if amm7.dataset.time.size == 14:
         print(str(sec) + chr(subsec) + ' OK - NEMO data loaded combine ', \
-              'over time: ' + fil_names_AMM60)
+              'over time: ' + file_names_amm7)
     else:
         print(str(sec) + chr(subsec) + ' X - There is an issue with loading',\
-              'multiple data files ' + fil_names_AMM60)
+              'multiple data files ' + file_names_amm7)
 
 except:
-    print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.'\
-          .format(dir_AMM60), ' Try on livljobs')
+    print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
+          .format(dn_files, file_names_amm7) )
 
 
 #################################################
@@ -293,7 +294,7 @@ try:
         log_str += 'Did not write correct attributes\n'
     # Test auto-naming derivative. Again test expected attributes.
     nemo_w_3 = nemo_t.differentiate( 'temperature', dim='z_dim' )
-    if not nemo_w_3.dataset.dtemperature_dz.attrs == {'units': 'degC/m', 'standard_name': 'dtemperature_dz'}:
+    if not nemo_w_3.dataset.temperature_dz.attrs == {'units': 'degC/m', 'standard_name': 'temperature_dz'}:
         log_str += 'Problem with auto-naming derivative field\n'
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
