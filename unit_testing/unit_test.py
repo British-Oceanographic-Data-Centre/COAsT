@@ -24,7 +24,7 @@ fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
-fn_tidegauge = 'fukaura-fukaura-japan-jma'
+dn_tidegauge = dn_files + 'tide_gauges/'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -211,6 +211,8 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
+        
+subsec = subsec+1
 
 
 #################################################
@@ -643,7 +645,7 @@ except:
 
 
 #################################################
-## ( 7 ) Plotting Methods                          ##
+## ( 7 ) Plotting Methods                      ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -664,20 +666,55 @@ except:
 
 plt.close('all')
 
+#################################################
+## ( 8 ) TIDEGAUGE Methods                     ##
+#################################################
+sec = sec+1
+subsec = 96
+
 #-----------------------------------------------------------------------------#
-# ( 1j ) Load in and view tide gauge data for specified date range            #
+# ( 8a ) Load in GESLA tide gauge files from directory                        #
 #                                                                             #
 subsec = subsec+1
 
 try:
-    tg = coast.TIDEGAUGE()
-    date0 = datetime.datetime(1972,1,1)
-    date1 = datetime.datetime(1972,12,1)
-    tg.read_gesla_to_dataset(dn_files + fn_tidegauge, date0, date1)
-    fig, ax = tg.quick_plot(date_start = datetime.datetime(1972,4,1), 
-                  date_end=datetime.datetime(1972,4,5), plot_line=True)
-    fig.savefig(dn_fig + 'tidegauge_quick_plot.png')
+    date0 = datetime.datetime(2010,1,1)
+    date1 = datetime.datetime(2010,12,1)
+    tg = coast.TIDEGAUGE(dn_tidegauge, date0, date1)
+    
+    # Check length of dataset_list is correct and that
+    if len(tg.dataset_list) == 9:
+        print(str(sec) + chr(subsec) + " OK - Tide gauges loaded")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 8b ) TIDEGAUGE map plot                                                   #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    f,a = tg.plot_map()
+    f.savefig(dn_fig + 'tidegauge_map.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+plt.close('all')
+
+#-----------------------------------------------------------------------------#
+# ( 8c ) TIDEGAUGE Time series plot                                           #
+#                                                                             #
+subsec = subsec+1
+
+
+try:
+    f,a = tg.plot_timeseries(0)
+    f.savefig(dn_fig + 'tidegauge_timeseries.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+plt.close('all')
     
 plt.close('all')

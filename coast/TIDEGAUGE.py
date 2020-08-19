@@ -124,6 +124,9 @@ class TIDEGAUGE(OBSERVATION):
         For reading from a single GESLA2 (Format version 3.0) file into an
         xarray dataset. Formatting according to Woodworth et al. (2017).
         Website: https://www.gesla.org/
+        If no data lies between the specified dates, a dataset is still created
+        containing information on the tide gauge, but the time dimension will
+        be empty.
         Parameters
         ----------
         fn_gesla (str) : path to gesla tide gauge file
@@ -306,7 +309,7 @@ class TIDEGAUGE(OBSERVATION):
 
         plt.show()
         
-        return
+        return fig, ax
     
     def plot_timeseries(self, site, date_start=None, date_end=None, 
                         var_name = 'sea_level', qc_colors=True, 
