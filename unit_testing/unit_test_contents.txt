@@ -10,8 +10,8 @@
     e. Set NEMO grid attribute - dimension names
     f. Load only Domain
     g. Calculate depth_0 for t,u,v,w,f grids 
-    h. Load NEMO that is a subregionn in the domain file
-    i. Load multi load for NEMO files
+    h. Load NEMO that is a subregion in the domain file
+    i. Multi load (over time) for NEMO files
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
@@ -32,11 +32,15 @@
     a. Subsetting single variable
     b. Indices by distance
     c. Subsetting entire COAsT object and return as copy
+    d. Find nearest xy indices
+    e. NEMO.interpolate_in_space()
+    f. NEMO.interpolate_in_time()
 
-6. CRPS Methods
+6. Validation Methods
     a. Calculate single obs CRPS values using different methods
     b. CRPS map plot
     c. CRPS CDF plot
+    d. Interpolate model to altimetry
 
 7. Plotting Methods
     a. Altimetry quick_plot()
