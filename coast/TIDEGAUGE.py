@@ -41,6 +41,27 @@ class TIDEGAUGE(OBSERVATION):
     '''  
     
     def __init__(self, directory=None, date_start=None, date_end=None):
+        '''
+        Initialise TIDEGAUGE object either as empty (no arguments) or by
+        reading GESLA data from a directory between two datetime objects.
+        
+        Example usage:
+        --------------
+        # Read all data in directory in January 1990
+        date0 = datetime.datetime(1990,1,1)
+        date1 = datetime.datetime(1990,2,1)
+        tg = coast.TIDEGAUGE('gesla_directory/', date0, date1)
+
+        Parameters
+        ----------
+        directory (str) : Path to directory containing desired GESLA files
+        date_start (datetime) : Start date for data read
+        date_end (datetime) : end date for data read
+
+        Returns
+        -------
+        Self
+        '''
         
         if directory is not None:
             self.dataset_list=[]
@@ -53,10 +74,29 @@ class TIDEGAUGE(OBSERVATION):
                                                         date_start, date_end) )
         else:
             self.dataset_list = []
+            self.latitude = []
+            self.longitude = []
+            self.site_name = []
         return
     
     def get_gesla_filenames(self, directory):
+        '''
+        Get all filenames in a directory. Try except is used to try and
+        ensure that each file is indeed a GESLA file.
         
+        Example usage:
+        --------------
+        file_list = TIDEGAUGE.get_gesla_filenames('<directory>')
+
+        Parameters
+        ----------
+        directory (str) : Path to directory containing desired GESLA files
+
+        Returns
+        -------
+        list of filenames (str), latitude (float), longitude (float) and 
+        site names (str)
+        '''
         file_list = listdir(directory)
         new_file_list = []
         latitude_list = []
@@ -221,7 +261,16 @@ class TIDEGAUGE(OBSERVATION):
         # Assign local dataset to object-scope dataset
         return dataset
     
-    def map_plot(self):
+    def plot_map(self):
+        '''
+        Plot tide gauge locations on a map
+        
+        Example usage:
+        --------------
+        # For a TIDEGAUGE object tg
+        tg.plot_map()
+
+        '''
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
@@ -260,13 +309,15 @@ class TIDEGAUGE(OBSERVATION):
         return
     
     def plot_timeseries(self, site, date_start=None, date_end=None, 
-                                     qc_colors=True, plot_line = False):
+                        var_name = 'sea_level', qc_colors=True, 
+                        plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
         Parameters
         ----------
         date_start (datetime) : Start date for plotting
         date_end (datetime) : End date for plotting
+        var_name (str) : Variable to plot. Default: sea_level
         qc_colors (bool) : If true, markers are coloured according to qc values
         plot_line (bool) : If true, draw line between markers
        
@@ -274,8 +325,6 @@ class TIDEGAUGE(OBSERVATION):
         -------
         matplotlib figure and axes objects
         '''
-        
-        var_name = 'sea_level'
         
         if type(site) is int:
             dataset = self.dataset_list[site]
