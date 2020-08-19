@@ -3,40 +3,83 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
 import pandas as pd
+from os import listdir
+from warnings import warn
+from .OBSERVATION import OBSERVATION
 
-class TIDEGAUGE():
+class TIDEGAUGE(OBSERVATION):
     '''
     An object for reading, storing and manipulating tide gauge data.
-    Data is stored for just a single tide gauge.
-    Data is kept in the objects xarray.Dataset().
+    Reading and organisation methods are centred around the GESLA database.
+    Hower, any fixed time series data can be used if in the correct format.
+    The data format used for this object is as follows:
+        
+    *Data Format Overview*
+        
+        1. Data for each fixed location is stored inside its own xarray
+           Dataset object. This has one dimension: time. It can contain
+           any number of other variables. For GESLA, this is sea_level and
+           qc_flags. Attributes of the dataset include longitude, latitude and
+           site_name
+        2. Multiple locations are stored in an ordered list (of Datasets). A 
+           corresponding ordered list of site names should also be contained
+           within the object for quick access to specific time series.
+           
+    *Methods Overview*
+    
+        1. __init__(): Can be initialised with a GESLA directory or empty.
+        2. get_gesla_filenames(): Gets the names of all GESLA files in a
+           directory.
+        3. read_gesla_to_xarray_v3(): Reads a format version 3.0 GESLA file to
+           an xarray Dataset.
+        4. read_gesla_header_v3(): Reads the header of a version 3 GESLA file.
+        5. read_gesla_data_v3(): Reads data from a version 3 GESLA file.
+        6. plot_map(): Plots locations of all time series on a map.
+        7. plot_timeseries(): Plots a specified time series.
+        8. obs_operator(): Interpolates model data to time series locations
+           and times (not yet implemented).
     '''  
     
-    def __init__(self):
-        self.dataset = None
-        return
-    
-    def read_gesla_all(self):
-        return
-    
-    def read_gesla_radius(self):
-        return
-    
-    def read_gesla_list(self, file_list, date_start, date_end):
+    def __init__(self, directory=None, date_start=None, date_end=None):
         
-        dataset_list = []
-        site_names = []
+        if directory is not None:
+            self.dataset_list=[]
+            file_list, lats, lons, names = self.get_gesla_filenames(directory)
+            self.latitude = lats
+            self.longitude = lons
+            self.site_name = names
+            for ff in file_list:
+                self.dataset_list.append( self.read_gesla_to_xarray_v3(ff,
+                                                        date_start, date_end) )
+        else:
+            self.dataset_list = []
+        return
+    
+    def get_gesla_filenames(self, directory):
         
-        for fn in file_list:
-            tmp_dataset = self.read_gesla_to_dataset(fn, date_start,
-                                date_end)
-            dataset_list.append()
+        file_list = listdir(directory)
+        new_file_list = []
+        latitude_list = []
+        longitude_list = []
+        sitename_list = []
+        
+        for ff in file_list:
+            try:
+                header_dict = self.read_gesla_header_v3(directory+ff)
+                latitude_list.append(header_dict['latitude'])
+                longitude_list.append(header_dict['longitude'])
+                sitename_list.append(header_dict['site_name'])
+                new_file_list.append(directory+ff)
+            except:
+                pass
             
-        # Establish commonalities between datasets
+        file_list = new_file_list
+        latitude_list = np.array(latitude_list)
+        longitude_list = np.array(longitude_list)
         
-        
-        return
+        return file_list, latitude_list, longitude_list, sitename_list
     
-    def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
+    def read_gesla_to_xarray_v3(self, fn_gesla, date_start=None, date_end=None):
         '''
         For reading from a single GESLA2 (Format version 3.0) file into an
         xarray dataset. Formatting according to Woodworth et al. (2017).
@@ -59,10 +102,7 @@ class TIDEGAUGE():
         # Attributes
         dataset.attrs = header_dict
         
-        # Assign local dataset to object-scope dataset
-        self.dataset = dataset
-        
-        return
+        return dataset
     
     def read_gesla_header_v3(self, fn_gesla):
         '''
@@ -181,8 +221,46 @@ class TIDEGAUGE():
         # Assign local dataset to object-scope dataset
         return dataset
     
-    def quick_plot(self, date_start=None, date_end=None, qc_colors=True,
-                   plot_line = False):
+    def map_plot(self):
+        try:
+            import cartopy.crs as ccrs  # mapping plots
+            import cartopy.feature  # add rivers, regional boundaries etc
+            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
+        except ImportError:
+            import sys
+            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+            sys.exit(-1)
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.gca()
+        ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+        cset = plt.scatter(self.longitude, self.latitude, c='k')
+
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+        coast = NaturalEarthFeature(category='physical', scale='50m',
+                                    facecolor=[0.8,0.8,0.8], name='coastline',
+                                    alpha=0.5)
+        ax.add_feature(coast, edgecolor='gray')
+
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
+
+        gl.top_labels = False
+        gl.bottom_labels = True
+        gl.right_labels = False
+        gl.left_labels = True
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+
+        plt.show()
+        
+        return
+    
+    def plot_timeseries(self, site, date_start=None, date_end=None, 
+                                     qc_colors=True, plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
         Parameters
@@ -197,11 +275,26 @@ class TIDEGAUGE():
         matplotlib figure and axes objects
         '''
         
+        var_name = 'sea_level'
         
-        # Numpyify data
-        x = np.array(self.dataset.time)
-        y = np.array(self.dataset.sea_level)
-        qc = np.array(self.dataset.qc_flags)
+        if type(site) is int:
+            dataset = self.dataset_list[site]
+            site_name = dataset.site_name
+            # Numpyify data
+            x = np.array(dataset.time)
+            y = np.array(dataset[var_name])
+            qc = np.array(dataset.qc_flags)
+        elif type(site) is str:
+            index = self.site_name.index(site)
+            dataset = self.dataset_list[index]
+            site_name = dataset.site_name
+            # Numpyify data
+            x = np.array(dataset.time)
+            y = np.array(dataset.sea_level)
+            qc = np.array(dataset.qc_flags)
+        else:
+            raise Exception('site argument for plot_timeseries_single' + 
+                            ' must be int or str.')
         
         # Use only values between stated dates
         start_index = 0
@@ -212,10 +305,13 @@ class TIDEGAUGE():
         if date_end is not None:
             date_end = np.datetime64(date_end)
             end_index = np.argmax(x>date_end)
-            
         x = x[start_index:end_index]
         y = y[start_index:end_index]
         qc = qc[start_index:end_index]
+        
+        # Plot lines first if needed
+        if plot_line:
+            plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
         
         # Two plotting routines for whether or not to use qc flags.
         if qc_colors:
@@ -231,11 +327,17 @@ class TIDEGAUGE():
                        loc='upper left', ncol=5)
             plt.xticks(rotation=45)
         else:
+            fig = plt.figure(figsize=(10,10))
             plt.scatter(x,y)
             plt.grid()
             plt.xticks(rotation=65)
             
-        if plot_line:
-            plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
+        # Title and axes
+        plt.xlabel('Date')
+        plt.ylabel(var_name + ' (m)')
+        plt.title(var_name + ' at site: ' + site_name)
         
         return fig, ax
+    
+    def obs_operator():
+        return
