@@ -7,31 +7,31 @@ import gsw
 #from .CRPS import CRPS
 #from .interpolate_along_dimension import interpolate_along_dimension
 
-class DIAGNOSTICS(COAsT):
+class INTERNALTIDE(COAsT):
     """
     Object for handling and storing necessary information, methods and outputs
     for calculation of internal tide diagnostics.
-    
-    Herein the depth moments of stratification are used as proxies for 
-    pycnocline depth (as the first  moment of stratification), and pycnocline 
+
+    Herein the depth moments of stratification are used as proxies for
+    pycnocline depth (as the first  moment of stratification), and pycnocline
     thickness  (as the 2nd moment of stratification).
     This approximation improves towards the limit of a two-layer fluid.
-    
-    For stratification that is not nearly two-layer, the pycnocline 
-    thickness appears large and this method for identifying the pycnocline 
+
+    For stratification that is not nearly two-layer, the pycnocline
+    thickness appears large and this method for identifying the pycnocline
     depth is less reliable.
-    
+
     Parameters
     ----------
         nemo_t : xr.Dataset
             nemo object on t-points.
         nemo_w : xr.Dataset, optional
-            nemo object on w-points. 
+            nemo object on w-points.
 
     Example basic usage:
     -------------------
-        # Create Diagnostics object
-        IT_obj = Diagnostics(nemo_t, nemo_w) # For NEMO objects on t and w-pts
+        # Create Internal tide diagnostics object
+        IT_obj = INTERNALTIDE(nemo_t, nemo_w) # For NEMO objects on t and w-pts
         IT_obj.construct_pycnocline_vars( nemo_t, nemo_w )
         # Make maps of pycnocline thickness and depth
         IT_obj.quick_plot()
@@ -45,7 +45,7 @@ class DIAGNOSTICS(COAsT):
         self.nz = nemo_t.dataset.dims['z_dim']
         self.ny = nemo_t.dataset.dims['y_dim']
         self.nx = nemo_t.dataset.dims['x_dim']
-           
+
 
     def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset, strat_thres = -0.01):
         """
@@ -65,7 +65,7 @@ class DIAGNOSTICS(COAsT):
             limiting stratification (rho_dz < 0) to trigger masking of mixed waters
 
         Output
-        ------    
+        ------
         self.dataset.pycno_depth - (t,y,x) pycnocline depth
         self.dataset.pycno_thick - (t,y,x) pycnocline thickness
         self.dataset.pycno_depth_masked - (t,y,x) pycnocline depth, masked
@@ -73,13 +73,13 @@ class DIAGNOSTICS(COAsT):
         self.dataset.pycno_thick_masked - (t,y,x) pycnocline thickness, masked
                 in weakly stratified water beyond strat_thres
         self.dataset.mask - (t,y,x) [1/0] stratified/unstrafied
-                water column according to strat_thres not being met anywhere 
+                water column according to strat_thres not being met anywhere
                 in the column
-        
+
         Returns
         -------
         None.
-        
+
         Example Usage
         -------------
         # load some example data
@@ -87,14 +87,14 @@ class DIAGNOSTICS(COAsT):
         dn_fig = 'unit_testing/figures/'
         fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
         fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
-        nemo_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat, 
+        nemo_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat,
                      dn_files + fn_nemo_dom, grid_ref='t-grid')
         # create an empty w-grid object, to store stratification
-        nemo_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, 
+        nemo_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom,
                            grid_ref='w-grid')
-        
+
         # initialise Internal Tide object
-        IT = coast.DIAGNOSTICS(nemo_t, nemo_w)  
+        IT = coast.INTERNALTIDE(nemo_t, nemo_w)
         # Construct pycnocline variables: depth and thickness
         IT.construct_pycnocline_vars( nemo_t, nemo_w )
         # Plot pycnocline depth and thickness
@@ -108,7 +108,7 @@ class DIAGNOSTICS(COAsT):
         #%% Construct stratification if not already done. t-pts --> w-pts
         if not hasattr(nemo_w.dataset, 'rho_dz'):
             nemo_w = nemo_t.differentiate( 'density', dim='z_dim', out_varstr='rho_dz', out_obj=nemo_w ) # --> sci_nwes_w.rho_dz
-        
+
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         nt = nemo_t.dataset.dims['t_dim']
         nz = nemo_t.dataset.dims['z_dim']
@@ -129,11 +129,11 @@ class DIAGNOSTICS(COAsT):
         strat_m = strat_m.where( strat.min(dim='z_dim').squeeze() < strat_thres, 0, drop=False)
         strat_m = strat_m.transpose("t_dim", "y_dim", "x_dim", transpose_coords=True)
 
-        ## Compute statification variables 
+        ## Compute statification variables
         # initialise pycnocline variables
         zd = np.zeros((nt, ny, nx)) # pycnocline depth
-        zt = np.zeros((nt, ny, nx)) # pycnocline thickness 
-        
+        zt = np.zeros((nt, ny, nx)) # pycnocline thickness
+
         ## Construct intermediate variables
         # Broadcast to fill out missing (time) dimensions in grid data
         _, depth_0_4d = xr.broadcast(strat, nemo_w.dataset.depth_0)
@@ -155,50 +155,50 @@ class DIAGNOSTICS(COAsT):
         coords = {'time': (('t_dim'), nemo_t.dataset.time.values),
                     'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
                     'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)}
-        dims = ['t_dim', 'y_dim', 'x_dim']        
+        dims = ['t_dim', 'y_dim', 'x_dim']
 
         # Save a xarray objects
         self.dataset['pycno_thick'] = xr.DataArray( zt,
-                    coords=coords, dims=dims) 
+                    coords=coords, dims=dims)
         self.dataset.pycno_thick.attrs['units'] = 'm'
         self.dataset.pycno_thick.attrs['standard_name'] = 'pycnocline thickness'
-        self.dataset.pycno_thick.attrs['long_name'] = 'Second depth moment of stratification'        
+        self.dataset.pycno_thick.attrs['long_name'] = 'Second depth moment of stratification'
 
 
         self.dataset['pycno_depth'] = xr.DataArray( zd,
                     coords=coords, dims=dims )
         self.dataset.pycno_depth.attrs['units'] = 'm'
-        self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'        
-        self.dataset.pycno_depth.attrs['long_name'] = 'First depth moment of stratification'        
-        
-       
+        self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'
+        self.dataset.pycno_depth.attrs['long_name'] = 'First depth moment of stratification'
+
+
         #%% Mask pycnocline variables in weak stratification
-        #zd_m = zd.where( strat_m > 0, -999, drop=False ) 
-        #zt_m = zt.where( strat_m > 0, -999, drop=False ) 
-        zd_m = zd.where( strat_m > 0 ) 
-        zt_m = zt.where( strat_m > 0 ) 
+        #zd_m = zd.where( strat_m > 0, -999, drop=False )
+        #zt_m = zt.where( strat_m > 0, -999, drop=False )
+        zd_m = zd.where( strat_m > 0 )
+        zt_m = zt.where( strat_m > 0 )
 
         self.dataset['mask'] = xr.DataArray( strat_m,
-                    coords=coords, dims=dims) 
-        
+                    coords=coords, dims=dims)
+
         self.dataset['pycno_thick_masked'] = xr.DataArray( zt_m,
-                    coords=coords, dims=dims) 
+                    coords=coords, dims=dims)
         self.dataset.pycno_thick_masked.attrs['units'] = 'm'
         self.dataset.pycno_thick_masked.attrs['standard_name'] = 'masked pycnocline thickness'
-        self.dataset.pycno_thick_masked.attrs['long_name'] = 'Second depth moment of stratification, masked in weak stratification'        
+        self.dataset.pycno_thick_masked.attrs['long_name'] = 'Second depth moment of stratification, masked in weak stratification'
 
 
         self.dataset['pycno_depth_masked'] = xr.DataArray( zd_m,
                     coords=coords, dims=dims )
         self.dataset.pycno_depth_masked.attrs['units'] = 'm'
-        self.dataset.pycno_depth_masked.attrs['standard_name'] = 'masked pycnocline depth'  
-        self.dataset.pycno_depth_masked.attrs['long_name'] = 'First depth moment of stratification, masked in weak stratification'        
+        self.dataset.pycno_depth_masked.attrs['standard_name'] = 'masked pycnocline depth'
+        self.dataset.pycno_depth_masked.attrs['long_name'] = 'First depth moment of stratification, masked in weak stratification'
 
     def quick_plot(self, var : xr.DataArray = None):
         """
 
         Map plot for pycnocline depth and thickness variables.
-        
+
         Parameters
         ----------
         var : xr.DataArray, optional
@@ -208,27 +208,27 @@ class DIAGNOSTICS(COAsT):
         Returns
         -------
         None.
-        
+
         Example Usage
         -------------
         IT.quick_plot( 'pycno_depth_masked' )
 
         """
         import matplotlib.pyplot as plt
-        
+
         if var is None:
             var_lst = [self.dataset.pycno_depth_masked, self.dataset.pycno_thick_masked]
-        else: 
+        else:
             var_lst = [self.dataset[var]]
 
         for var in var_lst:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.gca()
-            plt.pcolormesh( self.dataset.longitude.squeeze(), 
+            plt.pcolormesh( self.dataset.longitude.squeeze(),
                            self.dataset.latitude.squeeze(),
                            var.isel(t_dim = 0) )
             #               var.mean(dim = 't_dim') )
-            #plt.contourf( self.dataset.longitude.squeeze(), 
+            #plt.contourf( self.dataset.longitude.squeeze(),
             #               self.dataset.latitude.squeeze(),
             #               var.mean(dim = 't_dim'), levels=(0,10,20,30,40) )
             title_str = self.dataset.time[0].dt.strftime("%d %b %Y: ").values \

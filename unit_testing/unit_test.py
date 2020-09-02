@@ -348,7 +348,7 @@ nemo_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, grid_ref='w-grid')
 try:
     log_str = ""
     # initialise Internal Tide object
-    IT = coast.DIAGNOSTICS(nemo_t, nemo_w) 
+    IT = coast.INTERNALTIDE(nemo_t, nemo_w) 
     if IT is None: # Test whether object was returned
         log_str += 'No object returned\n'
     # Construct pycnocline variables: depth and thickness
