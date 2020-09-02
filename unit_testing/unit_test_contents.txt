@@ -21,6 +21,8 @@
 3. Diagnostic Methods
     a. Compute vertical spatial derivative
     b. Construct density method inside NEMO class
+    c. Construct pycnocline depth and thickness                             
+    d. Plot pycnocline depth
 
 4. Transect Methods
     a. Determine and extract transect indices
