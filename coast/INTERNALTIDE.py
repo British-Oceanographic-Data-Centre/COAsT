@@ -49,11 +49,19 @@ class INTERNALTIDE(COAsT):
 
     def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset, strat_thres = -0.01):
         """
-        Computes pycnocline variables with w-points depths and thicknesses
+        Computes depth moments of stratifcation. Under the assumption that the
+        stratification approximately represents a two-layer fluid, these can be
+        interpreted as pycnocline depths and thicknesses. They are computed on
+        w-points.
 
-        Pycnocline depth: z_d = \int z.strat dz / \int strat dz
-        Pycnocline thickness: z_t = \sqrt{\int (z-z_d)^2 strat dz / \int strat dz}
+        1st moment of stratification: \int z.strat dz / \int strat dz
+            In the limit of a two layer fluid this is equivalent to the
+        pycnocline depth, or z_d (units: metres)
+
+        2nd moment of stratification: \sqrt{\int (z-z_d)^2 strat dz / \int strat dz}
             where strat = d(density)/dz
+            In the limit of a two layer fluid this is equivatlent to the
+        pycnocline thickness, or z_t (units: metres)
 
         Parameters
         ----------
@@ -66,11 +74,11 @@ class INTERNALTIDE(COAsT):
 
         Output
         ------
-        self.dataset.pycno_depth - (t,y,x) pycnocline depth
-        self.dataset.pycno_thick - (t,y,x) pycnocline thickness
-        self.dataset.pycno_depth_masked - (t,y,x) pycnocline depth, masked
+        self.dataset.strat_1st_mom - (t,y,x) pycnocline depth
+        self.dataset.strat_2nd_mom - (t,y,x) pycnocline thickness
+        self.dataset.strat_1st_mom_masked - (t,y,x) pycnocline depth, masked
                 in weakly stratified water beyond strat_thres
-        self.dataset.pycno_thick_masked - (t,y,x) pycnocline thickness, masked
+        self.dataset.strat_2nd_mom_masked - (t,y,x) pycnocline thickness, masked
                 in weakly stratified water beyond strat_thres
         self.dataset.mask - (t,y,x) [1/0] stratified/unstrafied
                 water column according to strat_thres not being met anywhere
@@ -158,18 +166,18 @@ class INTERNALTIDE(COAsT):
         dims = ['t_dim', 'y_dim', 'x_dim']
 
         # Save a xarray objects
-        self.dataset['pycno_thick'] = xr.DataArray( zt,
+        self.dataset['strat_2nd_mom'] = xr.DataArray( zt,
                     coords=coords, dims=dims)
-        self.dataset.pycno_thick.attrs['units'] = 'm'
-        self.dataset.pycno_thick.attrs['standard_name'] = 'pycnocline thickness'
-        self.dataset.pycno_thick.attrs['long_name'] = 'Second depth moment of stratification'
+        self.dataset.strat_2nd_mom.attrs['units'] = 'm'
+        self.dataset.strat_2nd_mom.attrs['standard_name'] = 'pycnocline thickness'
+        self.dataset.strat_2nd_mom.attrs['long_name'] = 'Second depth moment of stratification'
 
 
-        self.dataset['pycno_depth'] = xr.DataArray( zd,
+        self.dataset['strat_1st_mom'] = xr.DataArray( zd,
                     coords=coords, dims=dims )
-        self.dataset.pycno_depth.attrs['units'] = 'm'
-        self.dataset.pycno_depth.attrs['standard_name'] = 'pycnocline depth'
-        self.dataset.pycno_depth.attrs['long_name'] = 'First depth moment of stratification'
+        self.dataset.strat_1st_mom.attrs['units'] = 'm'
+        self.dataset.strat_1st_mom.attrs['standard_name'] = 'pycnocline depth'
+        self.dataset.strat_1st_mom.attrs['long_name'] = 'First depth moment of stratification'
 
 
         #%% Mask pycnocline variables in weak stratification
@@ -181,18 +189,18 @@ class INTERNALTIDE(COAsT):
         self.dataset['mask'] = xr.DataArray( strat_m,
                     coords=coords, dims=dims)
 
-        self.dataset['pycno_thick_masked'] = xr.DataArray( zt_m,
+        self.dataset['strat_2nd_mom_masked'] = xr.DataArray( zt_m,
                     coords=coords, dims=dims)
-        self.dataset.pycno_thick_masked.attrs['units'] = 'm'
-        self.dataset.pycno_thick_masked.attrs['standard_name'] = 'masked pycnocline thickness'
-        self.dataset.pycno_thick_masked.attrs['long_name'] = 'Second depth moment of stratification, masked in weak stratification'
+        self.dataset.strat_2nd_mom_masked.attrs['units'] = 'm'
+        self.dataset.strat_2nd_mom_masked.attrs['standard_name'] = 'masked pycnocline thickness'
+        self.dataset.strat_2nd_mom_masked.attrs['long_name'] = 'Second depth moment of stratification, masked in weak stratification'
 
 
-        self.dataset['pycno_depth_masked'] = xr.DataArray( zd_m,
+        self.dataset['strat_1st_mom_masked'] = xr.DataArray( zd_m,
                     coords=coords, dims=dims )
-        self.dataset.pycno_depth_masked.attrs['units'] = 'm'
-        self.dataset.pycno_depth_masked.attrs['standard_name'] = 'masked pycnocline depth'
-        self.dataset.pycno_depth_masked.attrs['long_name'] = 'First depth moment of stratification, masked in weak stratification'
+        self.dataset.strat_1st_mom_masked.attrs['units'] = 'm'
+        self.dataset.strat_1st_mom_masked.attrs['standard_name'] = 'masked pycnocline depth'
+        self.dataset.strat_1st_mom_masked.attrs['long_name'] = 'First depth moment of stratification, masked in weak stratification'
 
     def quick_plot(self, var : xr.DataArray = None):
         """
@@ -203,7 +211,7 @@ class INTERNALTIDE(COAsT):
         ----------
         var : xr.DataArray, optional
             Pass variable to plot. The default is None. In which case both
-            pycno_depth and pycno_thick are plotted.
+            strat_1st_mom and strat_2nd_mom are plotted.
 
         Returns
         -------
@@ -211,13 +219,13 @@ class INTERNALTIDE(COAsT):
 
         Example Usage
         -------------
-        IT.quick_plot( 'pycno_depth_masked' )
+        IT.quick_plot( 'strat_1st_mom_masked' )
 
         """
         import matplotlib.pyplot as plt
 
         if var is None:
-            var_lst = [self.dataset.pycno_depth_masked, self.dataset.pycno_thick_masked]
+            var_lst = [self.dataset.strat_1st_mom_masked, self.dataset.strat_2nd_mom_masked]
         else:
             var_lst = [self.dataset[var]]
 
