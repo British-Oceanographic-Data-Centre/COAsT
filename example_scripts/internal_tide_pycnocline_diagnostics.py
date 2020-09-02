@@ -116,11 +116,11 @@ sal_sec = tran.data_T.salinity_m.mean(dim='t_dim')
 rho_sec = tran.data_T.density.mean(dim='t_dim')
 strat_sec = tran.data_F.rho_dz.mean(dim='t_dim')
 
-zd_sec = tran.data_U.pycno_depth.mean(dim='t_dim', skipna=False)
-zd_m_sec = tran.data_U.pycno_depth_masked.mean(dim='t_dim', skipna=False)
+zd_sec = tran.data_U.strat_1st_mom.mean(dim='t_dim', skipna=False)
+zd_m_sec = tran.data_U.strat_1st_mom_masked.mean(dim='t_dim', skipna=False)
 
-zt_sec = tran.data_U.pycno_thick.mean(dim='t_dim', skipna=False)
-zt_m_sec = tran.data_U.pycno_thick_masked.mean(dim='t_dim', skipna=False)
+zt_sec = tran.data_U.strat_2nd_mom.mean(dim='t_dim', skipna=False)
+zt_m_sec = tran.data_U.strat_2nd_mom_masked.mean(dim='t_dim', skipna=False)
 
 
 #%% Plot sections
@@ -155,18 +155,18 @@ plt.show()
 
 
 
-#%% Plot profile of density and stratification with pycno_depth in deep water
+#%% Plot profile of density and stratification with strat_1st_mom in deep water
 #############################################################################
-print("* Plot profile of density and stratification with pycno_depth in deep water")
+print("* Plot profile of density and stratification with strat_1st_mom in deep water")
 print(" - When the stratification is not nearly two-layer, then then there is no sharp pycnocline for the  1st and 2nd moments to pick out. You end up with a thick \
 pycnocline and reduced precision on the depth\n")
 
 [JJ,II] = sci_nwes_t.find_j_i( lat= 60, lon=2.5)
-zd_plus = IT.dataset.pycno_depth[0,JJ,II] + IT.dataset.pycno_thick[0,JJ,II]
-zd_minus = IT.dataset.pycno_depth[0,JJ,II] - IT.dataset.pycno_thick[0,JJ,II]
+zd_plus = IT.dataset.strat_1st_mom[0,JJ,II] + IT.dataset.strat_2nd_mom[0,JJ,II]
+zd_minus = IT.dataset.strat_1st_mom[0,JJ,II] - IT.dataset.strat_2nd_mom[0,JJ,II]
 plt.plot( sci_nwes_w.dataset.rho_dz[0,:,JJ,II], sci_nwes_w.dataset.depth_0[:,JJ,II], '+')
-plt.plot( IT.dataset.pycno_depth[0,JJ,II],'o', label='pycno_depth')
-plt.plot( [0,0,],[zd_plus, zd_minus],'-', label='pycno_thick')
+plt.plot( IT.dataset.strat_1st_mom[0,JJ,II],'o', label='strat_1st_mom')
+plt.plot( [0,0,],[zd_plus, zd_minus],'-', label='strat_2nd_mom')
 plt.title('stratification')
 plt.ylabel('depth (m)')
 plt.gca().invert_yaxis()
@@ -174,8 +174,8 @@ plt.legend()
 plt.show()
 
 plt.plot( sci_nwes_t.dataset.density[0,:,JJ,II], sci_nwes_t.dataset.depth_0[:,JJ,II], '+')
-plt.plot( 1027,IT.dataset.pycno_depth[0,JJ,II],'o', label='pycno_depth')
-plt.plot( [1027,1027],[zd_plus, zd_minus],'-', label='pycno_thick')
+plt.plot( 1027,IT.dataset.strat_1st_mom[0,JJ,II],'o', label='strat_1st_mom')
+plt.plot( [1027,1027],[zd_plus, zd_minus],'-', label='strat_2nd_mom')
 plt.xlim([1026, 1028])
 plt.title('density')
 plt.ylabel('depth (m)')
@@ -204,7 +204,7 @@ H = sci_nwes_t.dataset.depth_0[-1,:,:].squeeze()
 lat = sci_nwes_t.dataset.latitude.squeeze()
 lon = sci_nwes_t.dataset.longitude.squeeze()
 
-zd = IT.dataset.pycno_depth_masked.where( H > 11 ).mean(dim='t_dim', skipna=True) # make nan the land
+zd = IT.dataset.strat_1st_mom_masked.where( H > 11 ).mean(dim='t_dim', skipna=True) # make nan the land
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
@@ -235,12 +235,12 @@ plt.legend( lines, labels, loc="lower right")
 
 # I expect to see RuntimeWarnings in this block
 title_str = IT.dataset['time'].mean(dim='t_dim').dt.strftime("%b %Y: ").values \
-    + IT.dataset.pycno_depth.standard_name \
+    + IT.dataset.strat_1st_mom.standard_name \
     + " (" \
-    + IT.dataset.pycno_depth.units \
+    + IT.dataset.strat_1st_mom.units \
     + ")"
 plt.title(title_str)
 plt.xlabel('longitude'); plt.ylabel('latitude')
 plt.show()
 
-#fig.savefig(fig_dir+'pycno_depth.png', dpi=120)
+#fig.savefig(fig_dir+'strat_1st_mom.png', dpi=120)
