@@ -28,3 +28,11 @@ nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 
 tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
+
+from time import process_time
+
+# start = process_time()
+# insertionsort(n)
+# end = process_time()
+
+# time = end - start

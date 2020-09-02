@@ -64,7 +64,8 @@ class NEMO(COAsT):
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
                             'so' : 'salinity',
-                            'vosaline' : 'salinity'}
+                            'vosaline' : 'salinity',
+                            'sossheig' : 'ssh'}
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0',
