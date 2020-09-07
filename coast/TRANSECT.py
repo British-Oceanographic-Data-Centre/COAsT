@@ -85,10 +85,6 @@ class Transect:
         # self.data_w = dataset.isel(y=tran_y,x=tran_x-1) 
         
 
-    
-        
-        
- 
     def get_transect_indices(self, nemo_F):
         '''
         Get the transect indices on a specific grid
@@ -151,21 +147,21 @@ class Transect:
                 # u flux (+ in)
                 velocity[:,:,idx] = self.data_U.vozocrtx[:,:,idx+1].to_masked_array()
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_U.e2[idx+1].to_masked_array() *
-                                          self.data_U.e3[:,:,idx+1].to_masked_array() )
+                                          self.data_U.e3_0[:,idx+1].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
                 depth_0[:,idx] = self.data_U.depth_0[:,idx+1].to_masked_array()
             elif dx[idx] > 0:
                 # v flux (- in) 
                 velocity[:,:,idx] = - self.data_V.vomecrty[:,:,idx+1].to_masked_array()
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_V.e1[idx+1].to_masked_array() *
-                                          self.data_V.e3[:,:,idx+1].to_masked_array() )
+                                          self.data_V.e3_0[:,idx+1].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
                 depth_0[:,idx] = self.data_V.depth_0[:,idx+1].to_masked_array()
             elif dx[idx] < 0:
                 # v flux (+ in)
                 velocity[:,:,idx] = self.data_V.vomecrty[:,:,idx].to_masked_array()
                 vol_transport[:,:,idx] = ( velocity[:,:,idx] * self.data_V.e1[idx].to_masked_array() *
-                                          self.data_V.e3[:,:,idx].to_masked_array() )
+                                          self.data_V.e3_0[:,idx].to_masked_array() )
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
                 depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
         
@@ -241,11 +237,11 @@ class Transect:
             
             hpg = (ds_T_j1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e2v
             hpg_i1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_i1.pressure_h_zlevels ) / e2v_i1            
-            hpg_f = ( ( e1v * hpg ) + ( e1v_i1 * hpg_i1 ) ) / e1f 
+            hpg_f = 0.5 * ( ( e1v * hpg ) + ( e1v_i1 * hpg_i1 ) ) / e1f 
                         
             spg = (ds_T_j1.pressure_s - ds_T.pressure_s) / e2v
             spg_i1 = (ds_T_j1i1.pressure_s - ds_T_i1.pressure_s) / e2v_i1
-            spg_f = ( (e1v * spg) + (e1v_i1 * spg_i1) ) / e1f 
+            spg_f = 0.5 * ( (e1v * spg) + (e1v_i1 * spg_i1) ) / e1f 
         elif direction == "v":
             e1u = 0.5 * ( ds_T_i1.e1 + ds_T.e1 ) 
             e1u_j1 = 0.5 * ( ds_T_j1i1.e1 + ds_T_j1.e1 )
@@ -255,11 +251,11 @@ class Transect:
             
             hpg = (ds_T_i1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e1u
             hpg_j1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_j1.pressure_h_zlevels) / e1u_j1 
-            hpg_f = ( (e2u * hpg) + (e2u_j1 * hpg_j1) ) / e2f
+            hpg_f = 0.5 * ( (e2u * hpg) + (e2u_j1 * hpg_j1) ) / e2f
             
             spg = (ds_T_i1.pressure_s - ds_T.pressure_s) / e1u
             spg_j1 = (ds_T_j1i1.pressure_s - ds_T_j1.pressure_s) / e1u_j1 
-            spg_f = ( (e2u * spg) + (e2u_j1 * spg_j1) ) / e2f
+            spg_f = 0.5 * ( (e2u * spg) + (e2u_j1 * spg_j1) ) / e2f
         
         return (hpg_f, spg_f)
     
@@ -285,7 +281,26 @@ class Transect:
         self.construct_pressure(ds_T_i1, ref_density)
         self.construct_pressure(ds_T_j1i1, ref_density)
         
-        f = 2 * 7.2921 * 10**(-5) * np.sin(self.data_F.latitude)
+        # Remove the mean hydrostatic pressure on each z_level from the hydrostatic pressure.
+        # This helps to reduce the noise when taking the horizontal gradients of hydrstatic pressure.
+        pressure_h_zlevel_mean = xr.concat( (ds_T.pressure_h_zlevels, ds_T_j1.pressure_h_zlevels, 
+                                 ds_T_i1.pressure_h_zlevels, ds_T_j1i1.pressure_h_zlevels), 
+                                 dim='concat_dim' ).mean(dim=('concat_dim','r_dim','t_dim'))
+        ds_T['pressure_h_zlevels'] = ds_T.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_j1['pressure_h_zlevels'] = ds_T_j1.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_i1['pressure_h_zlevels'] = ds_T_i1.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_j1i1['pressure_h_zlevels'] = ds_T_j1i1.pressure_h_zlevels - pressure_h_zlevel_mean
+        
+        pressure_s_mean = xr.concat( (ds_T.pressure_s, ds_T_j1.pressure_s, 
+                                 ds_T_i1.pressure_s, ds_T_j1i1.pressure_s), 
+                                 dim='concat_dim' ).mean(dim=('concat_dim','r_dim','t_dim'))
+        ds_T['pressure_s'] = ds_T.pressure_s - pressure_s_mean
+        ds_T_j1['pressure_s'] = ds_T_j1.pressure_s - pressure_s_mean
+        ds_T_i1['pressure_s'] = ds_T_i1.pressure_s - pressure_s_mean
+        ds_T_j1i1['pressure_s'] = ds_T_j1i1.pressure_s - pressure_s_mean
+        
+        # Coriolis parameter
+        f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_F.latitude) )
         
         dy = np.diff(self.y_ind)
         dx = np.diff(self.x_ind)
@@ -303,9 +318,9 @@ class Transect:
                 
                 # average from f to u point
                 e2u_j1 = 0.5 * (ds_T_j1.isel(r_dim=idx).e2 + ds_T_j1i1.isel(r_dim=idx).e2 )
-                u_hpg = -((self.data_F.e2[idx]*hpg/f[idx] + self.data_F.e2[idx+1]*hpg_r1/f[idx+1]) 
+                u_hpg = -(0.5 * (self.data_F.e2[idx]*hpg/f[idx] + self.data_F.e2[idx+1]*hpg_r1/f[idx+1]) 
                                 / (e2u_j1 * ref_density))
-                u_spg = -((self.data_F.e2[idx]*spg/f[idx] + self.data_F.e2[idx+1]*spg_r1/f[idx+1]) 
+                u_spg = -(0.5 * (self.data_F.e2[idx]*spg/f[idx] + self.data_F.e2[idx+1]*spg_r1/f[idx+1]) 
                                 / (e2u_j1 * ref_density))                
                 normal_velocity_hpg[:,:,idx] = u_hpg.values
                 normal_velocity_spg[:,idx] = u_spg.values
@@ -320,9 +335,9 @@ class Transect:
                 
                 # average from f to v point
                 e1v_i1 = 0.5 * ( ds_T_i1.isel(r_dim=idx).e1 + ds_T_j1i1.isel(r_dim=idx).e1 )
-                v_hpg = ((self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
+                v_hpg = (0.5 * (self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
                                 / (e1v_i1 * ref_density))
-                v_spg = ((self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
+                v_spg = (0.5 * (self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
                                 / (e1v_i1 * ref_density))
                 normal_velocity_hpg[:,:,idx] = -v_hpg.values
                 normal_velocity_spg[:,idx] = -v_spg.values
@@ -337,9 +352,9 @@ class Transect:
                 
                 # average from f to v point
                 e1v = 0.5 * ( ds_T.isel(r_dim=idx).e1 + ds_T_j1.isel(r_dim=idx).e1 )
-                v_hpg = ((self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
+                v_hpg = (0.5 * (self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
                                 / (e1v * ref_density))
-                v_spg = ((self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
+                v_spg = (0.5 * (self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
                                 / (e1v * ref_density))                   
                 normal_velocity_hpg[:,:,idx] = v_hpg.values 
                 normal_velocity_spg[:,idx] = v_spg.values 
@@ -381,7 +396,7 @@ class Transect:
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
         
         nemo_T_ds = nemo_T_ds.squeeze()
-        return
+        return (ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1)
                 
                     
 
@@ -475,8 +490,9 @@ class Transect:
     
         # cumulative integral of density on z levels
         # Note that zero density flux is assumed at z=0
-        density_cumulative = - cumtrapz( np.concatenate( (density_z[:,:1,:], density_z), axis=1 ),
+        density_cumulative = -cumtrapz( np.concatenate( (density_z[:,:1,:], density_z), axis=1 ),
                                 x=np.insert(-z_levels,0,0), axis=1)
+
         hydrostatic_pressure = density_cumulative * self.GRAVITY
         
         attributes = {'units': 'kg m^{-1} s^{-2}', 'standard name': 'Hydrostatic pressure on the z-level vertical grid'}
