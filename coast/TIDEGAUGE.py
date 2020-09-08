@@ -11,7 +11,8 @@ class TIDEGAUGE(OBSERVATION):
     '''
     An object for reading, storing and manipulating tide gauge data.
     Reading and organisation methods are centred around the GESLA database.
-    Hower, any fixed time series data can be used if in the correct format.
+    However, any fixed time series data can be used if in the correct format.
+    (Source: https://www.gesla.org/)
     The data format used for this object is as follows:
         
     *Data Format Overview*
@@ -306,7 +307,10 @@ class TIDEGAUGE(OBSERVATION):
         gl.left_labels = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
-
+        
+        plt.title('Map of gauge locations')
+        plt.ylabel('Latitude')
+        plt.xlabel('Longitude')
         plt.show()
         
         return fig, ax
@@ -318,6 +322,8 @@ class TIDEGAUGE(OBSERVATION):
         Quick plot of time series stored within object's dataset
         Parameters
         ----------
+        site (str or int) : Either site name as a string or site index (int)
+                            inside dataset list.
         date_start (datetime) : Start date for plotting
         date_end (datetime) : End date for plotting
         var_name (str) : Variable to plot. Default: sea_level
@@ -390,6 +396,6 @@ class TIDEGAUGE(OBSERVATION):
         plt.title(var_name + ' at site: ' + site_name)
         
         return fig, ax
-    
+
     def obs_operator():
         return
