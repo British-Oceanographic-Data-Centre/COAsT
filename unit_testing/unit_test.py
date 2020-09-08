@@ -12,6 +12,7 @@ import coast
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
+import datetime
 
 dn_files = "./example_files/"
 dn_fig = 'unit_testing/figures/'
@@ -340,43 +341,43 @@ densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt,dims=['r_dim']),
 subsec = subsec+1
 
 nemo_t = None; nemo_w = None
-nemo_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat_summer, 
+nemo_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat_summer,
                     dn_files + fn_nemo_dom, grid_ref='t-grid')
 # create an empty w-grid object, to store stratification
 nemo_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, grid_ref='w-grid')
 try:
     log_str = ""
     # initialise Internal Tide object
-    IT = coast.DIAGNOSTICS(nemo_t, nemo_w) 
+    IT = coast.INTERNALTIDE(nemo_t, nemo_w)
     if IT is None: # Test whether object was returned
         log_str += 'No object returned\n'
     # Construct pycnocline variables: depth and thickness
     IT.construct_pycnocline_vars( nemo_t, nemo_w )
-    
+
     if not hasattr( nemo_t.dataset, 'density' ):
-        log_str += 'Did not create density variable\n'    
+        log_str += 'Did not create density variable\n'
     if not hasattr( nemo_w.dataset, 'rho_dz' ):
-        log_str += 'Did not create rho_dz variable\n'    
-    
-    if not hasattr( IT.dataset, 'pycno_depth' ):
-        log_str += 'Missing pycno_depth variable\n'
-    if not hasattr( IT.dataset, 'pycno_depth_masked' ):
-        log_str += 'Missing pycno_depth_masked variable\n'
-    if not hasattr( IT.dataset, 'pycno_thick' ):
-        log_str += 'Missing pycno_thick variable\n'
-    if not hasattr( IT.dataset, 'pycno_thick_masked' ):
-        log_str += 'Missing pycno_thick_masked variable\n'
+        log_str += 'Did not create rho_dz variable\n'
+
+    if not hasattr( IT.dataset, 'strat_1st_mom' ):
+        log_str += 'Missing strat_1st_mom variable\n'
+    if not hasattr( IT.dataset, 'strat_1st_mom_masked' ):
+        log_str += 'Missing strat_1st_mom_masked variable\n'
+    if not hasattr( IT.dataset, 'strat_2nd_mom' ):
+        log_str += 'Missing strat_2nd_mom variable\n'
+    if not hasattr( IT.dataset, 'strat_2nd_mom_masked' ):
+        log_str += 'Missing strat_2nd_mom_masked variable\n'
     if not hasattr( IT.dataset, 'mask' ):
         log_str += 'Missing mask variable\n'
 
     # Check the calculations are as expected
-    if np.isclose(IT.dataset.pycno_depth.sum(), 3.74214231e+08)  \
-        and np.isclose(IT.dataset.pycno_thick.sum(), 2.44203298e+08) \
+    if np.isclose(IT.dataset.strat_1st_mom.sum(), 3.74214231e+08)  \
+        and np.isclose(IT.dataset.strat_2nd_mom.sum(), 2.44203298e+08) \
         and np.isclose(IT.dataset.mask.sum(), 450580) \
-        and np.isclose(IT.dataset.pycno_depth_masked.sum(), 3.71876949e+08) \
-        and np.isclose(IT.dataset.pycno_thick_masked.sum(), 2.42926865e+08):
+        and np.isclose(IT.dataset.strat_1st_mom_masked.sum(), 3.71876949e+08) \
+        and np.isclose(IT.dataset.strat_2nd_mom_masked.sum(), 2.42926865e+08):
             print(str(sec) + chr(subsec) + " OK - pyncocline depth and thickness good")
-            
+
 except:
     print(str(sec) +chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
@@ -386,9 +387,9 @@ except:
 #
 subsec = subsec+1                                                                             #
 try:
-    fig,ax = IT.quick_plot( 'pycno_depth_masked' )
+    fig,ax = IT.quick_plot( 'strat_1st_mom_masked' )
     fig.tight_layout()
-    fig.savefig(dn_fig + 'pycno_depth.png')
+    fig.savefig(dn_fig + 'strat_1st_mom.png')
     print(str(sec) + chr(subsec) + " OK - pycnocline depth plot saved")
 except:
     print(str(sec) + chr(subsec) + "X - quickplot() failed")
@@ -486,14 +487,14 @@ subsec = subsec+1
 tran.construct_density_on_z_levels()
 try:
     if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
-                20142532.548826512 ): 
+                20142532.548826512 ):
         raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
     # tran.data_T = tran.data_T.drop('density_z_levels')
     # z_levels = tran.data_T.depth_z_levels.copy()
     # tran.data_T = tran.data_T.drop('depth_z_levels')
     # tran.construct_density_on_z_levels( z_levels=z_levels )
     # if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
-    #             20142532.548826512 ): 
+    #             20142532.548826512 ):
     #     raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
     print(str(sec) + chr(subsec) + ' OK - TRANSECT density on z-levels correct')
 except ValueError as err:
@@ -561,16 +562,66 @@ except:
 subsec = subsec+1
 try:
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
 
-    if (altimetry_nwes.dataset.dims['time'] == 213) :
+    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
         print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
     else:
         print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
+
+#-----------------------------------------------------------------------------#
+# ( 5d ) Find nearest xy indices                                              #
+#                                                                             #
+subsec = subsec+1
+try:
+    ind_x, ind_y = sci.nearest_xy_indices(sci.dataset,
+                                          altimetry_nwes.dataset.longitude,
+                                          altimetry_nwes.dataset.latitude)
+    if ind_x.shape == altimetry_nwes.dataset.longitude.shape:
+        print(str(sec) + chr(subsec) + " OK - nearest_xy_indices works ")
+    else:
+        print(str(sec) + chr(subsec) + "X - Problem with nearest_xy_indices()")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
+#-----------------------------------------------------------------------------#
+# ( 5e ) Interpolate in space (nearest)                                       #
+#                                                                             #
+subsec = subsec+1
+try:
+    interp_lon = np.array(altimetry_nwes.dataset.longitude).flatten()
+    interp_lat = np.array(altimetry_nwes.dataset.latitude).flatten()
+    interpolated = sci.interpolate_in_space(sci.dataset.sossheig,
+                                            interp_lon, interp_lat)
+
+    # Check that output array longitude has same shape as altimetry
+    if interpolated.longitude.shape == altimetry_nwes.dataset.longitude.shape :
+        print(str(sec) + chr(subsec) + " OK - Space interpolation works ")
+    else:
+        print(str(sec) + chr(subsec) + "X - Problem with space interpolation")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
+#-----------------------------------------------------------------------------#
+# ( 5f ) Interpolate in time                                                  #
+#                                                                             #
+subsec = subsec+1
+try:
+    interpolated = sci.interpolate_in_time(interpolated,
+                                           altimetry_nwes.dataset.time)
+
+    #Check time in interpolated object has same shape
+    if interpolated.time.shape == altimetry_nwes.dataset.time.shape :
+        print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
+    else:
+        print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
 #################################################
-## ( 6 ) CRPS Methods                         ##
+## ( 6 ) Validation Methods                    ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -583,7 +634,7 @@ try:
     nemo = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(time=ind) #nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
     crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
 
     try:
@@ -602,7 +653,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 
 #-----------------------------------------------------------------------------#
-# ( 6b ) CRPS Plots                                                           #
+# ( 6b ) CRPS Map Plots                                                       #
 #                                                                             #
 subsec = subsec+1
 plt.close('all')
@@ -614,7 +665,12 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
 
+#-----------------------------------------------------------------------------#
+# ( 6c ) CRPS Map Plots                                                       #
+#                                                                             #
+
 plt.close('all')
+subsec = subsec+1
 try:
     fig, ax = crps.cdf_plot(0)
     fig.savefig(dn_fig + 'crps_cdf_plot.png')
@@ -622,6 +678,27 @@ try:
     print(str(sec) + chr(subsec) + " OK - CRPS CDF plot saved")
 except:
     print(str(sec) + chr(subsec) + " X - CRPS CDF plot not saved")
+
+#-----------------------------------------------------------------------------#
+# ( 6d ) Interpolate model to altimetry                                       #
+#                                                                             #
+subsec = subsec+1
+plt.close('all')
+
+try:
+    altimetry_nwes.obs_operator(sci, 'sossheig')
+    # Check new variable is in altimetry dataset and isn't all NaNs
+    try:
+        test = altimetry_nwes.dataset.interp_sossheig
+        if False in np.isnan(altimetry_nwes.dataset.interp_sossheig):
+            print(str(sec) + chr(subsec) + " OK - SSH interpolated to altimetry")
+        else:
+            print(str(sec) + chr(subsec) + " OK - X - Interpolation to altimetry failed")
+    except:
+        print(str(sec) + chr(subsec) + " X - Interpolation to altimetry failed")
+except:
+    print(str(sec) + chr(subsec) + " FAILED")
+
 
 #################################################
 ## ( 7 ) Plotting Methods                          ##

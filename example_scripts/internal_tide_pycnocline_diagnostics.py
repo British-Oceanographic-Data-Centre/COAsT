@@ -1,8 +1,8 @@
 """
-internal_tide_pycnocline_diagnostics.py 
+internal_tide_pycnocline_diagnostics.py
 
 Demonstration of pycnocline depth and thickness diagnostics.
-The first and second depth moments of stratification are computed as proxies 
+The first and second depth moments of stratification are computed as proxies
 for pycnocline depth and thickness, suitable for a nearly two-layer fluid.
 
 
@@ -27,14 +27,14 @@ try:
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
     mon = 'July'
     #mon = 'Feb'
-    
+
     if mon == 'July':
         fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
     elif mon == 'Feb':
         fil_names_AMM60 = "AMM60_1d_201002*_grid_T.nc"
-            
-    
-    sci_t = coast.NEMO(dir_AMM60 + fil_names_AMM60, 
+
+
+    sci_t = coast.NEMO(dir_AMM60 + fil_names_AMM60,
                      dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
 
     # create an empty w-grid object, to store stratification
@@ -47,10 +47,10 @@ except:
     dn_fig = 'unit_testing/figures/'
     fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
     fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
-    
-    sci_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat, 
+
+    sci_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat,
                      dn_files + fn_nemo_dom, grid_ref='t-grid', multiple=True)
-    
+
     # create an empty w-grid object, to store stratification
     sci_w = coast.NEMO( fn_domain = dn_files + fn_nemo_dom, grid_ref='w-grid')
 print('* Loaded ',config, ' data')
@@ -67,8 +67,8 @@ sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1]) #nwes = northwest eu
 
 #%% Apply masks to temperature and salinity
 if config == 'AMM60':
-    sci_nwes_t.dataset['temperature_m'] = sci_nwes_t.dataset.temperature.where( sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset['t_dim'].sizes) > 0) 
-    sci_nwes_t.dataset['salinity_m'] = sci_nwes_t.dataset.salinity.where( sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset['t_dim'].sizes) > 0) 
+    sci_nwes_t.dataset['temperature_m'] = sci_nwes_t.dataset.temperature.where( sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset['t_dim'].sizes) > 0)
+    sci_nwes_t.dataset['salinity_m'] = sci_nwes_t.dataset.salinity.where( sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset['t_dim'].sizes) > 0)
 
 else:
     # Apply fake masks to temperature and salinity
@@ -83,11 +83,11 @@ sci_nwes_t.construct_density( EOS='EOS10' )
 #%% Construct stratification. t-pts --> w-pts
 print('* Construct stratification. t-pts --> w-pts')
 sci_nwes_w = sci_nwes_t.differentiate( 'density', dim='z_dim', out_varstr='rho_dz', out_obj=sci_nwes_w ) # --> sci_nwes_w.rho_dz
- 
+
 #################################################
-#%% Create Diagnostics object
-print('* Create DIAGNOSTICS object')
-IT = coast.DIAGNOSTICS(sci_nwes_t, sci_nwes_w)    
+#%% Create internal tide diagnostics object
+print('* Create internal tide diagnostics object')
+IT = coast.INTERNALTIDE(sci_nwes_t, sci_nwes_w)
 
 #%%  Construct pycnocline variables: depth and thickness
 print('* Compute density and rho_dz if they didn''t exist')
@@ -101,7 +101,7 @@ IT.quick_plot()
 
 
 
-   
+
 #%% Make transects
 print('* Construct transects to inspect stratification. This is an abuse of the transect code...')
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
@@ -116,12 +116,12 @@ sal_sec = tran.data_T.salinity_m.mean(dim='t_dim')
 rho_sec = tran.data_T.density.mean(dim='t_dim')
 strat_sec = tran.data_F.rho_dz.mean(dim='t_dim')
 
-zd_sec = tran.data_U.pycno_depth.mean(dim='t_dim', skipna=False)
-zd_m_sec = tran.data_U.pycno_depth_masked.mean(dim='t_dim', skipna=False)
+zd_sec = tran.data_U.strat_1st_mom.mean(dim='t_dim', skipna=False)
+zd_m_sec = tran.data_U.strat_1st_mom_masked.mean(dim='t_dim', skipna=False)
 
-zt_sec = tran.data_U.pycno_thick.mean(dim='t_dim', skipna=False)
-zt_m_sec = tran.data_U.pycno_thick_masked.mean(dim='t_dim', skipna=False)
-                                               
+zt_sec = tran.data_U.strat_2nd_mom.mean(dim='t_dim', skipna=False)
+zt_m_sec = tran.data_U.strat_2nd_mom_masked.mean(dim='t_dim', skipna=False)
+
 
 #%% Plot sections
 #################
@@ -155,18 +155,18 @@ plt.show()
 
 
 
-#%% Plot profile of density and stratification with pycno_depth in deep water
+#%% Plot profile of density and stratification with strat_1st_mom in deep water
 #############################################################################
-print("* Plot profile of density and stratification with pycno_depth in deep water")
+print("* Plot profile of density and stratification with strat_1st_mom in deep water")
 print(" - When the stratification is not nearly two-layer, then then there is no sharp pycnocline for the  1st and 2nd moments to pick out. You end up with a thick \
 pycnocline and reduced precision on the depth\n")
 
 [JJ,II] = sci_nwes_t.find_j_i( lat= 60, lon=2.5)
-zd_plus = IT.dataset.pycno_depth[0,JJ,II] + IT.dataset.pycno_thick[0,JJ,II]
-zd_minus = IT.dataset.pycno_depth[0,JJ,II] - IT.dataset.pycno_thick[0,JJ,II]
+zd_plus = IT.dataset.strat_1st_mom[0,JJ,II] + IT.dataset.strat_2nd_mom[0,JJ,II]
+zd_minus = IT.dataset.strat_1st_mom[0,JJ,II] - IT.dataset.strat_2nd_mom[0,JJ,II]
 plt.plot( sci_nwes_w.dataset.rho_dz[0,:,JJ,II], sci_nwes_w.dataset.depth_0[:,JJ,II], '+')
-plt.plot( IT.dataset.pycno_depth[0,JJ,II],'o', label='pycno_depth')
-plt.plot( [0,0,],[zd_plus, zd_minus],'-', label='pycno_thick')
+plt.plot( IT.dataset.strat_1st_mom[0,JJ,II],'o', label='strat_1st_mom')
+plt.plot( [0,0,],[zd_plus, zd_minus],'-', label='strat_2nd_mom')
 plt.title('stratification')
 plt.ylabel('depth (m)')
 plt.gca().invert_yaxis()
@@ -174,8 +174,8 @@ plt.legend()
 plt.show()
 
 plt.plot( sci_nwes_t.dataset.density[0,:,JJ,II], sci_nwes_t.dataset.depth_0[:,JJ,II], '+')
-plt.plot( 1027,IT.dataset.pycno_depth[0,JJ,II],'o', label='pycno_depth')
-plt.plot( [1027,1027],[zd_plus, zd_minus],'-', label='pycno_thick')
+plt.plot( 1027,IT.dataset.strat_1st_mom[0,JJ,II],'o', label='strat_1st_mom')
+plt.plot( [1027,1027],[zd_plus, zd_minus],'-', label='strat_2nd_mom')
 plt.xlim([1026, 1028])
 plt.title('density')
 plt.ylabel('depth (m)')
@@ -196,7 +196,7 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 cmap = plt.get_cmap('BrBG_r')
 new_cmap = truncate_colormap(cmap, 0.2, 0.8)
 #new_cmap.set_bad(color = '#bbbbbb') # light grey
-new_cmap.set_under(color = 'w') # white. 
+new_cmap.set_under(color = 'w') # white.
 # It would be nice to plot the unstratified regions different to the land.
 
 
@@ -204,7 +204,7 @@ H = sci_nwes_t.dataset.depth_0[-1,:,:].squeeze()
 lat = sci_nwes_t.dataset.latitude.squeeze()
 lon = sci_nwes_t.dataset.longitude.squeeze()
 
-zd = IT.dataset.pycno_depth_masked.where( H > 11 ).mean(dim='t_dim', skipna=True) # make nan the land
+zd = IT.dataset.strat_1st_mom_masked.where( H > 11 ).mean(dim='t_dim', skipna=True) # make nan the land
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
@@ -235,14 +235,12 @@ plt.legend( lines, labels, loc="lower right")
 
 # I expect to see RuntimeWarnings in this block
 title_str = IT.dataset['time'].mean(dim='t_dim').dt.strftime("%b %Y: ").values \
-    + IT.dataset.pycno_depth.standard_name \
+    + IT.dataset.strat_1st_mom.standard_name \
     + " (" \
-    + IT.dataset.pycno_depth.units \
+    + IT.dataset.strat_1st_mom.units \
     + ")"
 plt.title(title_str)
 plt.xlabel('longitude'); plt.ylabel('latitude')
 plt.show()
 
-#fig.savefig(fig_dir+'pycno_depth.png', dpi=120)
-
-
+#fig.savefig(fig_dir+'strat_1st_mom.png', dpi=120)
