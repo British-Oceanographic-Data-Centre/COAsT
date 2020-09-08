@@ -41,7 +41,8 @@ class TIDEGAUGE(OBSERVATION):
            and times (not yet implemented).
     '''  
     
-    def __init__(self, directory=None, date_start=None, date_end=None):
+    def __init__(self, directory=None, file_list = None, 
+                 date_start=None, date_end=None):
         '''
         Initialise TIDEGAUGE object either as empty (no arguments) or by
         reading GESLA data from a directory between two datetime objects.
@@ -56,23 +57,42 @@ class TIDEGAUGE(OBSERVATION):
         Parameters
         ----------
         directory (str) : Path to directory containing desired GESLA files
-        date_start (datetime) : Start date for data read
-        date_end (datetime) : end date for data read
+        file_list (list of str) : list of filenames to read from directory.
+                                  Optional.
+        date_start (datetime) : Start date for data read. Optional
+        date_end (datetime) : end date for data read. Optional
 
         Returns
         -------
         Self
         '''
+        if type(file_list) is str:
+            file_list = [file_list]
         
-        if directory is not None:
+        # If no file list is supplied read all from directory
+        if type(directory) is str and file_list is None:
             self.dataset_list=[]
             file_list, lats, lons, names = self.get_gesla_filenames(directory)
+            print(file_list)
             self.latitude = lats
             self.longitude = lons
             self.site_name = names
             for ff in file_list:
                 self.dataset_list.append( self.read_gesla_to_xarray_v3(ff,
                                                         date_start, date_end) )
+        # If file list is supplied, read files from directory
+        elif type(directory) is str and type(file_list) is list:
+            self.dataset_list=[]
+            self.latitude = []
+            self.longitude = []
+            self.site_name = []
+            for ff in file_list:
+                tmp_dataset = self.read_gesla_to_xarray_v3(directory + '/' + ff, 
+                                                           date_start, date_end)
+                self.dataset_list.append( tmp_dataset )
+                self.latitude.append(tmp_dataset.attrs['latitude'])
+                self.longitude.append(tmp_dataset.attrs['longitude'])
+                self.site_name.append(tmp_dataset.attrs['site_name'])
         else:
             self.dataset_list = []
             self.latitude = []
@@ -297,6 +317,10 @@ class TIDEGAUGE(OBSERVATION):
                                     facecolor=[0.8,0.8,0.8], name='coastline',
                                     alpha=0.5)
         ax.add_feature(coast, edgecolor='gray')
+        plt.title('Map of gauge locations')
+        plt.ylabel('Latitude')
+        plt.xlabel('Longitude')
+        plt.show()
 
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                           linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
@@ -307,11 +331,6 @@ class TIDEGAUGE(OBSERVATION):
         gl.left_labels = True
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
-        
-        plt.title('Map of gauge locations')
-        plt.ylabel('Latitude')
-        plt.xlabel('Longitude')
-        plt.show()
         
         return fig, ax
     
