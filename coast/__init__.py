@@ -7,5 +7,5 @@ from .ALTIMETRY import ALTIMETRY
 from .OBSERVATION import OBSERVATION
 from .CDF import CDF
 from .CRPS import CRPS
-from .DIAGNOSTICS import DIAGNOSTICS
+from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
