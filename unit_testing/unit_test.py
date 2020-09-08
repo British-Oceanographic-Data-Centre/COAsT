@@ -742,7 +742,14 @@ try:
     tg = coast.TIDEGAUGE(dn_tidegauge, date0, date1)
     
     # Check length of dataset_list is correct and that
-    if len(tg.dataset_list) == 9:
+    test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',
+    'contributor': 'Japan_Meteorological_Agency',
+    'latitude': 40.65, 'longitude': 139.9333,
+    'coordinate_system': 'Unspecified',
+    'original_start_date': np.datetime64('1971-12-31 15:00:00'),
+    'original_end_date': np.datetime64('2013-12-31 14:00:00'),
+    'time_zone_hours': 0.0, 'precision': 0.01, 'null_value': -99.9999}
+    if len(tg.dataset_list) == 9 and tg.dataset_list[0].attrs == test_attrs:
         print(str(sec) + chr(subsec) + " OK - Tide gauges loaded")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
