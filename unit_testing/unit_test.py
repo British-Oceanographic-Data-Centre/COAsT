@@ -716,5 +716,3 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 plt.close('all')
-    
-plt.close('all')
