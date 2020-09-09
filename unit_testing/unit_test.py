@@ -24,6 +24,7 @@ fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
+dn_tidegauge = dn_files + 'tide_gauges/'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -210,6 +211,8 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
+        
+subsec = subsec+1
 
 
 #################################################
@@ -701,7 +704,7 @@ except:
 
 
 #################################################
-## ( 7 ) Plotting Methods                          ##
+## ( 7 ) Plotting Methods                      ##
 #################################################
 sec = sec+1
 subsec = 96
@@ -720,4 +723,62 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
 
+plt.close('all')
+
+#################################################
+## ( 8 ) TIDEGAUGE Methods                     ##
+#################################################
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 8a ) Load in GESLA tide gauge files from directory                        #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    date0 = datetime.datetime(2010,1,1)
+    date1 = datetime.datetime(2010,12,1)
+    tg = coast.TIDEGAUGE(dn_tidegauge, date0, date1)
+    
+    # Check length of dataset_list is correct and that
+    test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',
+    'contributor': 'Japan_Meteorological_Agency',
+    'latitude': 40.65, 'longitude': 139.9333,
+    'coordinate_system': 'Unspecified',
+    'original_start_date': np.datetime64('1971-12-31 15:00:00'),
+    'original_end_date': np.datetime64('2013-12-31 14:00:00'),
+    'time_zone_hours': 0.0, 'precision': 0.01, 'null_value': -99.9999}
+    if len(tg.dataset_list) == 9 and tg.dataset_list[0].attrs == test_attrs:
+        print(str(sec) + chr(subsec) + " OK - Tide gauges loaded")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 8b ) TIDEGAUGE map plot                                                   #
+#                                                                             #
+subsec = subsec+1
+
+try:
+    f,a = tg.plot_map()
+    f.savefig(dn_fig + 'tidegauge_map.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+plt.close('all')
+
+#-----------------------------------------------------------------------------#
+# ( 8c ) TIDEGAUGE Time series plot                                           #
+#                                                                             #
+subsec = subsec+1
+
+
+try:
+    f,a = tg.plot_timeseries(0)
+    f.savefig(dn_fig + 'tidegauge_timeseries.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
 plt.close('all')

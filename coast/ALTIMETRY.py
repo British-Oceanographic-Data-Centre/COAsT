@@ -12,6 +12,8 @@ class ALTIMETRY(OBSERVATION):
     
     Data should be stored in an xarray.Dataset, in the form:
         
+    * Date Format Overview *
+        
         1. A single dimension (time).
         2. Three coordinates: time, latitude, longitude. All lie on the time
            dimension.
@@ -20,6 +22,12 @@ class ALTIMETRY(OBSERVATION):
     There are currently no naming conventions for the variables however
     examples from the CMEMS database include sla_filtered, sla_unfiltered and
     mdt (mean dynamic topography).
+    
+    * Methods Overview *
+    
+    1. __init__(): Initialises an ALTIMETRY object.
+    2. quick_plot(): Makes a quick plot of the data inside the object. 
+    3. obs_operator(): For interpolating model data to this object.
     '''
 
     def __init__(self, *args, **kwargs):
@@ -36,6 +44,22 @@ class ALTIMETRY(OBSERVATION):
         self.var_mapping = None
 
     def quick_plot(self, var: str=None):
+        '''
+        Quick geographical plot of altimetry data for a specified variable
+    
+        Example usage:
+        --------------
+        # Have a quick look at sla_filtered
+        altimetry.quick_plot('sla_filtered')
+
+        Parameters
+        ----------
+        var (str) : Variable to plot. Default is None, in which case only
+            locations are plotted.
+        Returns
+        -------
+        Figure and axes objects
+        '''
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
