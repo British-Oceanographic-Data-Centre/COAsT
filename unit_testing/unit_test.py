@@ -739,7 +739,7 @@ subsec = subsec+1
 try:
     date0 = datetime.datetime(2010,1,1)
     date1 = datetime.datetime(2010,12,1)
-    tg = coast.TIDEGAUGE(dn_tidegauge, date0, date1)
+    tg = coast.TIDEGAUGE(dn_tidegauge, date_start = date0, date_end = date1)
     
     # Check length of dataset_list is correct and that
     test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',
