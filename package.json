@@ -32,9 +32,10 @@
         "numpy",
         "matplotlib",
         "netCDF4",
-        "gsw"
+        "gsw",
+        "scikit-learn"
     ],
-    "python_requires": ">=3.5",
+    "python_requires": ">=3.6",
     "packages": [
         "coast"
     ],
