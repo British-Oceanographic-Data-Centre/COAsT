@@ -46,3 +46,4 @@
 
 7. Plotting Methods
     a. Altimetry quick_plot()
+    b. Open, view and save tide gauge data from GESLA database
