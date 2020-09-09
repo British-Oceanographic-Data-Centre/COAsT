@@ -73,7 +73,6 @@ class TIDEGAUGE(OBSERVATION):
         if type(directory) is str and file_list is None:
             self.dataset_list=[]
             file_list, lats, lons, names = self.get_gesla_filenames(directory)
-            print(file_list)
             self.latitude = lats
             self.longitude = lons
             self.site_name = names
