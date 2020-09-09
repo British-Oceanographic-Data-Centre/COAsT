@@ -6,7 +6,7 @@ import xarray as xr
 import numpy as np
 import math
 from scipy.interpolate import griddata
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumtrapz, trapz
 
 
 # =============================================================================
@@ -306,6 +306,7 @@ class Transect:
         dx = np.diff(self.x_ind)
         normal_velocity_hpg = np.zeros_like(ds_T.pressure_h_zlevels)
         normal_velocity_spg = np.zeros_like(ds_T.pressure_s)
+        horizontal_scale = np.zeros( (ds_T.t_dim.size, ds_T.r_dim.size) )
         # Loop through each point along the transact
         for idx in np.arange(0, self.len-1):  
             # u flux (+u is positive across transect) 
@@ -324,6 +325,7 @@ class Transect:
                                 / (e2u_j1 * ref_density))                
                 normal_velocity_hpg[:,:,idx] = u_hpg.values
                 normal_velocity_spg[:,idx] = u_spg.values
+                horizontal_scale[:,idx] = e2u_j1
              
             # v flux (-v is positive across transect)
             elif dx[idx] > 0: 
@@ -341,6 +343,7 @@ class Transect:
                                 / (e1v_i1 * ref_density))
                 normal_velocity_hpg[:,:,idx] = -v_hpg.values
                 normal_velocity_spg[:,idx] = -v_spg.values
+                horizontal_scale[:,idx] = e1v_i1
                 
             # v flux (+v is positive across transect)    
             elif dx[idx] < 0:
@@ -358,7 +361,7 @@ class Transect:
                                 / (e1v * ref_density))                   
                 normal_velocity_hpg[:,:,idx] = v_hpg.values 
                 normal_velocity_spg[:,idx] = v_spg.values 
-         
+                horizontal_scale[:,idx] = e1v
             
             # if idx == 0:
             #     self.data_tran['normal_velocity_hpg'] = normal_velocity_hpg
@@ -395,8 +398,18 @@ class Transect:
         self.data_tran['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
         
+        #self.data_tran = self.data_tran.rename({'depth_z_levels':'z_dim'})
+        self.data_tran['transport_across_AB_hpg'] = ( self.data_tran.rename({'depth_z_levels':'z_dim'})
+                .normal_velocity_hpg.fillna(0).integrate(dim='z_dim') ) * horizontal_scale
+        #self.data_tran = self.data_tran.rename({'z_dim':'depth_z_levels'})
+        
+        depth_3d = self.data_tran.depth_z_levels.broadcast_like(self.data_tran.normal_velocity_hpg)
+        H = depth_3d.where(~self.data_tran.normal_velocity_hpg.to_masked_array().mask).max(dim='z_dim')
+        #print(H)
+        self.data_tran['transport_across_AB_spg'] = self.data_tran.normal_velocity_spg * H * horizontal_scale
+        
         nemo_T_ds = nemo_T_ds.squeeze()
-        return (ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1)
+        return 
                 
                     
 
@@ -439,7 +452,7 @@ class Transect:
         if 't_dim' not in ds_T.dims:
             ds_T = ds_T.expand_dims(dim={'t_dim':1},axis=0)
 
-        if z_levels is None: 
+        if z_levels is None:             
             z_levels_0_50 = np.arange(math.ceil(ds_T.depth_0[0,:].max().item()),55,5.5)
             z_levels_60_200 = np.arange(60,210,10)
             z_levels_250_600 = np.arange(200,650,50)
@@ -474,7 +487,7 @@ class Transect:
         # In-situ density
         density_z = np.ma.masked_invalid( gsw.rho( 
             salinity_absolute, temp_conservative, pressure_absolute ) )
-        
+                        
         coords={'depth_z_levels': (('z_dim'), z_levels),
                 'latitude': (('r_dim'), ds_T.latitude),
                 'longitude': (('r_dim'), ds_T.longitude)}
