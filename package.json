@@ -31,9 +31,10 @@
         "xarray",
         "numpy",
         "matplotlib",
-        "netCDF4"
+        "netCDF4",
+        "gsw"
     ],
-    "python_requires": ">=3",
+    "python_requires": ">=3.5",
     "packages": [
         "coast"
     ],
