@@ -8,3 +8,4 @@ from .OBSERVATION import OBSERVATION
 from .CDF import CDF
 from .CRPS import CRPS
 from .INTERNALTIDE import INTERNALTIDE
+from .TIDEGAUGE import TIDEGAUGE
