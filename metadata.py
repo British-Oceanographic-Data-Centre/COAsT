@@ -50,6 +50,7 @@ def generate_conda(directory="conda"):
     }
 
     yaml_path = path.join(directory, "meta.yaml")
+    yaml.Dumper.ignore_aliases = lambda *args: True  # Dummy function to return true
     with open(yaml_path, "w") as meta_file:
         yaml.dump(package_metadata, meta_file)
 
