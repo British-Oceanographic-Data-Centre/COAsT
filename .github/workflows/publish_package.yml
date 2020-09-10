@@ -37,9 +37,6 @@ jobs:
         PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       run: |
         ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
-    - name: Generate Conda Metadata
-      run: |
-        ./generate_conda_meta.sh
     - name: Publish Package to Anaconda
       uses: fcakyon/conda-publish-action@v1.3
       with:
