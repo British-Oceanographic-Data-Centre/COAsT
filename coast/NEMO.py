@@ -1,4 +1,5 @@
 from .COAsT import COAsT
+import coast.UTILS as utils
 import xarray as xr
 import numpy as np
 # from dask import delayed, compute, visualize
@@ -279,65 +280,7 @@ class NEMO(COAsT):
 
         return jj1, ii1, line_length
     
-    def nearest_xy_indices(self, model_dataset, new_lons, new_lats):
-        '''
-        Obtains the x and y indices of the nearest model points to specified
-        lists of longitudes and latitudes. Makes use of sklearn.neighbours
-        and its BallTree haversine method. 
-        
-        Example Useage
-        ----------
-        # Get indices of model points closest to altimetry points
-        ind_x, ind_y = nemo.nearest_indices(altimetry.dataset.longitude,
-                                            altimetry.dataset.latitude)
-        # Nearest neighbour interpolation of model dataset to these points
-        interpolated = nemo.dataset.isel(x_dim = ind_x, y_dim = ind_y)
-
-        Parameters
-        ----------
-        model_dataset (xr.Dataset or xr.DataArray): model xarray dataset.
-            Must contain coordinates.
-        new_lons (array): Array of longitudes (degrees) to compare with model
-        new_lats (array): Array of latitudes (degrees) to compare with model
-        
-        Returns
-        -------
-        Array of x indices, Array of y indices
-        '''
-        # Cast lat/lon to numpy arrays in case xarray things
-        new_lons = np.array(new_lons)
-        new_lats = np.array(new_lats)
-        mod_lon = np.array(model_dataset.longitude).flatten()
-        mod_lat = np.array(model_dataset.latitude).flatten()
-        
-        # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
-        mod_locs = np.vstack((mod_lat, mod_lon)).transpose()
-        new_locs = np.vstack((new_lats, new_lons)).transpose()
-        
-        # Convert lat/lon to radians for BallTree
-        mod_locs = np.radians(mod_locs)
-        new_locs = np.radians(new_locs)
-        
-        # Do nearest neighbour interpolation using BallTree (gets indices)
-        tree = nb.BallTree(mod_locs, leaf_size=5, metric='haversine')
-        _, ind_1d = tree.query(new_locs, k=1)
-        
-        # Get 2D indices from 1D index output from BallTree
-        ind_y, ind_x = np.unravel_index(ind_1d, model_dataset.longitude.shape)
-        ind_x = xr.DataArray(ind_x.squeeze())
-        ind_y = xr.DataArray(ind_y.squeeze())
-
-        return ind_x, ind_y
-    
-    def nearest_time_indices(self):
-        raise NotImplementedError
-        return
-    
-    def nearest_depth_indices(self):
-        raise NotImplementedError
-        return
-    
-    def interpolate_in_space(self, model_array, new_lons, new_lats):
+    def interpolate_in_space(self, model_array, new_lon, new_lat):
         '''
         Interpolates a provided xarray.DataArray in space to new longitudes
         and latitudes using a nearest neighbour method (BallTree).
@@ -359,7 +302,9 @@ class NEMO(COAsT):
         '''
         
         # Get nearest indices
-        ind_x, ind_y = self.nearest_xy_indices(model_array, new_lons, new_lats)
+        ind_x, ind_y = utils.nearest_xy_indices(model_array.longitude,
+                                                model_array.latitude,
+                                                new_lon, new_lat)
         
         # Geographical interpolation (using BallTree indices)
         interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
