@@ -9,12 +9,21 @@ ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 """
 
 import coast
+import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
 
 dn_files = "./example_files/"
+
+if not os.path.isdir(dn_files):
+    print(
+        "please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+    dn_files = input("what is the path to the example files:\n")
+    if not os.path.isdir(dn_files):
+        print(f"location f{dn_files} cannot be found")
+
 dn_fig = 'unit_testing/figures/'
 fn_nemo_grid_t_dat_summer = 'nemo_data_T_grid_Aug2015.nc'
 fn_nemo_grid_t_dat = 'nemo_data_T_grid.nc'

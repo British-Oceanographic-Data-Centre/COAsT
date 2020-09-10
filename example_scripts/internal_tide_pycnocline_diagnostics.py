@@ -11,6 +11,7 @@ for pycnocline depth and thickness, suitable for a nearly two-layer fluid.
 #%%
 import coast
 import numpy as np
+import os
 import xarray as xr
 import dask
 import matplotlib.pyplot as plt
@@ -44,6 +45,14 @@ try:
 except:
     config = 'AMM7'
     dn_files = "./example_files/"
+
+    if not os.path.isdir(dn_files):
+        print(
+            "please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+        dn_files = input("what is the path to the example files:\n")
+        if not os.path.isdir(dn_files):
+            print(f"location f{dn_files} cannot be found")
+
     dn_fig = 'unit_testing/figures/'
     fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
     fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
