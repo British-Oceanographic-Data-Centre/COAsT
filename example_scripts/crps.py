@@ -12,13 +12,22 @@ This is a basic script for running the CRPS function with the example NEMO data
 """
 
 import coast
+import os
 import numpy as np
 
 
-dir = 'example_files/'
-fn_dom = dir + 'COAsT_example_NEMO_domain.nc'
-fn_dat = dir + 'COAsT_example_NEMO_data.nc'
-fn_alt = dir + 'COAsT_example_altimetry_data.nc'
+example_dir = 'example_files/'
+if not os.path.isdir(example_dir):
+    print("please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+    example_dir = input("what is the path to the example files:\n")
+    if not os.path.isdir(example_dir):
+        print(f"location f{example_dir} cannot be found")
+
+
+
+fn_dom = example_dir + 'COAsT_example_NEMO_domain.nc'
+fn_dat = example_dir + 'COAsT_example_NEMO_data.nc'
+fn_alt = example_dir + 'COAsT_example_altimetry_data.nc'
 
 nemo_dom = coast.DOMAIN()
 nemo_var = coast.NEMO()
