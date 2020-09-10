@@ -415,5 +415,28 @@ class TIDEGAUGE(OBSERVATION):
         
         return fig, ax
 
-    def obs_operator():
+    def obs_operator(self, model, mod_var_name:str, 
+                                time_interp = 'nearest'):
+        '''
+        '''
+        
+        out_list = [] # dataset_list of interpolated datasets.
+        
+        # Get data arrays
+        mod_var = model.dataset[mod_var_name]
+        
+        # Depth interpolation -> for now just take 0 index
+        if 'z_dim' in mod_var.dims:
+            mod_var = mod_var.isel(z_dim=0).squeeze()
+        
+        # Cast lat/lon to numpy arrays
+        obs_lon = np.array(self.longitude).flatten()
+        obs_lat = np.array(self.latitude).flatten()
+        
+        interpolated = model.interpolate_in_space(mod_var, obs_lon, 
+                                                        obs_lat)
+
+        # Store interpolated array in dataset
+        new_var_name = 'interp_' + mod_var_name
+        self.dataset[new_var_name] = interpolated
         return
