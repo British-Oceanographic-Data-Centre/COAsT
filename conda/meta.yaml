@@ -1,20 +1,11 @@
-about:
-  dev_url: ''
-  doc_url: ''
-  home: https://www.bodc.ac.uk
-  license: Put something here
-  license_family: OTHER
-  license_file: ''
-  summary: This is the Coast Ocean Assessment Tool
+package:
+  name: coast
+  version: 0.2.1a20
+source:
+  url: https://pypi.io/packages/source/C/COAsT/COAsT-0.2.1a20.tar.gz
 build:
   number: 0
   script: pip install https://files.pythonhosted.org/packages/83/cc/c62100906d30f95d46451c15eb407da7db201e30f42008f3643945910373/graphviz-0.14-py2.py3-none-any.whl
-extra:
-  recipe-maintainers:
-  - British-Oceanographic-Data-Centre
-package:
-  name: coast
-  version: 0.2.1a19
 requirements:
   host:
   - dask[complete]
@@ -28,8 +19,17 @@ requirements:
   - numpy
   - matplotlib
   - netCDF4
-source:
-  url: https://pypi.io/packages/source/C/COAsT/COAsT-0.2.1a19.tar.gz
 test:
   imports:
   - coast
+about:
+  home: https://www.bodc.ac.uk
+  license: Put something here
+  license_family: OTHER
+  license_file: ''
+  summary: This is the Coast Ocean Assessment Tool
+  doc_url: ''
+  dev_url: ''
+extra:
+  recipe-maintainers:
+  - British-Oceanographic-Data-Centre
