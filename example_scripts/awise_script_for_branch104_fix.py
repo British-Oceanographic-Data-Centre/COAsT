@@ -21,7 +21,7 @@ fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
 
 if not os.path.isdir(dn_files):
-    print("please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+    print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
     dn_files = input("what is the path to the example files:\n")
     if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
