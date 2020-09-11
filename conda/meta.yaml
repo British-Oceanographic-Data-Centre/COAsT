@@ -1,8 +1,8 @@
 package:
   name: coast
-  version: 0.2.1a19
+  version: 0.2.1a20
 source:
-  url: https://pypi.io/packages/source/C/COAsT/COAsT-0.2.1a19.tar.gz
+  url: https://pypi.io/packages/source/C/COAsT/COAsT-0.2.1a20.tar.gz
 build:
   number: 0
   script: pip install https://files.pythonhosted.org/packages/83/cc/c62100906d30f95d46451c15eb407da7db201e30f42008f3643945910373/graphviz-0.14-py2.py3-none-any.whl
