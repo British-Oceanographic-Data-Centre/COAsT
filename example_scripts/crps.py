@@ -18,7 +18,7 @@ import numpy as np
 
 example_dir = 'example_files/'
 if not os.path.isdir(example_dir):
-    print("please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+    print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
     example_dir = input("what is the path to the example files:\n")
     if not os.path.isdir(example_dir):
         print(f"location f{example_dir} cannot be found")
