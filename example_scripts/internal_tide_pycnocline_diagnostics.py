@@ -48,7 +48,7 @@ except:
 
     if not os.path.isdir(dn_files):
         print(
-            "please go download the examples file from https://dev.linkedsystems.uk/erddap/files/COAsT_example_files/")
+            "please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
         dn_files = input("what is the path to the example files:\n")
         if not os.path.isdir(dn_files):
             print(f"location f{dn_files} cannot be found")
