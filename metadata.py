@@ -8,11 +8,12 @@ def get_package(package_path="package.json"):
 
 
 def generate_conda(directory="conda"):
-    import yaml
+    import oyaml as yaml  # OYaml is used to preserve the order of the metadata dict in YAML output
+    from collections import OrderedDict
     from os import path
 
     package = get_package()
-    package_metadata = {
+    package_metadata = OrderedDict({
         "package": {
             "name": package.name.lower(),
             "version": package.version
@@ -47,7 +48,7 @@ def generate_conda(directory="conda"):
                 package.github
             ]
         }
-    }
+    })
 
     yaml_path = path.join(directory, "meta.yaml")
     yaml.Dumper.ignore_aliases = lambda *args: True  # Dummy function to return true
