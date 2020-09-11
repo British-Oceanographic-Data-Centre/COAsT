@@ -35,3 +35,9 @@ class OBSERVATION(COAsT):
         bool1 = self['longitude']>lonbounds[1]
         self['longitude'][bool0] = self['longitude'][bool0] + 360
         self['longitude'][bool1] = self['longitude'][bool1] - 360
+        
+    def interpolate_model_to_obs(self):
+        print('Method not implemented for observation object type.')
+        
+    def quick_plot(self):
+        print('Method not implemented for observation object type.')

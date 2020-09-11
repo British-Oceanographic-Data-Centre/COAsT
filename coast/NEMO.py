@@ -4,11 +4,12 @@ import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz
 import matplotlib.pyplot as plt
+import sklearn.neighbors as nb
 import gsw
 from scipy.interpolate import interp1d
 from scipy.interpolate import griddata
 import warnings
-  
+
 class NEMO(COAsT):
     """
     Words to describe the NEMO class
@@ -279,12 +280,138 @@ class NEMO(COAsT):
 
         return jj1, ii1, line_length
     
+    def nearest_xy_indices(self, model_dataset, new_lons, new_lats):
+        '''
+        Obtains the x and y indices of the nearest model points to specified
+        lists of longitudes and latitudes. Makes use of sklearn.neighbours
+        and its BallTree haversine method. 
+        
+        Example Useage
+        ----------
+        # Get indices of model points closest to altimetry points
+        ind_x, ind_y = nemo.nearest_indices(altimetry.dataset.longitude,
+                                            altimetry.dataset.latitude)
+        # Nearest neighbour interpolation of model dataset to these points
+        interpolated = nemo.dataset.isel(x_dim = ind_x, y_dim = ind_y)
+
+        Parameters
+        ----------
+        model_dataset (xr.Dataset or xr.DataArray): model xarray dataset.
+            Must contain coordinates.
+        new_lons (array): Array of longitudes (degrees) to compare with model
+        new_lats (array): Array of latitudes (degrees) to compare with model
+        
+        Returns
+        -------
+        Array of x indices, Array of y indices
+        '''
+        # Cast lat/lon to numpy arrays in case xarray things
+        new_lons = np.array(new_lons)
+        new_lats = np.array(new_lats)
+        mod_lon = np.array(model_dataset.longitude).flatten()
+        mod_lat = np.array(model_dataset.latitude).flatten()
+        
+        # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
+        mod_locs = np.vstack((mod_lat, mod_lon)).transpose()
+        new_locs = np.vstack((new_lats, new_lons)).transpose()
+        
+        # Convert lat/lon to radians for BallTree
+        mod_locs = np.radians(mod_locs)
+        new_locs = np.radians(new_locs)
+        
+        # Do nearest neighbour interpolation using BallTree (gets indices)
+        tree = nb.BallTree(mod_locs, leaf_size=5, metric='haversine')
+        _, ind_1d = tree.query(new_locs, k=1)
+        
+        # Get 2D indices from 1D index output from BallTree
+        ind_y, ind_x = np.unravel_index(ind_1d, model_dataset.longitude.shape)
+        ind_x = xr.DataArray(ind_x.squeeze())
+        ind_y = xr.DataArray(ind_y.squeeze())
+
+        return ind_x, ind_y
+    
+    def nearest_time_indices(self):
+        raise NotImplementedError
+        return
+    
+    def nearest_depth_indices(self):
+        raise NotImplementedError
+        return
+    
+    def interpolate_in_space(self, model_array, new_lons, new_lats):
+        '''
+        Interpolates a provided xarray.DataArray in space to new longitudes
+        and latitudes using a nearest neighbour method (BallTree).
+        
+        Example Useage
+        ----------
+        # Get an interpolated DataArray for temperature onto two locations
+        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                                 [0,1], [45,46])
+        Parameters
+        ----------
+        model_array (xr.DataArray): Model variable DataArray to interpolate
+        new_lons (1Darray): Array of longitudes (degrees) to compare with model
+        new_lats (1Darray): Array of latitudes (degrees) to compare with model
+        
+        Returns
+        -------
+        Interpolated DataArray
+        '''
+        
+        # Get nearest indices
+        ind_x, ind_y = self.nearest_xy_indices(model_array, new_lons, new_lats)
+        
+        # Geographical interpolation (using BallTree indices)
+        interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
+        interpolated = interpolated.rename({'dim_0':'interp_dim'})
+        return interpolated
+    
+    def interpolate_in_time(self, model_array, new_times, 
+                               interp_method = 'nearest', extrapolate=True):
+        '''
+        Interpolates a provided xarray.DataArray in time to new python
+        datetimes using a specified scipy.interpolate method.
+        
+        Example Useage
+        ----------
+        # Get an interpolated DataArray for temperature onto altimetry times
+        new_times = altimetry.dataset.time
+        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                                 new_times)
+        Parameters
+        ----------
+        model_array (xr.DataArray): Model variable DataArray to interpolate
+        new_times (array): New times to interpolate to (array of datetimes)
+        interp_method (str): Interpolation method
+        
+        Returns
+        -------
+        Interpolated DataArray
+        '''
+        
+        # Time interpolation
+        interpolated = model_array.swap_dims({'t_dim':'time'})
+        if extrapolate:
+            interpolated = interpolated.interp(time = new_times,
+                                           method = interp_method,
+                                           kwargs={'fill_value':'extrapolate'})
+        else:
+            interpolated = interpolated.interp(time = new_times,
+                                           method = interp_method)
+        #interpolated = interpolated.swap_dims({'time':'t_dim'})
+        
+        return interpolated
+    
+    def interpolate_in_depth(self, model_array, new_depths):
+        raise NotImplementedError
+        return
     
     def construct_density( self, EOS='EOS10' ):
         
         '''
             Constructs the in-situ density using the salinity, temperture and 
-            depth_0 fields and adds a density attribute to the t-grdi dataset 
+            depth_0 fields and adds a density attribute to the t-grid dataset 
             
             Requirements: The supplied t-grid dataset must contain the 
             Practical Salinity and the Potential Temperature variables. The depth_0
@@ -365,13 +492,16 @@ class NEMO(COAsT):
     def trim_domain_size( self, dataset_domain ):
         """
         Trim the domain variables if the dataset object is a spatial subset
+        
+        Note: This breaks if the SW & NW corner values of nav_lat and nav_lon 
+        are masked, as can happen if on land...
         """
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            print('The domain  and dataset objects are different sizes:', \
-                  ' [{},{}] cf [{},{}]. Trim domain.'.format(
-                  dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
-                  self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
+            #print('The domain  and dataset objects are different sizes:', \
+            #      ' [{},{}] cf [{},{}]. Trim domain.'.format(
+            #      dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
+            #      self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
 
             # Find the corners of the cut out domain.
             [j0,i0] = self.find_j_i_domain( self.dataset.nav_lat[0,0],
@@ -420,6 +550,9 @@ class NEMO(COAsT):
         1) depth_0 and e3_0 fields exist
         2) xr.DataArrays are 4D
         3) self.filename_domain if out_obj not specified
+        4) If out_obj is not specified, one is built that is  the size of
+            self.filename_domain. I.e. automatic subsetting of out_obj is not
+            supported.
         
         Example usage:
         --------------
@@ -476,7 +609,7 @@ class NEMO(COAsT):
 
                 # Check is out_varstr is defined, else create it
                 if out_varstr is None:
-                    out_varstr = 'd' + in_varstr + '_dz'
+                    out_varstr = in_varstr + '_dz'
                     #print('make new target variable name: out_str = {}'\
                     #      .format(out_varstr))
 
@@ -507,3 +640,5 @@ class NEMO(COAsT):
         else:
             print('{} does not exist in self.dataset'.format(in_varstr))
             return None
+        
+        
