@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python metadata.py
+python setup.py conda

@@ -28,9 +28,12 @@ jobs:
     - name: Setup Environment
       run: |
         ./setup_environment.sh
-    - name: Build PyPi Package
+    - name: Build Package
       run: |
         ./build.sh
+    - name: Test Package Install
+      run: |
+        python setup.py install
     - name: Generate Conda Metadata
       run: |
         ./generate_conda_meta.sh
