@@ -7,6 +7,7 @@ import numpy as np
 import math
 from scipy.interpolate import griddata
 from scipy.integrate import cumtrapz, trapz
+import warnings
 
 
 # =============================================================================
@@ -53,10 +54,10 @@ class Transect:
             self.point_A = point_A
             self.point_B = point_B
             
-        self.nemo_F = nemo_F
-        self.nemo_U = nemo_U
-        self.nemo_V = nemo_V
-        self.nemo_T = nemo_T
+        # self.nemo_F = nemo_F
+        # self.nemo_U = nemo_U
+        # self.nemo_V = nemo_V
+        # self.nemo_T = nemo_T
         self.filename_domain = nemo_F.filename_domain
             
         # Get points on transect
@@ -166,13 +167,16 @@ class Transect:
                 depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
                 depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
         
-        dimensions = ['t_dim', 'z_dim', 'r_dim']
+        #dimensions = ['t_dim', 'z_dim', 'r_dim']
         
-        self.data_tran['normal_velocities'] = xr.DataArray( velocity[:,:,:-1], 
-                    coords={'time': (('t_dim'), self.data_U.time.values),'depth_0': (('z_dim','r_dim'), depth_0[:,:-1])},
+        velocity[:,:,-1] = np.nan
+        depth_integrated_transport[:,-1] = np.nan
+        
+        self.data_tran['normal_velocities'] = xr.DataArray( velocity, 
+                    coords={'time': (('t_dim'), self.data_U.time.values),'depth_0': (('z_dim','r_dim'), depth_0)},
                     dims=['t_dim', 'z_dim', 'r_dim'] )        
     
-        self.data_tran['depth_integrated_transport_across_AB'] = xr.DataArray( depth_integrated_transport[:,:-1] / 1000000.,
+        self.data_tran['depth_integrated_transport_across_AB'] = xr.DataArray( depth_integrated_transport / 1000000.,
                     coords={'time': (('t_dim'), self.data_U.time.values)},
                     dims=['t_dim', 'r_dim'] ) 
         
@@ -183,48 +187,6 @@ class Transect:
         return  
     
 
-        
-   
-    # def interpolate_tracers_to_fgrid(self, method='weighted'):
-    #     if self.nemo_T is not None:
-    #         y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] ) # j
-    #         x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] ) # i
-    #         y_ind_n = xr.DataArray( self.y_ind+1, dims=['r_dim'] ) # j+1
-    #         x_ind_e = xr.DataArray( self.x_ind+1, dims=['r_dim'] ) # i+1
-            
-    #         ds_T = self.nemo_T.dataset.isel(y_dim = y_ind, x_dim = x_ind)
-    #         ds_T_n = self.nemo_T.dataset.isel(y_dim = y_ind_n, x_dim = x_ind) # j+1,i
-    #         ds_T_e = self.nemo_T.dataset.isel(y_dim = y_ind, x_dim = x_ind_e) # j,i+1
-    #         ds_T_ne = self.nemo_T.dataset.isel(y_dim = y_ind_n, x_dim = x_ind_e) # j+1,i+1
-            
-            
-                
-    #         # Simple averaging to obtain the tracer quantities at f-points.
-    #         if method is 'simple':  
-    #             temp = self.nemo_T.dataset.temperature
-    #             sal = self.nemo_T.dataset.salinity
-    #             self.data_F['temperature'] = 0.25*( ds_T.temperature +
-    #                     ds_T_n.temperature + ds_T_e.temperature +
-    #                     ds_T_ne.temperature ) 
-                    
-    #             self.data_F['salinity'] = 0.25*( ds_T.salinity +
-    #                     ds_T_n.salinity + ds_T_e.salinity +
-    #                     ds_T_ne.salinity )
-    #         elif method is 'weighted':
-    #             self.data_F['temperature'] = ( 0.25*( ds_T.e1 * ds_T.e3_0 * ds_T.temperature +
-    #                     ds_T_n.e1 * ds_T_n.e3_0 * ds_T_n.temperature + 
-    #                     ds_T_e.e1 * ds_T_e.e3_0 * ds_T_e.temperature +
-    #                     ds_T_ne.e1 * ds_T_ne.e3_0 * ds_T_ne.temperature ) /
-    #                     ( self.data_F.e1 * self.data_F.e3_0 ) )
-                    
-    #             self.data_F['salinity'] = ( 0.25*( ds_T.e1 * ds_T.e3_0 * ds_T.salinity +
-    #                     ds_T_n.e1 * ds_T_n.e3_0 * ds_T_n.salinity + 
-    #                     ds_T_e.e1 * ds_T_e.e3_0 * ds_T_e.salinity +
-    #                     ds_T_ne.e1 * ds_T_ne.e3_0 * ds_T_ne.salinity ) /
-    #                     ( self.data_F.e1 * self.data_F.e3_0 ) )
-    #     else:
-    #         raise AttributeError(str(self) + ': A nemo object with data for t-grid variables ' +
-    #                     'must have been assigned to attribute "nemo_T".')
 
 
     def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, velocity_component):
@@ -261,7 +223,7 @@ class Transect:
             e1f = 0.5*( e1v + e1v_i1 )            
             # calculate gradients at v-points either side of f-point
             hpg = (ds_T_j1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e2v
-            hpg_i1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_i1.pressure_h_zlevels ) / e2v_i1   
+            hpg_i1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_i1.pressure_h_zlevels) / e2v_i1   
             # average onto f-point
             hpg_f = 0.5 * ( ( e1v * hpg ) + ( e1v_i1 * hpg_i1 ) ) / e1f 
             # as aboave            
@@ -350,9 +312,12 @@ class Transect:
         
         # Remove the mean hydrostatic pressure on each z_level from the hydrostatic pressure.
         # This helps to reduce the noise when taking the horizontal gradients of hydrostatic pressure.
-        pressure_h_zlevel_mean = xr.concat( (ds_T.pressure_h_zlevels, ds_T_j1.pressure_h_zlevels, 
+        # Also catch and ignore nan-slice warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            pressure_h_zlevel_mean = xr.concat( (ds_T.pressure_h_zlevels, ds_T_j1.pressure_h_zlevels, 
                                  ds_T_i1.pressure_h_zlevels, ds_T_j1i1.pressure_h_zlevels), 
-                                 dim='concat_dim' ).mean(dim=('concat_dim','r_dim','t_dim'))
+                                 dim='concat_dim' ).mean(dim=('concat_dim','r_dim','t_dim'),skipna=True)
         ds_T['pressure_h_zlevels'] = ds_T.pressure_h_zlevels - pressure_h_zlevel_mean
         ds_T_j1['pressure_h_zlevels'] = ds_T_j1.pressure_h_zlevels - pressure_h_zlevel_mean
         ds_T_i1['pressure_h_zlevels'] = ds_T_i1.pressure_h_zlevels - pressure_h_zlevel_mean
@@ -423,6 +388,12 @@ class Transect:
                 normal_velocity_spg[:,idx] = v_spg.values 
                 horizontal_scale[:,idx] = e1v
         
+        normal_velocity_hpg[:,:,-1] = np.nan
+        normal_velocity_spg[:,-1] = np.nan
+        
+        normal_velocity_hpg = np.where( ds_T.depth_z_levels.values[:,np.newaxis] <= ds_T.bathymetry.values, 
+                               normal_velocity_hpg, np.nan )
+        
         # remove redundent levels    
         active_z_levels = np.count_nonzero(~np.isnan(normal_velocity_hpg),axis=1).max() 
         normal_velocity_hpg = normal_velocity_hpg[:,:active_z_levels,:]
@@ -452,19 +423,18 @@ class Transect:
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
 
         self.data_tran['transport_across_AB_hpg'] = ( self.data_tran
-                .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * horizontal_scale    
-        self.data_tran.transport_across_AB_hpg.attrs = {'units': 'm^{3} s^{-1}', 
+                .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * horizontal_scale / 1000000   
+        self.data_tran.transport_across_AB_hpg.attrs = {'units': 'Sv', 
                                   'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}
         
         
         #depth_3d = self.data_tran.depth_z_levels.broadcast_like(self.data_tran.normal_velocity_hpg)
         #H = depth_3d.where(~self.data_tran.normal_velocity_hpg.to_masked_array().mask).max(dim='z_dim')
         H = ds_T.bathymetry.values
-        self.data_tran['transport_across_AB_spg'] = self.data_tran.normal_velocity_spg * H * horizontal_scale
-        self.data_tran.transport_across_AB_spg.attrs = {'units': 'm^{3} s^{-1}', 
+        self.data_tran['transport_across_AB_spg'] = self.data_tran.normal_velocity_spg * H * horizontal_scale / 1000000
+        self.data_tran.transport_across_AB_spg.attrs = {'units': 'Sv', 
                                   'standard_name': 'volume transport across transect due to the surface pressure gradient'}
         
-        #nemo_T_ds = nemo_T_ds.squeeze()
         return
                
     
@@ -544,11 +514,13 @@ class Transect:
                     temp_func = interpolate.interp1d( s_levels_r, temperature_s_r, 
                                  kind='linear', fill_value="extrapolate")
                     
+                    salinity_z[it,:,ir] = sal_func(z_levels)
+                    temperature_z[it,:,ir] = temp_func(z_levels)
                     # set levels below the bathymetry to nan
-                    salinity_z[it,:,ir] = np.where( z_levels <= ds_T.bathymetry.values[ir], 
-                                sal_func(z_levels), np.nan )
-                    temperature_z[it,:,ir] = np.where( z_levels <= ds_T.bathymetry.values[ir], 
-                                temp_func(z_levels), np.nan ) 
+                   # salinity_z[it,:,ir] = np.where( z_levels <= ds_T.bathymetry.values[ir], 
+                   #             sal_func(z_levels), np.nan )
+                   # temperature_z[it,:,ir] = np.where( z_levels <= ds_T.bathymetry.values[ir], 
+                   #             temp_func(z_levels), np.nan ) 
                     
 
         # Absolute Pressure    
@@ -594,298 +566,10 @@ class Transect:
                                   'standard_name': 'surface pressure'}
         
         return
-                    
-
+    
                 
 
-    
-    # def construct_pressure( self, ds_T, ref_density, z_levels=None):   
-    #     '''
-    #         This method is for calculating density on the f-grid on z-levels. With
-    #         the intention to calculate horizontal density gradients at velocity points
-    #         perpendicular to the transect.
-            
-    #         For s-level model output this method recontructs the in-situ density 
-    #         onto z_levels along the transect on the f-grid. The z_levels and density field
-    #         are added to the data_F dataset attribute. 
-            
-    #         Requirements: The supplied t-grid dataset must contain the 
-    #         Practical Salinity and the Potential Temperature variables. The depth_0
-    #         field must also be supplied. The GSW package is used to calculate
-    #         The Absolute Pressure, Absolute Salinity and Conservate Temperature.
-    #         These salinity and temperature fields must haven been interpolated onto
-    #         the f-grid prior to calling this method.
-            
-    #         Note that currently density can only be constructed using the EOS10
-    #         equation of state.
-
-    #     Parameters
-    #     ----------
-    #     EOS : equation of state, optional
-    #         DESCRIPTION. The default is 'EOS10'.
-
-
-    #     Returns
-    #     -------
-    #     None.
-    #     adds attributes Transect.data_F.depth_z_levels and Transect.data_F.density_z_levels
-
-    #     '''        
-
-    #     if 't_dim' not in ds_T.dims:
-    #         ds_T = ds_T.expand_dims(dim={'t_dim':1},axis=0)
-
-    #     if z_levels is None:             
-    #         z_levels_0_50 = np.arange(math.ceil(ds_T.depth_0[0,:].max().item()),55,5.5)
-    #         z_levels_60_200 = np.arange(60,210,10)
-    #         z_levels_250_600 = np.arange(200,650,50)
-    #         z_levels_650_ = np.arange(650,ds_T.depth_0.max()+150,150)
-    #         z_levels = np.concatenate( (z_levels_0_50, z_levels_60_200, 
-    #                                     z_levels_250_600, z_levels_650_) )
         
-    #     shape_ds = ( ds_T.t_dim.size, ds_T.z_dim.size, ds_T.r_dim.size )
-    #     salinity_z = np.ma.zeros( shape_ds )
-    #     temperature_z = np.ma.zeros( shape_ds )
-        
-    #     s_levels = ds_T.depth_0.to_masked_array().T.flatten()
-    #     mesh = np.meshgrid(ds_T.r_dim.values, z_levels)
-    #     grid_r, grid_z = mesh[0].T, mesh[1].T
-    #     points = np.ma.stack( (np.repeat(ds_T.r_dim.values,ds_T.z_dim.size).T, s_levels) )
-    #     for it in ds_T.t_dim:
-    #         salinity = ds_T.salinity.to_masked_array()[it,:,:].T.flatten()
-    #         temperature = ds_T.temperature.to_masked_array()[it,:,:].T.flatten()
-    #         salinity_z[it,:,:] = griddata(points.T, salinity, (grid_r, grid_z), method='linear').T
-    #         temperature_z[it,:,:] = griddata(points.T, temperature, (grid_r, grid_z), method='linear').T
-
-    #     # Absolute Pressure    
-    #     pressure_absolute = np.ma.masked_invalid(
-    #         gsw.p_from_z( -z_levels[:,np.newaxis], ds_T.latitude ) ) # depth must be negative           
-    #     # Absolute Salinity           
-    #     salinity_absolute = np.ma.masked_invalid(
-    #         gsw.SA_from_SP( salinity_z, pressure_absolute, ds_T.longitude, ds_T.latitude ) )
-    #     salinity_absolute = np.ma.masked_less(salinity_absolute,0)
-    #     # Conservative Temperature
-    #     temp_conservative = np.ma.masked_invalid(
-    #         gsw.CT_from_pt( salinity_absolute, temperature_z ) )
-    #     # In-situ density
-    #     density_z = np.ma.masked_invalid( gsw.rho( 
-    #         salinity_absolute, temp_conservative, pressure_absolute ) )
-                        
-    #     coords={'depth_z_levels': (('z_dim'), z_levels),
-    #             'latitude': (('r_dim'), ds_T.latitude),
-    #             'longitude': (('r_dim'), ds_T.longitude)}
-    #     dims=['z_dim', 'r_dim']
-    #     attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
-        
-    #     if shape_ds[0] != 1:
-    #         coords['time'] = (('t_dim'), ds_T.time.values)
-    #         dims.insert(0, 't_dim')
-          
-    #     ds_T['density_zlevels'] = xr.DataArray( np.squeeze(density_z), 
-    #             coords=coords, dims=dims, attrs=attributes )
-    
-    #     # cumulative integral of density on z levels
-    #     # Note that zero density flux is assumed at z=0
-    #     density_cumulative = -cumtrapz( np.concatenate( (density_z[:,:1,:], density_z), axis=1 ),
-    #                             x=np.insert(-z_levels,0,0), axis=1)
-
-    #     hydrostatic_pressure = density_cumulative * self.GRAVITY
-        
-    #     attributes = {'units': 'kg m^{-1} s^{-2}', 'standard name': 'Hydrostatic pressure on the z-level vertical grid'}
-    #     ds_T['pressure_h_zlevels'] = xr.DataArray( np.squeeze(hydrostatic_pressure), 
-    #             coords=coords, dims=dims, attrs=attributes )
-        
-    #     ds_T['pressure_s'] = ref_density * self.GRAVITY * ds_T.ssh.squeeze()
-    #     ds_T.pressure_s.attrs = {'units': 'kg m^{-1} s^{-2}', 
-    #                               'standard_name': 'surface pressure'}
-        
-    #     return
-
-
-        # try:
-        #     if self.data_F is None:
-        #         raise ValueError(str(self) + ': Density calculation can only be performed  \
-        #                          by this method if an f-grid NEMO object has been passed in.' )
-
-        #     z_levels = ds_T.depth_0.max(dim=(['r_dim']))                
-        #     z_levels_min = ds_T.depth_0[0,:].max(dim=(['r_dim']))
-        #     z_levels[0] = z_levels_min                     
-            
-        #     try:    
-        #         shape_ds = ( ds_T.t_dim.size, z_levels.size, 
-        #                         ds_T.r_dim.size )
-        #         sal = ds_T.salinity.to_masked_array()
-        #         temp = ds_T.temperature.to_masked_array()                
-        #     except AttributeError:
-        #         shape_ds = ( 1, z_levels.size, ds_T.r_dim.size )
-        #         sal = ds_T.salinity.to_masked_array()[np.newaxis,...]
-        #         temp = self.data_F.temperature.to_masked_array()[np.newaxis,...]
-            
-        #     sal_z_levels = np.ma.zeros( shape_ds )
-        #     temp_z_levels = np.ma.zeros( shape_ds )
-        #     density_z_levels = np.ma.zeros( shape_ds )
-            
-        #     s_levels = self.data_F.depth_0.to_masked_array()
-        #     lat = self.data_F.latitude.values
-        #     lon = self.data_F.longitude.values
-    
-        #     for it in np.arange(0, shape_ds[0]):
-        #         for ir in self.data_F.r_dim:
-        #             if np.all(np.isnan(sal[it,:,ir])):
-        #                 density_z_levels[it,:,ir] = np.nan
-        #                 density_z_levels[it,:,ir].mask = True
-        #             else:                      
-        #                 sal_func = interpolate.interp1d( s_levels[:,ir], sal[it,:,ir], 
-        #                             bounds_error=False, kind='linear')
-        #                 temp_func = interpolate.interp1d( s_levels[:,ir], temp[it,:,ir], 
-        #                             bounds_error=False, kind='linear')
-                        
-        #                 sal_z_levels[it,:,ir] = sal_func(z_levels.values)
-        #                 temp_z_levels[it,:,ir] = temp_func(z_levels.values)
-                        
-        #     # Absolute Pressure    
-        #     pressure_absolute = np.ma.masked_invalid(
-        #         gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
-        #     # Absolute Salinity           
-        #     sal_absolute = np.ma.masked_invalid(
-        #         gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
-        #     sal_absolute = np.ma.masked_less(sal_absolute,0)
-        #     # Conservative Temperature
-        #     temp_conservative = np.ma.masked_invalid(
-        #         gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
-        #     # In-situ density
-        #     density_z_levels = np.ma.masked_invalid( gsw.rho( 
-        #         sal_absolute, temp_conservative, pressure_absolute ) )
-            
-        #     coords={'depth_z_levels': (('z_dim'), z_levels.values),
-        #             'latitude': (('r_dim'), self.data_F.latitude.values),
-        #             'longitude': (('r_dim'), self.data_F.longitude.values)}
-        #     dims=['z_dim', 'r_dim']
-        #     attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
-            
-        #     if shape_ds[0] != 1:
-        #         coords['time'] = (('t_dim'), self.data_F.time.values)
-        #         dims.insert(0, 't_dim')
-              
-        #     self.data_F['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
-        #             coords=coords, dims=dims, attrs=attributes )
-
-        # except AttributeError as err:
-        #     print(err)
-            
-        #return  
-        
-        
-        
-    def construct_density_zlevel_fgrid( self, EOS='EOS10'):   
-        '''
-            This method is for calculating density on the f-grid on z-levels. With
-            the intention to calculate horizontal density gradients at velocity points
-            perpendicular to the transect.
-            
-            For s-level model output this method recontructs the in-situ density 
-            onto z_levels along the transect on the f-grid. The z_levels and density field
-            are added to the data_F dataset attribute. 
-            
-            Requirements: The supplied t-grid dataset must contain the 
-            Practical Salinity and the Potential Temperature variables. The depth_0
-            field must also be supplied. The GSW package is used to calculate
-            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
-            These salinity and temperature fields must haven been interpolated onto
-            the f-grid prior to calling this method.
-            
-            Note that currently density can only be constructed using the EOS10
-            equation of state.
-
-        Parameters
-        ----------
-        EOS : equation of state, optional
-            DESCRIPTION. The default is 'EOS10'.
-
-
-        Returns
-        -------
-        None.
-        adds attributes Transect.data_F.depth_z_levels and Transect.data_F.density_z_levels
-
-        '''        
-
-        
-        try:
-            if EOS != 'EOS10': 
-                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
-            if self.data_F is None:
-                raise ValueError(str(self) + ': Density calculation can only be performed  \
-                                 by this method if an f-grid NEMO object has been passed in.' )
-
-            z_levels = self.data_F.depth_0.max(dim=(['r_dim']))                
-            z_levels_min = self.data_F.depth_0[0,:].max(dim=(['r_dim']))
-            z_levels[0] = z_levels_min                     
-            
-            try:    
-                shape_ds = ( self.data_F.t_dim.size, z_levels.size, 
-                                self.data_F.r_dim.size )
-                sal = self.data_F.salinity.to_masked_array()
-                temp = self.data_F.temperature.to_masked_array()                
-            except AttributeError:
-                shape_ds = ( 1, z_levels.size, self.data_F.r_dim.size )
-                sal = self.data_F.salinity.to_masked_array()[np.newaxis,...]
-                temp = self.data_F.temperature.to_masked_array()[np.newaxis,...]
-            
-            sal_z_levels = np.ma.zeros( shape_ds )
-            temp_z_levels = np.ma.zeros( shape_ds )
-            density_z_levels = np.ma.zeros( shape_ds )
-            
-            s_levels = self.data_F.depth_0.to_masked_array()
-            lat = self.data_F.latitude.values
-            lon = self.data_F.longitude.values
-    
-            for it in np.arange(0, shape_ds[0]):
-                for ir in self.data_F.r_dim:
-                    if np.all(np.isnan(sal[it,:,ir])):
-                        density_z_levels[it,:,ir] = np.nan
-                        density_z_levels[it,:,ir].mask = True
-                    else:                      
-                        sal_func = interpolate.interp1d( s_levels[:,ir], sal[it,:,ir], 
-                                    bounds_error=False, kind='linear')
-                        temp_func = interpolate.interp1d( s_levels[:,ir], temp[it,:,ir], 
-                                    bounds_error=False, kind='linear')
-                        
-                        sal_z_levels[it,:,ir] = sal_func(z_levels.values)
-                        temp_z_levels[it,:,ir] = temp_func(z_levels.values)
-                        
-            # Absolute Pressure    
-            pressure_absolute = np.ma.masked_invalid(
-                gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
-            # Absolute Salinity           
-            sal_absolute = np.ma.masked_invalid(
-                gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
-            sal_absolute = np.ma.masked_less(sal_absolute,0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(
-                gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
-            # In-situ density
-            density_z_levels = np.ma.masked_invalid( gsw.rho( 
-                sal_absolute, temp_conservative, pressure_absolute ) )
-            
-            coords={'depth_z_levels': (('z_dim'), z_levels.values),
-                    'latitude': (('r_dim'), self.data_F.latitude.values),
-                    'longitude': (('r_dim'), self.data_F.longitude.values)}
-            dims=['z_dim', 'r_dim']
-            attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
-            
-            if shape_ds[0] != 1:
-                coords['time'] = (('t_dim'), self.data_F.time.values)
-                dims.insert(0, 't_dim')
-              
-            self.data_F['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
-                    coords=coords, dims=dims, attrs=attributes )
-
-        except AttributeError as err:
-            print(err)
-            
-        return       
-    
 
     def moving_average(self, array_to_smooth, window=2, axis=-1):
         '''
