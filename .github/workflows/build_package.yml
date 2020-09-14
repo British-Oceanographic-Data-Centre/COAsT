@@ -31,9 +31,9 @@ jobs:
     - name: Build Package
       run: |
         ./build.sh
-    - name: Install Package
+    - name: Test Package Install
       run: |
-        - setup.py install
+        - python setup.py install
     - name: Generate Conda Metadata
       run: |
         ./generate_conda_meta.sh
