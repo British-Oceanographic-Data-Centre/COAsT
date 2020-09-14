@@ -4,6 +4,18 @@ Script to do unit testing
 Written as procedural code that plods through the code snippets and tests the
 outputs or expected metadata.
 
+***SECTIONS***
+This script is separated into Sections and Subsections, for which there are two
+counters to keep track: sec and subsec respectively.  At the beginning of each
+section, the sec counter should be incremented by 1 and the subsec counter
+should be reset to 96 (code for one below 'a'). At the beginning of each
+subsection, subsec should be incremented by one.
+
+***OTHER FILES***
+There are two accompaniment files to this unit testing script:
+    - unit_test_contents: A list of sections and subsections.
+    - unit_test_guidelines: Further guidelines to creating unit tests.
+
 Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 """
@@ -13,6 +25,12 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
+
+'''
+#################################################
+## ( 0 ) Files, directories for unit testing   ##
+#################################################
+'''
 
 dn_files = "./example_files/"
 dn_fig = 'unit_testing/figures/'
@@ -703,9 +721,11 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 
+'''
 #################################################
-## ( 7 ) Plotting Methods                      ##
+## ( 7 ) ALTIMETRY Methods                     ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
 
@@ -725,23 +745,40 @@ except:
 
 plt.close('all')
 
+'''
 #################################################
 ## ( 8 ) TIDEGAUGE Methods                     ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
 
+# This section is for testing and demonstrating the use of the TIDEGAUGE
+# object. Tide gauge objects contain a dataset_list rather than a dataset. Each
+# individual tide gauge has its own dataset, and then the dataset_list contains
+# a list of these tide gauge datasets.
+
+# First begin by reloading NEMO t-grid test data:
+    
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+'''
 #-----------------------------------------------------------------------------#
 # ( 8a ) Load in GESLA tide gauge files from directory                        #
 #                                                                             #
+'''
 subsec = subsec+1
 
+# Tide gauge data can be loaded straight from a directory of GESLA data files
+# when initialising the object. Here, I load in data from all files within the
+# dn_tidegauge directory and restrict the dates. If no directory is provided
+# then an empty object will be created and custom data can be added.
+
 try:
-    date0 = datetime.datetime(2010,1,1)
-    date1 = datetime.datetime(2010,12,1)
+    date0 = datetime.datetime(2007,1,1)
+    date1 = datetime.datetime(2007,1,31)
     tg = coast.TIDEGAUGE(dn_tidegauge, date_start = date0, date_end = date1)
     
-    # Check length of dataset_list is correct and that
+    # TEST: Attribute dictionary for comparison
     test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',
     'contributor': 'Japan_Meteorological_Agency',
     'latitude': 40.65, 'longitude': 139.9333,
@@ -749,15 +786,21 @@ try:
     'original_start_date': np.datetime64('1971-12-31 15:00:00'),
     'original_end_date': np.datetime64('2013-12-31 14:00:00'),
     'time_zone_hours': 0.0, 'precision': 0.01, 'null_value': -99.9999}
+    
+    #TEST: Check attribute dictionary and length of dataset list.
     if len(tg.dataset_list) == 9 and tg.dataset_list[0].attrs == test_attrs:
         print(str(sec) + chr(subsec) + " OK - Tide gauges loaded")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 8b ) TIDEGAUGE map plot                                                   #
 #                                                                             #
+'''
 subsec = subsec+1
+
+# We can take a look at the locations of the loaded tide gauges using 
+# map_plot():
 
 try:
     f,a = tg.plot_map()
@@ -767,12 +810,17 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 plt.close('all')
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 8c ) TIDEGAUGE Time series plot                                           #
 #                                                                             #
+'''
 subsec = subsec+1
 
+# Now, lets take a look at a specific tide gauge time series. This can be done
+# using indexing (like here) or by specifying a site name as a string. The
+# index supplied is just the index of the dataset list containing tide gauge
+# datasets.
 
 try:
     f,a = tg.plot_timeseries(0)
