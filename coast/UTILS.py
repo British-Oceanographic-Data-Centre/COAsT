@@ -8,6 +8,9 @@ import copy
 import scipy as sp
 import sklearn.neighbors as nb
 
+###############################################################################
+#######                       ~  Mathematical  ~                        #######
+###############################################################################
 
 def remove_indices_by_mask(A, mask):
     '''
@@ -98,3 +101,4 @@ def nearest_xy_indices(mod_lon, mod_lat, new_lon, new_lat,
     ind_x = xr.DataArray(ind_x.squeeze())
     ind_y = xr.DataArray(ind_y.squeeze())
     return ind_x, ind_y
+    
