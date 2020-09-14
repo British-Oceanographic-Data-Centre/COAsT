@@ -33,7 +33,7 @@ jobs:
         ./build.sh
     - name: Test Package Install
       run: |
-        python setup.py install
+        python -m pip install dist/COAsT-*.tar.gz
     - name: Publish Package to PyPi
       shell: bash
       env:

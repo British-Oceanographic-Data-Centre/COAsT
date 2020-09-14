@@ -1,14 +1,52 @@
 from setuptools import setup
 from sys import argv
+from types import SimpleNamespace
 
 
-def get_package(package_path="package.json"):
-    from types import SimpleNamespace
-    import json
-
-    with open(package_path, "r") as package_file:
-        pack = json.load(package_file)
-    return SimpleNamespace(**pack)
+PACKAGE = SimpleNamespace(**{
+    "name": "COAsT",
+    "version": "0.2.1a22",
+    "description": "This is the Coast Ocean Assessment Tool",
+    "url": "https://www.bodc.ac.uk",
+    "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
+    "author": "British Oceanographic Data Centre (BODC)",
+    "author_email": "bodcsoft@bodc.ac.uk",
+    "license": "Put something here",
+    "license_family": "OTHER",
+    "setup_requires": [
+        "wheel"
+    ],
+    "classifiers": [
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Hydrology",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7"
+    ],
+    "keywords": [
+        "NEMO",
+        "shallow water",
+        "ocean assessment"
+    ],
+    "project_urls": {
+        "documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"
+    },
+    "install_requires": [
+        "dask[complete]",
+        "xarray",
+        "numpy",
+        "matplotlib",
+        "netCDF4",
+        "scipy",
+        "gsw"
+    ],
+    "python_requires": ">=3",
+    "packages": [
+        "coast"
+    ],
+    "include_package_data": True,
+    "github": "British-Oceanographic-Data-Centre"
+})
 
 
 def generate_conda(directory="conda"):
@@ -16,18 +54,17 @@ def generate_conda(directory="conda"):
     from collections import OrderedDict
     from os import path
 
-    pack = get_package()
     package_metadata = OrderedDict({
         "package": {
-            "name": pack.name.lower(),
-            "version": pack.version
+            "name": PACKAGE.name.lower(),
+            "version": PACKAGE.version
         },
         "source": {
-            "url": f"https://pypi.io/packages/source/{pack.name[0]}/{pack.name}/{pack.name}-{pack.version}.tar.gz"
+            "url": f"https://pypi.io/packages/source/{PACKAGE.name[0]}/{PACKAGE.name}/{PACKAGE.name}-{PACKAGE.version}.tar.gz"
         },
         "requirements": {
-            "host": pack.install_requires,
-            "run": pack.install_requires
+            "host": PACKAGE.install_requires,
+            "run": PACKAGE.install_requires
         },
         "test": {
             "imports": [
@@ -35,17 +72,17 @@ def generate_conda(directory="conda"):
             ]
         },
         "about": {
-            "home": pack.url,
-            "license": pack.license,
-            "license_family": pack.license_family,
+            "home": PACKAGE.url,
+            "license": PACKAGE.license,
+            "license_family": PACKAGE.license_family,
             "license_file": "",
-            "summary": pack.description,
+            "summary": PACKAGE.description,
             "doc_url": "",
             "dev_url": "",
         },
         "extra": {
             "recipe-maintainers": [
-                pack.github
+                PACKAGE.github
             ]
         }
     })
@@ -60,22 +97,21 @@ if __name__ == "__main__":
     if argv[1] == "conda":
         generate_conda()
     else:
-        package = get_package()
         setup(
-            name=package.name,
-            version=package.version,
-            description=package.description,
-            url=package.url,
-            download_url=package.download_url,
-            author=package.author,
-            author_email=package.author_email,
-            license=package.license,  # TODO,
-            setup_requires=package.setup_requires,
-            classifiers=package.classifiers,
-            keywords=package.keywords,
-            project_urls=package.project_urls,
-            install_requires=package.install_requires,
-            python_requires=package.python_requires,
-            packages=package.packages,
-            include_package_data=package.include_package_data
+            name=PACKAGE.name,
+            version=PACKAGE.version,
+            description=PACKAGE.description,
+            url=PACKAGE.url,
+            download_url=PACKAGE.download_url,
+            author=PACKAGE.author,
+            author_email=PACKAGE.author_email,
+            license=PACKAGE.license,  # TODO,
+            setup_requires=PACKAGE.setup_requires,
+            classifiers=PACKAGE.classifiers,
+            keywords=PACKAGE.keywords,
+            project_urls=PACKAGE.project_urls,
+            install_requires=PACKAGE.install_requires,
+            python_requires=PACKAGE.python_requires,
+            packages=PACKAGE.packages,
+            include_package_data=PACKAGE.include_package_data
         )
