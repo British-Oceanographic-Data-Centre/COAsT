@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 PACKAGE = SimpleNamespace(**{
     "name": "COAsT",
-    "version": "0.2.1a22",
+    "version": "0.2.1a23",
     "description": "This is the Coast Ocean Assessment Tool",
     "url": "https://www.bodc.ac.uk",
     "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
@@ -32,13 +32,15 @@ PACKAGE = SimpleNamespace(**{
         "documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"
     },
     "install_requires": [
+        "dask",
         "dask[complete]",
         "xarray",
         "numpy",
         "matplotlib",
         "netCDF4",
         "scipy",
-        "gsw"
+        "gsw",
+        "scikit-learn"
     ],
     "python_requires": ">=3",
     "packages": [
@@ -61,6 +63,10 @@ def generate_conda(directory="conda"):
         },
         "source": {
             "url": f"https://pypi.io/packages/source/{PACKAGE.name[0]}/{PACKAGE.name}/{PACKAGE.name}-{PACKAGE.version}.tar.gz"
+        },
+        "build": {
+            "number": 0,
+            "script": "python -m pip install . -vv"
         },
         "requirements": {
             "host": PACKAGE.install_requires,
