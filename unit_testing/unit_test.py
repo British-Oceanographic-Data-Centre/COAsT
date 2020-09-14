@@ -25,6 +25,7 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
+import os.path as path
 
 '''
 #################################################
@@ -57,7 +58,8 @@ subsec = 96 # Code for '`' (1 below 'a')
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+    sci = coast.NEMO(path.join(dn_files, fn_nemo_dat), 
+                     path.join(dn_files, fn_nemo_dom), grid_ref = 't-grid')
 
     # Test the data has loaded
     sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),

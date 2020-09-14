@@ -308,7 +308,8 @@ class NEMO(COAsT):
         
         # Geographical interpolation (using BallTree indices)
         interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
-        interpolated = interpolated.rename({'dim_0':'interp_dim'})
+        if 'dim_0' in interpolated.dims:
+            interpolated = interpolated.rename({'dim_0':'interp_dim'})
         return interpolated
     
     def interpolate_in_time(self, model_array, new_times, 
@@ -346,11 +347,7 @@ class NEMO(COAsT):
         #interpolated = interpolated.swap_dims({'time':'t_dim'})
         
         return interpolated
-    
-    def interpolate_in_depth(self, model_array, new_depths):
-        raise NotImplementedError
-        return
-    
+
     def construct_density( self, EOS='EOS10' ):
         
         '''
