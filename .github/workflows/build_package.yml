@@ -33,7 +33,7 @@ jobs:
         ./build.sh
     - name: Test Package Install
       run: |
-        - python setup.py install
+        python setup.py install
     - name: Generate Conda Metadata
       run: |
         ./generate_conda_meta.sh
