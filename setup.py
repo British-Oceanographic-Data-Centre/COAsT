@@ -72,11 +72,11 @@ def generate_conda(directory="conda"):
             "host": PACKAGE.install_requires,
             "run": PACKAGE.install_requires
         },
-        # "test": { TODO Reinstate this check
-        #     "imports": [
-        #         "coast"
-        #     ]
-        # },
+        "test": {
+            "imports": [
+                "coast"
+            ]
+        },
         "about": {
             "home": PACKAGE.url,
             "license": PACKAGE.license,
