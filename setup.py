@@ -40,7 +40,11 @@ PACKAGE = SimpleNamespace(**{
         "netCDF4",
         "scipy",
         "gsw",
-        "scikit-learn"
+        "scikit-learn",
+        "matplotlib",
+        "netcdf4",
+        "numpy",
+        "xarray"
     ],
     "python_requires": ">=3",
     "packages": [
@@ -66,7 +70,7 @@ def generate_conda(directory="conda"):
         },
         "build": {
             "number": 0,
-            "script": "python -m pip install . -vv"
+            "script": "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
         },
         "requirements": {
             "host": PACKAGE.install_requires,
