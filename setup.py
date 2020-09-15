@@ -33,14 +33,14 @@ PACKAGE = SimpleNamespace(**{
     },
     "install_requires": [
         "numpy>=1.16",
-        "dask>=2.26",
-        "dask[complete]>=2.26",
-        "xarray>=0.16",
-        "matplotlib>=3.3",
-        "netCDF4>=1.5",
-        "scipy>=1.5",
-        "gsw>=3.4",
-        "scikit-learn>=0.23"
+        "dask>=2",
+        "dask[complete]>=2",
+        "xarray>=0.1",
+        "matplotlib>=3",
+        "netCDF4>=1",
+        "scipy>=1",
+        "gsw>=3",
+        "scikit-learn>=0.2"
     ],
     "python_requires": ">=3.7",
     "packages": [
