@@ -154,3 +154,5 @@ class ALTIMETRY(OBSERVATION):
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
         return
+    
+    def 

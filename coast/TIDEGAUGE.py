@@ -232,6 +232,9 @@ class TIDEGAUGE():
         self.dataset[new_var_name] = interpolated
         return
     
+    def crps():
+        return
+    
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
         '''
