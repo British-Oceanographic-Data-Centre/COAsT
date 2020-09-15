@@ -32,10 +32,10 @@ PACKAGE = SimpleNamespace(**{
         "documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"
     },
     "install_requires": [
+        "numpy>=1.19",
         "dask",
         "dask[complete]",
         "xarray",
-        "numpy",
         "matplotlib",
         "netCDF4",
         "scipy",
@@ -43,7 +43,6 @@ PACKAGE = SimpleNamespace(**{
         "scikit-learn",
         "matplotlib",
         "netcdf4",
-        "numpy",
         "xarray"
     ],
     "python_requires": ">=3",
