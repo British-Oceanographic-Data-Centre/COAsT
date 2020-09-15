@@ -44,9 +44,7 @@ PACKAGE = SimpleNamespace(**{
         "matplotlib",
         "netcdf4",
         "numpy",
-        "xarray",
-        "python",
-        "pip"
+        "xarray"
     ],
     "python_requires": ">=3",
     "packages": [
