@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 PACKAGE = SimpleNamespace(**{
     "name": "COAsT",
-    "version": "0.2.1a25",
+    "version": "0.2.1a26",
     "description": "This is the Coast Ocean Assessment Tool",
     "url": "https://www.bodc.ac.uk",
     "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
@@ -62,6 +62,8 @@ def generate_conda(directory="conda"):
     from collections import OrderedDict
     from os import path
 
+    requirements = PACKAGE.install_requires + ["python", "pip"]
+
     package_metadata = OrderedDict({
         "package": {
             "name": PACKAGE.name.lower(),
@@ -75,8 +77,8 @@ def generate_conda(directory="conda"):
             "script": "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
         },
         "requirements": {
-            "host": PACKAGE.install_requires,
-            "run": PACKAGE.install_requires
+            "host": requirements,
+            "run": requirements
         },
         "test": {
             "imports": [
