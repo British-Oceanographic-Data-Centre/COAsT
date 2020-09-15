@@ -35,7 +35,7 @@ PACKAGE = SimpleNamespace(**{
         "numpy>=1.16",
         "dask>=2.26",
         "dask[complete]>=2.26",
-        "xarray>0.16",
+        "xarray>=0.16",
         "matplotlib>=3.3",
         "netCDF4>=1.5",
         "scipy>=1.5",
