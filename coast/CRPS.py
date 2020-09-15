@@ -2,7 +2,6 @@ import numpy as np
 import xarray as xr
 from warnings import warn
 from .CDF import CDF
-from .interpolate_along_dimension import interpolate_along_dimension
 from .COAsT import COAsT
 
 class CRPS():
