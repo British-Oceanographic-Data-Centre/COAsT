@@ -29,6 +29,7 @@
     b. Transport velocity and depth calculations
     c. Transport and velocity plotting
     d. Contrust density on z-levels along the transect. Compare with item 3b.
+    e. Geostrophic velocity & transport calculations
 
 5. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
