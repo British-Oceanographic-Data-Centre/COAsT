@@ -12,7 +12,7 @@ class TIDEGAUGE(OBSERVATION):
     An object for reading, storing and manipulating tide gauge data.
     Reading and organisation methods are centred around the GESLA database.
     However, any fixed time series data can be used if in the correct format.
-    (Source: https://www.gesla.org/)
+    (Source: https://www.gesla.org/).
     The data format used for this object is as follows:
         
     *Data Format Overview*
