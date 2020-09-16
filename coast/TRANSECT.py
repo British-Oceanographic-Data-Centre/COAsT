@@ -295,9 +295,9 @@ class Transect:
         y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] ) # j
         x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] ) # i
         
-        # We need to calculate the pressure gradient at 4 t-points to average onto the
+        # We need to calculate the pressure at four t-points to average onto the
         # normal velocity points. Here we subset the nemo_t data around the
-        # transect so we have these for t-grid points at each point along the 
+        # transect so we have these four t-grid points at each point along the 
         # transect
         ds_T = nemo_T_ds.isel(y_dim = y_ind, x_dim = x_ind) # j,i
         ds_T_j1 = nemo_T_ds.isel(y_dim = y_ind+1, x_dim = x_ind) # j+1,i

@@ -54,7 +54,7 @@ class Contour:
         x_ind = x_ind[start_idx:end_idx+1]
         return y_ind, x_ind, np.vstack((y_ind,x_ind)).T
     
-    def __init__(self, nemo: COAsT, y_ind, x_ind):        
+    def __init__(self, nemo: COAsT, y_ind, x_ind, depth):        
         '''
         
 
@@ -74,6 +74,7 @@ class Contour:
         '''
         self.y_ind, self.x_ind = self.process_contour( nemo.dataset, y_ind, x_ind )
         self.len = len(self.y_ind)
+        self.depth = depth
         self.filename_domain = nemo.filename_domain
         da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
         da_x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
@@ -111,11 +112,11 @@ class Contour:
     
 
 class Contour_f(Contour):
-    def __init__(self, nemo_f: COAsT, y_ind, x_ind):
-        super().__init__(nemo_f, y_ind, x_ind)
+    def __init__(self, nemo_f: COAsT, y_ind, x_ind, depth):
+        super().__init__(nemo_f, y_ind, x_ind, depth)
         self.data_cross_flow = xr.Dataset()
         
-    def transport_across_AB_2(self, nemo_u: COAsT, nemo_v: COAsT):
+    def calc_cross_contour_flow(self, nemo_u: COAsT, nemo_v: COAsT):
         """
     
         Computes the flow across the contour at each segment and stores:
@@ -144,6 +145,8 @@ class Contour_f(Contour):
         dr_w = np.where(np.diff(self.x_ind)<0, np.arange(0,v_ds.r_dim.size-1), np.nan )
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
         
+        # Note that subsetting the dataset first instead of subsetting each array seperately,
+        # as we do here, is neater but significantly slower.
         self.data_cross_flow['normal_velocities2'] = xr.full_like(u_ds.vozocrtx, np.nan)        
         self.data_cross_flow['normal_velocities2'][:,:,dr_n] = u_ds.vozocrtx.data[:,:,dr_n+1]
         self.data_cross_flow['normal_velocities2'][:,:,dr_s] = -u_ds.vozocrtx.data[:,:,dr_s]
@@ -210,83 +213,472 @@ class Contour_f(Contour):
             self.data_cross_flow[var][:,:,-1] = np.nan    
         
     
-    
-    def transport_across_AB(self, nemo_u: COAsT, nemo_v: COAsT):
+    def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, velocity_component):
         """
-    
-        Computes the flow across the contour at each segment and stores:
-        Transect normal velocities at each grid point in Transect.normal_velocities,
-        Depth integrated volume transport across the transect at each transect segment in 
-        Transect.depth_integrated_transport_across_AB
+        Calculates the hydrostatic and surface pressure gradients at an f-point
+        along the transect, i.e. a specific value of r_dim (but for all time and depth).
+        The caller must supply four datasets that define
+        the hydrostatic and surface pressure at all vertical z_levels and all time 
+        on the t-points around the transect i.e. for an f-point on the transect 
+        defined at (j+1/2, i+1/2), we want t-points at (j,i), (j+1,i), (j,i+1), (j+1,i+1), 
+        corresponding to  ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, respectively. 
+        ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1 will have dimensions in time and depth.
         
-        Return 
-        -----------
-        Transect normal velocities at each grid point (m/s)
-        Depth integrated volume transport across the transect at each transect segment (Sv)
+        The velocity_component defines whether u or v is normal to the transect 
+        for that particular segment of the transect. A segment of transect is 
+        defined as being r_dim to r_dim+1 where r_dim is the dimension along the transect.
+
+
+        Returns
+        -------
+        hpg_f : DataArray with dimensions in time and depth
+            hydrostatic pressure gradient at an f-point point along the transect
+            for all time and depth
+        spg_f : DataArray with dimensions in time and depth
+            surface pressure gradient at an f-point point along the transect
+
         """
+        if velocity_component == "u":
+            # required scale factors for derivative and averaging
+            e2v = 0.5*( ds_T_j1.e2 + ds_T.e2 )
+            e2v_i1 = 0.5*( ds_T_j1i1.e2 + ds_T_i1.e2 )
+            e1v = 0.5*( ds_T_j1.e1 + ds_T.e1 )
+            e1v_i1 = 0.5*( ds_T_j1i1.e1 + ds_T_i1.e1 )
+            e1f = 0.5*( e1v + e1v_i1 )            
+            # calculate gradients at v-points either side of f-point
+            hpg = (ds_T_j1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e2v
+            hpg_i1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_i1.pressure_h_zlevels) / e2v_i1   
+            # average onto f-point
+            hpg_f = 0.5 * ( ( e1v * hpg ) + ( e1v_i1 * hpg_i1 ) ) / e1f 
+            # as aboave            
+            spg = (ds_T_j1.pressure_s - ds_T.pressure_s) / e2v
+            spg_i1 = (ds_T_j1i1.pressure_s - ds_T_i1.pressure_s) / e2v_i1
+            spg_f = 0.5 * ( (e1v * spg) + (e1v_i1 * spg_i1) ) / e1f 
+        elif velocity_component == "v":
+            # required scale factors for derivative and averaging
+            e1u = 0.5 * ( ds_T_i1.e1 + ds_T.e1 ) 
+            e1u_j1 = 0.5 * ( ds_T_j1i1.e1 + ds_T_j1.e1 )
+            e2u = 0.5 * ( ds_T_i1.e2 + ds_T.e2 )
+            e2u_j1 = 0.5 * ( ds_T_j1i1.e2 + ds_T_j1.e2 )
+            e2f = 0.5 * ( e2u + e2u_j1 )
+            # calculate gradients at u-points either side of f-point
+            hpg = (ds_T_i1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e1u
+            hpg_j1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_j1.pressure_h_zlevels) / e1u_j1 
+            # average onto f-point
+            hpg_f = 0.5 * ( (e2u * hpg) + (e2u_j1 * hpg_j1) ) / e2f
+            # as above
+            spg = (ds_T_i1.pressure_s - ds_T.pressure_s) / e1u
+            spg_j1 = (ds_T_j1i1.pressure_s - ds_T_j1.pressure_s) / e1u_j1 
+            spg_f = 0.5 * ( (e2u * spg) + (e2u_j1 * spg_j1) ) / e2f
         
-        # subset the u and v datasets 
-        da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
-        da_x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
-        u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-        v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
+        return (hpg_f, spg_f)
+    
+
+   
+    def calc_geostrophic_flow(self, nemo_t_object: COAsT, ref_density = 1027):
+        """
+        This method will calculate the geostrophic velocity and volume transport
+        (due to the geostrophic vurrent) across the transect. 
+        4 variables are added to the TRANSECT.tran_data dataset:
+            1. normal_velocity_hpg      (t_dim, depth_z_levels, r_dim)
+            This is the velocity due to the hydrostatic pressure gradient
+            2. normal_velocity_spg      (t_dim, r_dim)
+            This is the velocity due to the surface pressure gradient
+            3. transport_across_AB_hpg  (t_dim, r_dim)
+            This is the volume transport due to the hydrostatic pressure gradient
+            4. transport_across_AB_spg  (t_dim, r_dim
+            This is the volume transport due to the surface pressure gradient
+                                                                       
+        Ths implementation works by regridding from s_levels to z_levels in order
+        to perform the horizontal gradients. Currently the s_level depths are
+        assumed fixed at their initial depths, i.e. at time zero.
         
-        velocity = np.ma.zeros(np.shape(u_ds.vozocrtx))
-        vol_transport = np.ma.zeros(np.shape(u_ds.vozocrtx))
-        depth_integrated_transport = np.ma.zeros( np.shape(u_ds.vozocrtx[:,0,:] )) 
-        #depth_0 = np.ma.zeros(np.shape(self.data_U.depth_0))
- 
+        
+        
+        Parameters
+        ----------
+        nemo_t_object : COAsT
+            This is the nemo model data on the t-grid for the entire domain. It
+            must contain the temperature, salinity and t-grid domain data (e1t, e2t, e3t_0).
+        ref_density : TYPE, optional
+            reference density value. The default is 1027.
+
+        Returns
+        -------
+        None.
+
+        """
+        nemo_T = nemo_t_object.copy()
+        if 't_dim' not in nemo_T.dataset.dims:
+            nemo_T_ds = nemo_T.dataset.expand_dims(dim={'t_dim':1},axis=0)
+        else:
+            nemo_T_ds = nemo_T.dataset 
+        
+        nemo_T_ds['bathymetry'] = xr.open_dataset( self.filename_domain ).bathy_metry.squeeze().rename({'y':'y_dim', 'x':'x_dim'}) 
+               
+        y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] ) # j
+        x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] ) # i
+        
+        # We need to calculate the pressure at four t-points to average onto the
+        # normal velocity points. Here we subset the nemo_t data around the
+        # transect so we have these four t-grid points at each point along the 
+        # transect
+        ds_T = nemo_T_ds.isel(y_dim = y_ind, x_dim = x_ind) # j,i
+        ds_T_j1 = nemo_T_ds.isel(y_dim = y_ind+1, x_dim = x_ind) # j+1,i
+        ds_T_i1 = nemo_T_ds.isel(y_dim = y_ind, x_dim = x_ind+1) # j,i+1
+        ds_T_j1i1 = nemo_T_ds.isel(y_dim = y_ind+1, x_dim = x_ind+1) # j+1,i+1
+        
+        # Construct and add the pressure fields to the 4 t-grid datasets
+        self.construct_pressure(ds_T, ref_density)
+        self.construct_pressure(ds_T_j1, ref_density)
+        self.construct_pressure(ds_T_i1, ref_density)
+        self.construct_pressure(ds_T_j1i1, ref_density)
+        
+        # Remove the mean hydrostatic pressure on each z_level from the hydrostatic pressure.
+        # This helps to reduce the noise when taking the horizontal gradients of hydrostatic pressure.
+        # Also catch and ignore nan-slice warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            pressure_h_zlevel_mean = xr.concat( (ds_T.pressure_h_zlevels, ds_T_j1.pressure_h_zlevels, 
+                                 ds_T_i1.pressure_h_zlevels, ds_T_j1i1.pressure_h_zlevels), 
+                                 dim='concat_dim' ).mean(dim=('concat_dim','r_dim','t_dim'),skipna=True)
+        ds_T['pressure_h_zlevels'] = ds_T.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_j1['pressure_h_zlevels'] = ds_T_j1.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_i1['pressure_h_zlevels'] = ds_T_i1.pressure_h_zlevels - pressure_h_zlevel_mean
+        ds_T_j1i1['pressure_h_zlevels'] = ds_T_j1i1.pressure_h_zlevels - pressure_h_zlevel_mean
+                
+        # Coriolis parameter
+        f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_F.latitude) )
+        
         dy = np.diff(self.y_ind)
         dx = np.diff(self.x_ind)
+        normal_velocity_hpg = np.zeros_like(ds_T.pressure_h_zlevels)
+        normal_velocity_spg = np.zeros_like(ds_T.pressure_s)
+        # horizontal scale factors for each segmant of transect
+        horizontal_scale = np.zeros( (ds_T.t_dim.size, ds_T.r_dim.size) ) 
         # Loop through each point along the transact
-        for idx in np.arange(0, self.len-1):            
-            if dy[idx] > 0:
-                # u flux (+ in)
-                velocity[:,:,idx] = u_ds.vozocrtx[:,:,idx+1].to_masked_array()
-                vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx+1].to_masked_array() *
-                                          u_ds.e3_0[:,idx+1].to_masked_array() )
-                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-                #depth_0[:,idx] = self.data_U.depth_0[:,idx+1].to_masked_array()
-            elif dy[idx] < 0:
-                # u flux (-u is positive across contour) 
-                velocity[:,:,idx] = - u_ds.vozocrtx[:,:,idx].to_masked_array()
-                vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx].to_masked_array() *
-                                          u_ds.e3_0[:,idx].to_masked_array() )
-                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-                #depth_0[:,idx] = self.data_U.depth_0[:,idx].to_masked_array()
-            elif dx[idx] > 0:
-                # v flux (- in) 
-                velocity[:,:,idx] = - v_ds.vomecrty[:,:,idx+1].to_masked_array()
-                vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx+1].to_masked_array() *
-                                          v_ds.e3_0[:,idx+1].to_masked_array() )
-                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-                #depth_0[:,idx] = self.data_V.depth_0[:,idx+1].to_masked_array()
+        for idx in np.arange(0, self.len-1):  
+            # u flux (+u is positive across transect) 
+            if dy[idx] > 0:    
+                # calculate the pressure gradients at two f points defining a segment of the transect                             
+                hpg, spg = self.__pressure_grad_fpoint( ds_T.isel(r_dim=idx), ds_T_j1.isel(r_dim=idx),
+                                        ds_T_i1.isel(r_dim=idx), ds_T_j1i1.isel(r_dim=idx), 'u' )
+                hpg_r1, spg_r1 = self.__pressure_grad_fpoint( ds_T.isel(r_dim=idx+1), ds_T_j1.isel(r_dim=idx+1),
+                                        ds_T_i1.isel(r_dim=idx+1), ds_T_j1i1.isel(r_dim=idx+1), "u" )
+                
+                # average from f to u point and calculate velocities
+                e2u_j1 = 0.5 * (ds_T_j1.isel(r_dim=idx).e2 + ds_T_j1i1.isel(r_dim=idx).e2 )
+                u_hpg = -(0.5 * (self.data_F.e2[idx]*hpg/f[idx] + self.data_F.e2[idx+1]*hpg_r1/f[idx+1]) 
+                                / (e2u_j1 * ref_density))
+                u_spg = -(0.5 * (self.data_F.e2[idx]*spg/f[idx] + self.data_F.e2[idx+1]*spg_r1/f[idx+1]) 
+                                / (e2u_j1 * ref_density))                
+                normal_velocity_hpg[:,:,idx] = u_hpg.values
+                normal_velocity_spg[:,idx] = u_spg.values
+                horizontal_scale[:,idx] = e2u_j1
+             
+            # v flux (-v is positive across transect)
+            elif dx[idx] > 0: 
+                # calculate the pressure gradients at two f points defining a segment of the transect                                  
+                hpg, spg = self.__pressure_grad_fpoint(ds_T.isel(r_dim=idx), ds_T_j1.isel(r_dim=idx),
+                                        ds_T_i1.isel(r_dim=idx), ds_T_j1i1.isel(r_dim=idx), "v")
+                hpg_r1, spg_r1 = self.__pressure_grad_fpoint(ds_T.isel(r_dim=idx+1), ds_T_j1.isel(r_dim=idx+1),
+                                        ds_T_i1.isel(r_dim=idx+1),ds_T_j1i1.isel(r_dim=idx+1), "v")
+                
+                # average from f to v point and calculate velocities
+                e1v_i1 = 0.5 * ( ds_T_i1.isel(r_dim=idx).e1 + ds_T_j1i1.isel(r_dim=idx).e1 )
+                v_hpg = (0.5 * (self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
+                                / (e1v_i1 * ref_density))
+                v_spg = (0.5 * (self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
+                                / (e1v_i1 * ref_density))
+                normal_velocity_hpg[:,:,idx] = -v_hpg.values
+                normal_velocity_spg[:,idx] = -v_spg.values
+                horizontal_scale[:,idx] = e1v_i1
+                
+            # v flux (+v is positive across transect)    
             elif dx[idx] < 0:
-                # v flux (+ in)
-                velocity[:,:,idx] = v_ds.vomecrty[:,:,idx].to_masked_array()
-                vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx].to_masked_array() *
-                                          v_ds.e3_0[:,idx].to_masked_array() )
-                depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-                #depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
+                # calculate the pressure gradients at two f points defining a segment of the transect                                  
+                hpg, spg = self.__pressure_grad_fpoint(ds_T.isel(r_dim=idx), ds_T_j1.isel(r_dim=idx),
+                                        ds_T_i1.isel(r_dim=idx), ds_T_j1i1.isel(r_dim=idx), "v")
+                hpg_r1, spg_r1 = self.__pressure_grad_fpoint(ds_T.isel(r_dim=idx+1), ds_T_j1.isel(r_dim=idx+1),
+                                        ds_T_i1.isel(r_dim=idx+1),ds_T_j1i1.isel(r_dim=idx+1), "v")
+                
+                # average from f to v point and calculate velocities
+                e1v = 0.5 * ( ds_T.isel(r_dim=idx).e1 + ds_T_j1.isel(r_dim=idx).e1 )
+                v_hpg = (0.5 * (self.data_F.e1[idx]*hpg/f[idx] + self.data_F.e1[idx+1]*hpg_r1/f[idx+1])
+                                / (e1v * ref_density))
+                v_spg = (0.5 * (self.data_F.e1[idx]*spg/f[idx] + self.data_F.e1[idx+1]*spg_r1/f[idx+1])
+                                / (e1v * ref_density))                   
+                normal_velocity_hpg[:,:,idx] = v_hpg.values 
+                normal_velocity_spg[:,idx] = v_spg.values 
+                horizontal_scale[:,idx] = e1v
         
+        normal_velocity_hpg[:,:,-1] = np.nan
+        normal_velocity_spg[:,-1] = np.nan
         
-        velocity[:,:,-1] = np.nan
-        depth_integrated_transport[:,-1] = np.nan
+        normal_velocity_hpg = np.where( ds_T.depth_z_levels.values[:,np.newaxis] <= ds_T.bathymetry.values, 
+                               normal_velocity_hpg, np.nan )
         
-        self.data_cross_flow['normal_velocities'] = xr.DataArray( velocity, 
-                    coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), self.data_contour.depth_0)},
-                    dims=['t_dim', 'z_dim', 'r_dim'] )        
-    
-        self.data_cross_flow['depth_integrated_transport_across_AB'] = xr.DataArray( depth_integrated_transport / 1000000.,
-                    coords={'time': (('t_dim'), u_ds.time.values)},
-                    dims=['t_dim', 'r_dim'] ) 
+        # remove redundent levels    
+        active_z_levels = np.count_nonzero(~np.isnan(normal_velocity_hpg),axis=1).max() 
+        normal_velocity_hpg = normal_velocity_hpg[:,:active_z_levels,:]
+        z_levels = ds_T.depth_z_levels.values[:active_z_levels]
         
-        #self.data_cross_flow.depth_0.attrs['units'] = 'm'
-        #self.data_cross_flow.depth_0.attrs['standard_name'] = 'Initial depth at time zero'
-        #self.data_cross_flow.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points on the transect'
-                        
-        return u_ds, v_ds
+        coords_hpg={'depth_z_levels': (('depth_z_levels'), z_levels),
+                'latitude': (('r_dim'), self.data_F.latitude),
+                'longitude': (('r_dim'), self.data_F.longitude)}
+        dims_hpg=['depth_z_levels', 'r_dim']
+        attributes_hpg = {'units': 'm/s', 'standard name': 'velocity across the \
+                          transect due to the hydrostatic pressure gradient'}
+        coords_spg={'latitude': (('r_dim'), self.data_F.latitude),
+                'longitude': (('r_dim'), self.data_F.longitude)}
+        dims_spg=['r_dim']
+        attributes_spg = {'units': 'm/s', 'standard name': 'velocity across the \
+                          transect due to the surface pressure gradient'}
+        
+        if 't_dim' in ds_T.dims:
+            coords_hpg['time'] = (('t_dim'), ds_T.time)
+            dims_hpg.insert(0, 't_dim')
+            coords_spg['time'] = (('t_dim'), ds_T.time)
+            dims_spg.insert(0, 't_dim')
+        
+        self.data_tran['normal_velocity_hpg'] = xr.DataArray( np.squeeze(normal_velocity_hpg),
+                coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg)
+        self.data_tran['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
+                coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
 
+        self.data_tran['transport_across_AB_hpg'] = ( self.data_tran
+                .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * horizontal_scale / 1000000   
+        self.data_tran.transport_across_AB_hpg.attrs = {'units': 'Sv', 
+                                  'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}
+        
+        
+        #depth_3d = self.data_tran.depth_z_levels.broadcast_like(self.data_tran.normal_velocity_hpg)
+        #H = depth_3d.where(~self.data_tran.normal_velocity_hpg.to_masked_array().mask).max(dim='z_dim')
+        H = ds_T.bathymetry.values
+        self.data_tran['transport_across_AB_spg'] = self.data_tran.normal_velocity_spg * H * horizontal_scale / 1000000
+        self.data_tran.transport_across_AB_spg.attrs = {'units': 'Sv', 
+                                  'standard_name': 'volume transport across transect due to the surface pressure gradient'}
+        
+        return
+    
+    # def transport_across_AB(self, nemo_u: COAsT, nemo_v: COAsT):
+    #     """
+    
+    #     Computes the flow across the contour at each segment and stores:
+    #     Transect normal velocities at each grid point in Transect.normal_velocities,
+    #     Depth integrated volume transport across the transect at each transect segment in 
+    #     Transect.depth_integrated_transport_across_AB
+        
+    #     Return 
+    #     -----------
+    #     Transect normal velocities at each grid point (m/s)
+    #     Depth integrated volume transport across the transect at each transect segment (Sv)
+    #     """
+        
+    #     # subset the u and v datasets 
+    #     da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
+    #     da_x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
+    #     u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
+    #     v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
+        
+    #     velocity = np.ma.zeros(np.shape(u_ds.vozocrtx))
+    #     vol_transport = np.ma.zeros(np.shape(u_ds.vozocrtx))
+    #     depth_integrated_transport = np.ma.zeros( np.shape(u_ds.vozocrtx[:,0,:] )) 
+    #     #depth_0 = np.ma.zeros(np.shape(self.data_U.depth_0))
+ 
+    #     dy = np.diff(self.y_ind)
+    #     dx = np.diff(self.x_ind)
+    #     # Loop through each point along the transact
+    #     for idx in np.arange(0, self.len-1):            
+    #         if dy[idx] > 0:
+    #             # u flux (+ in)
+    #             velocity[:,:,idx] = u_ds.vozocrtx[:,:,idx+1].to_masked_array()
+    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx+1].to_masked_array() *
+    #                                       u_ds.e3_0[:,idx+1].to_masked_array() )
+    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+    #             #depth_0[:,idx] = self.data_U.depth_0[:,idx+1].to_masked_array()
+    #         elif dy[idx] < 0:
+    #             # u flux (-u is positive across contour) 
+    #             velocity[:,:,idx] = - u_ds.vozocrtx[:,:,idx].to_masked_array()
+    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx].to_masked_array() *
+    #                                       u_ds.e3_0[:,idx].to_masked_array() )
+    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+    #             #depth_0[:,idx] = self.data_U.depth_0[:,idx].to_masked_array()
+    #         elif dx[idx] > 0:
+    #             # v flux (- in) 
+    #             velocity[:,:,idx] = - v_ds.vomecrty[:,:,idx+1].to_masked_array()
+    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx+1].to_masked_array() *
+    #                                       v_ds.e3_0[:,idx+1].to_masked_array() )
+    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+    #             #depth_0[:,idx] = self.data_V.depth_0[:,idx+1].to_masked_array()
+    #         elif dx[idx] < 0:
+    #             # v flux (+ in)
+    #             velocity[:,:,idx] = v_ds.vomecrty[:,:,idx].to_masked_array()
+    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx].to_masked_array() *
+    #                                       v_ds.e3_0[:,idx].to_masked_array() )
+    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
+    #             #depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
+        
+        
+    #     velocity[:,:,-1] = np.nan
+    #     depth_integrated_transport[:,-1] = np.nan
+        
+    #     self.data_cross_flow['normal_velocities'] = xr.DataArray( velocity, 
+    #                 coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), self.data_contour.depth_0)},
+    #                 dims=['t_dim', 'z_dim', 'r_dim'] )        
+    
+    #     self.data_cross_flow['depth_integrated_transport_across_AB'] = xr.DataArray( depth_integrated_transport / 1000000.,
+    #                 coords={'time': (('t_dim'), u_ds.time.values)},
+    #                 dims=['t_dim', 'r_dim'] ) 
+        
+    #     #self.data_cross_flow.depth_0.attrs['units'] = 'm'
+    #     #self.data_cross_flow.depth_0.attrs['standard_name'] = 'Initial depth at time zero'
+    #     #self.data_cross_flow.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points on the transect'
+                        
+    #     return u_ds, v_ds
+
+
+class Contour_t(Contour):
+    def __init__(self, nemo_t: COAsT, y_ind, x_ind, depth):
+        super().__init__(nemo_t, y_ind, x_ind, depth)
+        
+        
+    def construct_pressure( self, ref_density, z_levels=None, extrapolate=False ):   
+        '''
+            This method is for calculating the hydrostatic and surface pressure fields
+            on z-levels. The motivation is to enable the calculation of horizontal 
+            gradients; however, the variables can quite easily be interpolated 
+            onto the original vertical grid (which is a less expensive operation)
+             
+            Requirements: The object's t-grid dataset must contain the sea surface height,
+            Practical Salinity and the Potential Temperature variables. The depth_0
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
+            
+            Three new variables (density, hydrostatic pressure, surface pressure)
+            are created and added to the ds_T dataset:
+                density_zlevels       (t_dim, depth_z_levels, r_dim)
+                pressure_h_zlevels    (t_dim, depth_z_levels, r_dim)
+                pressure_s            (t_dim, r_dim)
+            
+            Note that density is constructed using the EOS10
+            equation of state.
+            
+            This code could be rewritten to make better use of xarray
+
+        Parameters
+        ----------
+        ref_density
+            reference density value
+        z_levels : (optional) numpy array
+            1d array that defines the depths to interpolate the density and pressure
+            on to.
+        extrapolate : boolean, default False
+            If true the variables are extrapolated to the deepest z_levels, if false
+            values below the bathymetry are set to NaN
+        Returns
+        -------
+        None.
+
+        '''        
+
+        if 't_dim' not in self.data_contour.dims:
+            self.data_contour = self.data_contour.expand_dims(dim={'t_dim':1},axis=0)
+
+        if z_levels is None:   
+            #bathymetry = xr.open_dataset( self.filename_domain ).bathy_metry.squeeze()
+            z_levels_0_50 = np.arange(0,55,5.5)
+            z_levels_60_200 = np.arange(60,210,10)
+            z_levels_250_600 = np.arange(200,650,50)
+            #z_levels_650_ = np.arange(650,bathymetry.max()+150,150)
+            z_levels_650_ = np.arange(650,self.data_contour.bathymetry.max()+150,150)
+            z_levels = np.concatenate( (z_levels_0_50, z_levels_60_200, 
+                                        z_levels_250_600, z_levels_650_) )
+        
+        shape_ds = ( self.data_contour.t_dim.size, len(z_levels), self.data_contour.r_dim.size )
+        salinity_z = np.ma.zeros( shape_ds )
+        temperature_z = np.ma.zeros( shape_ds ) 
+        salinity_s = self.data_contour.salinity.to_masked_array()
+        temperature_s = self.data_contour.temperature.to_masked_array()
+        s_levels = self.data_contour.depth_0.values
+        
+        # At the current time there does not appear to be a good algorithm for performing this 
+        # type of interpolation without loops, which is very slow. Griddata is an option but does not
+        # support extrapolation and did not have noticable performance benefits.
+        for it in self.data_contour.t_dim:
+            for ir in self.data_contour.r_dim:
+                if not np.all(np.isnan(salinity_s[it,:,ir].data)):  
+                    # Need to remove the levels below the (envelope) bathymetry which are NaN
+                    salinity_s_r = salinity_s[it,:,ir].compressed()
+                    temperature_s_r = temperature_s[it,:,ir].compressed()
+                    s_levels_r = s_levels[:len(salinity_s_r),ir]
+                    
+                    sal_func = interpolate.interp1d( s_levels_r, salinity_s_r, 
+                                 kind='linear', fill_value="extrapolate")
+                    temp_func = interpolate.interp1d( s_levels_r, temperature_s_r, 
+                                 kind='linear', fill_value="extrapolate")
+                    
+                    if extrapolate is True:
+                        salinity_z[it,:,ir] = sal_func(z_levels)
+                        temperature_z[it,:,ir] = temp_func(z_levels)                        
+                    else:
+                        # set levels below the bathymetry to nan
+                        salinity_z[it,:,ir] = np.where( z_levels <= self.data_contour.bathymetry.values[ir], 
+                                sal_func(z_levels), np.nan )
+                        temperature_z[it,:,ir] = np.where( z_levels <= self.data_contour.bathymetry.values[ir], 
+                                temp_func(z_levels), np.nan ) 
+                    
+        if extrapolate is False:
+            # remove redundent levels    
+            active_z_levels = np.count_nonzero(~np.isnan(salinity_z),axis=1).max() 
+            salinity_z = salinity_z[:,:active_z_levels,:]
+            temperature_z = temperature_z[:,:active_z_levels,:]
+            z_levels = z_levels[:active_z_levels]
+        
+        # Absolute Pressure    
+        pressure_absolute = np.ma.masked_invalid(
+            gsw.p_from_z( -z_levels[:,np.newaxis], self.data_contour.latitude ) ) # depth must be negative           
+        # Absolute Salinity           
+        salinity_absolute = np.ma.masked_invalid(
+            gsw.SA_from_SP( salinity_z, pressure_absolute, self.data_contour.longitude, self.data_contour.latitude ) )
+        salinity_absolute = np.ma.masked_less(salinity_absolute,0)
+        # Conservative Temperature
+        temp_conservative = np.ma.masked_invalid(
+            gsw.CT_from_pt( salinity_absolute, temperature_z ) )
+        # In-situ density
+        density_z = np.ma.masked_invalid( gsw.rho( 
+            salinity_absolute, temp_conservative, pressure_absolute ) )
+        
+                        
+        coords={'depth_z_levels': (('depth_z_levels'), z_levels),
+                'latitude': (('r_dim'), self.data_contour.latitude),
+                'longitude': (('r_dim'), self.data_contour.longitude)}
+        dims=['depth_z_levels', 'r_dim']
+        attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
+        
+        if shape_ds[0] != 1:
+            coords['time'] = (('t_dim'), self.data_contour.time.values)
+            dims.insert(0, 't_dim')
+          
+        self.data_contour['density_zlevels'] = xr.DataArray( np.squeeze(density_z), 
+                coords=coords, dims=dims, attrs=attributes )
+    
+        # cumulative integral of density on z levels
+        # Note that zero density flux is assumed at z=0
+        density_cumulative = -cumtrapz( density_z, x=-z_levels, axis=1, initial=0)
+
+        hydrostatic_pressure = density_cumulative * self.GRAVITY
+        
+        attributes = {'units': 'kg m^{-1} s^{-2}', 'standard name': 'Hydrostatic pressure on the z-level vertical grid'}
+        self.data_contour['pressure_h_zlevels'] = xr.DataArray( np.squeeze(hydrostatic_pressure), 
+                coords=coords, dims=dims, attrs=attributes )
+        
+        self.data_contour['pressure_s'] = ref_density * self.GRAVITY * self.data_contour.ssh.squeeze()
+        self.data_contour.pressure_s.attrs = {'units': 'kg m^{-1} s^{-2}', 
+                                  'standard_name': 'surface pressure'}
+        
+        return
+    
         
         
     
