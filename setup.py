@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 PACKAGE = SimpleNamespace(**{
     "name": "COAsT",
-    "version": "0.2.1a37",
+    "version": "0.2.1a38",
     "description": "This is the Coast Ocean Assessment Tool",
     "url": "https://www.bodc.ac.uk",
     "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
