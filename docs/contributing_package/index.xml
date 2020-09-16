@@ -1,4 +1,4 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/</link><description>Recent content in Contributing on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing: COAsT</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/</link><description>Recent content in Contributing: COAsT on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
 &lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
 &lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
 &lt;h1 id="code-styling-conventions">Code Styling Conventions&lt;/h1>
@@ -135,103 +135,54 @@ example observation objects. Future objects, where applicable, will also follow 
 conventions. If you (as a contributor) add new objects to the toolbox, following
 the above template is strongly encouraged. This includes using xarray dataset/dataarray
 objects where possible, adopting an object oriented approach and adhering to naming
-conventions.&lt;/p></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/github_workflow/</guid><description>
-&lt;p>The Github page for this package can be found
-&lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
-&lt;p>The rest of this page is coming soon.&lt;/p></description></item><item><title>Docs: Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/docs/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/docs/</guid><description>
-&lt;!--
-&lt;div class="pageinfo pageinfo-primary">
-&lt;p>These basic sample guidelines assume that your Docsy site is deployed using Netlify and your files are stored in GitHub. You can use the guidelines &amp;ldquo;as is&amp;rdquo; or adapt them with your own instructions: for example, other deployment options, information about your doc project&amp;rsquo;s file structure, project-specific review guidelines, versioning guidelines, or any other information your users might find useful when updating your site. &lt;a href="https://github.com/kubeflow/website/blob/master/README.md">Kubeflow&lt;/a> has a great example.&lt;/p>
-&lt;p>Don&amp;rsquo;t forget to link to your own doc repo rather than our example site! Also make sure users can find these guidelines from your doc repo README: either add them there and link to them from this page, add them here and link to them from the README, or include them in both locations.&lt;/p>
+conventions.&lt;/p></description></item><item><title>Docs: Dask</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/dask/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/dask/</guid><description>
+&lt;h1 id="what-is-dask">What is Dask&lt;/h1>
+&lt;p>Dask is a python library that allows code to be run in parallel based on the hardware your running on. This means Dask works just as well on your laptop as on your large server.&lt;/p>
+&lt;h2 id="using-dask">Using Dask&lt;/h2>
+&lt;p>Dask is included in the xarray library, when loading a data source (file/NumPy array) you can turn Dask on by setting the &lt;em>chunks&lt;/em> variable&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
+&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span>&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;time_counter&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">})&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>chunks&lt;/strong> tell Dask where to &lt;em>break&lt;/em> your data across the different processor tasks.&lt;/p>
+&lt;h3 id="direct-dask">Direct Dask&lt;/h3>
+&lt;p>Dask can be imported and used directly&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">Dask.array&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">da&lt;/span>
+&lt;span style="color:#000">big_array&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">array1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">array2&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Dask arrays follow the NumPy API. This means that most NumPy functions have a Dask version.&lt;/p>
+&lt;h2 id="potential-issues">Potential Issues&lt;/h2>
+&lt;p>Dask objects are immutable. This means that the classic approach, pre-allocation follow by modification will not work.&lt;/p>
+&lt;p>The following code will error.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">Dask.array&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">da&lt;/span>
+&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">squeeze&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">zero_like&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">0.5&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">*&lt;/span> &lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># this line will error out&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="option-1">option 1&lt;/h4>
+&lt;p>Continue using NumPy function but wrapping the final value in a Dask array. This final Dask object will still be in-memory.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">squeeze&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">zeros_like&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">0.5&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">*&lt;/span> &lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">cumsum&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:],&lt;/span> &lt;span style="color:#000">axis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">array&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="option-2">option 2&lt;/h4>
+&lt;p>Dask offers a feature called &lt;a href="https://docs.dask.org/en/latest/delayed.html">delayed&lt;/a>. This can be used as a modifier on your
+complex methods as follows;&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#5c35cc;font-weight:bold">@Dask.delayed&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">set_timezero_depths&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#3465a4">self&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># complex workings&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>these do not return the computed answer, rather it returns a delayed object. These delayed object get stacked, as more delayed methods are called. When the value is needed, it can be computed like so;&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ne&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># come complex delayed methods called&lt;/span>
+&lt;span style="color:#000">ne&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_variable&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">compute&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Dask will now work out a computing path via all the required methods using as many processor tasks as possible.&lt;/p>
+&lt;h3 id="visualising-the-graph">Visualising the Graph&lt;/h3>
+&lt;p>Dask is fundamentally a computational graph library, to understand what is happening in the background it can help to see these graphs (on smaller/simpler problems). This can be achieved by running;&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ne&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># come complex delayed methods called&lt;/span>
+&lt;span style="color:#000">ne&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_variable&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">visualize&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>this will output a png image of the graph in the calling directory and could look like this;&lt;/p>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 6344px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/contributing_package/dask/mydask_huff6e57bba272ec52469a454020e8d978_582299_6334x945_fit_q75_catmullrom.jpg" width="6334" height="945">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
 &lt;/div>
--->
-&lt;p>We use &lt;a href="https://gohugo.io/">Hugo&lt;/a> Extended Version to format and generate our website, the
-&lt;a href="https://github.com/google/docsy">Docsy&lt;/a> theme for styling and site structure,
-and &lt;a href="https://help.github.com/en/github/working-with-github-pages">GitHub pages&lt;/a> to manage the deployment of the site.
-Hugo is an open-source static site generator that provides us with templates,
-content organisation in a standard directory structure, and a website generation engine. You write the pages in Markdown (or HTML if you want), and Hugo wraps them up into a website.&lt;/p>
-&lt;p>All submissions, including submissions by project members, require review. We
-use GitHub pull requests for this purpose. Consult
-&lt;a href="https://help.github.com/articles/about-pull-requests/">GitHub Help&lt;/a> for more
-information on using pull requests.&lt;/p>
-&lt;h2 id="updating-a-single-page">Updating a single page&lt;/h2>
-&lt;p>If you&amp;rsquo;ve just spotted something you&amp;rsquo;d like to change while using the docs, Docsy has a shortcut for you:&lt;/p>
-&lt;ol>
-&lt;li>Click &lt;strong>Edit this page&lt;/strong> in the top right hand corner of the page.&lt;/li>
-&lt;li>If you don&amp;rsquo;t already have an up to date fork of the project repo, you are prompted to get one - click &lt;strong>Fork this repository and propose changes&lt;/strong> or &lt;strong>Update your Fork&lt;/strong> to get an up to date version of the project to edit. The appropriate page in your fork is displayed in edit mode.&lt;/li>
-&lt;li>Follow the rest of the &lt;a href="#quick-start-with-netlify">Quick start with Netlify&lt;/a> process above to make, preview, and propose your changes.&lt;/li>
-&lt;/ol>
-&lt;h2 id="previewing-your-changes-locally">Previewing your changes locally&lt;/h2>
-&lt;p>If you want to run your own local Hugo server to preview your changes as you work:&lt;/p>
-&lt;ol>
-&lt;li>
-&lt;p>Follow the instructions in &lt;a href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_documentation/hugo">Getting started&lt;/a> to install Hugo and any other tools you need. You&amp;rsquo;ll need at least &lt;strong>Hugo version 0.45&lt;/strong> (we recommend using the most recent available version), and it must be the &lt;strong>extended&lt;/strong> version, which supports SCSS.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Fork the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git">COAsT-site repo&lt;/a> repo into your own project, then create a local copy using &lt;code>git clone&lt;/code>. Don’t forget to use &lt;code>--recurse-submodules&lt;/code> or you won’t pull down some of the code you need to generate a working site.&lt;/p>
-&lt;pre>&lt;code>git clone --recurse-submodules --depth 1 https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git
-&lt;/code>&lt;/pre>&lt;/li>
-&lt;li>
-&lt;p>Run &lt;code>npm install&lt;/code> to install Node.js dependencies.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Run &lt;code>hugo server&lt;/code> in the site root directory. By default your site will be available at http://localhost:1313/COAsT. Now that you&amp;rsquo;re serving your site locally, Hugo will watch for changes to the content and automatically refresh your site.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Continue with the usual GitHub workflow to edit files, commit them, push the
-changes up to your fork, and create a pull request.&lt;/p>
-&lt;/li>
-&lt;/ol>
-&lt;h2 id="creating-an-issue">Creating an issue&lt;/h2>
-&lt;p>If you&amp;rsquo;ve found a problem in the docs, but you&amp;rsquo;re not sure how to fix it yourself, please create an issue in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git">COAsT-site repo&lt;/a>. You can also create an issue about a specific page by clicking the &lt;strong>Create Issue&lt;/strong> button in the top right hand corner of the page.&lt;/p>
-&lt;h2 id="quick-start-with-netlify">Quick start with Netlify&lt;/h2>
-&lt;p>Here&amp;rsquo;s a quick guide to updating the docs. It assumes you&amp;rsquo;re familiar with the
-GitHub workflow and you&amp;rsquo;re happy to use the automated preview of your doc
-updates:&lt;/p>
-&lt;ol>
-&lt;li>Fork the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git">COAsT-site repo&lt;/a> on GitHub.&lt;/li>
-&lt;li>Make your changes and send a pull request (PR).&lt;/li>
-&lt;li>If you&amp;rsquo;re not yet ready for a review, add &amp;ldquo;WIP&amp;rdquo; to the PR name to indicate
-it&amp;rsquo;s a work in progress. (&lt;strong>Don&amp;rsquo;t&lt;/strong> add the Hugo property
-&amp;ldquo;draft = true&amp;rdquo; to the page front matter, because that prevents the
-auto-deployment of the content preview described in the next point.)&lt;/li>
-&lt;li>Wait for the automated PR workflow to do some checks. When it&amp;rsquo;s ready,
-you should see a comment like this: &lt;strong>deploy/netlify — Deploy preview ready!&lt;/strong>&lt;/li>
-&lt;li>Click &lt;strong>Details&lt;/strong> to the right of &amp;ldquo;Deploy preview ready&amp;rdquo; to see a preview
-of your updates.&lt;/li>
-&lt;li>Continue updating your doc and pushing your changes until you&amp;rsquo;re happy with
-the content.&lt;/li>
-&lt;li>When you&amp;rsquo;re ready for a review, add a comment to the PR, and remove any
-&amp;ldquo;WIP&amp;rdquo; markers.&lt;/li>
-&lt;/ol>
-&lt;h2 id="useful-resources">Useful resources&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://www.docsy.dev/about/">Docsy user guide&lt;/a>: All about Docsy, including how it manages navigation, look and feel, and multi-language support.&lt;/li>
-&lt;li>&lt;a href="https://gohugo.io/documentation/">Hugo documentation&lt;/a>: Comprehensive reference for Hugo.&lt;/li>
-&lt;li>&lt;a href="https://guides.github.com/activities/hello-world/">Github Hello World!&lt;/a>: A basic introduction to GitHub concepts and workflow.&lt;/li>
-&lt;/ul></description></item><item><title>Docs: Using Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/hugo/</guid><description>
-&lt;p>This page will walk you though a simple setup for hugo extended - which is needed if want to view any changes you make to this site locally.&lt;/p>
-&lt;p>For more details please &lt;a href="https://gohugo.io/getting-started/installing/">read this&lt;/a>.&lt;/p>
-&lt;h2 id="installation">Installation&lt;/h2>
-&lt;h3 id="manual">Manual&lt;/h3>
-&lt;ol>
-&lt;li>Download hugo extended from &lt;a href="https://github.com/gohugoio/hugo/releases">GitHub&lt;/a>&lt;/li>
-&lt;li>Unzip into preferred location (I use C:\hugo)&lt;/li>
-&lt;li>Add to OS PATH
-&lt;ul>
-&lt;li>optional but makes usage easier&lt;/li>
-&lt;/ul>
-&lt;/li>
-&lt;/ol>
-&lt;h3 id="via-a-package-manager">Via a Package Manager&lt;/h3>
-&lt;p>On Windows you can use &lt;a href="https://chocolatey.org/">Chocolately&lt;/a> to install with:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">choco install hugo-extended
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or on macOS/Linux you can use &lt;a href="https://brew.sh/">Homebrew&lt;/a> to install with:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">brew install hugo
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="try-it-out">Try it out!&lt;/h2>
-&lt;p>You should now be able to try the following in a terminal&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">$ hugo --help
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>if you have cloned the COAsT-site &lt;a href="github_repo">repo&lt;/a> you should also now be able to;&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">$ &lt;span style="color:#204a87">cd&lt;/span> COAsT-site
-$ hugo server
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>the above will start a local hugo powered version of the website. you can edit any of the files under /content and see your changes at http://localhost:1313/COAsT/&lt;/p></description></item></channel></rss>
+&lt;/div></description></item></channel></rss>
