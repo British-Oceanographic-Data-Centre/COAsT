@@ -433,17 +433,58 @@ class Contour_f(Contour):
                 cont_t_j1i1.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
                 
         # Coriolis parameter
-        f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_contour.latitude) )
-        
+        f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_contour.latitude) )        
         
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,self.data_contour.r_dim.size-1), np.nan )
-        dr_n = dr_n[~np.isnan(dr_n)].astype(int)
         dr_s = np.where(np.diff(self.y_ind)<0, np.arange(0,self.data_contour.r_dim.size-1), np.nan )
-        dr_s = dr_s[~np.isnan(dr_s)].astype(int)
         dr_e = np.where(np.diff(self.x_ind)>0, np.arange(0,self.data_contour.r_dim.size-1), np.nan )
-        dr_e = dr_e[~np.isnan(dr_e)].astype(int)
         dr_w = np.where(np.diff(self.x_ind)<0, np.arange(0,self.data_contour.r_dim.size-1), np.nan )
-        dr_w = dr_w[~np.isnan(dr_w)].astype(int)
+        
+        dr_list = [dr_n[~np.isnan(dr_n)].astype(int), dr_s[~np.isnan(dr_s)].astype(int)
+                   dr_e[~np.isnan(dr_e)].astype(int), dr_w[~np.isnan(dr_w)].astype(int)]
+        
+        e2u_j1  = 0.5 * ( cont_t_j1.data_contour.e2.data[dr_n] + cont_t_j1i1.data_contour.e2.data[dr_n] )
+        e2u     = 0.5 * ( cont_t.data_contour.e2.data[dr_s] + cont_t_i1.data_contour.e2.data[dr_s] )
+        e1v_i1  = 0.5 * ( cont_t_i1.data_contour.e1.data[dr_e] + cont_t_j1i1.data_contour.e1.data[dr_e] )
+        e1v     = 0.5 * ( cont_t.data_contour.e1.data[dr_w] + cont_t_j1.data_contour.e1.data[dr_w] )
+        e_horiz_vel = [e2u_j1, e2u, e1v_i1, e1v] 
+        
+        e_horiz_f   = [self.data_contour.e2, self.data_contour.e2, 
+                       self.data_contour.e1, self.data_contour.e1]
+        
+        velolcity_component = ["u","u","v",'v']
+        flow_direction = [-1,1,-1,1]
+        
+        for dr, vel_comp, flow_dir, e_hor_vel, e_hor_f in \
+                zip(dr_list, velolcity_component, flow_direction, e_horiz_vel, e_horiz_f) :
+            hpg, spg        = self.__pressure_grad_fpoint2( cont_t.data_contour, 
+                                cont_t_j1.data_contour, cont_t_i1.data_contour, 
+                                cont_t_j1i1.data_contour, dr, vel_comp )
+            hpg_r1, spg_r1  = self.__pressure_grad_fpoint2( cont_t.data_contour,
+                                cont_t_j1.data_contour,
+                                cont_t_i1.data_contour, 
+                                cont_t_j1i1.data_contour, dr+1, vel_comp )
+            normal_velocity_hpg[:,:,dr] = ( flow_dir * 0.5 * (e_hor_f.data[dr]*hpg/f.data[dr] 
+                                            + e_hor_f.data[dr+1]*hpg_r1/f.data[dr+1]) 
+                                            / (e_hor_vel * ref_density) )
+            normal_velocity_spg[:,dr]   = ( flow_dir * 0.5 * (e_hor_f.data[dr]*spg/f.data[dr] 
+                                            + e_hor_f.data[dr+1]*spg_r1/f.data[dr+1]) 
+                                            / (e_hor_vel * ref_density) ) 
+            
+        H = np.zeros_like( self.data_contour.bathymetry.values )
+        H[:-1] = 0.5*(self.data_contour.bathymetry.values[:-1] + self.data_contour.bathymetry.values[1:])
+        normal_velocity_hpg = np.where( z_levels[:,np.newaxis] <= H, 
+                               normal_velocity_hpg, np.nan )
+        
+        # remove redundent levels    
+        active_z_levels = np.count_nonzero(~np.isnan(normal_velocity_hpg),axis=1).max() 
+        normal_velocity_hpg = normal_velocity_hpg[:,:active_z_levels,:]
+        z_levels = z_levels[:active_z_levels]
+        
+        ## GOT HERE 18th Sep
+        ## Need to do the assigning to DA and the transports and then think about how to pull across the u/v coordinate data (might have to pull the lat and lon from 
+        # domain_cfg.
+        
         
         
         hpg, spg = self.__pressure_grad_fpoint2( cont_t.data_contour, 
@@ -482,6 +523,27 @@ class Contour_f(Contour):
         normal_velocity_hpg[:,:,dr_s] = -u_hpg.values
         normal_velocity_spg[:,dr_s] = -u_spg.values
         horizontal_scale[:,dr_s] = e2u
+        
+        
+        # calculate the pressure gradients at two f points defining a segment of the contour                                  
+        hpg, spg = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx), 
+                                cont_t_j1.data_contour.isel(r_dim=idx),
+                                cont_t_i1.data_contour.isel(r_dim=idx), 
+                                cont_t_j1i1.data_contour.isel(r_dim=idx), "v" )
+        hpg_r1, spg_r1 = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx+1),
+                                cont_t_j1.data_contour.isel(r_dim=idx+1),
+                                cont_t_i1.data_contour.isel(r_dim=idx+1), 
+                                cont_t_j1i1.data_contour.isel(r_dim=idx+1), "v" )
+        
+        # average from f to v point and calculate velocities
+        e1v_i1 = 0.5 * ( cont_t_i1.data_contour.isel(r_dim=idx).e1 + cont_t_j1i1.data_contour.isel(r_dim=idx).e1 )
+        v_hpg = (0.5 * (self.data_contour.e1[idx]*hpg/f[idx] + self.data_contour.e1[idx+1]*hpg_r1/f[idx+1])
+                        / (e1v_i1 * ref_density))
+        v_spg = (0.5 * (self.data_contour.e1[idx]*spg/f[idx] + self.data_contour.e1[idx+1]*spg_r1/f[idx+1])
+                        / (e1v_i1 * ref_density))
+        normal_velocity_hpg[:,:,idx] = -v_hpg.values
+        normal_velocity_spg[:,idx] = -v_spg.values
+        horizontal_scale[:,idx] = e1v_i1
         
         
         # Note that subsetting the dataset first instead of subsetting each array seperately,
