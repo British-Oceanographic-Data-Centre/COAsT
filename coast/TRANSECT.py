@@ -605,7 +605,7 @@ class Transect:
             
         return (interpolated_depth_variable_slice, interpolated_depth )
     
-    def plot_map(self):
+    def plot_transect_on_map(self):
         '''
         Plot transect location on a map
         

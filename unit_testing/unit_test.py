@@ -482,7 +482,7 @@ else:
 subsec = subsec+1
 
 try:
-    fig,ax = tran.plot_map()
+    fig,ax = tran.plot_transect_on_map()
     ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
     ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
     fig.tight_layout()
