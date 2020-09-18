@@ -482,6 +482,12 @@ else:
 subsec = subsec+1
 
 try:
+    fig,ax = tran.plot_transect_on_map()
+    ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
+    ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
+    fig.tight_layout()
+    fig.savefig(dn_fig + 'transect_map.png')
+    
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
