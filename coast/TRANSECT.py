@@ -7,7 +7,8 @@ import numpy as np
 import math
 from scipy.interpolate import griddata
 from scipy.integrate import cumtrapz, trapz
-from .logging_util import get_slug, debug, info, warn, warning, error
+from .logging_util import get_slug, debug, error
+import warnings
 
 
 # =============================================================================
@@ -45,7 +46,7 @@ class Transect:
         
         
         '''
-        
+        debug(f"Creating a new {get_slug(self)}")
         # point A should be of lower latitude than point B
         if abs(point_B[0]) < abs(point_A[0]):
             self.point_A = point_B
@@ -84,8 +85,8 @@ class Transect:
         # self.data_n = dataset.isel(y=tran_y+1,x=tran_x)  
         # self.data_e = dataset.isel(y=tran_y,x=tran_x+1) 
         # self.data_s = dataset.isel(y=tran_y-1,x=tran_x) 
-        # self.data_w = dataset.isel(y=tran_y,x=tran_x-1) 
-        
+        # self.data_w = dataset.isel(y=tran_y,x=tran_x-1)
+        debug(f"{get_slug(self)} initialised")
 
     def get_transect_indices(self, nemo_F):
         '''
@@ -101,6 +102,7 @@ class Transect:
         tran_x : array of x_dim indices
 
         '''
+        debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(nemo_F)}")
         tran_y_ind, tran_x_ind, tran_len = nemo_F.transect_indices(self.point_A, self.point_B)
         tran_y_ind = np.asarray(tran_y_ind)
         tran_x_ind = np.asarray(tran_x_ind)
@@ -120,7 +122,6 @@ class Transect:
                 tran_y_ind = np.insert( tran_y_ind, ispacing+1, tran_y_ind[ispacing] )
                 tran_x_ind = np.insert( tran_x_ind, ispacing+1, tran_x_ind[ispacing+1] ) 
         return (tran_y_ind, tran_x_ind)
-        
     
     def transport_across_AB(self):
         """
@@ -135,7 +136,7 @@ class Transect:
         Transect normal velocities at each grid point (m/s)
         Depth integrated volume transport across the transect at each transect segment (Sv)
         """
-        
+        debug(f"Computing transport across AB for {get_slug(self)}")  # TODO Probably want a better description here
         velocity = np.ma.zeros(np.shape(self.data_U.vozocrtx))
         vol_transport = np.ma.zeros(np.shape(self.data_U.vozocrtx))
         depth_integrated_transport = np.ma.zeros( np.shape(self.data_U.vozocrtx[:,0,:] )) 
@@ -184,10 +185,7 @@ class Transect:
         self.data_tran.depth_0.attrs['standard_name'] = 'Initial depth at time zero'
         self.data_tran.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points on the transect'
                         
-        return  
-    
-
-
+        return  # TODO Should this return something? If not then the statement is not needed
 
     def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, velocity_component):
         """
@@ -284,6 +282,8 @@ class Transect:
         None.
 
         """
+        debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with "
+              f"{get_slug(nemo_t_object)}")
         nemo_T = nemo_t_object.copy()
         if 't_dim' not in nemo_T.dataset.dims:
             nemo_T_ds = nemo_T.dataset.expand_dims(dim={'t_dim':1},axis=0)
@@ -435,9 +435,8 @@ class Transect:
         self.data_tran.transport_across_AB_spg.attrs = {'units': 'Sv', 
                                   'standard_name': 'volume transport across transect due to the surface pressure gradient'}
         
-        return
-               
-    
+        return  # TODO Should this return something? If not the statement is not needed
+
     def construct_pressure( self, ds_T, ref_density, z_levels=None):   
         '''
             This method is for calculating the hydrostatic and surface pressure fields
@@ -476,8 +475,9 @@ class Transect:
         -------
         None.
 
-        '''        
-
+        '''
+        # TODO Probably want a better description for this log message
+        debug(f"calculating the hydrostatic and surface pressure fields on z-levels {z_levels} for {get_slug(self)}")
         if 't_dim' not in ds_T.dims:
             ds_T = ds_T.expand_dims(dim={'t_dim':1},axis=0)
 
@@ -566,18 +566,15 @@ class Transect:
                                   'standard_name': 'surface pressure'}
         
         return
-    
-                
 
-        
-
-    def moving_average(self, array_to_smooth, window=2, axis=-1):
+    def moving_average(self, array_to_smooth, window=2, axis=-1):  # TODO This could be a static method
         '''
         Returns the input array smoothed along the given axis using convolusion
         '''
+        debug(f"Fetching moving average for {array_to_smooth}")
         return convolve1d( array_to_smooth, np.ones(window), axis=axis ) / window
     
-    def interpolate_slice(self, variable_slice, depth, interpolated_depth=None ):
+    def interpolate_slice(self, variable_slice, depth, interpolated_depth=None ):  # TODO This could be a static method
         '''
         Linearly interpolates the variable at a single time along the z_dim, which must be the
         first axis.
@@ -596,6 +593,7 @@ class Transect:
         interpolated_depth : Interpolation depth
 
         '''
+        debug(f"Interpolating slice {variable_slice} at depths {depth}")
         if interpolated_depth is None:
             interpolated_depth = np.arange(0, np.nanmax(depth), 2)
             
@@ -604,8 +602,7 @@ class Transect:
             depth_func = interpolate.interp1d( depth[:,i], variable_slice[:,i], axis=0, bounds_error=False )        
             interpolated_depth_variable_slice[:,i] = depth_func( interpolated_depth )
             
-        return (interpolated_depth_variable_slice, interpolated_depth )
-    
+        return (interpolated_depth_variable_slice, interpolated_depth )  # TODO Brackets aren't required
     
     def plot_normal_velocity(self, time, plot_info: dict, cmap, smoothing_window=0):  
         '''
@@ -625,6 +622,7 @@ class Transect:
 
         
         '''
+        debug(f"Plotting normal velocity for {get_slug(self)} with plot_info {plot_info}")
         try:
             data = self.data_tran.sel(t_dim = time)
         except KeyError:
@@ -659,8 +657,7 @@ class Transect:
 
         plt.show()
         return fig,ax
-        
-    
+
     def plot_depth_integrated_transport(self, time, plot_info: dict, smoothing_window=0):
         '''
             Quick plot routine of depth integrated transport across the transect AB at a specific time.
@@ -675,6 +672,7 @@ class Transect:
         Recommended to use even integers.
         returns: pyplot object
         '''
+        debug(f"Generating quick plot for {get_slug(self)} with plot_info {plot_info}")
         try:
             data = self.data_tran.sel(t_dim = time)
         except KeyError:
@@ -697,8 +695,7 @@ class Transect:
         plt.ylabel('Volume transport across AB [SV]')
         plt.show()
         return fig,ax
-    
-    
+
     def construct_density_on_z_levels( self, EOS='EOS10'):#, z_levels=None ):        
         '''
             For s-level model output this method recontructs the in-situ density 
@@ -728,16 +725,16 @@ class Transect:
         None.
         adds attributes Transect.data_T.depth_z_levels and Transect.data_T.density_z_levels
 
-        '''        
-
-        
+        '''
+        debug(f"Constructing in-situ density on z-levels for {get_slug(self)} with EOS \"{EOS}\"")
         try:
             if EOS != 'EOS10': 
-                raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
+                raise ValueError(get_slug(self) + ': Density calculation for ' + EOS + ' not implemented.')
             if self.data_T is None:
-                raise ValueError(str(self) + ': Density calculation can only be performed \
+                raise ValueError(get_slug(self) + ': Density calculation can only be performed \
                     when a t-grid object has been assigned to the nemo_T attribute. This\
                     can be done at initialisation.' )
+         # TODO Should this be reinstated and converted to a log message?
           #  if not self.data_T.ln_sco.item():
            #     raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
     
@@ -811,12 +808,5 @@ class Transect:
                     coords=coords, dims=dims, attrs=attributes )
 
         except AttributeError as err:
-            print(err)
-            
+            error(err)
         return
-    
-    
-    
-        
-        
-        
