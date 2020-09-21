@@ -1,19 +1,23 @@
 import xarray as xr
 import numpy as np
 from .COAsT import COAsT
+from .logging_util import get_slug, debug
 
-class interpolate_along_dimension():
+
+class interpolate_along_dimension:  # TODO This should be CamelCase
     '''
     An object for flexibly and quickly interpolating an xarray variable along
     a specified dimension.
     '''
     
     def __init__(self, data, dim_interp, dim_name, method='nearest'):
+        debug(f"Creating new {get_slug(self)}")
         self.method = method
         self.dim_name = dim_name
         self.data = data
         self.weights = self.calculate_weights(self.data[dim_name], 
                                               dim_interp)
+        debug(f"Initialised {get_slug(self)}")
         
     def __getitem__(self, indices):
         if self.method == 'nearest':
@@ -41,6 +45,7 @@ class interpolate_along_dimension():
     def calculate_weights_nearest(self, x0, xi):
         ''' Calculates weights for nearest neighbour. In this case weights are
         just the indices of the data that is closest. '''
+        debug("Calculating weights (nearest)")
         vdiff = self.difference_matrix(x0, xi)
         return np.argmin(vdiff, axis=0)
         
@@ -48,10 +53,12 @@ class interpolate_along_dimension():
         ''' Calculates weights for linear interpolation. The form of each row 
         of the weights array is [w1, w2, i1, i2]. w1 and w2 are the weights and
         i1, i2 are the indices of the data that the weights are applied to'''
+        debug("Calculating weights (linear)")
         raise NotImplementedError
         return
 
     def difference_matrix(self, v1, v2):
         ''' Calculates all pairwise absolute distances between two vectors.'''
+        debug("Calculating pairwise absolute distances")
         mg_x, mg_y = np.meshgrid(v1,v2)
         return np.transpose( np.abs(mg_x - mg_y) )
