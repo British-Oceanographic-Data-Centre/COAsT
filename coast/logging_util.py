@@ -66,7 +66,7 @@ def get_source(level=1):
 def add_info(msg, level=3):
     source = get_source(level=level)
     if isinstance(msg, Exception):
-        msg = traceback.format_exc(msg)
+        msg = f"{msg.__class__.__name__}: {str(msg)}\n" + "".join(traceback.format_tb(msg.__traceback__))
     msg = f"{source[0]}.{source[2]}.{source[1]}: {msg}"
     return msg
 
