@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import datetime
 import pandas as pd
 from os import listdir
-from warnings import warn
 from .OBSERVATION import OBSERVATION
+from .logging_util import get_slug, debug, info, warn, warning, error
+
 
 class TIDEGAUGE(OBSERVATION):
     '''
@@ -66,6 +67,7 @@ class TIDEGAUGE(OBSERVATION):
         -------
         Self
         '''
+        debug(f"Creating a new {get_slug(self)}")
         if type(file_list) is str:
             file_list = [file_list]
         
@@ -97,7 +99,7 @@ class TIDEGAUGE(OBSERVATION):
             self.latitude = []
             self.longitude = []
             self.site_name = []
-        return
+        debug(f"{get_slug(self)} initialised")
     
     def get_gesla_filenames(self, directory):
         '''
@@ -117,6 +119,7 @@ class TIDEGAUGE(OBSERVATION):
         list of filenames (str), latitude (float), longitude (float) and 
         site names (str)
         '''
+        debug(f"Fetching GESLA filenames from \"{directory}\" with {get_slug(self)}")
         file_list = listdir(directory)
         new_file_list = []
         latitude_list = []
@@ -131,7 +134,7 @@ class TIDEGAUGE(OBSERVATION):
                 sitename_list.append(header_dict['site_name'])
                 new_file_list.append(directory+ff)
             except:
-                pass
+                pass  # TODO Should we log something here?
             
         file_list = new_file_list
         latitude_list = np.array(latitude_list)
@@ -157,11 +160,12 @@ class TIDEGAUGE(OBSERVATION):
         -------
         xarray.Dataset object.
         '''
+        debug(f"Reading \"{fn_gesla}\" as a GESLA file with {get_slug(self)}")  # TODO Maybe include start/end dates
         try:
             header_dict = self.read_gesla_header_v3(fn_gesla)
             dataset = self.read_gesla_data_v3(fn_gesla, date_start, date_end)
-        except:
-            raise Exception('Problem reading GESLA file: ' + fn_gesla)
+        except:  # TODO Catch specific exception(s)
+            raise Exception('Problem reading GESLA file: ' + fn_gesla)  # FIXME This should probably be a RuntimeError
         # Attributes
         dataset.attrs = header_dict
         
