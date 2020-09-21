@@ -36,9 +36,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
         if fn_domain is None:
             self.filename_domain = "" # empty store for domain fileanme
-            pass
-            #print("No NEMO domain specified, only limited functionality"+
-            #      " will be available")
+            warn("No NEMO domain specified, only limited functionality"+
+                 " will be available")
         else:
             self.filename_domain = fn_domain # store domain fileanme
             dataset_domain = self.load_domain(fn_domain, chunks)
@@ -614,17 +613,14 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 if (out_obj is None) or (out_obj.grid_ref != out_grid):
                     try:
                         out_obj = NEMO( fn_domain=self.filename_domain, grid_ref=out_grid )
-                    except:
-                        print('Failed to create target NEMO obj. Perhaps self.',
-                                'filename_domain={} is empty?'
-                                .format(self.filename_domain))
-                    #print('make new target object (out_obj)')
+                    except:  # TODO Catch specific exception(s)
+                        warn('Failed to create target NEMO obj. Perhaps self.',
+                             'filename_domain={} is empty?'
+                             .format(self.filename_domain))
 
                 # Check is out_varstr is defined, else create it
                 if out_varstr is None:
                     out_varstr = in_varstr + '_dz'
-                    #print('make new target variable name: out_str = {}'\
-                    #      .format(out_varstr))
 
                 # Create new DataArray with the same dimensions as the parent
                 # Crucially have a coordinate value that is appropriate to the target location.
@@ -647,11 +643,11 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 return out_obj
 
             else:
-                print('Not ready for that combination of grid ({}) and ',\
-                'derivative ({})'.format(self.grid_ref, dim))
+                warn('Not ready for that combination of grid ({}) and '
+                     'derivative ({})'.format(self.grid_ref, dim))
                 return None
         else:
-            print('{} does not exist in self.dataset'.format(in_varstr))
+            warn(f"{in_varstr} does not exist in {get_slug(self)} dataset")
             return None
         
         
