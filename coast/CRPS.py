@@ -1,11 +1,12 @@
 import numpy as np
 import xarray as xr
-from warnings import warn
 from .CDF import CDF
 from .interpolate_along_dimension import interpolate_along_dimension
 from .COAsT import COAsT
+from .logging_util import get_slug, debug, info, warn
 
-class CRPS():
+
+class CRPS:
     '''
     Object for handling and storing necessary information, methods and outputs
     for calculation of Continuous Ranked Probability Score. The object is
@@ -48,6 +49,7 @@ class CRPS():
         Returns:
             CRPS: Returns a new instance of a CRPS object.
         """
+        debug(f"Creating a new {get_slug(self)}")
         #Input variables
         self.dataset      = observations[['longitude','latitude','time']]
         self.model        = model.dataset
@@ -63,7 +65,7 @@ class CRPS():
                               ') vs observations(' + var_name_obs + '): '}
         # Output variables
         self.calculate()
-        return
+        debug(f"{get_slug(self)} initialised")
     
 ###############################################################################
 #######                       ~General Routines~                        #######
@@ -75,6 +77,7 @@ class CRPS():
 
     def calculate(self):
         """Calculate CRPS values for specified variables/methods/radii."""
+        debug(f"Calculating CRPS for {get_slug(self)}")
         tmp = self.calculate_sonf(self.model[self.var_name_mod], 
                                   self.observations[self.var_name_obs], 
                                   self.nh_radius, self.nh_type,
@@ -84,7 +87,7 @@ class CRPS():
         self.dataset['contains_land'] = tmp[2]
         self.dataset['mean'] = np.nanmean(tmp[0])
         self.dataset['mean_noland'] = np.nanmean(tmp[0][tmp[2]==0])
-        return 
+        return  # TODO Should this return something? If not, the statement is not needed
     
     def calculate_sonf(self, model_data, obs_data, nh_radius: float, 
                        nh_type: str, cdf_type:str, time_interp:str):
@@ -117,7 +120,7 @@ class CRPS():
         neighbourhood_indices = np.arange(0,n_neighbourhoods)
         for ii in neighbourhood_indices:
             
-            print("\r Progress: [[ "+str(round(ii/n_neighbourhoods*100,2)) + 
+            print("\r Progress: [[ "+str(round(ii/n_neighbourhoods*100, 2)) +
                   '% ]]', end=" ", flush=True)
             
             # Neighbourhood centre
@@ -179,6 +182,7 @@ class CRPS():
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
+        debug(f"Subsetting indices by distance ({longitude},{latitude}/{centre_lon},{centre_lat}/{radius})")
         dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
                                                  longitude, latitude)
         indices_bool = dist < radius
@@ -186,7 +190,7 @@ class CRPS():
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
     
-    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):
+    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
         '''
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
@@ -197,7 +201,7 @@ class CRPS():
         # lon1, lat1 :: Location(s) 1.
         # lon2, lat2 :: Location(s) 2.
         '''
-
+        debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
         # Convert to radians for calculations
         lon1 = xr.ufuncs.deg2rad(lon1)
         lat1 = xr.ufuncs.deg2rad(lat1)
@@ -228,6 +232,7 @@ class CRPS():
         Returns:
             Figure and axes objects for the resulting image.
         """
+        info("Generating CDF plot")
         index=[index]
         tmp = self.calculate_sonf(self.model[self.var_name_mod], 
                                   self.observations[self.var_name_obs][index],
@@ -256,6 +261,7 @@ class CRPS():
         Returns:
             Figure and axes objects for the resulting image.
         """
+        info("Generating map plot")
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
@@ -292,6 +298,6 @@ class CRPS():
             plt.title(title_dict[stats_var])
         except:
             pass
-
+        info("Displaying plot!")
         plt.show()
         return fig, ax

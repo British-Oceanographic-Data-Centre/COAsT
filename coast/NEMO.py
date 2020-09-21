@@ -9,17 +9,20 @@ import gsw
 from scipy.interpolate import interp1d
 from scipy.interpolate import griddata
 import warnings
+from .logging_util import get_slug, debug, info, warn, error
 
-class NEMO(COAsT):
+
+class NEMO(COAsT):  # TODO Complete this docstring
     """
     Words to describe the NEMO class
 
     kwargs -- define addition keyworded arguemts for domain file. E.g. ln_sco=1
     if using s-scoord in an old domain file that does not carry this flag.
     """
-    def __init__(self, fn_data=None, fn_domain=None, grid_ref='t-grid',
+    def __init__(self, fn_data=None, fn_domain=None, grid_ref='t-grid',  # TODO Super init not called + add a docstring
                  chunks: dict=None, multiple=False,
                  workers=2, threads=2, memory_limit_per_worker='2GB', **kwargs):
+        debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
         self.grid_ref = grid_ref.lower()
         self.domain_loaded = False
@@ -49,16 +52,18 @@ class NEMO(COAsT):
                 dataset_domain = self.trim_domain_size( dataset_domain )
             self.set_timezero_depths(dataset_domain) # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
+            debug(f"Initialised {get_slug(self)}")
 
-    def set_dimension_mapping(self):
+    def set_dimension_mapping(self):  # TODO Add a docstring
         self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
                             'depthu':'z_dim', 'depthv':'z_dim',
                             'y':'y_dim', 'x':'x_dim'}
+        debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
         self.dim_mapping_domain = {'t':'t_dim0', 'x':'x_dim', 'y':'y_dim',
                                    'z':'z_dim'}
+        debug(f"{get_slug(self)} dim_mapping_domain set to {self.dim_mapping_domain}")
 
-
-    def set_variable_mapping(self):
+    def set_variable_mapping(self):  # TODO Add a docstring
         # Variable names remapped  within NEMO object
         self.var_mapping = {'time_counter':'time',
                             'votemper' : 'temperature',
@@ -88,30 +93,33 @@ class NEMO(COAsT):
                                    'depthw_0':'depth_0', 'deptht_0':'depth_0',
                                    'ln_sco':'ln_sco'}
 
-    def load_domain(self, fn_domain, chunks):
+    # TODO Add parameter type hints and a docstring
+    def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
         ''' Loads domain file and renames dimensions with dim_mapping_domain'''
-        # Load xarrat dataset
+        # Load xarray dataset
+        info(f"Loading domain: \"{fn_domain}\"")
         dataset_domain = xr.open_dataset(fn_domain)
         self.domain_loaded = True
         # Rename dimensions
         for key, value in self.dim_mapping_domain.items():
+            mapping = {key: value}
             try:
-                dataset_domain = dataset_domain.rename_dims({ key : value })
-            except:
-                print('pass: {}: {}', key, value)
-                pass
+                dataset_domain = dataset_domain.rename_dims(mapping)
+            except:  # FIXME Catch specific exception(s)
+                error(f"Exception while renaming dimensions from domain in NEMO object with key:value {mapping}")
 
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
         ''' Merge domain dataset variables into self.dataset, using grid_ref'''
+        debug(f"Merging {get_slug(dataset_domain)} into {get_slug(self)}")
         # Define grid independent variables to pull across
         not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
 
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid':
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
+            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0']  # TODO What about e3vw
         elif self.grid_ref == 'v-grid':
             grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
         elif self.grid_ref == 't-grid':
@@ -121,7 +129,7 @@ class NEMO(COAsT):
         elif self.grid_ref == 'f-grid':
             grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
 
-        all_vars = grid_vars + not_grid_vars
+        all_vars = grid_vars + not_grid_vars  # FIXME Add an else clause to avoid unhandled error when no ifs are True
 
         # Trim domain DataArray area if necessary.
         self.copy_domain_vars_to_dataset( dataset_domain, grid_vars )
@@ -132,36 +140,35 @@ class NEMO(COAsT):
         for var in coord_vars:
             try:
                 self.dataset = self.dataset.set_coords(var)
-            except:
-                pass
+            except:  # FIXME Catch specific exception(s)
+                pass  # TODO Do we need to log something here?
 
         # Delete specified variables
-        # MIGHT NEEWD TO DELETE OTHEHR DEPTH VARS ON OTHER GRIDS?
+        # TODO MIGHT NEED TO DELETE OTHER DEPTH VARS ON OTHER GRIDS?
         delete_vars = ['nav_lat', 'nav_lon', 'deptht']
         for var in delete_vars:
             try:
                 self.dataset = self.dataset.drop(var)
-            except:
-                pass
-
+            except:  # FIXME Catch specific exception(s)
+                pass  # TODO Do we need to log something here?
 
     def __getitem__(self, name: str):
         return self.dataset[name]
 
     def set_grid_ref_attr(self):
+        debug(f"{get_slug(self)} grid_ref_attr set to {self.grid_ref_attr_mapping}")
         self.grid_ref_attr_mapping = {'temperature' : 't-grid',
                                 'coast_name_for_u_velocity' : 'u-grid',
                                 'coast_name_for_v_velocity' : 'v-grid',
                                 'coast_name_for_w_velocity' : 'w-grid',
                                 'coast_name_for_vorticity'  : 'f-grid' }
-        #self.grid_ref_attr_mapping = None
 
     def get_contour_complex(self, var, points_x, points_y, points_z, tolerance: int = 0.2):
+        debug(f"Fetching contour complex from {get_slug(self)}")
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method='nearest', tolerance=tolerance)
         return smaller
 
     def set_timezero_depths(self, dataset_domain):
-
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
@@ -169,7 +176,7 @@ class NEMO(COAsT):
         The depths are assigned to domain_dataset.depth_0
 
         """
-
+        debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         try:
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
@@ -208,9 +215,9 @@ class NEMO(COAsT):
                     attrs={'units':'m',
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
         except ValueError as err:
-            print(err)
+            error(err)
 
-        return
+        return  # TODO Should this return something? If not then the statement is not needed
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:
@@ -222,7 +229,7 @@ class NEMO(COAsT):
         :param end: A lat/lon pair
         :return: list of y indices, list of x indices,
         """
-
+        debug(f"Subsetting {get_slug(self)} indices from {start} to {end}")
         [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
 
@@ -237,12 +244,13 @@ class NEMO(COAsT):
         :param lon: longitude
         :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
-
+        debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
         dist2 = xr.ufuncs.square(self.dataset.latitude - lat) + xr.ufuncs.square(self.dataset.longitude - lon)
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
     def find_j_i_domain(self, lat: float, lon: float, dataset_domain: xr.DataArray):
+        # TODO add dataset_domain to docstring and remove nonexistent grid_ref
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
         Usage: [y,x] = find_j_i(49, -12, dataset_domain)
@@ -252,11 +260,11 @@ class NEMO(COAsT):
         :param grid_ref: the gphi/glam version a user wishes to search over
         :return: the y and x coordinates for the given grid_ref variable within the domain file
         """
-
+        debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
         internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
         internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = xr.ufuncs.square(internal_lat - lat) \
-                + xr.ufuncs.square(internal_lon - lon)
+              + xr.ufuncs.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
@@ -269,7 +277,7 @@ class NEMO(COAsT):
         :type end: tuple A lat/lon pair
         :return: array of y indices, array of x indices, number of indices in transect
         """
-
+        debug(f"Fetching transect indices for {start} to {end} from {get_slug(self)}")
         [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
         [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
 
@@ -280,7 +288,7 @@ class NEMO(COAsT):
 
         return jj1, ii1, line_length
     
-    def nearest_xy_indices(self, model_dataset, new_lons, new_lats):
+    def nearest_xy_indices(self, model_dataset, new_lons, new_lats):  # TODO This could be a static method
         '''
         Obtains the x and y indices of the nearest model points to specified
         lists of longitudes and latitudes. Makes use of sklearn.neighbours
@@ -305,6 +313,7 @@ class NEMO(COAsT):
         -------
         Array of x indices, Array of y indices
         '''
+        debug(f"Fetching nearest xy_indices from {get_slug(model_dataset)}")
         # Cast lat/lon to numpy arrays in case xarray things
         new_lons = np.array(new_lons)
         new_lats = np.array(new_lats)
@@ -343,7 +352,7 @@ class NEMO(COAsT):
         Interpolates a provided xarray.DataArray in space to new longitudes
         and latitudes using a nearest neighbour method (BallTree).
         
-        Example Useage
+        Example Usage
         ----------
         # Get an interpolated DataArray for temperature onto two locations
         interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
@@ -358,7 +367,7 @@ class NEMO(COAsT):
         -------
         Interpolated DataArray
         '''
-        
+        debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
         # Get nearest indices
         ind_x, ind_y = self.nearest_xy_indices(model_array, new_lons, new_lats)
         
@@ -389,7 +398,7 @@ class NEMO(COAsT):
         -------
         Interpolated DataArray
         '''
-        
+        debug(f"Interpolating {get_slug(model_array)} in time with method \"{interp_method}\"")
         # Time interpolation
         interpolated = model_array.swap_dims({'t_dim':'time'})
         if extrapolate:
@@ -399,7 +408,7 @@ class NEMO(COAsT):
         else:
             interpolated = interpolated.interp(time = new_times,
                                            method = interp_method)
-        #interpolated = interpolated.swap_dims({'time':'t_dim'})
+        # interpolated = interpolated.swap_dims({'time':'t_dim'})  # TODO Do something with this or delete it
         
         return interpolated
     
@@ -433,7 +442,7 @@ class NEMO(COAsT):
         adds attribute NEMO.dataset.density
 
         '''  
-        
+        debug(f"Constructing in-situ density for {get_slug(self)} with EOS \"{EOS}\"")
         try:
             if EOS != 'EOS10': 
                 raise ValueError(str(self) + ': Density calculation for ' + EOS + ' not implemented.')
@@ -485,9 +494,7 @@ class NEMO(COAsT):
                     coords=coords, dims=dims, attrs=attributes )
             
         except AttributeError as err:
-            print(err)
-                                 
-    
+            error(err)
 
     def trim_domain_size( self, dataset_domain ):
         """
@@ -496,12 +503,17 @@ class NEMO(COAsT):
         Note: This breaks if the SW & NW corner values of nav_lat and nav_lon 
         are masked, as can happen if on land...
         """
+        debug(f"Trimming {get_slug(self)} variables with {get_slug(dataset_domain)}")
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            #print('The domain  and dataset objects are different sizes:', \
-            #      ' [{},{}] cf [{},{}]. Trim domain.'.format(
-            #      dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
-            #      self.dataset['x_dim'].size, self.dataset['y_dim'].size ))
+            warn(
+                'The domain  and dataset objects are different sizes:'
+                ' [{},{}] cf [{},{}]. Trim domain.'
+                .format(
+                    dataset_domain['x_dim'].size, dataset_domain['y_dim'].size,
+                    self.dataset['x_dim'].size, self.dataset['y_dim'].size
+                )
+            )
 
             # Find the corners of the cut out domain.
             [j0,i0] = self.find_j_i_domain( self.dataset.nav_lat[0,0],
@@ -521,13 +533,14 @@ class NEMO(COAsT):
         Map the domain coordand metric variables to the dataset object.
         Expects the source and target DataArrays to be same sizes.
         """
+        debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
         for var in grid_vars:
             try:
                 new_name = self.var_mapping_domain[var]
                 self.dataset[new_name] = dataset_domain[var].squeeze()
-                #print("map: {} --> {}".format( var, new_name))
-            except:
-                pass
+                debug("map: {} --> {}".format(var, new_name))
+            except:  # FIXME Catch specific exception(s)
+                pass  # TODO Should we log something here?
 
     def differentiate(self, in_varstr, dim='z_dim', out_varstr=None, out_obj=None):
         """

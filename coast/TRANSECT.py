@@ -7,7 +7,7 @@ import numpy as np
 import math
 from scipy.interpolate import griddata
 from scipy.integrate import cumtrapz, trapz
-import warnings
+from .logging_util import get_slug, debug, info, warn, warning, error
 
 
 # =============================================================================
