@@ -10,7 +10,6 @@ from scipy.integrate import cumtrapz, trapz
 from .logging_util import get_slug, debug, error
 import warnings
 
-
 # =============================================================================
 # The TRANSECT module is a place for code related to transects only
 # =============================================================================
@@ -603,6 +602,53 @@ class Transect:
             interpolated_depth_variable_slice[:,i] = depth_func( interpolated_depth )
             
         return (interpolated_depth_variable_slice, interpolated_depth )  # TODO Brackets aren't required
+    
+    def plot_transect_on_map(self):
+        '''
+        Plot transect location on a map
+        
+        Example usage:
+        --------------
+        tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
+        tran.plot_map()
+        '''
+        try:
+            import cartopy.crs as ccrs  # mapping plots
+            import cartopy.feature  # add rivers, regional boundaries etc
+            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
+        except ImportError:
+            import sys
+            warnings.warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+            sys.exit(-1)
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.gca()
+        ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+        cset = plt.plot(self.data_F.longitude, self.data_F.latitude, c='k')
+
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+        coast = NaturalEarthFeature(category='physical', scale='50m',
+                                    facecolor=[0.8,0.8,0.8], name='coastline',
+                                    alpha=0.5)
+        ax.add_feature(coast, edgecolor='gray')
+
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
+
+        gl.top_labels = False
+        gl.bottom_labels = True
+        gl.right_labels = False
+        gl.left_labels = True
+        gl.xformatter = LONGITUDE_FORMATTER
+        gl.yformatter = LATITUDE_FORMATTER
+        
+        plt.title('Map of transect location')
+        #plt.show() # Can only adjust axis if fig is plotted already..
+        
+        return fig, ax
     
     def plot_normal_velocity(self, time, plot_info: dict, cmap, smoothing_window=0):  
         '''
