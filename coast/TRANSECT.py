@@ -612,6 +612,7 @@ class Transect:
         tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
         tran.plot_map()
         '''
+        debug(f"Generating plot on map for {get_slug(self)}")
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
