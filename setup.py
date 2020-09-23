@@ -42,7 +42,7 @@ PACKAGE = SimpleNamespace(**{
         "gsw>=3",
         "scikit-learn>=0.2"
     ],
-    "python_requires": ">=3.6",
+    "python_requires": ">=3.7",
     "packages": [
         "coast"
     ],
