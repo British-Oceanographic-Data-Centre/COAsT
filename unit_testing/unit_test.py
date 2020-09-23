@@ -14,6 +14,18 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
+import logging
+
+## Initialise logging and save to log file
+log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO) 
+## Alternative logging levels
+#..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
+#..., level=logging.INFO) # Confirmation that things are working as expected.
+#..., level=logging.WARNING) # An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
+#..., level=logging.ERROR) # Due to a more serious problem, the software has not been able to perform some function
+#..., level=logging.CRITICAL) # A serious error, indicating that the program itself may be unable to continue running
+
 
 dn_files = "./example_files/"
 
@@ -818,3 +830,6 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 plt.close('all')
+
+
+log_file.close()
