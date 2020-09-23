@@ -1,5 +1,5 @@
 from .COAsT import COAsT
-import coast.UTILS as utils
+import coast.utils as utils
 import xarray as xr
 import numpy as np
 # from dask import delayed, compute, visualize
