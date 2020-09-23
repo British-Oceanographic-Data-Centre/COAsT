@@ -1,7 +1,5 @@
 from .COAsT import COAsT
-from warnings import warn
 import numpy as np
-import xarray as xr
 
 class OBSERVATION(COAsT):
 
@@ -30,14 +28,8 @@ class OBSERVATION(COAsT):
         indices = np.where( ff1 * ff2 * ff3 * ff4 )
         return indices[0]
     
-    def adjust_longitudes(self, lonbounds=[-180,180]):
+    def adjust_longitudes(self, lonbounds=(-180,180)):
         bool0 = self['longitude']<lonbounds[0]
         bool1 = self['longitude']>lonbounds[1]
         self['longitude'][bool0] = self['longitude'][bool0] + 360
         self['longitude'][bool1] = self['longitude'][bool1] - 360
-        
-    def interpolate_model_to_obs(self):
-        print('Method not implemented for observation object type.')
-        
-    def quick_plot(self):
-        print('Method not implemented for observation object type.')

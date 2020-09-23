@@ -280,7 +280,8 @@ class NEMO(COAsT):
 
         return jj1, ii1, line_length
     
-    def interpolate_in_space(self, model_array, new_lon, new_lat):
+    @staticmethod
+    def interpolate_in_space(model_array, new_lon, new_lat):
         '''
         Interpolates a provided xarray.DataArray in space to new longitudes
         and latitudes using a nearest neighbour method (BallTree).
@@ -312,7 +313,8 @@ class NEMO(COAsT):
             interpolated = interpolated.rename({'dim_0':'interp_dim'})
         return interpolated
     
-    def interpolate_in_time(self, model_array, new_times, 
+    @staticmethod
+    def interpolate_in_time(model_array, new_times, 
                                interp_method = 'nearest', extrapolate=True):
         '''
         Interpolates a provided xarray.DataArray in time to new python
