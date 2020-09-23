@@ -89,50 +89,20 @@ class TIDEGAUGE():
         tg.plot_map()
 
         '''
-        try:
-            import cartopy.crs as ccrs  # mapping plots
-            import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
-            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
-        except ImportError:
-            import sys
-            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
-            sys.exit(-1)
-
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(10, 10))
-        ax = fig.gca()
-        ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+        from .utils import plot_util
         
+        title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
         Y = self.dataset.latitude
-
-        cset = plt.scatter(X, Y, c='r')
-
-        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m',
-                                    facecolor=[0.8,0.8,0.8], name='coastline',
-                                    alpha=0.5)
-        ax.add_feature(coast, edgecolor='gray')
-        plt.title('Tide gauge at site: ' + self.dataset.site_name)
-        plt.ylabel('Latitude')
-        plt.xlabel('Longitude')
-        plt.xlim(X-10, X+10)
-        plt.ylim(Y-10, Y+10)
-
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
-
-        gl.xlabels_top = False
-        gl.ylabels_right = False
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
-        plt.show()
+        fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
+                                         xlim = [X-10, X+10],
+                                         ylim = [Y-10, Y+10])
         
         return fig, ax
     
-    def plot_timeseries(self, date_start=None, date_end=None, 
-                        var_name = 'sea_level', qc_colors=True, 
+    def plot_timeseries(self, var_name = 'sea_level', 
+                        date_start=None, date_end=None, 
+                        qc_colors=True, 
                         plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
@@ -232,9 +202,6 @@ class TIDEGAUGE():
         self.dataset[new_var_name] = interpolated
         return
     
-    def crps():
-        return
-    
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
         '''
@@ -260,6 +227,11 @@ class TIDEGAUGE():
         except:
             raise Exception('Problem reading GESLA file: ' + fn_gesla)
         # Attributes
+        dataset['longitude'] = header_dict['longitude']
+        dataset['latitude'] = header_dict['latitude']
+        del header_dict['longitude']
+        del header_dict['latitude']
+        
         dataset.attrs = header_dict
         
         return dataset
@@ -373,7 +345,7 @@ class TIDEGAUGE():
         return header_dict
         
     @staticmethod
-    def read_gesla_data_v3(cls, fn_gesla, date_start=None, date_end=None,
+    def read_gesla_data_v3(fn_gesla, date_start=None, date_end=None,
                            header_length:int=32):
         '''
         Reads observation data from a GESLA file (format version 3.0).
@@ -430,9 +402,36 @@ class TIDEGAUGE():
         sea_level[qc_flags==5] = np.nan
         
         # Assign arrays to Dataset
-        dataset['time'] = xr.DataArray(time, dims=['time'])
-        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
-        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
+        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['t_dim'])
+        dataset = dataset.assign_coords(time = ('t_dim', time))
         
         # Assign local dataset to object-scope dataset
         return dataset
+    
+    def crps(self, model_object, model_var_name, obs_var_name:str='sea_level', 
+         nh_radius: float = 20, cdf_type:str='empirical', 
+         time_interp:str='linear', create_new_object = True):
+        
+        from .utils import CRPS as crps
+        
+        mod_var = model_object.dataset[model_var_name]
+        obs_var = self.dataset[obs_var_name]
+        
+        crps_list, n_model_pts, contains_land = crps.crps_sonf_fixed( 
+                               mod_var, 
+                               self.dataset.longitude, 
+                               self.dataset.latitude, 
+                               obs_var.values, 
+                               obs_var.time.values, 
+                               nh_radius, cdf_type, time_interp )
+        if create_new_object:
+            new_object = TIDEGAUGE()
+            new_dataset = self.dataset[['longitude','latitude','time']]
+            new_dataset['crps'] =  (('t_dim'),crps_list)
+            new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            new_object.dataset = new_dataset
+            return new_object
+        else:
+            self.dataset['crps'] =  (('t_dim'),crps_list)
+            self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)

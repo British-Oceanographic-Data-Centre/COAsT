@@ -43,7 +43,7 @@ fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
-dn_tidegauge = dn_files + 'tide_gauges/'
+fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -778,7 +778,7 @@ subsec = subsec+1
 try:
     date0 = datetime.datetime(2007,1,1)
     date1 = datetime.datetime(2007,1,31)
-    tg = coast.TIDEGAUGE(dn_tidegauge, date_start = date0, date_end = date1)
+    tg = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
     
     # TEST: Attribute dictionary for comparison
     test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',

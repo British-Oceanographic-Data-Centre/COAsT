@@ -1,10 +1,8 @@
-from .COAsT import COAsT
-from .OBSERVATION import OBSERVATION
-from warnings import warn
 import numpy as np
 import xarray as xr
+from .COAsT import COAsT
 
-class ALTIMETRY(OBSERVATION):
+class ALTIMETRY(COAsT):
     '''
     An object for reading, storing and manipulating altimetry data.
     Currently the objecgt is set up for reading altimetry netCDF data from
@@ -30,11 +28,16 @@ class ALTIMETRY(OBSERVATION):
     3. obs_operator(): For interpolating model data to this object.
     '''
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.observation_type = 'moving'
-        self.dataset = self.dataset.rename_dims(self.dim_mapping)
-        #self.dataset.attrs = {}
+    def __init__(self, file=None, chunks: dict=None, multiple=False):
+        if file is not None:
+            super().__init__(file, chunks, multiple)
+            self.dataset = self.dataset.rename_dims(self.dim_mapping)
+            self.dataset.attrs = {}
+        else:
+            self.dataset = None
+        return
+    
+    def read_cmems():
         return
 
     def set_dimension_mapping(self):
@@ -43,60 +46,21 @@ class ALTIMETRY(OBSERVATION):
     def set_variable_mapping(self):
         self.var_mapping = None
 
-    def quick_plot(self, var: str=None):
+    def quick_plot(self, color_var_str: str=None):
         '''
-        Quick geographical plot of altimetry data for a specified variable
-    
-        Example usage:
-        --------------
-        # Have a quick look at sla_filtered
-        altimetry.quick_plot('sla_filtered')
-
-        Parameters
-        ----------
-        var (str) : Variable to plot. Default is None, in which case only
-            locations are plotted.
-        Returns
-        -------
-        Figure and axes objects
         '''
-        try:
-            import cartopy.crs as ccrs  # mapping plots
-            import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
-            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
-        except ImportError:
-            import sys
-            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
-            sys.exit(-1)
-
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(10, 10))
-        ax = fig.gca()
-        ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-
-        if var is None:
-            cset = self.dataset.plot.scatter(x='longitude',y='latitude')
+        from .utils import plot_util
+        
+        if color_var_str is not None:
+            color_var = self.dataset[color_var_str]
+            title = color_var_str
         else:
-            cset = self.dataset.plot.scatter(x='longitude',y='latitude',hue=var)
-
-        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
-        coast = NaturalEarthFeature(category='physical', scale='50m',
-                                    facecolor=[0.8,0.8,0.8], name='coastline',
-                                    alpha=0.5)
-        ax.add_feature(coast, edgecolor='gray')
-
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
-
-        gl.top_labels = False
-        gl.bottom_labels = True
-        gl.right_labels = False
-        gl.left_labels = True
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
-
-        plt.show()
+            color_var = None
+            title = 'Altimetry observation locations'
+        
+        fig, ax =  plot_util.geo_scatter(self.dataset.longitude, 
+                                         self.dataset.latitude,
+                                         color_var, title=title )
         return fig, ax
     
     def obs_operator(self, model, mod_var_name:str, 
@@ -154,3 +118,60 @@ class ALTIMETRY(OBSERVATION):
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
         return
+    
+    def crps(self, model_object, model_var_name, obs_var_name, 
+             nh_radius: float = 20, cdf_type:str='empirical', 
+             time_interp:str='linear', create_new_object = True):
+        
+        from .utils import CRPS as crps
+        
+        mod_var = model_object.dataset[model_var_name]
+        obs_var = self.dataset[obs_var_name]
+        
+        crps_list, n_model_pts, contains_land = crps.crps_sonf_moving( 
+                               mod_var, 
+                               obs_var.longitude.values, 
+                               obs_var.latitude.values, 
+                               obs_var.values, 
+                               obs_var.time.values, 
+                               nh_radius, cdf_type, time_interp )
+        if create_new_object:
+            new_object = ALTIMETRY()
+            new_dataset = self.dataset[['longitude','latitude','time']]
+            new_dataset['crps'] =  (('t_dim'),crps_list)
+            new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            new_dataset['crps_contains_land'] = (('t_dim'), contains_land)
+            new_object.dataset = new_dataset
+            return new_object
+        else:
+            self.dataset['crps'] =  (('t_dim'),crps_list)
+            self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            self.dataset['crps_contains_land'] = (('t_dim'), contains_land)
+    
+    # def cdf_plot(self, index):
+    #     """A comparison plot of the model and observation CDFs.
+    
+    #     Args:
+    #         index (int): Observation index to plot CDFs for (single index).
+    
+    #     Returns:
+    #         Figure and axes objects for the resulting image.
+    #     """
+    #     index=[index]
+    #     tmp = self.calculate_sonf(self.model[self.var_name_mod], 
+    #                               self.observations[self.var_name_obs][index],
+    #                               self.nh_radius, self.nh_type, self.cdf_type,
+    #                               self.time_interp)
+    #     crps_tmp = tmp[0]
+    #     n_mod_pts = tmp[1]
+    #     contains_land = tmp[2]
+    #     mod_cdf = tmp[3]
+    #     obs_cdf = tmp[4]
+    #     fig, ax = mod_cdf.diff_plot(obs_cdf)
+    #     titlestr = 'CRPS = ' + str(round( crps_tmp[0], 3)) + '\n'
+    #     titlestr = titlestr + '# Model Points : ' + str(n_mod_pts[0]) + '  |  '
+    #     titlestr = titlestr + 'Contains land : ' + str(bool(contains_land[0]))
+    #     ax.set_title(titlestr)
+    #     ax.grid()
+    #     ax.legend(['Model', 'Observations'])
+    # return fig, ax
