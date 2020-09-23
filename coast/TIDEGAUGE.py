@@ -164,43 +164,6 @@ class TIDEGAUGE():
         plt.title(var_name + ' at site: ' + self.dataset.site_name)
         
         return fig, ax
-
-    def obs_operator(self, model, mod_var_name:str, time_interp = 'nearest'):
-        '''
-        Interpolates a model array (specified using a model object and variable
-        string) to TIDEGAUGE location and times. Takes the nearest model grid
-        cell to the tide gauge.
-        
-        Parameters
-        ----------
-        model : MODEL object (e.g. NEMO)
-        model_var_name (str) : Name of variable (inside MODEL) to interpolate.
-        time_interp (str) : type of scipy time interpolation (e.g. linear)
-          
-        Returns
-        -------
-        Saves interpolated array to TIDEGAUGE.dataset
-        '''
-        
-        # Get data arrays
-        mod_var_array = model.dataset[mod_var_name]
-        
-        # Depth interpolation -> for now just take 0 index
-        if 'z_dim' in mod_var_array.dims:
-            mod_var_array = mod_var_array.isel(z_dim=0).squeeze()
-        
-        # Cast lat/lon to numpy arrays
-        obs_lon = np.array([self.dataset.longitude])
-        obs_lat = np.array([self.dataset.latitude])
-        
-        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, obs_lat)
-        
-        interpolated = model.interpolate_in_time(interpolated, self.dataset.time)
-
-        # Store interpolated array in dataset
-        new_var_name = 'interp_' + mod_var_name
-        self.dataset[new_var_name] = interpolated
-        return
     
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
@@ -409,9 +372,68 @@ class TIDEGAUGE():
         # Assign local dataset to object-scope dataset
         return dataset
     
+    def obs_operator(self, model, mod_var_name:str, time_interp = 'nearest'):
+        '''
+        Interpolates a model array (specified using a model object and variable
+        string) to TIDEGAUGE location and times. Takes the nearest model grid
+        cell to the tide gauge.
+        
+        Parameters
+        ----------
+        model : MODEL object (e.g. NEMO)
+        model_var_name (str) : Name of variable (inside MODEL) to interpolate.
+        time_interp (str) : type of scipy time interpolation (e.g. linear)
+          
+        Returns
+        -------
+        Saves interpolated array to TIDEGAUGE.dataset
+        '''
+        
+        # Get data arrays
+        mod_var_array = model.dataset[mod_var_name]
+        
+        # Depth interpolation -> for now just take 0 index
+        if 'z_dim' in mod_var_array.dims:
+            mod_var_array = mod_var_array.isel(z_dim=0).squeeze()
+        
+        # Cast lat/lon to numpy arrays
+        obs_lon = np.array([self.dataset.longitude])
+        obs_lat = np.array([self.dataset.latitude])
+        
+        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, obs_lat)
+        
+        interpolated = model.interpolate_in_time(interpolated, self.dataset.time)
+
+        # Store interpolated array in dataset
+        new_var_name = 'interp_' + mod_var_name
+        self.dataset[new_var_name] = interpolated
+        return
+    
     def crps(self, model_object, model_var_name, obs_var_name:str='sea_level', 
          nh_radius: float = 20, cdf_type:str='empirical', 
-         time_interp:str='linear', create_new_object = True):
+         time_interp:str='linear', create_new_obj = True):
+        '''
+        Comparison of observed variable to modelled using the Continuous
+        Ranked Probability Score. This is done using this TIDEGAUGE object.
+        This method specifically performs a single-observation neighbourhood-
+        forecast method.
+        
+        Parameters
+        ----------
+        model_object (model) : Model object (NEMO) containing model data
+        model_var_name (str) : Name of model variable to compare.
+        obs_var_name (str)   : Name of observed variable to compare.
+        nh_radius (float)    : Neighbourhood rad
+        cdf_type (str)       : Type of cumulative distribution to use for the
+                               model data ('empirical' or 'theoretical').
+                               Observations always use empirical.
+        time_interp (str)    : Type of time interpolation to use (s)
+        create_new_obj (bool):
+          
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+        '''
         
         from .utils import CRPS as crps
         
@@ -425,7 +447,7 @@ class TIDEGAUGE():
                                obs_var.values, 
                                obs_var.time.values, 
                                nh_radius, cdf_type, time_interp )
-        if create_new_object:
+        if create_new_obj:
             new_object = TIDEGAUGE()
             new_dataset = self.dataset[['longitude','latitude','time']]
             new_dataset['crps'] =  (('t_dim'),crps_list)
