@@ -1,6 +1,7 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from .utils import stats_util
 
 class CDF():
     '''
@@ -63,11 +64,12 @@ class CDF():
             x = np.linspace(self.plot_xmin, self.plot_xmax, n_pts)
         
         if self.cdf_type == "empirical":
-            y = self.empirical_distribution(x, self.sample)
+            y = stats_util.empirical_distribution(x, self.sample)
 
         elif self.cdf_type == "theoretical": 
             if self.cdf_func == 'gaussian':
-                y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
+                y = stats_util.cumulative_distribution(
+                                                 mu=self.mu, sigma=self.sigma,
                                                  x=x, cdf_func=self.cdf_func)
             else:
                 raise NotImplementedError
