@@ -21,11 +21,13 @@ ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 """
 
 import coast
+import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
 import os.path as path
+import logging
 
 '''
 #################################################
@@ -33,7 +35,25 @@ import os.path as path
 #################################################
 '''
 
+## Initialise logging and save to log file
+log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO) 
+## Alternative logging levels
+#..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
+#..., level=logging.INFO) # Confirmation that things are working as expected.
+#..., level=logging.WARNING) # An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
+#..., level=logging.ERROR) # Due to a more serious problem, the software has not been able to perform some function
+#..., level=logging.CRITICAL) # A serious error, indicating that the program itself may be unable to continue running
+
 dn_files = "./example_files/"
+
+if not os.path.isdir(dn_files):
+    print(
+        "please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
+    dn_files = input("what is the path to the example files:\n")
+    if not os.path.isdir(dn_files):
+        print(f"location f{dn_files} cannot be found")
+
 dn_fig = 'unit_testing/figures/'
 fn_nemo_grid_t_dat_summer = 'nemo_data_T_grid_Aug2015.nc'
 fn_nemo_grid_t_dat = 'nemo_data_T_grid.nc'
@@ -261,7 +281,7 @@ except:
 subsec = subsec+1
 
 try:
-    if sci.dataset['sossheig'].equals(sci['sossheig']):
+    if sci.dataset['ssh'].equals(sci['ssh']):
         print(str(sec) +chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
     else:
         print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
@@ -465,19 +485,21 @@ nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 # Create transect object
 tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 
+## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the 
+## future, but for now we use the scale factors at time=0 from the domain_cfg
 # Currently we don't have e3u and e3v vaiables so approximate using e3t
-e3u = xr.DataArray( tran.data_T.e3t_25h.values,
-                   coords={'time': tran.data_U.time},
-                   dims=['t_dim', 'z_dim', 'r_dim'])
-tran.data_U = tran.data_U.assign(e3=e3u)
-e3v = xr.DataArray( tran.data_T.e3t_25h.values,
-                   coords={'time': tran.data_U.time},
-                   dims=['t_dim', 'z_dim', 'r_dim'])
-tran.data_V = tran.data_V.assign(e3=e3v)
+# e3u = xr.DataArray( tran.data_T.e3t_25h.values,
+#                    coords={'time': tran.data_U.time},
+#                    dims=['t_dim', 'z_dim', 'r_dim'])
+# tran.data_U = tran.data_U.assign(e3=e3u)
+# e3v = xr.DataArray( tran.data_T.e3t_25h.values,
+#                    coords={'time': tran.data_U.time},
+#                    dims=['t_dim', 'z_dim', 'r_dim'])
+# tran.data_V = tran.data_V.assign(e3=e3v)
 
 output = tran.transport_across_AB()
 # Check the calculations are as expected
-if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -49.19533238588342)  \
+if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -48.675621368738874)  \
         and np.isclose(tran.data_tran.depth_0.sum(), 2301799.05444336) \
         and np.isclose(np.nansum(tran.data_tran.normal_velocities.values), -253.6484375):
 
@@ -491,6 +513,12 @@ else:
 subsec = subsec+1
 
 try:
+    fig,ax = tran.plot_transect_on_map()
+    ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
+    ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
+    fig.tight_layout()
+    fig.savefig(dn_fig + 'transect_map.png')
+    
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
@@ -532,6 +560,25 @@ tran.data_T.density_z_levels.isel(t_dim=0).plot.pcolormesh(
     ax=ax2,yincrease=False, y='depth_z_levels')
 plt.xticks([0,57],['A','B'])
 plt.show()
+
+#-----------------------------------------------------------------------------#
+# ( 4e ) Calculate the geostrophic flow across the transect                   #
+#
+subsec = subsec+1
+
+#tran = coast.Transect( (54,-15), (56,-12), nemo_f)
+tran.geostrophic_transport(nemo_t)
+cksum1 = tran.data_tran.normal_velocity_hpg.sum(dim=('t_dim', 'depth_z_levels', 'r_dim')).item()
+cksum2 = tran.data_tran.normal_velocity_spg.sum(dim=('t_dim', 'r_dim')).item()
+cksum3 = tran.data_tran.transport_across_AB_hpg.sum(dim=('t_dim', 'r_dim')).item()
+cksum4 = tran.data_tran.transport_across_AB_spg.sum(dim=('t_dim', 'r_dim')).item()
+
+if np.isclose(cksum1, 25.148127481586844) and np.isclose(cksum2, -5.0973310470581055) \
+    and np.isclose(cksum3, 54.574599270341324) and np.isclose(cksum4, -106.64431766285404):
+
+    print(str(sec) + chr(subsec) + " OK - TRANSECT geostrophic velocities and transports are correct")
+else:
+    print(str(sec) + chr(subsec) + " X - TRANSECT geostrophic calculations do not match the checksums")
 
 #################################################
 ## ( 5 ) Object Manipulation (e.g. subsetting) ##
@@ -616,7 +663,7 @@ subsec = subsec+1
 try:
     interp_lon = np.array(altimetry_nwes.dataset.longitude).flatten()
     interp_lat = np.array(altimetry_nwes.dataset.latitude).flatten()
-    interpolated = sci.interpolate_in_space(sci.dataset.sossheig,
+    interpolated = sci.interpolate_in_space(sci.dataset.ssh,
                                             interp_lon, interp_lat)
 
     # Check that output array longitude has same shape as altimetry
@@ -658,7 +705,7 @@ try:
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
     altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
-    crps = coast.CRPS(nemo, altimetry_nwes, 'sossheig','sla_filtered', nh_radius=30)
+    crps = coast.CRPS(nemo, altimetry_nwes, 'ssh','sla_filtered', nh_radius=30)
 
     try:
         if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
@@ -709,11 +756,11 @@ subsec = subsec+1
 plt.close('all')
 
 try:
-    altimetry_nwes.obs_operator(sci, 'sossheig')
+    altimetry_nwes.obs_operator(sci, 'ssh')
     # Check new variable is in altimetry dataset and isn't all NaNs
     try:
-        test = altimetry_nwes.dataset.interp_sossheig
-        if False in np.isnan(altimetry_nwes.dataset.interp_sossheig):
+        test = altimetry_nwes.dataset.interp_ssh
+        if False in np.isnan(altimetry_nwes.dataset.interp_ssh):
             print(str(sec) + chr(subsec) + " OK - SSH interpolated to altimetry")
         else:
             print(str(sec) + chr(subsec) + " OK - X - Interpolation to altimetry failed")
@@ -832,3 +879,6 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 plt.close('all')
+
+
+log_file.close()

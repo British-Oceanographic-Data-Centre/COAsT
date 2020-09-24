@@ -1,6 +1,7 @@
+from .COAsT import COAsT  # ???
 import numpy as np
 import xarray as xr
-from .COAsT import COAsT
+from .logging_util import get_slug, debug, error, info
 
 class ALTIMETRY(COAsT):
     '''
@@ -29,10 +30,12 @@ class ALTIMETRY(COAsT):
     '''
 
     def __init__(self, file=None, chunks: dict=None, multiple=False):
+        debug(f"Creating a new {get_slug(self)}")
         if file is not None:
             self.read_cmems(file, chunks, multiple)
         else:
             self.dataset = None
+        debug(f"{get_slug(self)} initialised")
         return
     
     def read_cmems(self, file, chunks, multiple):
@@ -42,10 +45,12 @@ class ALTIMETRY(COAsT):
         return
 
     def set_dimension_mapping(self):
-        self.dim_mapping = {'time':'t_dim'}
+        self.dim_mapping = {'time': 't_dim'}
+        debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
         self.var_mapping = None
+        debug(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
 
     def quick_plot(self, color_var_str: str=None):
         '''
@@ -58,10 +63,11 @@ class ALTIMETRY(COAsT):
         else:
             color_var = None
             title = 'Altimetry observation locations'
-        
+        info("Drawing a quick plot...")
         fig, ax =  plot_util.geo_scatter(self.dataset.longitude, 
                                          self.dataset.latitude,
                                          color_var, title=title )
+        info("Plot ready, displaying!")
         return fig, ax
     
     def obs_operator(self, model, mod_var_name:str, 
@@ -89,7 +95,9 @@ class ALTIMETRY(COAsT):
         -------
         Adds a DataArray to self.dataset, containing interpolated values.
         '''
-        
+
+        debug(f"Interpolating {get_slug(model)} \"{mod_var_name}\" with time_interp \"{time_interp}\"")
+
         # Get data arrays
         mod_var = model.dataset[mod_var_name]
         

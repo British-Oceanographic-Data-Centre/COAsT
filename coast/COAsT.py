@@ -1,39 +1,53 @@
-from dask import delayed
 from dask import array
 import xarray as xr
 import numpy as np
 from dask.distributed import Client
-from warnings import warn
 import copy
-import scipy as sp
+from .logging_util import get_slug, debug, info, warn, warning
 
-def setup_dask_clinet(workers=2, threads=2, memory_limit_per_worker='2GB'):
+
+def setup_dask_client(
+        workers: int = 2,
+        threads: int = 2,
+        memory_limit_per_worker: str = '2GB'
+):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
 class COAsT:
-    def __init__(self, file = None, chunks: dict=None, multiple=False,
-                 workers=2, threads=2, memory_limit_per_worker='2GB'):
-        # self.client = Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+    def __init__(
+            self,
+            file: str = None,
+            chunks: dict = None,
+            multiple=False,
+            workers: int = 2,  # TODO Do something with this unused parameter
+            threads: int = 2,  # TODO Do something with this unused parameter
+            memory_limit_per_worker: str = '2GB'  # TODO Do something with this unused parameter
+    ):
+        debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
-        self.earth_raids = 6371.007176 # Radius of the earth in km
+        self.earth_raids = 6371.007176  # Radius of the earth in km TODO Could this be module-level?
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        #self.set_grid_ref_attr()
+
         if file is None:
-            print("Object created but no file or directory specified: " + 
-                  str(self) + " \n" +
-                  "Use COAsT.load() to load a netCDF file from file path or " +
-                  "directory into this object.")
+            warn(
+                "Object created but no file or directory specified: \n"
+                "{0} \n"
+                "Use COAsT.load() to load a NetCDF file from file path or directory into this object."
+                .format(str(self)),
+                UserWarning
+            )
         else:
             self.load(file, chunks, multiple)
+        debug(f"{get_slug(self)} initialised")
 
-    def load(self, file_or_dir, chunks:dict=None, multiple=False):
+    def load(self, file_or_dir, chunks: dict = None, multiple=False):
         """
         Loads a file into a COAsT object's dataset variable using xarray
         
         Args:
-            file (str)     : file name or directory to multiple files.
+            file_or_dir (str)     : file name or directory to multiple files.
             chunks (dict)  : Chunks to use in Dask [default None]
             multiple (bool): If true, load in multiple files from directory.
                              If false load a single file [default False]
@@ -48,10 +62,12 @@ class COAsT:
 
     def load_single(self, file, chunks: dict = None):
         """ Loads a single file into COAsT object's dataset variable. """
+        info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
         """ Loads multiple files from directory into dataset variable. """
+        info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, 
             combine="by_coords") #, compat='override')
@@ -61,17 +77,20 @@ class COAsT:
         :param dataset: The dataset to use
         :type dataset: xarray.Dataset
         """
-        
         self.dataset = dataset
+        debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
     
     def set_dimension_mapping(self):
         self.dim_mapping = None
+        debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
         
     def set_variable_mapping(self):
         self.var_mapping = None
+        debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
 
     def set_grid_ref_attr(self):
         self.grid_ref_attr_mapping = None
+        debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: dict):
         """ 
@@ -82,14 +101,14 @@ class COAsT:
             dim_mapping (dict): keys are dimension names to change and values
                                 new dimension names
         """
-        if dim_mapping is None: return
+        debug(f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}")
+        if dim_mapping is None:
+            return
         for key, value in dim_mapping.items():
             try:
                 self.dataset = self.dataset.rename_dims({ key : value })
-            except:
-                pass
-                #print(str(self) + ': Problem renaming dimension: ' + 
-                #      key + ' -> ' + value)
+            except:  # TODO Catch specific exception(s)
+                warning(f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}")
                 
     def set_variable_names(self, var_mapping: dict):
         """ 
@@ -100,31 +119,32 @@ class COAsT:
             var_mapping (dict): keys are variable names to change and values
                                 are new variable names
         """
-        if var_mapping is None: return
+        debug(f"Setting variable names for {get_slug(self)} with mapping {var_mapping}")
+        if var_mapping is None:
+            return
         for key, value in var_mapping.items():
             try:
                 self.dataset = self.dataset.rename_vars({ key : value })
             except:
-                pass
-                #print(str(self) + ': Problem renaming variable: ' + 
-                #      key + ' -> ' + value)
+                warning(f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}")
 
     def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
         Set attributes for variables to access within package.
         Set grid attributes to identify with grid variable is associated with.
         """
+        debug(f"Setting variable attributes for {get_slug(self)} with mapping {grid_ref_attr_mapping}")
         if grid_ref_attr_mapping is None: return
         for key, value in grid_ref_attr_mapping.items():
             try:
                 self.dataset[key].attrs['grid_ref'] = value
             except:
-                pass
-                #print(str(self) + ': Problem assigning ' + key +
-                #        'grid_ref attribute ' + value)
+                warning(f"{get_slug(self)}: Problem assigning attributes in {get_slug(self.dataset)}: {key} -> {value}")
 
     def copy(self):
-        return copy.copy(self)
+        new = copy.copy(self)
+        debug(f"Copied {get_slug(self)} to new {get_slug(new)}")
+        return new
         
     def isel(self, indexers: dict = None, drop: bool = False,
              **kwargs):
@@ -135,6 +155,7 @@ class COAsT:
             2. **kwargs of form dimension = indices
         '''
         obj_copy = self.copy()
+        debug(f"Indexing (isel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
         return obj_copy
     
@@ -147,12 +168,14 @@ class COAsT:
             2. **kwargs of form dimension = indices
         '''
         obj_copy = self.copy()
+        debug(f"Indexing (sel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
     
     def rename(self, rename_dict, inplace: bool=None, **kwargs):
+        debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
         self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
-        return
+        return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
         '''
@@ -161,6 +184,7 @@ class COAsT:
             dimension_name = indices
         The entire object is then subsetted along this dimension at indices
         '''
+        debug(f"Subsetting {get_slug(self)}")
         self.dataset = self.dataset.isel(kwargs)
         
     def subset_as_copy(self, **kwargs):
@@ -170,6 +194,7 @@ class COAsT:
         Useful for preserving the original object whilst creating smaller
         subsetted object copies.
         '''
+        debug(f"Subsetting as copy {get_slug(self.dataset)}")
         obj_copy = self.copy()
         obj_copy.subset(**kwargs)
         return obj_copy
@@ -189,7 +214,7 @@ class COAsT:
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
-
+        debug(f"Subsetting {self} indices by distance")
         # Flatten NEMO domain stuff.
         lon = self.dataset.longitude
         lat = self.dataset.latitude
@@ -215,17 +240,19 @@ class COAsT:
         
         return: Indices corresponding to datapoints inside specified box
         """
+        debug(f"Subsetting {get_slug(self)} indices within lon/lat")
         lon_str = 'longitude'
         lat_str = 'latitude'
-        lon = self.dataset[lon_str].copy()
+        lon = self.dataset[lon_str].copy()  # TODO Add a comment explaining why this needs to be copied
         lat = self.dataset[lat_str]
-        ff = ( lon > lonbounds[0] ).astype(int)
-        ff = ff*( lon < lonbounds[1] ).astype(int)
-        ff = ff*( lat > latbounds[0] ).astype(int)
-        ff = ff*( lat < latbounds[1] ).astype(int)
+        ff = lon > lonbounds[0]
+        ff *= lon < lonbounds[1]
+        ff *= lat > latbounds[0]
+        ff *= lat < latbounds[1]
+
         return np.where(ff)
 
-    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):
+    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
         '''
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
@@ -236,6 +263,8 @@ class COAsT:
         # lon1, lat1 :: Location(s) 1.
         # lon2, lat2 :: Location(s) 2.
         '''
+
+        debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
 
         # Convert to radians for calculations
         lon1 = xr.ufuncs.deg2rad(lon1)
@@ -270,11 +299,11 @@ class COAsT:
                              channel of length 1 then time_counter is fixed too an index of 0
         :return: data across all depths for the chosen variable along the given indices
         """
-
+        debug(f"Subsetting {var} from {get_slug(self)}")
         try:
             [time_size, _, _, _] = self.dataset[var].shape
             if time_size == 1:
-                time_counter == 0
+                time_counter == 0  # TODO This should probably be =, not ==
 
         except ValueError:
             time_counter = None
@@ -301,6 +330,7 @@ class COAsT:
         :return:
         """
 
+        debug(f"Fetching {var} subset as xarray")
         try:
             [time_size, _, _, _] = self.dataset[var].shape
             if time_size == 1:
@@ -336,6 +366,7 @@ class COAsT:
         :param plot_info:
         :return:
         """
+        info("Generating simple 2D plot...")
         import matplotlib.pyplot as plt
 
         plt.close('all')
@@ -367,6 +398,8 @@ class COAsT:
             sys.exit(-1)
 
         import matplotlib.pyplot as plt
+
+        info("Generating CartoPy plot...")
         plt.close('all')
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
@@ -400,6 +433,7 @@ class COAsT:
         # tmp.isel(time_counter=time_counter, deptht=0).plot.contourf(ax=ax, transform=ccrs.PlateCarree())
         # ax.set_global()
         # ax.coastlines()
+        info("Displaying plot!")
         plt.show()
 
     def plot_movie(self):
