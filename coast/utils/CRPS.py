@@ -1,16 +1,41 @@
+'''
+Python definitions used to aid in the calculation of Continuous Ranked
+Probability Score.
+'''
+
 import numpy as np
 import xarray as xr
 from .. import CDF
 
-'''
-
-'''
-
 def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time, 
                       nh_radius: float, cdf_type:str, time_interp:str
     ):
-    """
-    """
+    '''
+    Handles the calculation of single-observation neighbourhood forecast CRPS
+    for a time series at a fixed observation location. Differs from 
+    crps_sonf_moving in that it only need calculate a model neighbourhood once.
+
+    Parameters
+    ----------
+    mod_array   : (xarray DataArray) DataArray from a Model Dataset
+    obs_lon     : (float) Longitude of fixed observation point
+    obs_lat     : (float) Latitude of fixed observation point
+    obs_var     : (array) of floatArray of variable values, e.g time series
+    obs_time    : (array) of datetimeArray of times, corresponding to obs_var
+    nh_radius   : (float) Neighbourhood radius in km
+    cdf_type    : (str) Type of CDF to use for model data. Either 'empirical' 
+                   or 'theoretical'.
+    time_interp : (str) Type of time interpolation to use
+
+    Returns
+    -------
+    crps_list     : Array of CRPS values
+    n_model_pts   : Array containing the number of model points used for 
+                    each CRPS value
+    contains_land : Array of bools indicating where a model neighbourhood 
+                    contained land.
+
+    '''
 
     # Define output arrays
     n_neighbourhoods = obs_var.shape[0] 
@@ -59,8 +84,31 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
 def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time, 
                       nh_radius: float, cdf_type:str, time_interp:str
     ):
-    """
-    """
+    '''
+    Handles the calculation of single-observation neighbourhood forecast CRPS
+    for a moving observation instrument. Differs from crps_sonf_fixed in that 
+    latitude and longitude are arrays of locations.
+
+    Parameters
+    ----------
+    mod_array   : (xarray DataArray) DataArray from a Model Dataset
+    obs_lon     : (array) Longitudes of fixed observation point
+    obs_lat     : (array) Latitudes of fixed observation point
+    obs_var     : (array) of floatArray of variable values, e.g time series
+    obs_time    : (array) of datetimeArray of times, corresponding to obs_var
+    nh_radius   : (float) Neighbourhood radius in km
+    cdf_type    : (str) Type of CDF to use for model data. Either 'empirical' 
+                   or 'theoretical'.
+    time_interp : (str) Type of time interpolation to use
+
+    Returns
+    -------
+    crps_list     : Array of CRPS values
+    n_model_pts   : Array containing the number of model points used for 
+                    each CRPS value
+    contains_land : Array of bools indicating where a model neighbourhood 
+                    contained land.
+    '''
 
     # Define output arrays
     n_neighbourhoods = obs_var.shape[0] 
