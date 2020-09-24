@@ -30,14 +30,15 @@ class ALTIMETRY(COAsT):
 
     def __init__(self, file=None, chunks: dict=None, multiple=False):
         if file is not None:
-            super().__init__(file, chunks, multiple)
-            self.dataset = self.dataset.rename_dims(self.dim_mapping)
-            self.dataset.attrs = {}
+            self.read_cmems(file, chunks, multiple)
         else:
             self.dataset = None
         return
     
-    def read_cmems():
+    def read_cmems(self, file, chunks, multiple):
+        super().__init__(file, chunks, multiple)
+        self.dataset = self.dataset.rename_dims(self.dim_mapping)
+        self.dataset.attrs = {}
         return
 
     def set_dimension_mapping(self):
@@ -122,6 +123,34 @@ class ALTIMETRY(COAsT):
     def crps(self, model_object, model_var_name, obs_var_name, 
              nh_radius: float = 20, cdf_type:str='empirical', 
              time_interp:str='linear', create_new_object = True):
+        
+        '''
+        Comparison of observed variable to modelled using the Continuous
+        Ranked Probability Score. This is done using this TIDEGAUGE object.
+        This method specifically performs a single-observation neighbourhood-
+        forecast method.
+        
+        Parameters
+        ----------
+        model_object (model) : Model object (NEMO) containing model data
+        model_var_name (str) : Name of model variable to compare.
+        obs_var_name (str)   : Name of observed variable to compare.
+        nh_radius (float)    : Neighbourhood rad
+        cdf_type (str)       : Type of cumulative distribution to use for the
+                               model data ('empirical' or 'theoretical').
+                               Observations always use empirical.
+        time_interp (str)    : Type of time interpolation to use (s)
+        create_new_obj (bool):
+          
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+        
+        Example Useage
+        -------
+        # Compare modelled 'sossheig' with 'sla_filtered' using CRPS
+        crps = altimetry.crps(nemo, 'sossheig', 'sla_filtered')
+        '''
         
         from .utils import CRPS as crps
         

@@ -3,7 +3,6 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
 import glob
-from warnings import warn
 
 class TIDEGAUGE():
     '''
@@ -45,6 +44,10 @@ class TIDEGAUGE():
     TIDEGAUGE object. Please see the *Routines* section of this file.
     '''  
     
+##############################################################################
+###                ~ Initialisation and File Reading ~                     ###
+##############################################################################
+
     def __init__(self, file_path = None, date_start=None, date_end=None):
         '''
         Initialise TIDEGAUGE object either as empty (no arguments) or by
@@ -79,92 +82,6 @@ class TIDEGAUGE():
                                                         date_start, date_end)
         return
     
-    def plot_on_map(self):
-        '''
-        Show the location of a tidegauge on a map.
-        
-        Example usage:
-        --------------
-        # For a TIDEGAUGE object tg
-        tg.plot_map()
-
-        '''
-        from .utils import plot_util
-        
-        title = 'Location: ' + self.dataset.attrs['site_name']
-        X = self.dataset.longitude
-        Y = self.dataset.latitude
-        fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
-                                         xlim = [X-10, X+10],
-                                         ylim = [Y-10, Y+10])
-        
-        return fig, ax
-    
-    def plot_timeseries(self, var_name = 'sea_level', 
-                        date_start=None, date_end=None, 
-                        qc_colors=True, 
-                        plot_line = False):
-        '''
-        Quick plot of time series stored within object's dataset
-        Parameters
-        ----------
-        date_start (datetime) : Start date for plotting
-        date_end (datetime) : End date for plotting
-        var_name (str) : Variable to plot. Default: sea_level
-        qc_colors (bool) : If true, markers are coloured according to qc values
-        plot_line (bool) : If true, draw line between markers
-       
-        Returns
-        -------
-        matplotlib figure and axes objects
-        '''
-        x = np.array(self.dataset.time)
-        y = np.array(self.dataset[var_name])
-        qc = np.array(self.dataset.qc_flags)
-            
-        # Use only values between stated dates
-        start_index = 0
-        end_index = len(x)
-        if date_start is not None:
-            date_start = np.datetime64(date_start)
-            start_index = np.argmax(x>=date_start)
-        if date_end is not None:
-            date_end = np.datetime64(date_end)
-            end_index = np.argmax(x>date_end)
-        x = x[start_index:end_index]
-        y = y[start_index:end_index]
-        qc = qc[start_index:end_index]
-        
-        # Plot lines first if needed
-        if plot_line:
-            plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
-        
-        # Two plotting routines for whether or not to use qc flags.
-        if qc_colors:
-            size = 5
-            fig = plt.figure(figsize=(10,10))
-            ax = plt.scatter(x[qc==0], y[qc==0], s=size)
-            plt.scatter(x[qc==1], y[qc==1], s=size)
-            plt.scatter(x[qc==2], y[qc==2], s=size)
-            plt.scatter(x[qc==3], y[qc==3], s=size)
-            plt.scatter(x[qc==4], y[qc==4], s=size)
-            plt.grid()
-            plt.legend(['No QC','Correct','Interpolated','Doubtful','Spike'],
-                       loc='upper left', ncol=5)
-            plt.xticks(rotation=45)
-        else:
-            fig = plt.figure(figsize=(10,10))
-            plt.scatter(x,y)
-            plt.grid()
-            plt.xticks(rotation=65)
-            
-        # Title and axes
-        plt.xlabel('Date')
-        plt.ylabel(var_name + ' (m)')
-        plt.title(var_name + ' at site: ' + self.dataset.site_name)
-        
-        return fig, ax
-    
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
         '''
@@ -198,60 +115,6 @@ class TIDEGAUGE():
         dataset.attrs = header_dict
         
         return dataset
-    
-    @classmethod
-    def create_multiple_tidegauge(cls, file_list, date_start=None, 
-                                  date_end=None):
-        '''
-        Initialise TIDEGAUGE object either as empty (no arguments) or by
-        reading GESLA data from a directory between two datetime objects.
-    
-        Example usage:
-            --------------
-            # Read all data in directory in January 1990
-            date0 = datetime.datetime(1990,1,1)
-            date1 = datetime.datetime(1990,2,1)
-            tg = coast.TIDEGAUGE('gesla_directory/', date0, date1)
-            
-            Parameters
-            ----------
-            directory (str) : Path to directory containing desired GESLA files
-            file_list (list of str) : list of filenames to read from directory.
-            Optional.
-            date_start (datetime) : Start date for data read. Optional
-            date_end (datetime) : end date for data read. Optional
-
-        Returns
-        -------
-        List of TIDEGAUGE objects.
-        '''
-        # If single string is given then put into a single element list
-        if type(file_list) is str:
-            file_list = [file_list]
-            
-        # Check file_list for wildcards and make list of files to read
-        file_to_read = []
-        for file in file_list:
-            if '*' in file:
-                wildcard_list = glob.glob(file)
-                file_to_read = file_to_read + wildcard_list
-            else:
-                file_to_read.append(file)
-            
-        # Loop over files to read and read them into datasets
-        tidegauge_list = []
-        #longitude_list = []
-        #latitude_list = []
-        #sitename_list = []
-        for file in file_to_read:
-            try:
-                dataset = cls.read_gesla_to_xarray_v3(file, date_start, 
-                                                      date_end)
-                tidegauge_list.append(dataset)
-            except:
-                # Problem with reading file: file
-                pass
-        return tidegauge_list
     
     @staticmethod
     def read_gesla_header_v3(fn_gesla):
@@ -372,6 +235,154 @@ class TIDEGAUGE():
         # Assign local dataset to object-scope dataset
         return dataset
     
+    @classmethod
+    def create_multiple_tidegauge(cls, file_list, date_start=None, 
+                                  date_end=None):
+        '''
+        Initialise TIDEGAUGE object either as empty (no arguments) or by
+        reading GESLA data from a directory between two datetime objects.
+    
+        Example usage:
+            --------------
+            # Read all data in directory in January 1990
+            date0 = datetime.datetime(1990,1,1)
+            date1 = datetime.datetime(1990,2,1)
+            tg = coast.TIDEGAUGE('gesla_directory/', date0, date1)
+            
+            Parameters
+            ----------
+            directory (str) : Path to directory containing desired GESLA files
+            file_list (list of str) : list of filenames to read from directory.
+            Optional.
+            date_start (datetime) : Start date for data read. Optional
+            date_end (datetime) : end date for data read. Optional
+
+        Returns
+        -------
+        List of TIDEGAUGE objects.
+        '''
+        # If single string is given then put into a single element list
+        if type(file_list) is str:
+            file_list = [file_list]
+            
+        # Check file_list for wildcards and make list of files to read
+        file_to_read = []
+        for file in file_list:
+            if '*' in file:
+                wildcard_list = glob.glob(file)
+                file_to_read = file_to_read + wildcard_list
+            else:
+                file_to_read.append(file)
+            
+        # Loop over files to read and read them into datasets
+        tidegauge_list = []
+        #longitude_list = []
+        #latitude_list = []
+        #sitename_list = []
+        for file in file_to_read:
+            try:
+                dataset = cls.read_gesla_to_xarray_v3(file, date_start, 
+                                                      date_end)
+                tidegauge_list.append(dataset)
+            except:
+                # Problem with reading file: file
+                pass
+        return tidegauge_list
+
+##############################################################################
+###                ~            Plotting             ~                     ###
+##############################################################################
+    
+    def plot_on_map(self):
+        '''
+        Show the location of a tidegauge on a map.
+        
+        Example usage:
+        --------------
+        # For a TIDEGAUGE object tg
+        tg.plot_map()
+
+        '''
+        from .utils import plot_util
+        
+        title = 'Location: ' + self.dataset.attrs['site_name']
+        X = self.dataset.longitude
+        Y = self.dataset.latitude
+        fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
+                                         xlim = [X-10, X+10],
+                                         ylim = [Y-10, Y+10])
+        
+        return fig, ax
+    
+    def plot_timeseries(self, var_name = 'sea_level', 
+                        date_start=None, date_end=None, 
+                        qc_colors=True, 
+                        plot_line = False):
+        '''
+        Quick plot of time series stored within object's dataset
+        Parameters
+        ----------
+        date_start (datetime) : Start date for plotting
+        date_end (datetime) : End date for plotting
+        var_name (str) : Variable to plot. Default: sea_level
+        qc_colors (bool) : If true, markers are coloured according to qc values
+        plot_line (bool) : If true, draw line between markers
+       
+        Returns
+        -------
+        matplotlib figure and axes objects
+        '''
+        x = np.array(self.dataset.time)
+        y = np.array(self.dataset[var_name])
+        qc = np.array(self.dataset.qc_flags)
+            
+        # Use only values between stated dates
+        start_index = 0
+        end_index = len(x)
+        if date_start is not None:
+            date_start = np.datetime64(date_start)
+            start_index = np.argmax(x>=date_start)
+        if date_end is not None:
+            date_end = np.datetime64(date_end)
+            end_index = np.argmax(x>date_end)
+        x = x[start_index:end_index]
+        y = y[start_index:end_index]
+        qc = qc[start_index:end_index]
+        
+        # Plot lines first if needed
+        if plot_line:
+            plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
+        
+        # Two plotting routines for whether or not to use qc flags.
+        if qc_colors:
+            size = 5
+            fig = plt.figure(figsize=(10,10))
+            ax = plt.scatter(x[qc==0], y[qc==0], s=size)
+            plt.scatter(x[qc==1], y[qc==1], s=size)
+            plt.scatter(x[qc==2], y[qc==2], s=size)
+            plt.scatter(x[qc==3], y[qc==3], s=size)
+            plt.scatter(x[qc==4], y[qc==4], s=size)
+            plt.grid()
+            plt.legend(['No QC','Correct','Interpolated','Doubtful','Spike'],
+                       loc='upper left', ncol=5)
+            plt.xticks(rotation=45)
+        else:
+            fig = plt.figure(figsize=(10,10))
+            plt.scatter(x,y)
+            plt.grid()
+            plt.xticks(rotation=65)
+            
+        # Title and axes
+        plt.xlabel('Date')
+        plt.ylabel(var_name + ' (m)')
+        plt.title(var_name + ' at site: ' + self.dataset.site_name)
+        
+        return fig, ax
+    
+##############################################################################
+###                ~        Model Comparison         ~                     ###
+##############################################################################
+    
     def obs_operator(self, model, mod_var_name:str, time_interp = 'nearest'):
         '''
         Interpolates a model array (specified using a model object and variable
@@ -400,13 +411,15 @@ class TIDEGAUGE():
         obs_lon = np.array([self.dataset.longitude])
         obs_lat = np.array([self.dataset.latitude])
         
-        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, obs_lat)
+        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, 
+                                                  obs_lat)
         
-        interpolated = model.interpolate_in_time(interpolated, self.dataset.time)
+        interpolated = model.interpolate_in_time(interpolated, 
+                                                 self.dataset.time)
 
         # Store interpolated array in dataset
         new_var_name = 'interp_' + mod_var_name
-        self.dataset[new_var_name] = interpolated
+        self.dataset[new_var_name] = interpolated.drop(['longitude','latitude'])
         return
     
     def crps(self, model_object, model_var_name, obs_var_name:str='sea_level', 
@@ -433,6 +446,11 @@ class TIDEGAUGE():
         Returns
         -------
         xarray.Dataset containing times, sealevel and quality control flags
+        
+        Example Useage
+        -------
+        # Compare modelled 'sossheig' with 'sea_level' using CRPS
+        crps = altimetry.crps(nemo, 'sossheig', 'sea_level')
         '''
         
         from .utils import CRPS as crps
@@ -457,3 +475,45 @@ class TIDEGAUGE():
         else:
             self.dataset['crps'] =  (('t_dim'),crps_list)
             self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+    
+    def difference(self, var_str0, var_str1):
+        var0 = self.dataset[var_str0].values
+        var1 = self.dataset[var_str1].values
+        diff = var0 - var1
+        return
+    
+    def absolute_difference(self, var_str0, var_str1):
+        var0 = self.dataset[var_str0].values
+        var1 = self.dataset[var_str1].values
+        diff = np.abs(var0 - var1)
+        return
+    
+    def mean_absolute_difference(self, var_str0, var_str1):
+        var0 = self.dataset[var_str0].values
+        var1 = self.dataset[var_str1].values
+        diff = np.abs(var0 - var1)
+        mae = np.nanmean(diff)
+        return
+    
+    def root_mean_square_difference(self, var_str0, var_str1):
+        var0 = self.dataset[var_str0].values
+        var1 = self.dataset[var_str1].values
+        sdiff = (var0 - var1)**2
+        rmse = np.sqrt( np.nanmean(sdiff) )
+        return
+    
+    def time_mean(self, var_str0, var_str1, date0, date1):
+        
+        return
+    
+    def time_std(self, var_str0, var_str1, date0, date1):
+        
+        return
+    
+    def time_correlation(self, var_str0, var_str1, date0, date1):
+        
+        return
+    
+    def time_covariance(self, var_str0, var_str1, date0, date1):
+        
+        return
