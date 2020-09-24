@@ -1,4 +1,3 @@
-import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
 from .utils import stats_util
@@ -6,6 +5,10 @@ from .utils import stats_util
 class CDF():
     '''
     An object for storing Cumulative Distribution Function information.
+    Used primarily for calculating the Continuous Ranked Probability Score.
+    The object is initalisated by passing in a 'sample' vector of data for
+    which to determine a CDF. This sample is used to construct either a 
+    empirical or theoretical CDF, depending on the cdf_type argument.
     '''
     
     def __init__(self, sample, cdf_type: str='empirical', 
