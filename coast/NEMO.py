@@ -68,9 +68,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
+                            'toce' : 'temperature',
                             'so' : 'salinity',
                             'vosaline' : 'salinity',
-                            'sossheig' : 'ssh'}
+                            'voce' : 'salinity',
+                            'sossheig' : 'ssh',
+                            'zos' : 'ssh' }
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0',
