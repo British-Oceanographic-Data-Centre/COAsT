@@ -1,15 +1,10 @@
 from .COAsT import COAsT
-import coast.utils as utils
+from .utils import general_utils
 import xarray as xr
 import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz
-import matplotlib.pyplot as plt
-import sklearn.neighbors as nb
 import gsw
-from scipy.interpolate import interp1d
-from scipy.interpolate import griddata
-import warnings
 
 class NEMO(COAsT):
     """
@@ -303,7 +298,7 @@ class NEMO(COAsT):
         '''
         
         # Get nearest indices
-        ind_x, ind_y = utils.nearest_xy_indices(model_array.longitude,
+        ind_x, ind_y = general_utils.nearest_xy_indices(model_array.longitude,
                                                 model_array.latitude,
                                                 new_lon, new_lat)
         
