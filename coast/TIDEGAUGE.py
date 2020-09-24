@@ -3,6 +3,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
 import glob
+from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
     '''
@@ -73,6 +74,7 @@ class TIDEGAUGE():
         -------
         Self
         '''
+        debug(f"Creating a new {get_slug(self)}")
         
         # If file list is supplied, read files from directory
         if file_path is None:
@@ -80,6 +82,7 @@ class TIDEGAUGE():
         else:
             self.dataset = self.read_gesla_to_xarray_v3(file_path, 
                                                         date_start, date_end)
+        debug(f"{get_slug(self)} initialised")
         return
     
     @classmethod
@@ -101,6 +104,7 @@ class TIDEGAUGE():
         -------
         xarray.Dataset object.
         '''
+        debug(f"Reading \"{fn_gesla}\" as a GESLA file with {get_slug(cls)}")  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_gesla_header_v3(fn_gesla)
             dataset = cls.read_gesla_data_v3(fn_gesla, date_start, date_end)
@@ -129,6 +133,7 @@ class TIDEGAUGE():
         -------
         dictionary of attributes
         '''
+        debug(f"Reading GESLA header from \"{fn_gesla}\"")
         fid = open(fn_gesla)
         
         # Read lines one by one (hopefully formatting is consistent)
@@ -158,6 +163,7 @@ class TIDEGAUGE():
         precision = float(fid.readline().split()[2])
         null_value = float( fid.readline().split()[3])
         
+        debug(f"Read done, close file \"{fn_gesla}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name' : site_name, 'country':country, 
@@ -188,6 +194,7 @@ class TIDEGAUGE():
         xarray.Dataset containing times, sealevel and quality control flags
         '''
         # Initialise empty dataset and lists
+        debug(f"Reading GESLA data from \"{fn_gesla}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -205,7 +212,8 @@ class TIDEGAUGE():
                         qc_flags.append(int(working_line[3]))
                     
                 line_count = line_count + 1
-                
+            debug(f"Read done, close file \"{fn_gesla}\"")
+
         # Convert time list to datetimes using pandas
         time = np.array(pd.to_datetime(time))
         
@@ -305,13 +313,14 @@ class TIDEGAUGE():
         '''
         from .utils import plot_util
         
+        debug(f"Plotting tide gauge locations for {get_slug(self)}")
+        
         title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
         Y = self.dataset.latitude
         fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
                                          xlim = [X-10, X+10],
                                          ylim = [Y-10, Y+10])
-        
         return fig, ax
     
     def plot_timeseries(self, var_name = 'sea_level', 
@@ -332,10 +341,10 @@ class TIDEGAUGE():
         -------
         matplotlib figure and axes objects
         '''
+        debug(f"Plotting timeseries for {get_slug(self)}")
         x = np.array(self.dataset.time)
         y = np.array(self.dataset[var_name])
         qc = np.array(self.dataset.qc_flags)
-            
         # Use only values between stated dates
         start_index = 0
         end_index = len(x)

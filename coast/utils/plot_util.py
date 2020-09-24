@@ -1,12 +1,29 @@
+'''
+Python definitions used to help with plotting routines.
+'''
+
 import matplotlib.pyplot as plt
 from warnings import warn
             
-
 def geo_scatter(longitude, latitude, colors=None, 
                 title='', xlim=None, ylim=None):
-    '''
+'''
+Uses CartoPy to create a geographical scatter plot with land boundaries.
 
-    '''
+    Parameters
+    ----------
+    longitude : (array) Array of longitudes of marker locations
+    latitude  : (array) Array of latitudes of marker locations
+    colors    : (array) Array of values to use for colouring markers
+    title     : (str) Plot title, to appear at top of figure
+    xlim      : (tuple) Tuple of limits to apply to the x-axis (longitude axis)
+    ylim      : (tuple) Limits to apply to the y-axis (latitude axis)
+
+    Returns
+    -------
+    Figure and axis objects for further customisation
+
+'''
     try:
         import cartopy.crs as ccrs  # mapping plots
         import cartopy.feature  # add rivers, regional boundaries etc
