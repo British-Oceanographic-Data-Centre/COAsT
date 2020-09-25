@@ -2,32 +2,54 @@ from .COAsT import COAsT  # ???
 import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, error, info
+import sklearn.metrics as metrics
+from .utils import general_utils
 
 class ALTIMETRY(COAsT):
     '''
     An object for reading, storing and manipulating altimetry data.
-    Currently the objecgt is set up for reading altimetry netCDF data from
-    the CMEMS database.
+    Currently the object contains functionality for reading altimetry netCDF 
+    data from the CMEMS database. This is the default for initialisation.
     
     Data should be stored in an xarray.Dataset, in the form:
         
     * Date Format Overview *
         
         1. A single dimension (time).
-        2. Three coordinates: time, latitude, longitude. All lie on the time
+        2. Three coordinates: time, latitude, longitude. All lie on the 't_dim'
            dimension.
-        3. Observed variable DataArrays on the time dimension.
+        3. Observed variable DataArrays on the t_dim dimension.
         
     There are currently no naming conventions for the variables however
     examples from the CMEMS database include sla_filtered, sla_unfiltered and
     mdt (mean dynamic topography).
     
     * Methods Overview *
-    
-    1. __init__(): Initialises an ALTIMETRY object.
-    2. quick_plot(): Makes a quick plot of the data inside the object. 
-    3. obs_operator(): For interpolating model data to this object.
+        
+        *Initialisation and File Reading*
+        -> __init__(): Initialises an ALTIMETRY object.
+        -> read_cmems(): Reads data from a CMEMS netCDF file.
+        
+        *Plotting*
+        -> quick_plot(): Makes a quick along-track plot of specified data.
+        
+        *Model Comparison*
+        -> obs_operator(): For interpolating model data to this object.
+        -> cprs(): Calculates the CRPS between a model and obs variable.
+        -> difference(): Differences two specified variables
+        -> absolute_error(): Absolute difference, two variables
+        -> mean_absolute_error(): MAE between two variables
+        -> root_mean_square_error(): RMSE between two variables
+        -> time_mean(): Mean of a variable in time
+        -> time_std(): St. Dev of a variable in time
+        -> time_correlation(): Correlation between two variables
+        -> time_covariance(): Covariance between two variables
+        -> basic_stats(): Calculates multiple of the above metrics.
+
     '''
+##############################################################################
+###                ~ Initialisation and File Reading ~                     ###
+##############################################################################
 
     def __init__(self, file=None, chunks: dict=None, multiple=False):
         debug(f"Creating a new {get_slug(self)}")
@@ -39,10 +61,11 @@ class ALTIMETRY(COAsT):
         return
     
     def read_cmems(self, file, chunks, multiple):
+        ''' Reads altimetry data from a CMEMS netcdf file. Calls COAsT.init()
+        to make use of its load methods'''
         super().__init__(file, chunks, multiple)
         self.dataset = self.dataset.rename_dims(self.dim_mapping)
-        self.dataset.attrs = {}
-        return
+        #self.dataset.attrs = {}
 
     def set_dimension_mapping(self):
         self.dim_mapping = {'time': 't_dim'}
@@ -51,6 +74,33 @@ class ALTIMETRY(COAsT):
     def set_variable_mapping(self):
         self.var_mapping = None
         debug(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
+        
+    def subset_indices_lonlat_box(self, lonbounds, latbounds):
+        """Generates array indices for data which lies in a given lon/lat box.
+
+        Keyword arguments:
+        lon       -- Longitudes, 1D or 2D.
+        lat       -- Latitudes, 1D or 2D
+        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
+        latbounds -- Array of form [min_latitude, max_latitude]
+        
+        return: Indices corresponding to datapoints inside specified box
+        """
+        debug(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
+        lon = self.dataset.longitude.copy()
+        lat = self.dataset.latitude
+        lon[lon>180] = lon[lon>180] - 360
+        lon[lon<-180] = lon[lon<-180] + 360
+        ff1 = ( lon > lonbounds[0] ).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
+        ff2 = ( lon < lonbounds[1] ).astype(int)
+        ff3 = ( lat > latbounds[0] ).astype(int)
+        ff4 = ( lat < latbounds[1] ).astype(int)
+        indices = np.where( ff1 * ff2 * ff3 * ff4 )
+        return indices[0]
+
+##############################################################################
+###                ~            Plotting             ~                     ###
+##############################################################################
 
     def quick_plot(self, color_var_str: str=None):
         '''
@@ -69,6 +119,10 @@ class ALTIMETRY(COAsT):
                                          color_var, title=title )
         info("Plot ready, displaying!")
         return fig, ax
+
+##############################################################################
+###                ~        Model Comparison         ~                     ###
+##############################################################################
     
     def obs_operator(self, model, mod_var_name:str, 
                                 time_interp = 'nearest'):
@@ -126,7 +180,6 @@ class ALTIMETRY(COAsT):
         # Store interpolated array in dataset
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
-        return
     
     def crps(self, model_object, model_var_name, obs_var_name, 
              nh_radius: float = 20, cdf_type:str='empirical', 
@@ -134,7 +187,7 @@ class ALTIMETRY(COAsT):
         
         '''
         Comparison of observed variable to modelled using the Continuous
-        Ranked Probability Score. This is done using this TIDEGAUGE object.
+        Ranked Probability Score. This is done using this ALTIMETRY object.
         This method specifically performs a single-observation neighbourhood-
         forecast method.
         
@@ -275,7 +328,7 @@ class ALTIMETRY(COAsT):
         var_str0 and var_str1, between dates date0 and date1. This will return
         their difference, absolute difference, mean absolute error, root mean 
         square error, correlation and covariance. If create_new_object is True
-        then this method returns a new TIDEGAUGE object containing statistics,
+        then this method returns a new ALTIMETRY object containing statistics,
         otherwise variables are saved to the dateset inside this object. '''
         
         diff = self.difference(var_str0, var_str1, date0, date1)
@@ -286,7 +339,7 @@ class ALTIMETRY(COAsT):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
         
         if create_new_object:
-            new_object = TIDEGAUGE()
+            new_object = ALTIMETRY()
             new_dataset = self.dataset[['longitude','latitude','time']]
             new_dataset['absolute_error'] = ae
             new_dataset['error'] = diff

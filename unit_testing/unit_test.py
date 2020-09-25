@@ -53,6 +53,7 @@ import matplotlib.pyplot as plt
 import datetime
 import os.path as path
 import logging
+from .utils import general_utils
 
 '''
 #################################################
@@ -276,10 +277,11 @@ subsec = subsec+1
 '''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2a ) Copying a COAsT object                                               #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -290,10 +292,11 @@ try:
         print(str(sec) +chr(subsec) + " X - Copy Failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2b ) COAsT __getitem__ returns variable                                   #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -303,10 +306,11 @@ try:
         print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2c ) Renaming variables inside a COAsT object                             #
 #                                                                             #
+'''
 subsec = subsec+1
 try:
     sci_copy.rename({'sossheig':'renamed'})
@@ -655,30 +659,16 @@ try:
               + "subset_indices_by_distance method")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-'''
-#-----------------------------------------------------------------------------#
-# ( 5c ) Subsetting entire COAsT object and return as copy                    #
-#                                                                             #
-'''
-subsec = subsec+1
-try:
-    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
 
-    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
-        print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
-    else:
-        print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
 '''
 #-----------------------------------------------------------------------------#
-# ( 5d ) Find nearest xy indices                                              #
+# ( 5c ) Find nearest xy indices                                              #
 #                                                                             #
 '''
 subsec = subsec+1
 try:
-    ind_x, ind_y = sci.nearest_xy_indices(sci.dataset,
+    ind_x, ind_y = general_utils.nearest_xy_indices(sci.dataset.longitude,
+                                                    sci.dataset.latitude,
                                           altimetry_nwes.dataset.longitude,
                                           altimetry_nwes.dataset.latitude)
     if ind_x.shape == altimetry_nwes.dataset.longitude.shape:
@@ -689,7 +679,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 '''
 #-----------------------------------------------------------------------------#
-# ( 5e ) Interpolate in space (nearest)                                       #
+# ( 5d ) Interpolate in space (nearest)                                       #
 #                                                                             #
 '''
 subsec = subsec+1
@@ -708,7 +698,7 @@ except:
     print(str(sec) + chr(subsec) +" FAILED")
 '''
 #-----------------------------------------------------------------------------#
-# ( 5f ) Interpolate in time                                                  #
+# ( 5e ) Interpolate in time                                                  #
 #                                                                             #
 '''
 subsec = subsec+1
@@ -742,7 +732,7 @@ sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-g
 #                                                                             #
 '''
 subsec = subsec+1
-
+# We can load altimetry data straight from a CMEMS netcdf file on initialisation
 try:
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
 
@@ -759,14 +749,34 @@ try:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+    
 '''
 #-----------------------------------------------------------------------------#
-# ( 6b ) Interpolate model to altimetry                                       #
+# ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 '''
 subsec = subsec+1
-plt.close('all')
+# The altimetry that we loaded is global so lets subset it for the North
+# West European Shelf.
+try:
+    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
+
+    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
+        print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
+    else:
+        print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6c ) Interpolate model to altimetry                                       #
+#                                                                             #
+'''
+subsec = subsec+1
+# Now lets interpolate a model variable to the altimetry space using 
+# obs_operator().
 
 try:
     altimetry_nwes.obs_operator(sci, 'ssh')
@@ -784,29 +794,68 @@ except:
 
 '''
 #-----------------------------------------------------------------------------#
-# ( 6e ) ALTIMETRY CRPS                                                       #
+# ( 6d ) ALTIMETRY CRPS                                                       #
 #                                                                             #
 '''
+
+subsec = subsec+1
+# Compare modelled SSH to observed sea level using CRPS. This can be done
+# either by creating a new object (create_new_object=True) or by saving it
+# to the existing object. Here we look at the first option.
+
+try:
+    crps = altimetry_nwes.crps(sci, 'ssh', 'sla_filtered')
+    
+    #TEST: Check length of crps and that it contains values
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0] 
+    check2 = False in np.isnan(crps.dataset.crps)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - ")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6e ) ALTIMETRY Stats methods                                              #
+#                                                                             #
+'''
+subsec = subsec+1
+# We can batch return the basic stats methods from ALTIMETRY using basic_stats().
+# We test all of the stats routines here by using this batch function.
+# Here we compare an altimetry variable to our interpolate model SSH
+
+try:
+    stats = altimetry_nwes.basic_stats('sla_filtered', 'interp_ssh')
+    altimetry_nwes.basic_stats('sla_filtered','interp_ssh',create_new_object=False)
+    
+    #TEST: Check new object resembles internal object
+    check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
+    #TEST: Check lengths and values
+    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Basic Stats for ALTIMETRY")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Basic Stats for ALTIMETRY")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
-# ( 6f ) ALTIMETRY Stats methods                                              #
+# ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 '''
 subsec = subsec+1
-
-'''
-#-----------------------------------------------------------------------------#
-# ( 6g ) Altimetry quick_plot()                                               #
-#                                                                             #
-'''
-subsec = subsec+1
+# Now lets take a look at our CRPS values on a map
 plt.close('all')
 
 try:
-    fig, ax = altimetry.quick_plot('sla_filtered')
-    fig.savefig(dn_fig + 'altimetry_quick_plot.png')
+    fig, ax = crps.quick_plot('crps')
+    fig.savefig(dn_fig + 'altimetry_crps_quick_plot.png')
     #plt.close(fig)
     print(str(sec) + chr(subsec) + " OK - Altimetry quick plot saved")
 except:
@@ -838,8 +887,8 @@ subsec = subsec+1
 # the dates to January 2007 using two datetime object:
 
 try:
-    date0 = datetime.datetime(2007,1,1)
-    date1 = datetime.datetime(2007,1,31)
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,20)
     lowestoft = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, 
                                 date_end = date1)
     
@@ -855,7 +904,7 @@ try:
                   'null_value': -99.9999}
     
     #TEST: Check attribute dictionary and length of sea_level.
-    check1 = len(lowestoft.dataset.sea_level) == 2881
+    check1 = len(lowestoft.dataset.sea_level) == 961
     check2 = lowestoft.dataset.attrs == test_attrs
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Tide gauge loaded")
@@ -923,6 +972,25 @@ except:
 #                                                                             #
 '''
 subsec = subsec+1
+# We can batch return the basic stats methods from TIDEGAUGE using basic_stats().
+# We test all of the stats routines here by using this batch function.
+
+try:
+    stats = lowestoft.basic_stats('sea_level', 'interp_ssh')
+    lowestoft.basic_stats('sea_level','interp_ssh',create_new_object=False)
+    
+    #TEST: Check new object resembles internal object
+    check1 = all(stats.dataset.error == lowestoft.dataset.error)
+    #TEST: Check lengths and values
+    check2 = stats.dataset.absolute_error.shape[0] == lowestoft.dataset.sea_level.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Basic Stats for TIDEGAUGE")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Basic Stats for TIDEGAUGE")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
@@ -930,26 +998,65 @@ subsec = subsec+1
 #                                                                             #
 '''
 subsec = subsec+1
+# We can load multiple tide gauges into a list of TIDEGAUGE objects using the
+# static method create_multiple_tidegauge.
+
+
+try:
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,20)
+    tidegauge_list = coast.TIDEGAUGE.create_multiple_tidegauge('./example_files/tide_gauges/*',date0,date1)
+    
+    #TEST: Check length of list
+    check1 = len(tidegauge_list) == 2
+    #TEST: Check lowestoft matches 
+    check2 = all(tidegauge_list[1].dataset == lowestoft.dataset)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Multiple tide gauge load")
+    else:
+        print(str(sec) + chr(subsec) + " X - Multiple tide gauge load")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
-# ( 7b ) TIDEGAUGE map plot                                                   #
+# ( 7f ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
 '''
 subsec = subsec+1
 
 # We can take a look at the location of the loaded tidegauge:
 try:
-    f,a = tg.plot_map()
+    f,a = lowestoft.plot_on_map()
     f.savefig(dn_fig + 'tidegauge_map.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge map plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 plt.close('all')
+
 '''
 #-----------------------------------------------------------------------------#
-# ( 7c ) TIDEGAUGE Time series plot                                           #
+# ( 7g ) TIDEGAUGE map plot (single)                                          #
+#                                                                             #
+'''
+subsec = subsec+1
+
+# Or we can plot up multiple from the list we loaded:
+try:
+    f,a = coast.TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
+    f.savefig(dn_fig + 'tidegauge_multiple_map.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge multiple map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+plt.close('all')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7h ) TIDEGAUGE Time series plot                                           #
 #                                                                             #
 '''
 subsec = subsec+1
@@ -957,7 +1064,7 @@ subsec = subsec+1
 # Take a look at the sea level time series stored within the object:
 
 try:
-    f,a = tg.plot_timeseries('sea_level')
+    f,a = lowestoft.plot_timeseries('sea_level')
     f.savefig(dn_fig + 'tidegauge_timeseries.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:
