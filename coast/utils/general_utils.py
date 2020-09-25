@@ -126,3 +126,21 @@ def nearest_xy_indices(mod_lon, mod_lat, new_lon, new_lat,
     ind_x = xr.DataArray(ind_x.squeeze())
     ind_y = xr.DataArray(ind_y.squeeze())
     return ind_x, ind_y
+
+def dataarray_time_slice(data_array, date0, date1):
+    ''' Takes an xr.DataArray object and returns a new object with times 
+    sliced between dates date0 and date1. date0 and date1 may be a string or
+    datetime type object.'''
+    if date0 is None and date1 is None:
+        return data_array
+    else: 
+        data_array_sliced = data_array.swap_dims({'t_dim':'time'})
+        time_max = data_array.time.max().values
+        time_min = data_array.time.min().values
+        if date0 is None:
+            date0 = time_min
+        if date1 is None:
+            date1 = time_max
+        data_array_sliced = data_array_sliced.sel(time = slice(date0, date1))
+        data_array_sliced = data_array_sliced.swap_dims({'time':'t_dim'})
+        return data_array_sliced
