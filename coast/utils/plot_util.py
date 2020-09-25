@@ -7,6 +7,7 @@ Python definitions used to help with plotting routines.
 
 import matplotlib.pyplot as plt
 from warnings import warn
+from .logging_util import get_slug, debug, info, warn, error
             
 def geo_scatter(longitude, latitude, colors=None, 
                 title='', xlim=None, ylim=None):
