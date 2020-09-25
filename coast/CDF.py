@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import stats_util
+from . import stats_util
 from .logging_util import get_slug, debug, error
 
 
