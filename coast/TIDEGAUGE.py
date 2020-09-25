@@ -10,43 +10,53 @@ from .logging_util import get_slug, debug, error
 class TIDEGAUGE():
     '''
     An object for reading, storing and manipulating tide gauge data.
-    Reading and organisation methods are centred around the GESLA database.
-    However, any fixed time series data can be used if in the correct format.
-    (Source: https://www.gesla.org/)
+    Functionality available for reading and organisation of GESLA files.
+    (Source: https://www.gesla.org/).  However, any fixed time series data can 
+    be used if in the correct format.
     The data format used for this object is as follows:
         
     *Data Format Overview*
         
         1. Data for a single tide gauge is stored in an xarray Dataset object.
-           This can be accessed using TIDEGAUGE.dataset (replacing TIDEGAUGE
-           with an objects local name). 
-        2. The dataset has a single dimension: time.
+           This can be accessed using TIDEGAUGE.dataset. 
+        2. The dataset has a single dimension: t_dim.
         3. Latitude/Longitude and other single values parameters are stored as
-           attributes.
-        4. Sea_level, quality control flags, time and similar are stored as
-           variables along the time dimension.
+           attributes or single float variables.
+        4. Time is a coordinate variable and t_dim dimension.
+        5. Data variables are stored along the t_dim dimension.
            
     *Methods Overview*
     
         *Initialisation and File Reading*
-        1. __init__: Can be initialised with a GESLA file or empty.
-        4. obs_operator: Interpolates model data to time series locations
+        -> __init__: Can be initialised with a GESLA file or empty.
+        -> obs_operator: Interpolates model data to time series locations
            and times (not yet implemented).
-        5. read_gesla_to_xarray_v3: Reads a format version 3.0 
+        -> read_gesla_to_xarray_v3: Reads a format version 3.0 
            GESLA file to an xarray Dataset.
-        6. read_gesla_header_v3: Reads the header of a version 3 
+        -> read_gesla_header_v3: Reads the header of a version 3 
            GESLA file.
-        7. read_gesla_data_v3: Reads data from a version 3 GESLA 
+        -> read_gesla_data_v3: Reads data from a version 3 GESLA 
            file.
-        8. create_tidegauge_multiple: Creates multiple tide gauge 
+        -> create_multiple_tidegauge: Creates multiple tide gauge objects
            objects from a list of filenames or directory and returns them 
            in a list.
            
         *Plotting*
-        2. plot_map: Plots locations of all time series on a map.
-        3. plot_timeseries: Plots a specified time series.
+        -> plot_on_map: Plots location of TIDEGAUGE object on map.
+        -> plot_timeseries: Plots a specified time series.
         
         *Model Comparison*
+        -> obs_operator(): For interpolating model data to this object.
+        -> cprs(): Calculates the CRPS between a model and obs variable.
+        -> difference(): Differences two specified variables
+        -> absolute_error(): Absolute difference, two variables
+        -> mean_absolute_error(): MAE between two variables
+        -> root_mean_square_error(): RMSE between two variables
+        -> time_mean(): Mean of a variable in time
+        -> time_std(): St. Dev of a variable in time
+        -> time_correlation(): Correlation between two variables
+        -> time_covariance(): Covariance between two variables
+        -> basic_stats(): Calculates multiple of the above metrics.
     '''  
     
 ##############################################################################
@@ -251,24 +261,17 @@ class TIDEGAUGE():
     def create_multiple_tidegauge(cls, file_list, date_start=None, 
                                   date_end=None):
         '''
-        Initialise TIDEGAUGE object either as empty (no arguments) or by
-        reading GESLA data from a directory between two datetime objects.
+        Reads multiple GESLA tide gauge files from file_list (can include
+        wildcards) and return them in a list. date_start and date_end should
+        be datetime like objects. For a lot of files/data, this may take a 
+        while.
     
         Example usage:
-            --------------
+        --------------
             # Read all data in directory in January 1990
             date0 = datetime.datetime(1990,1,1)
             date1 = datetime.datetime(1990,2,1)
-            tg = coast.TIDEGAUGE('gesla_directory/', date0, date1)
-            
-            Parameters
-            ----------
-            directory (str) : Path to directory containing desired GESLA files
-            file_list (list of str) : list of filenames to read from directory.
-            Optional.
-            date_start (datetime) : Start date for data read. Optional
-            date_end (datetime) : end date for data read. Optional
-
+            tg = coast.TIDEGAUGE('gesla_directory/*', date0, date1)
         Returns
         -------
         List of TIDEGAUGE objects.
@@ -288,16 +291,15 @@ class TIDEGAUGE():
             
         # Loop over files to read and read them into datasets
         tidegauge_list = []
-        #longitude_list = []
-        #latitude_list = []
-        #sitename_list = []
         for file in file_to_read:
             try:
                 dataset = cls.read_gesla_to_xarray_v3(file, date_start, 
                                                       date_end)
-                tidegauge_list.append(dataset)
+                new_object = TIDEGAUGE()
+                new_object.dataset = dataset
+                tidegauge_list.append(new_object)
             except:
-                # Problem with reading file: file
+                # Problem with reading file: file TODO: add debug message here
                 pass
         return tidegauge_list
 
@@ -325,6 +327,42 @@ class TIDEGAUGE():
         fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
                                          xlim = [X-10, X+10],
                                          ylim = [Y-10, Y+10])
+        return fig, ax
+    
+    @classmethod
+    def plot_on_map_multiple(cls,tidegauge_list, color_var_str = None):
+        '''
+        Show the location of a tidegauge on a map.
+        
+        Example usage:
+        --------------
+        # For a TIDEGAUGE object tg
+        tg.plot_map()
+
+        '''
+        from .utils import plot_util
+        
+        debug(f"Plotting tide gauge locations for {get_slug(cls)}")
+        
+        X = []
+        Y = []
+        C = []
+        for tg in tidegauge_list:
+            X.append(tg.dataset.longitude)
+            Y.append(tg.dataset.latitude)
+            if color_var_str is not None:
+                C.append(tg.dataset[color_var_str])
+        title = ''
+        
+        if color_var_str is None:
+            fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
+                                             xlim = [min(X)-10, max(X)+10],
+                                             ylim = [min(Y)-10, max(Y)+10])
+        else:
+            fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
+                                             colors = C,
+                                             xlim = [X-10, X+10],
+                                             ylim = [Y-10, Y+10])
         return fig, ax
     
     def plot_timeseries(self, var_name = 'sea_level', 
