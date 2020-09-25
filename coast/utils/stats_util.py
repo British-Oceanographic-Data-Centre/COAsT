@@ -1,5 +1,10 @@
 '''
 Python definitions used to aid with statistical calculations.
+
+*Methods Overview*
+    -> normal_distribution(): Create values for a normal distribution
+    -> cumulative_distribution(): Integration udner a PDF
+    -> empirical_distribution(): Estimates CDF empirically
 '''
 
 import numpy as np
@@ -63,27 +68,3 @@ def empirical_distribution(self, x, sample):
     for ss in sample:
         edf[x>ss] = edf[x>ss] + 1/n_sample
     return xr.DataArray(edf)
-
-def correlation():
-        
-    return
-    
-def covariance():
-    
-    return
-    
-def difference():
-        
-    return
-    
-def absolute_difference():
-        
-    return
-    
-def mean_absolute_difference():
-        
-    return
-    
-def root_mean_square_difference(array0, array1):
-        
-    return

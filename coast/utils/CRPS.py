@@ -1,6 +1,10 @@
 '''
 Python definitions used to aid in the calculation of Continuous Ranked
 Probability Score.
+
+*Methods Overview*
+    -> crps_sonf_fixed(): Single obs neighbourhood forecast CRPS for fixed obs
+    -> crps_song_moving(): Same as above for moving obs
 '''
 
 import numpy as np
