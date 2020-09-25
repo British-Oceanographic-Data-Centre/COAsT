@@ -48,3 +48,10 @@
 7. Plotting Methods
     a. Altimetry quick_plot()
     b. Open, view and save tide gauge data from GESLA database
+
+9. Isobath Contour Methods
+    a. Extract isbath contour between two points
+    b. Plot contour on map
+    c. Calculate pressure along contour
+    d. Calculate flow across contour
+    e. Calculate pressure gradient driven flow across contour
