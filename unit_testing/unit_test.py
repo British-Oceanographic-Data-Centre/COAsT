@@ -53,7 +53,7 @@ import matplotlib.pyplot as plt
 import datetime
 import os.path as path
 import logging
-from .utils import general_utils
+from . import general_utils
 
 '''
 #################################################

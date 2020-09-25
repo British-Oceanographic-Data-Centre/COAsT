@@ -3,7 +3,8 @@ import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, error, info
 import sklearn.metrics as metrics
-from .utils import general_utils
+from . import general_utils, plot_util
+from . import CRPS as crps
 
 class ALTIMETRY(COAsT):
     '''
@@ -105,7 +106,6 @@ class ALTIMETRY(COAsT):
     def quick_plot(self, color_var_str: str=None):
         '''
         '''
-        from .utils import plot_util
         
         if color_var_str is not None:
             color_var = self.dataset[color_var_str]
@@ -213,8 +213,6 @@ class ALTIMETRY(COAsT):
         # Compare modelled 'sossheig' with 'sla_filtered' using CRPS
         crps = altimetry.crps(nemo, 'sossheig', 'sla_filtered')
         '''
-        
-        from .utils import CRPS as crps
         
         mod_var = model_object.dataset[model_var_name]
         obs_var = self.dataset[obs_var_name]

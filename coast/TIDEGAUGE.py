@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob
 import sklearn.metrics as metrics
-from .utils import general_utils
+from . import general_utils, plot_util
+from . import CRPS as crps
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -317,7 +318,6 @@ class TIDEGAUGE():
         tg.plot_map()
 
         '''
-        from .utils import plot_util
         
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
         
@@ -340,7 +340,6 @@ class TIDEGAUGE():
         tg.plot_map()
 
         '''
-        from .utils import plot_util
         
         debug(f"Plotting tide gauge locations for {get_slug(cls)}")
         
@@ -504,8 +503,6 @@ class TIDEGAUGE():
         # Compare modelled 'sossheig' with 'sea_level' using CRPS
         crps = altimetry.crps(nemo, 'sossheig', 'sea_level')
         '''
-        
-        from .utils import CRPS as crps
         
         mod_var = model_object.dataset[model_var_name]
         obs_var = self.dataset[obs_var_name]
