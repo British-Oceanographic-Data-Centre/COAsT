@@ -9,6 +9,7 @@ Python definitions used to aid with statistical calculations.
 
 import numpy as np
 import xarray as xr
+from .logging_util import get_slug, debug, info, warn, error
 
 def normal_distribution(self, mu: float=0, sigma: float=1, 
                         x: np.ndarray=None, n_pts: int=1000):

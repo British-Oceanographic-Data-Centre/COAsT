@@ -6,6 +6,7 @@ from dask.distributed import Client
 from warnings import warn
 import copy
 import scipy as sp
+from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
 def calculate_haversine_distance(lon1, lat1, lon2, lat2):
