@@ -3,6 +3,8 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
 import glob
+import sklearn.metrics as metrics
+from .utils import general_utils
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -26,9 +28,8 @@ class TIDEGAUGE():
            
     *Methods Overview*
     
+        *Initialisation and File Reading*
         1. __init__: Can be initialised with a GESLA file or empty.
-        2. plot_map: Plots locations of all time series on a map.
-        3. plot_timeseries: Plots a specified time series.
         4. obs_operator: Interpolates model data to time series locations
            and times (not yet implemented).
         5. read_gesla_to_xarray_v3: Reads a format version 3.0 
@@ -41,8 +42,11 @@ class TIDEGAUGE():
            objects from a list of filenames or directory and returns them 
            in a list.
            
-    There are some methods outside of the class but still relevant to the
-    TIDEGAUGE object. Please see the *Routines* section of this file.
+        *Plotting*
+        2. plot_map: Plots locations of all time series on a map.
+        3. plot_timeseries: Plots a specified time series.
+        
+        *Model Comparison*
     '''  
     
 ##############################################################################
@@ -450,7 +454,8 @@ class TIDEGAUGE():
                                model data ('empirical' or 'theoretical').
                                Observations always use empirical.
         time_interp (str)    : Type of time interpolation to use (s)
-        create_new_obj (bool):
+        create_new_obj (bool): If True, save output to new TIDEGAUGE obj.
+                               Otherwise, save to this obj.
           
         Returns
         -------
@@ -485,44 +490,120 @@ class TIDEGAUGE():
             self.dataset['crps'] =  (('t_dim'),crps_list)
             self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
     
-    def difference(self, var_str0, var_str1):
-        var0 = self.dataset[var_str0].values
-        var1 = self.dataset[var_str1].values
+    def difference(self, var_str0:str, var_str1:str, date0=None, date1=None):
+        ''' Difference two variables defined by var_str0 and var_str1 between
+        two dates date0 and date1. Returns xr.DataArray '''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return
+        return xr.DataArray(diff, dims='t_dim', name='error',
+                            coords={'time':self.dataset.time})
     
-    def absolute_difference(self, var_str0, var_str1):
-        var0 = self.dataset[var_str0].values
-        var1 = self.dataset[var_str1].values
-        diff = np.abs(var0 - var1)
-        return
+    def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
+        ''' Absolute difference two variables defined by var_str0 and var_str1 
+        between two dates date0 and date1. Return xr.DataArray '''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        adiff = np.abs(var0 - var1)
+        return xr.DataArray(adiff, dims='t_dim', name='absolute_error', 
+                            coords={'time':self.dataset.time})
     
-    def mean_absolute_difference(self, var_str0, var_str1):
-        var0 = self.dataset[var_str0].values
-        var1 = self.dataset[var_str1].values
-        diff = np.abs(var0 - var1)
-        mae = np.nanmean(diff)
-        return
+    def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
+        ''' Mean absolute difference two variables defined by var_str0 and 
+        var_str1 between two dates date0 and date1. Return xr.DataArray '''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        mae = metrics.mean_absolute_error(var0, var1)
+        return mae
     
-    def root_mean_square_difference(self, var_str0, var_str1):
-        var0 = self.dataset[var_str0].values
-        var1 = self.dataset[var_str1].values
-        sdiff = (var0 - var1)**2
-        rmse = np.sqrt( np.nanmean(sdiff) )
-        return
+    def root_mean_square_error(self, var_str0, var_str1, date0=None, date1=None):
+        ''' Root mean square difference two variables defined by var_str0 and 
+        var_str1 between two dates date0 and date1. Return xr.DataArray '''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        rmse = metrics.mean_squared_error(var0, var1, squared=False)
+        return rmse
     
-    def time_mean(self, var_str0, var_str1, date0, date1):
+    def time_mean(self, var_str, date0=None, date1=None):
+        ''' Time mean of variable var_str between dates date0, date1'''
+        var = self.dataset[var_str]
+        var = general_utils.dataarray_time_slice(var, date0, date1)
+        return np.nanmean(var)
+    
+    def time_std(self, var_str, date0=None, date1=None):
+        ''' Time st. dev of variable var_str between dates date0 and date1'''
+        var = self.dataset[var_str]
+        var = general_utils.dataarray_time_slice(var, date0, date1)
+        return np.nanstd(var)
+    
+    def time_correlation(self, var_str0, var_str1, date0=None, date1=None, 
+                         method='pearson'):
+        ''' Time correlation between two variables defined by var_str0, 
+        var_str1 between dates date0 and date1. Uses Pandas corr().'''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = var0.rename('var1')
+        var1 = var1.rename('var2')
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        pdvar = xr.merge((var0, var1))
+        pdvar = pdvar.to_dataframe()
+        corr = pdvar.corr(method=method)
+        return corr.iloc[0,1]
+    
+    def time_covariance(self, var_str0, var_str1, date0=None, date1=None):
+        ''' Time covariance between two variables defined by var_str0, 
+        var_str1 between dates date0 and date1. Uses Pandas corr().'''
+        var0 = self.dataset[var_str0]
+        var1 = self.dataset[var_str1]
+        var0 = var0.rename('var1')
+        var1 = var1.rename('var2')
+        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
+        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        pdvar = xr.merge((var0, var1))
+        pdvar = pdvar.to_dataframe()
+        cov = pdvar.cov()
+        return cov.iloc[0,1]
+    
+    def basic_stats(self, var_str0, var_str1, date0 = None, date1 = None,
+                    create_new_object = True):
+        ''' Calculates a selection of statistics for two variables defined by
+        var_str0 and var_str1, between dates date0 and date1. This will return
+        their difference, absolute difference, mean absolute error, root mean 
+        square error, correlation and covariance. If create_new_object is True
+        then this method returns a new TIDEGAUGE object containing statistics,
+        otherwise variables are saved to the dateset inside this object. '''
         
-        return
-    
-    def time_std(self, var_str0, var_str1, date0, date1):
+        diff = self.difference(var_str0, var_str1, date0, date1)
+        ae = self.absolute_error(var_str0, var_str1, date0, date1)
+        mae = self.mean_absolute_error(var_str0, var_str1, date0, date1)
+        rmse = self.root_mean_square_error(var_str0, var_str1, date0, date1)
+        corr = self.time_correlation(var_str0, var_str1, date0, date1)
+        cov = self.time_covariance(var_str0, var_str1, date0, date1)
         
-        return
-    
-    def time_correlation(self, var_str0, var_str1, date0, date1):
-        
-        return
-    
-    def time_covariance(self, var_str0, var_str1, date0, date1):
-        
-        return
+        if create_new_object:
+            new_object = TIDEGAUGE()
+            new_dataset = self.dataset[['longitude','latitude','time']]
+            new_dataset['absolute_error'] = ae
+            new_dataset['error'] = diff
+            new_dataset['mae'] = mae
+            new_dataset['rmse'] = rmse
+            new_dataset['corr'] = corr
+            new_dataset['cov'] = cov
+            new_object.dataset = new_dataset
+            return new_object
+        else:
+            self.dataset['absolute_error'] = ae
+            self.dataset['error'] = diff
+            self.dataset['mae'] = mae
+            self.dataset['rmse'] = rmse
+            self.dataset['corr'] = corr
+            self.dataset['cov'] = cov

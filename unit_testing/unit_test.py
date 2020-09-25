@@ -18,6 +18,31 @@ There are two accompaniment files to this unit testing script:
 
 Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
+
+Unit template:
+    
+'''
+#-----------------------------------------------------------------------------#
+# ( ## ) Subsection title                                                     #
+#                                                                             #
+'''
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Do a thing
+    
+    #TEST: <description here>
+    check1 = #<Boolean>
+    check2 = #<Boolean> 
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - ")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 """
 
 import coast
@@ -850,14 +875,16 @@ subsec = subsec+1
 
 try:
     
-    lowestoft.obs_operator(sci, 'sossheig', time_interp = 'linear')
+    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear')
     
     #TEST: Check that the resulting interp_sossheig variable is of the same
     # length as sea_level and that it is populated.
-    interp = lowestoft.dataset.interp_sossheig
+    interp = lowestoft.dataset.interp_ssh
     interp_len = interp.shape[0] 
     orig_len = lowestoft.dataset.sea_level.shape[0]
-    if interp_len == orig_len and False in np.isnan(altimetry_nwes.dataset.interp_ssh):
+    check1 = interp_len == orig_len
+    check2 = False in np.isnan(lowestoft.dataset.interp_ssh)
+    if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Tide gauge obs_operator")
     else:
         print(str(sec) + chr(subsec) + " X - Tide gauge obs_operator")
@@ -868,10 +895,27 @@ except:
 
 '''
 #-----------------------------------------------------------------------------#
-# ( 7c ) TIDEGAUGE CRPS                                                       #
+# ( 7c ) CRPS                                                                 #
 #                                                                             #
 '''
 subsec = subsec+1
+# Compare modelled SSH to observed sea level using CRPS. This can be done
+# either by creating a new object (create_new_object=True) or by saving it
+# to the existing object. Here we look at the first option.
+
+try:
+    crps = lowestoft.crps(sci, 'ssh')
+    
+    #TEST: Check length of crps and that it contains values
+    check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.sea_level.shape[0] 
+    check2 = False in np.isnan(crps.dataset.crps)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - ")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+    
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 '''
 #-----------------------------------------------------------------------------#
@@ -910,7 +954,7 @@ plt.close('all')
 '''
 subsec = subsec+1
 
-# Now, lets take a look at the sea level time series stored within the object:
+# Take a look at the sea level time series stored within the object:
 
 try:
     f,a = tg.plot_timeseries('sea_level')
