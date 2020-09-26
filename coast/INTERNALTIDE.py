@@ -1,11 +1,10 @@
 from .COAsT import COAsT
 import numpy as np
 import xarray as xr
-from warnings import warn
 import copy
-import gsw
-#from .CRPS import CRPS
-#from .interpolate_along_dimension import interpolate_along_dimension
+import gsw  # TODO Use this or remove the import
+from .logging_util import get_slug, debug
+
 
 class INTERNALTIDE(COAsT):
     """
@@ -36,8 +35,8 @@ class INTERNALTIDE(COAsT):
         # Make maps of pycnocline thickness and depth
         IT_obj.quick_plot()
     """
-    def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):
-
+    def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):  # TODO We're not calling super init...
+        debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
@@ -45,7 +44,7 @@ class INTERNALTIDE(COAsT):
         self.nz = nemo_t.dataset.dims['z_dim']
         self.ny = nemo_t.dataset.dims['y_dim']
         self.nx = nemo_t.dataset.dims['x_dim']
-
+        debug(f"Initialised {get_slug(self)}")
 
     def construct_pycnocline_vars( self, nemo_t: xr.Dataset, nemo_w: xr.Dataset, strat_thres = -0.01):
         """
@@ -109,6 +108,7 @@ class INTERNALTIDE(COAsT):
         IT.quickplot()
 
         """
+        debug(f"Constructing pycnocline variables for {get_slug(self)}")
         #%% Contruct in-situ density if not already done
         if not hasattr(nemo_t.dataset, 'density'):
             nemo_t.construct_density( EOS='EOS10' )
@@ -224,6 +224,8 @@ class INTERNALTIDE(COAsT):
         """
         import matplotlib.pyplot as plt
 
+        debug(f"Generating quick plot for {get_slug(self)}")
+
         if var is None:
             var_lst = [self.dataset.strat_1st_mom_masked, self.dataset.strat_2nd_mom_masked]
         else:
@@ -247,4 +249,4 @@ class INTERNALTIDE(COAsT):
             plt.clim([0, 50])
             plt.colorbar()
             plt.show()
-        return fig,ax
+        return fig, ax  # TODO if var_lst is empty this will cause an error

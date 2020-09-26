@@ -14,6 +14,18 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
+import logging
+
+## Initialise logging and save to log file
+log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO) 
+## Alternative logging levels
+#..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
+#..., level=logging.INFO) # Confirmation that things are working as expected.
+#..., level=logging.WARNING) # An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
+#..., level=logging.ERROR) # Due to a more serious problem, the software has not been able to perform some function
+#..., level=logging.CRITICAL) # A serious error, indicating that the program itself may be unable to continue running
+
 
 dn_files = "./example_files/"
 
@@ -142,7 +154,7 @@ if nemo_f.dataset._coord_names == {'depth_0', 'latitude', 'longitude'}:
     var_name_list = []
     for var_name in nemo_f.dataset.data_vars:
         var_name_list.append(var_name)
-    if var_name_list == ['e1', 'e2', 'e3_0']:
+    if var_name_list == ['bathymetry', 'e1', 'e2', 'e3_0']:
         pass_test = True
 
 if pass_test:
@@ -482,6 +494,12 @@ else:
 subsec = subsec+1
 
 try:
+    fig,ax = tran.plot_transect_on_map()
+    ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
+    ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
+    fig.tight_layout()
+    fig.savefig(dn_fig + 'transect_map.png')
+    
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
@@ -815,7 +833,7 @@ plt.close('all')
 
 
 ###############################################################################
-## ( 9 ) TIsobath Contour Methods                                            ##
+## ( 9 ) Isobath Contour Methods                                            ##
 ###############################################################################
 sec = sec+1
 subsec = 96
@@ -889,7 +907,7 @@ else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
 
 #-----------------------------------------------------------------------------#
-# ( 9d ) Calculate pressure gradient driven flow across contour               #
+# ( 9e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec+1
 cont_f.calc_geostrophic_flow(nemo_t, 1027)
@@ -902,9 +920,5 @@ else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
 
 
-
-
-
-
-
+log_file.close()
 
