@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import datetime
 import pandas as pd
 from os import listdir
-from warnings import warn
 from .OBSERVATION import OBSERVATION
+from .logging_util import get_slug, debug, error
+
 
 class TIDEGAUGE(OBSERVATION):
     '''
@@ -66,6 +67,7 @@ class TIDEGAUGE(OBSERVATION):
         -------
         Self
         '''
+        debug(f"Creating a new {get_slug(self)}")
         if type(file_list) is str:
             file_list = [file_list]
         
@@ -97,7 +99,7 @@ class TIDEGAUGE(OBSERVATION):
             self.latitude = []
             self.longitude = []
             self.site_name = []
-        return
+        debug(f"{get_slug(self)} initialised")
     
     def get_gesla_filenames(self, directory):
         '''
@@ -117,6 +119,7 @@ class TIDEGAUGE(OBSERVATION):
         list of filenames (str), latitude (float), longitude (float) and 
         site names (str)
         '''
+        debug(f"Fetching GESLA filenames from \"{directory}\" with {get_slug(self)}")
         file_list = listdir(directory)
         new_file_list = []
         latitude_list = []
@@ -131,7 +134,7 @@ class TIDEGAUGE(OBSERVATION):
                 sitename_list.append(header_dict['site_name'])
                 new_file_list.append(directory+ff)
             except:
-                pass
+                pass  # TODO Should we log something here?
             
         file_list = new_file_list
         latitude_list = np.array(latitude_list)
@@ -157,17 +160,18 @@ class TIDEGAUGE(OBSERVATION):
         -------
         xarray.Dataset object.
         '''
+        debug(f"Reading \"{fn_gesla}\" as a GESLA file with {get_slug(self)}")  # TODO Maybe include start/end dates
         try:
             header_dict = self.read_gesla_header_v3(fn_gesla)
             dataset = self.read_gesla_data_v3(fn_gesla, date_start, date_end)
-        except:
-            raise Exception('Problem reading GESLA file: ' + fn_gesla)
+        except:  # TODO Catch specific exception(s)
+            raise Exception('Problem reading GESLA file: ' + fn_gesla)  # FIXME This should probably be a RuntimeError
         # Attributes
         dataset.attrs = header_dict
         
         return dataset
     
-    def read_gesla_header_v3(self, fn_gesla):
+    def read_gesla_header_v3(self, fn_gesla):  # TODO This could be a static method
         '''
         Reads header from a GESLA file (format version 3.0).
         
@@ -179,6 +183,7 @@ class TIDEGAUGE(OBSERVATION):
         -------
         dictionary of attributes
         '''
+        debug(f"Reading GESLA header from \"{fn_gesla}\"")
         fid = open(fn_gesla)
         
         # Read lines one by one (hopefully formatting is consistent)
@@ -208,6 +213,7 @@ class TIDEGAUGE(OBSERVATION):
         precision = float(fid.readline().split()[2])
         null_value = float( fid.readline().split()[3])
 
+        debug(f"Read done, close file \"{fn_gesla}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name' : site_name, 'country':country, 
@@ -220,7 +226,7 @@ class TIDEGAUGE(OBSERVATION):
                        'precision':precision, 'null_value':null_value}
         return header_dict
     
-    def read_gesla_data_v3(self, fn_gesla, date_start=None, date_end=None,
+    def read_gesla_data_v3(self, fn_gesla, date_start=None, date_end=None,  # TODO This could be a static method
                            header_length:int=32):
         '''
         Reads observation data from a GESLA file (format version 3.0).
@@ -237,6 +243,7 @@ class TIDEGAUGE(OBSERVATION):
         xarray.Dataset containing times, sealevel and quality control flags
         '''
         # Initialise empty dataset and lists
+        debug(f"Reading GESLA data from \"{fn_gesla}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -254,6 +261,7 @@ class TIDEGAUGE(OBSERVATION):
                         qc_flags.append(int(working_line[3]))
                     
                 line_count = line_count + 1
+            debug(f"Read done, close file \"{fn_gesla}\"")
              
         # Convert time list to datetimes using pandas
         time = np.array(pd.to_datetime(time))
@@ -294,15 +302,16 @@ class TIDEGAUGE(OBSERVATION):
         tg.plot_map()
 
         '''
+        debug(f"Plotting tide gauge locations for {get_slug(self)}")
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
             from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
-        except ImportError:
+        except ImportError as err:
             import sys
-            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
-            sys.exit(-1)
+            error("No cartopy found - please run\nconda install -c conda-forge cartopy")
+            raise err from None
 
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(10, 10))
@@ -352,7 +361,7 @@ class TIDEGAUGE(OBSERVATION):
         -------
         matplotlib figure and axes objects
         '''
-        
+        debug(f"Plotting timeseries for {get_slug(self)}")
         if type(site) is int:
             dataset = self.dataset_list[site]
             site_name = dataset.site_name
@@ -369,7 +378,7 @@ class TIDEGAUGE(OBSERVATION):
             y = np.array(dataset.sea_level)
             qc = np.array(dataset.qc_flags)
         else:
-            raise Exception('site argument for plot_timeseries_single' + 
+            raise Exception('site argument for plot_timeseries_single' +  # TODO This should probably be a ValueError
                             ' must be int or str.')
         
         # Use only values between stated dates
@@ -415,5 +424,6 @@ class TIDEGAUGE(OBSERVATION):
         
         return fig, ax
 
+    @staticmethod
     def obs_operator():
         return

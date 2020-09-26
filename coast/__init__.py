@@ -1,5 +1,5 @@
 from .COAsT import COAsT
-from .COAsT import setup_dask_clinet
+from .COAsT import setup_dask_client
 from .DOMAIN import DOMAIN
 from .NEMO import NEMO
 from .TRANSECT import Transect
@@ -10,3 +10,4 @@ from .CRPS import CRPS
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
 from .CONTOUR import Contour, Contour_f, Contour_t
+from . import logging_util

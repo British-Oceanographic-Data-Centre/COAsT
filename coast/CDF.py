@@ -1,8 +1,10 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from .logging_util import get_slug, debug, error
 
-class CDF():
+
+class CDF:
     '''
     An object for storing Cumulative Distribution Function information.
     '''
@@ -20,6 +22,7 @@ class CDF():
         Returns:
             New CDF object.
         """
+        debug(f"Creating a new {get_slug(self)}")
         self.cdf_type = cdf_type
         self.cdf_func = cdf_func
         self.sample = sample
@@ -29,15 +32,17 @@ class CDF():
         self._cdf_type_options = ['empirical', 'theoretical']
         self._cdf_func_options = ['gaussian']
         self.plot_xmin, self.plot_xmax = self.set_x_bounds()
+        debug(f"{get_slug(self)} initialised")
         
     def set_x_bounds(self):
         ''' Calculate x bounds for CDF plotting '''
         # Is input a single value (st. dev == 0)
-        single_value = True if self.sigma == 0 else False
+        single_value = True if self.sigma == 0 else False  # TODO This could just be: single_value = self.sigma == 0
         if single_value: 
             self.cdf_type = 'empirical'
         
         # Calculate x bounds as 5 std dev. either side of the mean
+        debug(f"Calculating x bounds for {get_slug(self)}")
         if single_value:
             xmin = self.mu-1
             xmax = self.mu+1
@@ -46,7 +51,7 @@ class CDF():
             xmax = self.mu + 5*self.sigma
         return xmin, xmax
     
-    def build_discrete_cdf(self, x: np.ndarray=None, n_pts: int=1000):
+    def build_discrete_cdf(self, x: np.ndarray = None, n_pts: int = 1000):
         """Builds a discrete CDF for plotting and direct comparison.
 
         Args:
@@ -57,27 +62,30 @@ class CDF():
         Returns:
             x and y arrays for discrete CDF.
         """
-        
+        debug(f"Discrete CDF will be built for {get_slug(self)}")
         # Build discrete X bounds
         if x is None:
+            debug(f"Building discrete X bounds for {get_slug(self)}")
             x = np.linspace(self.plot_xmin, self.plot_xmax, n_pts)
         
         if self.cdf_type == "empirical":
             y = self.empirical_distribution(x, self.sample)
 
-        elif self.cdf_type == "theoretical": 
+        elif self.cdf_type == "theoretical":
             if self.cdf_func == 'gaussian':
                 y = self.cumulative_distribution(mu=self.mu, sigma=self.sigma,
                                                  x=x, cdf_func=self.cdf_func)
             else:
                 raise NotImplementedError
         else:
-            raise Exception('CDF Type must be empirical or theoretical')
+            error(f"CDF type for {get_slug(self)} is \"{self.cdf_type}\", which is not acceptable, raising exception!")
+            raise Exception(f'CDF Type must be empirical or theoretical')  # TODO This should probably be a ValueError
+        debug(f"CDF type for {get_slug(self)} is \"{self.cdf_type}\"")
 
         return x, y
     
-    def normal_distribution(self, mu: float=0, sigma: float=1, 
-                            x: np.ndarray=None, n_pts: int=1000):
+    def normal_distribution(self, mu: float = 0, sigma: float = 1,   # TODO This could be a static method
+                            x: np.ndarray = None, n_pts: int = 1000):
         """Generates a discrete normal distribution.
 
         Keyword arguments:
@@ -90,13 +98,14 @@ class CDF():
         """
         if x is None:
             x = np.linspace( mu-5*sigma, mu+5*sigma, n_pts)
+        debug(f"Generating normal distribution for {get_slug(x)}")
         term1 = sigma*np.sqrt( 2*np.pi )
         term1 = 1/term1
         exponent = -0.5*((x-mu)/sigma)**2
         return term1*np.exp( exponent )
 
-    def cumulative_distribution(self, mu: float=0, sigma: float=1, 
-                                x: np.ndarray=None, cdf_func: str='gaussian'):
+    def cumulative_distribution(self, mu: float = 0, sigma: float = 1,  # TODO This looks like it will fail if x is None
+                                x: np.ndarray = None, cdf_func: str = 'gaussian'):
         """Integrates under a discrete PDF to obtain an estimated CDF.
 
         Keyword arguments:
@@ -107,14 +116,15 @@ class CDF():
         return: Array of len(x) containing the discrete cumulative values 
                 estimated using the integral under the provided PDF.
         """
-        if cdf_func=='gaussian': #If Gaussian, integrate under pdf
+        debug(f"Estimating CDF using {get_slug(x)}")
+        if cdf_func == 'gaussian':  # If Gaussian, integrate under pdf
             pdf = self.normal_distribution(mu=mu, sigma=sigma, x=x)
             cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
         else: 
             raise NotImplementedError
         return np.array(cdf)
     
-    def empirical_distribution(self, x, sample):
+    def empirical_distribution(self, x, sample):  # TODO This could be a static method
         """Estimates a CDF empirically.
 
         Keyword arguments:
@@ -123,6 +133,8 @@ class CDF():
         
         return: Array of len(x) containing corresponding EDF values
         """
+
+        debug(f"Estimating empirical distribution with {get_slug(x)}")
         sample = np.array(sample)
         sample = sample[~np.isnan(sample)]
         sample = np.sort(sample)
@@ -142,6 +154,8 @@ class CDF():
         Returns:
             A single CRPS value.
         """
+
+        debug(f"Calculating {get_slug(self)} CRPS, compare against {xa}")
         
         def calc(alpha, beta, p):
             return alpha * p**2 + beta*(1 - p)**2
@@ -193,7 +207,7 @@ class CDF():
         Returns:
             A single CRPS value.
         """
-        
+        debug(f"Calculating {get_slug(self)} fast CRPS, compare against {xa}")
         def calc(alpha, beta, p):
             return alpha * p**2 + beta*(1 - p)**2
         xa = float(xa)
@@ -242,6 +256,7 @@ class CDF():
     
     def get_common_x(self, other, n_pts=1000):
         """Generates a common x vector for two CDF objects."""
+        debug(f"Generating common X vector for {get_slug(self)} and {get_slug(other)}")
         xmin = min(self.plot_xmin, other.plot_xmin)
         xmax = max(self.plot_xmax, other.plot_xmax)
         common_x = np.linspace(xmin, xmax, n_pts)
@@ -249,6 +264,7 @@ class CDF():
     
     def quick_plot(self):
         """ A quick plot showing the CDF contained in this object."""
+        debug(f"Generating quick plot for {get_slug(self)}")
         ax = plt.subplot(111)
         x,y = self.build_discrete_cdf()
         ax.plot(x, y)
@@ -257,6 +273,7 @@ class CDF():
     
     def diff_plot(self, other):
         """Plots two CDFS on one plot, with the difference shaded"""
+        debug(f"Generating diff plot for {get_slug(self)} and {get_slug(other)}")
         fig = plt.figure()
         ax = plt.subplot(111)
         x = self.get_common_x(other)
