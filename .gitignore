@@ -13,4 +13,6 @@ COAsT.egg-info/
 example_files/
 example_scripts/temp*py
 
+unit_testing/*log
+
 .ipynb_checkpoints/

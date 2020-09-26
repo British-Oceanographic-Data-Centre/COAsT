@@ -1,8 +1,9 @@
-from .COAsT import COAsT
+from .COAsT import COAsT  # ???
 from .OBSERVATION import OBSERVATION
-from warnings import warn
 import numpy as np
 import xarray as xr
+from .logging_util import get_slug, debug, error, info
+
 
 class ALTIMETRY(OBSERVATION):
     '''
@@ -31,19 +32,21 @@ class ALTIMETRY(OBSERVATION):
     '''
 
     def __init__(self, *args, **kwargs):
+        debug(f"Creating a new {get_slug(self)}")
         super().__init__(*args, **kwargs)
         self.observation_type = 'moving'
         self.dataset = self.dataset.rename_dims(self.dim_mapping)
-        #self.dataset.attrs = {}
-        return
+        debug(f"{get_slug(self)} initialised")
 
     def set_dimension_mapping(self):
-        self.dim_mapping = {'time':'t_dim'}
+        self.dim_mapping = {'time': 't_dim'}
+        debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
         self.var_mapping = None
+        debug(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
 
-    def quick_plot(self, var: str=None):
+    def quick_plot(self, var: str = None):
         '''
         Quick geographical plot of altimetry data for a specified variable
     
@@ -66,16 +69,21 @@ class ALTIMETRY(OBSERVATION):
             from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
-            import sys
-            warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
-            sys.exit(-1)
-
+            error("CartoPy is not installed. Raising exception...")
+            raise ImportError(
+                "CartoPy not found - please run:\n"
+                "conda install -c conda-forge cartopy\n"
+                "OR\n"
+                "pip install Cartopy"
+            ) from None
         import matplotlib.pyplot as plt
+
+        info("Drawing a quick plot...")
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-        if var is None:
+        if var is None:  # TODO Variable cset appears to be unused
             cset = self.dataset.plot.scatter(x='longitude',y='latitude')
         else:
             cset = self.dataset.plot.scatter(x='longitude',y='latitude',hue=var)
@@ -96,6 +104,7 @@ class ALTIMETRY(OBSERVATION):
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
 
+        info("Plot ready, displaying!")
         plt.show()
         return fig, ax
     
@@ -124,7 +133,9 @@ class ALTIMETRY(OBSERVATION):
         -------
         Adds a DataArray to self.dataset, containing interpolated values.
         '''
-        
+
+        debug(f"Interpolating {get_slug(model)} \"{mod_var_name}\" with time_interp \"{time_interp}\"")
+
         # Get data arrays
         mod_var = model.dataset[mod_var_name]
         
@@ -153,4 +164,4 @@ class ALTIMETRY(OBSERVATION):
         # Store interpolated array in dataset
         new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
-        return
+        return  # TODO Should this return something? If not, the statement is not needed
