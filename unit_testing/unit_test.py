@@ -829,8 +829,8 @@ contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], 
                                                           [50,-10], [60,3])
 cont_f = coast.Contour_f(nemo_f, y_ind, x_ind, 200)
-if np.isclose( cont_f.y_ind.sum() + cont_f.y_ind.sum(), 189828 ) and \
-   np.isclose( cont_f.data_contour.bathymetry.sum().item(), 70770.546875 ):
+if np.isclose( cont_f.y_ind.sum() + cont_f.y_ind.sum(), 190020 ) and \
+   np.isclose( cont_f.data_contour.bathymetry.sum().item(), 69803.78125 ):
     print(str(sec) + chr(subsec) + " OK - Isobath contour extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Isobath contour failed to extract correctly")
@@ -883,7 +883,7 @@ cont_f = coast.Contour_f(nemo_f, y_ind, x_ind, 200)
 cont_f.calc_cross_contour_flow(nemo_u, nemo_v)
 if np.allclose((cont_f.data_cross_flow.normal_velocities + 
                 cont_f.data_cross_flow.depth_integrated_normal_transport).sum(),
-                -1186.4071):
+                -1152.3771):
     print(str(sec) + chr(subsec) + " OK - Cross-contour flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
@@ -896,7 +896,7 @@ cont_f.calc_geostrophic_flow(nemo_t, 1027)
 if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg + 
                 cont_f.data_cross_flow.normal_velocity_spg + 
                 cont_f.data_cross_flow.transport_across_AB_hpg + 
-                cont_f.data_cross_flow.transport_across_AB_spg).sum(), 70.81344543 ):
+                cont_f.data_cross_flow.transport_across_AB_spg).sum(), 74.65002414 ):
     print(str(sec) + chr(subsec) + " OK - Cross-contour geostrophic flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")

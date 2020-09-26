@@ -17,7 +17,9 @@ from skimage import measure
 # =============================================================================
 
 class Contour:
-    GRAVITY = 9.8 
+    GRAVITY = 9.8 # m s^-2
+    EARTH_ROT_RATE = 7.2921 * 10**(-5) # rad/s
+    
     
     @staticmethod
     def get_contours(nemo: COAsT, contour_depth: int):
@@ -47,6 +49,7 @@ class Contour:
         contours = [np.round(contour).astype(int) for contour in contours]
         return contours, len(contours)
     
+    
     @staticmethod
     def plot_contour(nemo: COAsT, contour: np.ndarray):
         '''
@@ -74,6 +77,7 @@ class Contour:
         nemo.dataset.bathymetry.where(nemo.dataset.bathymetry > 0, np.nan) \
             .plot.pcolormesh(y='latitude',x='longitude',ax=ax)
         ax.scatter(lon,lat, s=0.5, color='r')
+        
         
     @staticmethod    
     def get_contour_segment(nemo: COAsT, contour: np.ndarray, start_coords: np.ndarray, end_coords: np.ndarray):
@@ -109,7 +113,6 @@ class Contour:
 
         y_ind = contour[:,0]
         x_ind = contour[:,1]
-
         
         # Create tree of lat and lon on the pre-processed contour
         bt = BallTree( np.deg2rad( list( zip( nemo.dataset.latitude.values[y_ind, x_ind], 
@@ -137,7 +140,6 @@ class Contour:
                 x_ind = x_ind[::-1]
                 
         return y_ind, x_ind, np.vstack((y_ind,x_ind)).T
-
                         
     
     def __init__(self, nemo: COAsT, y_ind, x_ind, depth: int):        
@@ -242,8 +244,7 @@ class Contour:
             return (y_ind, x_ind)
         except ValueError:
             print(traceback.format_exc())
-
-    
+   
     
     def gen_z_levels(self, max_depth):
         ''' Generates a pre-defined 1d vertical depth coordinates,
@@ -262,28 +263,30 @@ class Contour:
     
 
 class Contour_f(Contour):
-    def __init__(self, nemo_f: COAsT, y_ind, x_ind, depth):
-        '''
-        Class defining a Contour type on the f-grid, which is a 3d dataset of points between a point A and 
-        a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
-        The contour dimension defines the points along the contour.
-        The supplied model f-grid Data is subsetted in its entirety along these dimensions 
-        within Contour_f.data_contour of type xarray.Dataset
+    '''
+    Class defining a Contour type on the f-grid, which is a 3d dataset of points between a point A and 
+    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
+    The contour dimension defines the points along the contour.
+    The supplied model f-grid Data is subsetted in its entirety along these dimensions 
+    within Contour_f.data_contour of type xarray.Dataset
 
-        
-        Parameters
-        ----------
-        nemo : COAsT
-            f-grid nemo object containing the model dataset.
-        y_ind : numpy.ndarray
-            1d array of y indices defining the contour on the model grid
-        x_ind : numpy.ndarray
-            1d array of x indices defining the contour on the model grid
-        depth : int
-            Depth of contour isobath
-        '''
+    
+    Parameters
+    ----------
+    nemo : COAsT
+        f-grid nemo object containing the model dataset.
+    y_ind : numpy.ndarray
+        1d array of y indices defining the contour on the model grid
+    x_ind : numpy.ndarray
+        1d array of x indices defining the contour on the model grid
+    depth : int
+        Depth of contour isobath
+    '''
+    
+    def __init__(self, nemo_f: COAsT, y_ind, x_ind, depth):
         super().__init__(nemo_f, y_ind, x_ind, depth)
         self.data_cross_flow = xr.Dataset()
+     
         
     def calc_cross_contour_flow(self, nemo_u: COAsT, nemo_v: COAsT):
         '''
@@ -450,8 +453,7 @@ class Contour_f(Contour):
         
         return (hpg_f, spg_f)
    
-
-
+    
     def calc_geostrophic_flow(self, nemo_t: COAsT, ref_density=None):
         """
         This method will calculate the geostrophic velocity and volume transport
@@ -541,8 +543,8 @@ class Contour_f(Contour):
                 cont_t_j1i1.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
                 
         # Coriolis parameter
-        f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_contour.latitude) )        
-        
+        f = 2 * self.EARTH_ROT_RATE * np.sin( np.deg2rad(self.data_contour.latitude) )        
+    
         # Find the indices where the derivative of the contour in the north, south, east and west
         # directions are positive.
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,self.data_contour.r_dim.size-1), np.nan )
@@ -659,338 +661,27 @@ class Contour_f(Contour):
                 'standard_name': 'volume transport across transect due to the surface pressure gradient'}
         
         
-        
-       
-   
-   #  def calc_geostrophic_flow(self, nemo_t: COAsT, ref_density = 1027):
-   #      """
-   #      This method will calculate the geostrophic velocity and volume transport
-   #      (due to the geostrophic vurrent) across the transect. 
-   #      4 variables are added to the TRANSECT.tran_data dataset:
-   #          1. normal_velocity_hpg      (t_dim, depth_z_levels, r_dim)
-   #          This is the velocity due to the hydrostatic pressure gradient
-   #          2. normal_velocity_spg      (t_dim, r_dim)
-   #          This is the velocity due to the surface pressure gradient
-   #          3. transport_across_AB_hpg  (t_dim, r_dim)
-   #          This is the volume transport due to the hydrostatic pressure gradient
-   #          4. transport_across_AB_spg  (t_dim, r_dim
-   #          This is the volume transport due to the surface pressure gradient
-                                                                       
-   #      Ths implementation works by regridding from s_levels to z_levels in order
-   #      to perform the horizontal gradients. Currently the s_level depths are
-   #      assumed fixed at their initial depths, i.e. at time zero.
-        
-        
-        
-   #      Parameters
-   #      ----------
-   #      nemo_t_object : COAsT
-   #          This is the nemo model data on the t-grid for the entire domain. It
-   #          must contain the temperature, salinity and t-grid domain data (e1t, e2t, e3t_0).
-   #      ref_density : TYPE, optional
-   #          reference density value. The default is 1027.
-
-   #      Returns
-   #      -------
-   #      None.
-
-   #      """
-   #      nemo_t_local = nemo_t.copy()
-   #      if 't_dim' not in nemo_t_local.dataset.dims:
-   #          nemo_t_ds = nemo_t_local.dataset.expand_dims(dim={'t_dim':1},axis=0)
-   #      else:
-   #          nemo_t_ds = nemo_t_local.dataset
-                       
-   # #     y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] ) # j
-   # #     x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] ) # i
-        
-   #      # We need to calculate the pressure at four t-points to get an
-   #      # average onto the pressure gradient at the f-points, which will then
-   #      # be averaged onto the normal velocity points. Here we subset the nemo_t 
-   #      # data around the contour so we have these four t-grid points at each 
-   #      # point along the contour        
-   #      cont_t = Contour_t(nemo_t_local, self.y_ind, self.x_ind)            # j,i
-   #      cont_t_j1 = Contour_t(nemo_t_local, self.y_ind+1, self.x_ind)       # j+1,i
-   #      cont_t_i1 = Contour_t(nemo_t_local, self.y_ind, self.x_ind+1)       # j,i+1
-   #      cont_t_j1i1 = Contour_t(nemo_t_local, self.y_ind+1, self.x_ind+1)   # j+1,i+1
-        
-   #      bath_max = np.max([cont_t.data_contour.bathymetry.max().item(), 
-   #                         cont_t_j1.data_contour.bathymetry.max().item(),
-   #                         cont_t_i1.data_contour.bathymetry.max().item(), 
-   #                         cont_t_j1i1.data_contour.bathymetry.max().item()])   
-   #      z_levels = self.gen_z_levels(bath_max)
-        
-   #      cont_t.construct_pressure(1027, z_levels, extrapolate=True)
-   #      cont_t_j1.construct_pressure(1027, z_levels, extrapolate=True)
-   #      cont_t_i1.construct_pressure(1027, z_levels, extrapolate=True)
-   #      cont_t_j1i1.construct_pressure(1027, z_levels, extrapolate=True)        
-        
-   #      # Remove the mean hydrostatic pressure on each z_level from the hydrostatic pressure.
-   #      # This helps to reduce the noise when taking the horizontal gradients of hydrostatic pressure.
-   #      # Also catch and ignore nan-slice warning
-   #      with warnings.catch_warnings():
-   #          warnings.simplefilter("ignore", category=RuntimeWarning)
-   #          pressure_h_zlevel_mean = ( xr.concat( (cont_t.data_contour.pressure_h_zlevels, 
-   #                          cont_t_j1.data_contour.pressure_h_zlevels, 
-   #                          cont_t_i1.data_contour.pressure_h_zlevels, 
-   #                          cont_t_j1i1.data_contour.pressure_h_zlevels), dim='concat_dim' )
-   #                          .mean(dim=('concat_dim','r_dim','t_dim'),skipna=True) )
-   #      cont_t.data_contour['pressure_h_zlevels'] = \
-   #              cont_t.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
-   #      cont_t_j1.data_contour['pressure_h_zlevels'] = \
-   #              cont_t_j1.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
-   #      cont_t_i1.data_contour['pressure_h_zlevels'] = \
-   #              cont_t_i1.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
-   #      cont_t_j1i1.data_contour['pressure_h_zlevels'] = \
-   #              cont_t_j1i1.data_contour.pressure_h_zlevels - pressure_h_zlevel_mean
-                
-   #      # Coriolis parameter
-   #      f = 2 * 7.2921 * 10**(-5) * np.sin( np.deg2rad(self.data_contour.latitude) )
-        
-   #      dy = np.diff(self.y_ind)
-   #      dx = np.diff(self.x_ind)
-   #      normal_velocity_hpg = np.zeros_like(cont_t.data_contour.pressure_h_zlevels)
-   #      normal_velocity_spg = np.zeros_like(cont_t.data_contour.pressure_s)
-   #      # horizontal scale factors for each segmant of contour
-   #      horizontal_scale = np.zeros( (cont_t.data_contour.t_dim.size, cont_t.data_contour.r_dim.size) ) 
-   #      # Loop through each point along the transact
-   #      for idx in np.arange(0, self.len-1):  
-   #          # u flux (+u is positive across contour) 
-   #          if dy[idx] > 0:    
-   #              # calculate the pressure gradients at two f points defining a segment of the contour                             
-   #              hpg, spg = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx), 'u' )
-   #              hpg_r1, spg_r1 = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx+1), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx+1), "u" )
-                
-   #              # average from f to u point and calculate velocities
-   #              e2u_j1 = 0.5 * (cont_t_j1.data_contour.isel(r_dim=idx).e2 + cont_t_j1i1.data_contour.isel(r_dim=idx).e2 )
-   #              u_hpg = -(0.5 * (self.data_contour.e2[idx]*hpg/f[idx] + self.data_contour.e2[idx+1]*hpg_r1/f[idx+1]) 
-   #                              / (e2u_j1 * ref_density))
-   #              u_spg = -(0.5 * (self.data_contour.e2[idx]*spg/f[idx] + self.data_contour.e2[idx+1]*spg_r1/f[idx+1]) 
-   #                              / (e2u_j1 * ref_density))                
-   #              normal_velocity_hpg[:,:,idx] = u_hpg.values
-   #              normal_velocity_spg[:,idx] = u_spg.values
-   #              horizontal_scale[:,idx] = e2u_j1
-             
-   #          # u flux (-u is positive across contour)     
-   #          elif dy[idx] < 0:
-   #              # calculate the pressure gradients at two f points defining a segment of the contour                             
-   #              hpg, spg = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx), 'u' )
-   #              hpg_r1, spg_r1 = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx+1), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx+1), "u" )
-                
-   #              # average from f to u point and calculate velocities
-   #              e2u = 0.5 * (cont_t.data_contour.isel(r_dim=idx).e2 + cont_t_i1.data_contour.isel(r_dim=idx).e2 )
-   #              u_hpg = -(0.5 * (self.data_contour.e2[idx]*hpg/f[idx] + self.data_contour.e2[idx+1]*hpg_r1/f[idx+1]) 
-   #                              / (e2u * ref_density))
-   #              u_spg = -(0.5 * (self.data_contour.e2[idx]*spg/f[idx] + self.data_contour.e2[idx+1]*spg_r1/f[idx+1]) 
-   #                              / (e2u * ref_density))                
-   #              normal_velocity_hpg[:,:,idx] = -u_hpg.values
-   #              normal_velocity_spg[:,idx] = -u_spg.values
-   #              horizontal_scale[:,idx] = e2u
-             
-   #          # v flux (-v is positive across contour)
-   #          elif dx[idx] > 0: 
-   #              # calculate the pressure gradients at two f points defining a segment of the contour                                  
-   #              hpg, spg = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx), "v" )
-   #              hpg_r1, spg_r1 = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx+1), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx+1), "v" )
-                
-   #              # average from f to v point and calculate velocities
-   #              e1v_i1 = 0.5 * ( cont_t_i1.data_contour.isel(r_dim=idx).e1 + cont_t_j1i1.data_contour.isel(r_dim=idx).e1 )
-   #              v_hpg = (0.5 * (self.data_contour.e1[idx]*hpg/f[idx] + self.data_contour.e1[idx+1]*hpg_r1/f[idx+1])
-   #                              / (e1v_i1 * ref_density))
-   #              v_spg = (0.5 * (self.data_contour.e1[idx]*spg/f[idx] + self.data_contour.e1[idx+1]*spg_r1/f[idx+1])
-   #                              / (e1v_i1 * ref_density))
-   #              normal_velocity_hpg[:,:,idx] = -v_hpg.values
-   #              normal_velocity_spg[:,idx] = -v_spg.values
-   #              horizontal_scale[:,idx] = e1v_i1
-                
-   #          # v flux (+v is positive across contour)    
-   #          elif dx[idx] < 0:
-   #              # calculate the pressure gradients at two f points defining a segment of the contour                                  
-   #              hpg, spg = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx), "v" )
-   #              hpg_r1, spg_r1 = self.__pressure_grad_fpoint( cont_t.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_j1.data_contour.isel(r_dim=idx+1),
-   #                                      cont_t_i1.data_contour.isel(r_dim=idx+1), 
-   #                                      cont_t_j1i1.data_contour.isel(r_dim=idx+1), "v" )
-                
-   #              # average from f to v point and calculate velocities
-   #              e1v = 0.5 * ( cont_t.data_contour.isel(r_dim=idx).e1 + cont_t_j1.data_contour.isel(r_dim=idx).e1 )
-   #              v_hpg = (0.5 * (self.data_contour.e1[idx]*hpg/f[idx] + self.data_contour.e1[idx+1]*hpg_r1/f[idx+1])
-   #                              / (e1v * ref_density))
-   #              v_spg = (0.5 * (self.data_contour.e1[idx]*spg/f[idx] + self.data_contour.e1[idx+1]*spg_r1/f[idx+1])
-   #                              / (e1v * ref_density))                   
-   #              normal_velocity_hpg[:,:,idx] = v_hpg.values 
-   #              normal_velocity_spg[:,idx] = v_spg.values 
-   #              horizontal_scale[:,idx] = e1v
-        
-   #      normal_velocity_hpg[:,:,-1] = np.nan
-   #      normal_velocity_spg[:,-1] = np.nan
-        
-   #      H = np.zeros_like( self.data_contour.bathymetry.values )
-   #      H[:-1] = 0.5*(self.data_contour.bathymetry.values[:-1] + self.data_contour.bathymetry.values[1:])
-   #      normal_velocity_hpg = np.where( z_levels[:,np.newaxis] <= H, 
-   #                             normal_velocity_hpg, np.nan )
-        
-   #      # remove redundent levels    
-   #      active_z_levels = np.count_nonzero(~np.isnan(normal_velocity_hpg),axis=1).max() 
-   #      normal_velocity_hpg = normal_velocity_hpg[:,:active_z_levels,:]
-   #      z_levels = cont_t.data_contour.depth_z_levels.values[:active_z_levels]
-        
-   #      coords_hpg={'depth_z_levels': (('depth_z_levels'), z_levels),
-   #              'latitude': (('r_dim'), self.data_contour.latitude),
-   #              'longitude': (('r_dim'), self.data_contour.longitude)}
-   #      dims_hpg=['depth_z_levels', 'r_dim']
-   #      attributes_hpg = {'units': 'm/s', 'standard name': 'velocity across the \
-   #                        transect due to the hydrostatic pressure gradient'}
-   #      coords_spg={'latitude': (('r_dim'), self.data_contour.latitude),
-   #              'longitude': (('r_dim'), self.data_contour.longitude)}
-   #      dims_spg=['r_dim']
-   #      attributes_spg = {'units': 'm/s', 'standard name': 'velocity across the \
-   #                        transect due to the surface pressure gradient'}
-        
-   #      if 't_dim' in cont_t.data_contour.dims:
-   #          coords_hpg['time'] = (('t_dim'), cont_t.data_contour.time)
-   #          dims_hpg.insert(0, 't_dim')
-   #          coords_spg['time'] = (('t_dim'), cont_t.data_contour.time)
-   #          dims_spg.insert(0, 't_dim')
-        
-   #      self.data_cross_flow['normal_velocity_hpg'] = xr.DataArray( np.squeeze(normal_velocity_hpg),
-   #              coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg)
-   #      self.data_cross_flow['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
-   #              coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
-
-   #      self.data_cross_flow['transport_across_AB_hpg'] = ( self.data_cross_flow
-   #              .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * horizontal_scale / 1000000   
-   #      self.data_cross_flow.transport_across_AB_hpg.attrs = {'units': 'Sv', 
-   #                                'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}
-        
-        
-   #      #depth_3d = self.data_tran.depth_z_levels.broadcast_like(self.data_tran.normal_velocity_hpg)
-   #      #H = depth_3d.where(~self.data_tran.normal_velocity_hpg.to_masked_array().mask).max(dim='z_dim')
-   #      #H = 0.5*(self.data_contour.bathymetry.values + self.data_contour.bathymetry[1:].values)
-   #      self.data_cross_flow['transport_across_AB_spg'] = self.data_cross_flow.normal_velocity_spg * H * horizontal_scale / 1000000
-   #      self.data_cross_flow.transport_across_AB_spg.attrs = {'units': 'Sv', 
-   #                                'standard_name': 'volume transport across transect due to the surface pressure gradient'}
-        
-   #      return
-    
-    # def transport_across_AB(self, nemo_u: COAsT, nemo_v: COAsT):
-    #     """
-    
-    #     Computes the flow across the contour at each segment and stores:
-    #     Transect normal velocities at each grid point in Transect.normal_velocities,
-    #     Depth integrated volume transport across the transect at each transect segment in 
-    #     Transect.depth_integrated_transport_across_AB
-        
-    #     Return 
-    #     -----------
-    #     Transect normal velocities at each grid point (m/s)
-    #     Depth integrated volume transport across the transect at each transect segment (Sv)
-    #     """
-        
-    #     # subset the u and v datasets 
-    #     da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
-    #     da_x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
-    #     u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-    #     v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-        
-    #     velocity = np.ma.zeros(np.shape(u_ds.vozocrtx))
-    #     vol_transport = np.ma.zeros(np.shape(u_ds.vozocrtx))
-    #     depth_integrated_transport = np.ma.zeros( np.shape(u_ds.vozocrtx[:,0,:] )) 
-    #     #depth_0 = np.ma.zeros(np.shape(self.data_U.depth_0))
- 
-    #     dy = np.diff(self.y_ind)
-    #     dx = np.diff(self.x_ind)
-    #     # Loop through each point along the transact
-    #     for idx in np.arange(0, self.len-1):            
-    #         if dy[idx] > 0:
-    #             # u flux (+ in)
-    #             velocity[:,:,idx] = u_ds.vozocrtx[:,:,idx+1].to_masked_array()
-    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx+1].to_masked_array() *
-    #                                       u_ds.e3_0[:,idx+1].to_masked_array() )
-    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-    #             #depth_0[:,idx] = self.data_U.depth_0[:,idx+1].to_masked_array()
-    #         elif dy[idx] < 0:
-    #             # u flux (-u is positive across contour) 
-    #             velocity[:,:,idx] = - u_ds.vozocrtx[:,:,idx].to_masked_array()
-    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * u_ds.e2[idx].to_masked_array() *
-    #                                       u_ds.e3_0[:,idx].to_masked_array() )
-    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-    #             #depth_0[:,idx] = self.data_U.depth_0[:,idx].to_masked_array()
-    #         elif dx[idx] > 0:
-    #             # v flux (- in) 
-    #             velocity[:,:,idx] = - v_ds.vomecrty[:,:,idx+1].to_masked_array()
-    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx+1].to_masked_array() *
-    #                                       v_ds.e3_0[:,idx+1].to_masked_array() )
-    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-    #             #depth_0[:,idx] = self.data_V.depth_0[:,idx+1].to_masked_array()
-    #         elif dx[idx] < 0:
-    #             # v flux (+ in)
-    #             velocity[:,:,idx] = v_ds.vomecrty[:,:,idx].to_masked_array()
-    #             vol_transport[:,:,idx] = ( velocity[:,:,idx] * v_ds.e1[idx].to_masked_array() *
-    #                                       v_ds.e3_0[:,idx].to_masked_array() )
-    #             depth_integrated_transport[:,idx] = np.sum( vol_transport[:,:,idx], axis=1 )
-    #             #depth_0[:,idx] = self.data_V.depth_0[:,idx].to_masked_array()
-        
-        
-    #     velocity[:,:,-1] = np.nan
-    #     depth_integrated_transport[:,-1] = np.nan
-        
-    #     self.data_cross_flow['normal_velocities'] = xr.DataArray( velocity, 
-    #                 coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), self.data_contour.depth_0)},
-    #                 dims=['t_dim', 'z_dim', 'r_dim'] )        
-    
-    #     self.data_cross_flow['depth_integrated_transport_across_AB'] = xr.DataArray( depth_integrated_transport / 1000000.,
-    #                 coords={'time': (('t_dim'), u_ds.time.values)},
-    #                 dims=['t_dim', 'r_dim'] ) 
-        
-    #     #self.data_cross_flow.depth_0.attrs['units'] = 'm'
-    #     #self.data_cross_flow.depth_0.attrs['standard_name'] = 'Initial depth at time zero'
-    #     #self.data_cross_flow.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points on the transect'
-                        
-    #     return u_ds, v_ds
-
-
 class Contour_t(Contour):
+    '''
+    Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
+    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
+    The contour dimension defines the points along the contour.
+    The supplied model t-grid Data is subsetted in its entirety along these dimensions and
+    calculations can be performed on this dataset.
+    
+    Parameters
+    ----------
+    nemo : COAsT
+        t-grid nemo object containing the model dataset.
+    y_ind : numpy.ndarray
+        1d array of y indices defining the contour on the model grid
+    x_ind : numpy.ndarray
+        1d array of x indices defining the contour on the model grid
+    depth : int
+        Depth of contour isobath
+    '''
+    
     def __init__(self, nemo_t: COAsT, y_ind, x_ind, depth):
-        '''
-        Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
-        a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
-        The contour dimension defines the points along the contour.
-        The supplied model t-grid Data is subsetted in its entirety along these dimensions and
-        calculations can be performed on this dataset.
-        
-        Parameters
-        ----------
-        nemo : COAsT
-            t-grid nemo object containing the model dataset.
-        y_ind : numpy.ndarray
-            1d array of y indices defining the contour on the model grid
-        x_ind : numpy.ndarray
-            1d array of x indices defining the contour on the model grid
-        depth : int
-            Depth of contour isobath
-        '''
         super().__init__(nemo_t, y_ind, x_ind, depth)
         
         
