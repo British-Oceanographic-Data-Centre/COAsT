@@ -200,13 +200,13 @@ class NEMO(COAsT):
                 bathymetry[:-1,:] = 0.5 * ( bathymetry[:-1,:] + bathymetry[1:,:] )   
             elif self.grid_ref == 'f-grid':
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
-                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,1:,:-1] +
-                                     e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] )
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] +
+                                     e3w_0[:,1:,:-1] + e3w_0[:,1:,1:] )
                 depth_0 = np.zeros_like( e3w_0 )
                 depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]
                 depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 )
                 bathymetry[:-1,:-1] = 0.25 * ( bathymetry[:-1,:-1] + bathymetry[:-1,1:] 
-                                             + bathymetry[:-1,1:] + bathymetry[1:,1:] )  
+                                             + bathymetry[1:,:-1] + bathymetry[1:,1:] )  
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
