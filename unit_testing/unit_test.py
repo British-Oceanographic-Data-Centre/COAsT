@@ -53,7 +53,7 @@ import matplotlib.pyplot as plt
 import datetime
 import os.path as path
 import logging
-from . import general_utils
+import coast.general_utils as general_utils
 
 '''
 #################################################
@@ -313,8 +313,8 @@ except:
 '''
 subsec = subsec+1
 try:
-    sci_copy.rename({'sossheig':'renamed'})
-    if sci['sossheig'].equals(sci_copy['renamed']):
+    sci_copy.rename({'ssh':'renamed'})
+    if sci['ssh'].equals(sci_copy['renamed']):
         print(str(sec) +chr(subsec) + " OK - Renaming of variable in dataset ")
     else:
         print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
@@ -763,9 +763,10 @@ subsec = subsec+1
 # West European Shelf.
 try:
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    ind = ind[::4]
     altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
 
-    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
+    if (altimetry_nwes.dataset.dims['t_dim'] == 54) :
         print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
     else:
         print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
@@ -813,9 +814,9 @@ try:
     check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0] 
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - ")
+        print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
     else:
-        print(str(sec) + chr(subsec) + " X - ")
+        print(str(sec) + chr(subsec) + " X - Altimetry CRPS")
     
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
@@ -845,7 +846,6 @@ try:
     
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
@@ -891,7 +891,7 @@ subsec = subsec+1
 
 try:
     date0 = datetime.datetime(2007,1,10)
-    date1 = datetime.datetime(2007,1,20)
+    date1 = datetime.datetime(2007,1,12)
     lowestoft = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, 
                                 date_end = date1)
     
@@ -907,7 +907,7 @@ try:
                   'null_value': -99.9999}
     
     #TEST: Check attribute dictionary and length of sea_level.
-    check1 = len(lowestoft.dataset.sea_level) == 961
+    check1 = len(lowestoft.dataset.sea_level) == 193
     check2 = lowestoft.dataset.attrs == test_attrs
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Tide gauge loaded")
@@ -947,7 +947,7 @@ except:
 
 '''
 #-----------------------------------------------------------------------------#
-# ( 7c ) CRPS                                                                 #
+# ( 7c ) TIDEGAUGE CRPS                                                       #
 #                                                                             #
 '''
 subsec = subsec+1
@@ -1007,7 +1007,7 @@ subsec = subsec+1
 
 try:
     date0 = datetime.datetime(2007,1,10)
-    date1 = datetime.datetime(2007,1,20)
+    date1 = datetime.datetime(2007,1,12)
     tidegauge_list = coast.TIDEGAUGE.create_multiple_tidegauge('./example_files/tide_gauges/*',date0,date1)
     
     #TEST: Check length of list
