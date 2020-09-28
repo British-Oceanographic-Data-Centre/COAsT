@@ -9,5 +9,6 @@ from .CDF import CDF
 from .CRPS import CRPS
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
-from .CONTOUR import Contour, Contour_f, Contour_t
 from . import logging_util
+from .CONTOUR import Contour, Contour_f, Contour_t
+
