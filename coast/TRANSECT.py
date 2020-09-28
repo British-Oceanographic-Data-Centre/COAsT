@@ -4,9 +4,7 @@ from scipy import interpolate
 import gsw
 import xarray as xr
 import numpy as np
-import math
-from scipy.interpolate import griddata
-from scipy.integrate import cumtrapz, trapz
+from scipy.integrate import cumtrapz
 from .logging_util import get_slug, debug, error
 import warnings
 
@@ -15,10 +13,10 @@ import warnings
 # =============================================================================
 
 class Transect:
-    GRAVITY = 9.8 
+    GRAVITY = 9.8 # m s^-2
+    EARTH_ROT_RATE = 7.2921 * 10**(-5) # rad/s
     
-    def __init__(self, point_A: tuple, point_B: tuple, nemo_F: COAsT,
-                 nemo_T: COAsT=None, nemo_U: COAsT=None, nemo_V: COAsT=None):
+    def __init__(self, point_A: tuple, point_B: tuple, nemo: COAsT):
         '''
         Class defining a generic transect type, which is a 3d dataset between a point A and 
         a point B, with a time dimension, a depth dimension and a transect dimension. The 
@@ -54,14 +52,10 @@ class Transect:
             self.point_A = point_A
             self.point_B = point_B
             
-        # self.nemo_F = nemo_F
-        # self.nemo_U = nemo_U
-        # self.nemo_V = nemo_V
-        # self.nemo_T = nemo_T
-        self.filename_domain = nemo_F.filename_domain
+        self.filename_domain = nemo.filename_domain
             
         # Get points on transect
-        tran_y_ind, tran_x_ind = self.get_transect_indices( nemo_F )
+        tran_y_ind, tran_x_ind = self.get_transect_indices( nemo )
                 
         # indices along the transect        
         self.y_ind = tran_y_ind
@@ -80,14 +74,9 @@ class Transect:
             self.data_U = nemo_U.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
         if nemo_V is not None:
             self.data_V = nemo_V.dataset.isel(y_dim = da_tran_y_ind, x_dim = da_tran_x_ind)
-        # For calculations we need access to a halo of points around the transect
-        # self.data_n = dataset.isel(y=tran_y+1,x=tran_x)  
-        # self.data_e = dataset.isel(y=tran_y,x=tran_x+1) 
-        # self.data_s = dataset.isel(y=tran_y-1,x=tran_x) 
-        # self.data_w = dataset.isel(y=tran_y,x=tran_x-1)
         debug(f"{get_slug(self)} initialised")
 
-    def get_transect_indices(self, nemo_F):
+    def get_transect_indices(self, nemo):
         '''
         Get the transect indices on a specific grid
 
@@ -101,8 +90,8 @@ class Transect:
         tran_x : array of x_dim indices
 
         '''
-        debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(nemo_F)}")
-        tran_y_ind, tran_x_ind, tran_len = nemo_F.transect_indices(self.point_A, self.point_B)
+        debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(nemo)}")
+        tran_y_ind, tran_x_ind, tran_len = nemo.transect_indices(self.point_A, self.point_B)
         tran_y_ind = np.asarray(tran_y_ind)
         tran_x_ind = np.asarray(tran_x_ind)
         
@@ -857,3 +846,51 @@ class Transect:
         except AttributeError as err:
             error(err)
         return
+    
+
+class Transect_f(Transect):
+    '''
+    Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
+    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
+    The contour dimension defines the points along the contour.
+    The supplied model t-grid Data is subsetted in its entirety along these dimensions and
+    calculations can be performed on this dataset.
+    
+    Parameters
+    ----------
+    nemo : COAsT
+        t-grid nemo object containing the model dataset.
+    y_ind : numpy.ndarray
+        1d array of y indices defining the contour on the model grid
+    x_ind : numpy.ndarray
+        1d array of x indices defining the contour on the model grid
+    depth : int
+        Depth of contour isobath
+    '''
+    
+    def __init__(self, point_A: tuple, point_B: tuple, nemo_f: COAsT):
+        super().__init__(point_A, point_B, nemo_f)
+
+    
+class Transect_t(Transect):
+    '''
+    Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
+    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
+    The contour dimension defines the points along the contour.
+    The supplied model t-grid Data is subsetted in its entirety along these dimensions and
+    calculations can be performed on this dataset.
+    
+    Parameters
+    ----------
+    nemo : COAsT
+        t-grid nemo object containing the model dataset.
+    y_ind : numpy.ndarray
+        1d array of y indices defining the contour on the model grid
+    x_ind : numpy.ndarray
+        1d array of x indices defining the contour on the model grid
+    depth : int
+        Depth of contour isobath
+    '''
+    
+    def __init__(self, point_A: tuple, point_B: tuple, nemo_t: COAsT):
+        super().__init__(point_A, point_B, nemo_t)
