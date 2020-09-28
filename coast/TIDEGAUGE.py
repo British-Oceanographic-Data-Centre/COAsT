@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob
 import sklearn.metrics as metrics
-from . import general_utils, plot_util
-from . import CRPS as crps
+from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -507,7 +506,7 @@ class TIDEGAUGE():
         mod_var = model_object.dataset[model_var_name]
         obs_var = self.dataset[obs_var_name]
         
-        crps_list, n_model_pts, contains_land = crps.crps_sonf_fixed( 
+        crps_list, n_model_pts, contains_land = crps_util.crps_sonf_fixed( 
                                mod_var, 
                                self.dataset.longitude, 
                                self.dataset.latitude, 

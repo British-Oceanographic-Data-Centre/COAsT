@@ -3,8 +3,7 @@ import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, error, info
 import sklearn.metrics as metrics
-from . import general_utils, plot_util
-from . import CRPS as crps
+from . import general_utils, plot_util, crps_util
 
 class ALTIMETRY(COAsT):
     '''
@@ -217,7 +216,7 @@ class ALTIMETRY(COAsT):
         mod_var = model_object.dataset[model_var_name]
         obs_var = self.dataset[obs_var_name]
         
-        crps_list, n_model_pts, contains_land = crps.crps_sonf_moving( 
+        crps_list, n_model_pts, contains_land = crps_util.crps_sonf_moving( 
                                mod_var, 
                                obs_var.longitude.values, 
                                obs_var.latitude.values, 
