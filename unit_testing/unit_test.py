@@ -667,6 +667,9 @@ except:
 '''
 subsec = subsec+1
 try:
+    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
+    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
     ind_x, ind_y = general_utils.nearest_xy_indices(sci.dataset.longitude,
                                                     sci.dataset.latitude,
                                           altimetry_nwes.dataset.longitude,
