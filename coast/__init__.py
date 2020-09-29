@@ -10,3 +10,5 @@ from .CRPS import CRPS
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
 from . import logging_util
+from .CONTOUR import Contour, Contour_f, Contour_t
+
