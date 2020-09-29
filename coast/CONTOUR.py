@@ -43,7 +43,7 @@ class Contour:
             contour[:,1] contains the x indices for the contour on the model grid
 
         '''
-        contours = measure.find_contours( nemo.dataset.bathymetry, contour_depth )
+        contours = measure.find_contours( nemo.dataset.bathymetry.data, contour_depth )
         # The find_contours method returns indices that have been interpolated
         # between grid points so we must round and cast to integer 
         contours = [np.round(contour).astype(int) for contour in contours]
