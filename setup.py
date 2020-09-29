@@ -40,7 +40,8 @@ PACKAGE = SimpleNamespace(**{
         "netCDF4>=1",
         "scipy>=1",
         "gsw>=3",
-        "scikit-learn>=0.2"
+        "scikit-learn>=0.2",
+        "scikit-image>=0.15"
     ],
     "python_requires": ">=3.7",
     "packages": [
