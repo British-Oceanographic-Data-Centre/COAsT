@@ -349,7 +349,8 @@ class TIDEGAUGE():
             X.append(tg.dataset.longitude)
             Y.append(tg.dataset.latitude)
             if color_var_str is not None:
-                C.append(tg.dataset[color_var_str])
+                C.append(tg.dataset[color_var_str].values)
+                
         title = ''
         
         if color_var_str is None:
@@ -359,13 +360,13 @@ class TIDEGAUGE():
         else:
             fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
                                              colors = C,
-                                             xlim = [X-10, X+10],
-                                             ylim = [Y-10, Y+10])
+                                             xlim = [min(X)-10, max(X)+10],
+                                             ylim = [min(Y)-10, max(Y)+10])
         return fig, ax
     
     def plot_timeseries(self, var_name = 'sea_level', 
                         date_start=None, date_end=None, 
-                        qc_colors=True, 
+                        qc_colors=False, 
                         plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
@@ -384,7 +385,8 @@ class TIDEGAUGE():
         debug(f"Plotting timeseries for {get_slug(self)}")
         x = np.array(self.dataset.time)
         y = np.array(self.dataset[var_name])
-        qc = np.array(self.dataset.qc_flags)
+        if qc_colors:
+           qc = np.array(self.dataset.qc_flags)
         # Use only values between stated dates
         start_index = 0
         end_index = len(x)
@@ -396,7 +398,8 @@ class TIDEGAUGE():
             end_index = np.argmax(x>date_end)
         x = x[start_index:end_index]
         y = y[start_index:end_index]
-        qc = qc[start_index:end_index]
+        if qc_colors:
+           qc = qc[start_index:end_index]
         
         # Plot lines first if needed
         if plot_line:
@@ -417,7 +420,7 @@ class TIDEGAUGE():
             plt.xticks(rotation=45)
         else:
             fig = plt.figure(figsize=(10,10))
-            plt.scatter(x,y)
+            ax = plt.scatter(x,y)
             plt.grid()
             plt.xticks(rotation=65)
             
