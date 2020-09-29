@@ -38,7 +38,7 @@ tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 # Next we will compare this interpolated variable to an observed variable
 # using some basic metrics. The basic_stats() routine can be used for this,
 # which calculates some simple metrics including differences, RMSE and 
-# correlations.
+# correlations. NOTE: This may not be a wise choice of variables.
 stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
 
 # Take a look inside stats.dataset to see all of the new variables. When using
