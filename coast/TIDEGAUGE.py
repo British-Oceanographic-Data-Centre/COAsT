@@ -563,8 +563,8 @@ class TIDEGAUGE():
         var1 = self.dataset[var_str1]
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
-        rmse = metrics.mean_squared_error(var0, var1, squared=False)
-        return rmse
+        rmse = metrics.mean_squared_error(var0, var1)
+        return np.sqrt(rmse)
     
     def time_mean(self, var_str, date0=None, date1=None):
         ''' Time mean of variable var_str between dates date0, date1'''
