@@ -56,3 +56,10 @@
     f. Plotting a single tidegauge location
     g. Plotting multiple tidegauge locations
     h. Tidegauge time series plot
+
+8. Isobath Contour Methods
+    a. Extract isbath contour between two points
+    b. Plot contour on map
+    c. Calculate pressure along contour
+    d. Calculate flow across contour
+    e. Calculate pressure gradient driven flow across contour

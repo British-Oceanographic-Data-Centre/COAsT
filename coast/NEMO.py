@@ -5,10 +5,9 @@ import numpy as np
 # from dask import delayed, compute, visualize
 # import graphviz
 import gsw
-from scipy.interpolate import interp1d
-from scipy.interpolate import griddata
 import warnings
 from .logging_util import get_slug, debug, info, warn, error
+
 
 
 class NEMO(COAsT):  # TODO Complete this docstring
@@ -26,6 +25,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         self.grid_ref = grid_ref.lower()
         self.domain_loaded = False
 
+        self.set_grid_vars()
         self.set_dimension_mapping()
         self.set_variable_mapping()
         if fn_data is not None:
@@ -52,6 +52,21 @@ class NEMO(COAsT):  # TODO Complete this docstring
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
 
+    def set_grid_vars(self):
+        """ Define the variables to map from the domain file to the NEMO obj"""
+        # Define grid specific variables to pull across
+        if self.grid_ref == 'u-grid':
+            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
+        elif self.grid_ref == 'v-grid':
+            self.grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
+        elif self.grid_ref == 't-grid':
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
+        elif self.grid_ref == 'w-grid':
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
+        elif self.grid_ref == 'f-grid':
+            self.grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
+
+
     def set_dimension_mapping(self):  # TODO Add a docstring
         self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
                             'depthu':'z_dim', 'depthv':'z_dim',
@@ -67,9 +82,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
+                            'toce' : 'temperature',
                             'so' : 'salinity',
                             'vosaline' : 'salinity',
-                            'sossheig' : 'ssh'}
+                            'voce' : 'salinity',
+                            'sossheig' : 'ssh',
+                            'zos' : 'ssh' }
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0',
@@ -115,22 +133,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
         not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
 
-        # Define grid specific variables to pull across
-        if self.grid_ref == 'u-grid':
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0']  # TODO What about e3vw
-        elif self.grid_ref == 'v-grid':
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
-        elif self.grid_ref == 't-grid':
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
-        elif self.grid_ref == 'w-grid':
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
-        elif self.grid_ref == 'f-grid':
-            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
-
-        all_vars = grid_vars + not_grid_vars  # FIXME Add an else clause to avoid unhandled error when no ifs are True
+        all_vars = self.grid_vars + not_grid_vars  # FIXME Add an else clause to avoid unhandled error when no ifs are True
 
         # Trim domain DataArray area if necessary.
-        self.copy_domain_vars_to_dataset( dataset_domain, grid_vars )
+        self.copy_domain_vars_to_dataset( dataset_domain, self.grid_vars )
 
         # Reset & set specified coordinates
         coord_vars = ['longitude', 'latitude', 'time', 'depth_0']
@@ -174,7 +180,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
         The depths are assigned to domain_dataset.depth_0
 
         """
+       
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
+        
+        bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'}) 
         try:
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
@@ -192,19 +201,23 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 depth_0 = np.zeros_like( e3w_0 )
                 depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]
                 depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 )
+                bathymetry[:,:-1] = 0.5 * ( bathymetry[:,:-1] + bathymetry[:,1:] )  
             elif self.grid_ref == 'v-grid':
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
                 depth_0 = np.zeros_like( e3w_0 )
                 depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]
                 depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 )
+                bathymetry[:-1,:] = 0.5 * ( bathymetry[:-1,:] + bathymetry[1:,:] )   
             elif self.grid_ref == 'f-grid':
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
-                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,1:,:-1] +
-                                     e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] )
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] +
+                                     e3w_0[:,1:,:-1] + e3w_0[:,1:,1:] )
                 depth_0 = np.zeros_like( e3w_0 )
                 depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]
                 depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 )
+                bathymetry[:-1,:-1] = 0.25 * ( bathymetry[:-1,:-1] + bathymetry[:-1,1:] 
+                                             + bathymetry[1:,:-1] + bathymetry[1:,1:] )  
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
@@ -212,10 +225,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                     dims=['z_dim', 'y_dim', 'x_dim'],
                     attrs={'units':'m',
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
+            self.dataset['bathymetry'] = bathymetry
+            self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
+                'description':'depth of last w-level on the horizontal {}'.format(self.grid_ref)}
         except ValueError as err:
             error(err)
 
-        return  # TODO Should this return something? If not then the statement is not needed
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:
@@ -590,5 +605,14 @@ class NEMO(COAsT):  # TODO Complete this docstring
         else:
             warn(f"{in_varstr} does not exist in {get_slug(self)} dataset")
             return None
+        
+        
+
+        
+        
+        
+        
+    
+                
         
         
