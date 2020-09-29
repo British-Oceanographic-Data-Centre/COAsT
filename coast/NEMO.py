@@ -27,6 +27,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         self.grid_ref = grid_ref.lower()
         self.domain_loaded = False
 
+        self.set_grid_vars()
         self.set_dimension_mapping()
         self.set_variable_mapping()
         if fn_data is not None:
@@ -53,6 +54,21 @@ class NEMO(COAsT):  # TODO Complete this docstring
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
 
+    def set_grid_vars(self):
+        """ Define the variables to map from the domain file to the NEMO obj"""
+        # Define grid specific variables to pull across
+        if self.grid_ref == 'u-grid':
+            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
+        elif self.grid_ref == 'v-grid':
+            self.grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
+        elif self.grid_ref == 't-grid':
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
+        elif self.grid_ref == 'w-grid':
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
+        elif self.grid_ref == 'f-grid':
+            self.grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
+
+
     def set_dimension_mapping(self):  # TODO Add a docstring
         self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
                             'depthu':'z_dim', 'depthv':'z_dim',
@@ -68,9 +84,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                             'votemper' : 'temperature',
                             'thetao' : 'temperature',
                             'temp' : 'temperature',
+                            'toce' : 'temperature',
                             'so' : 'salinity',
                             'vosaline' : 'salinity',
-                            'sossheig' : 'ssh'}
+                            'voce' : 'salinity',
+                            'sossheig' : 'ssh',
+                            'zos' : 'ssh' }
         # Variable names mapped from domain to NEMO object
         # NAMES NOT SET IN STONE.
         self.var_mapping_domain = {'time_counter' : 'time0',
@@ -116,22 +135,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
         not_grid_vars = ['jpiglo', 'jpjglo','jpkglo','jperio',
                          'ln_zco', 'ln_zps', 'ln_sco', 'ln_isfcav']
 
-        # Define grid specific variables to pull across
-        if self.grid_ref == 'u-grid':
-            grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0']  # TODO What about e3vw
-        elif self.grid_ref == 'v-grid':
-            grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
-        elif self.grid_ref == 't-grid':
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
-        elif self.grid_ref == 'w-grid':
-            grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
-        elif self.grid_ref == 'f-grid':
-            grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
-
-        all_vars = grid_vars + not_grid_vars  # FIXME Add an else clause to avoid unhandled error when no ifs are True
+        all_vars = self.grid_vars + not_grid_vars  # FIXME Add an else clause to avoid unhandled error when no ifs are True
 
         # Trim domain DataArray area if necessary.
-        self.copy_domain_vars_to_dataset( dataset_domain, grid_vars )
+        self.copy_domain_vars_to_dataset( dataset_domain, self.grid_vars )
 
         # Reset & set specified coordinates
         coord_vars = ['longitude', 'latitude', 'time', 'depth_0']
