@@ -20,7 +20,7 @@ Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 
 Unit template:
-    
+
 '''
 #-----------------------------------------------------------------------------#
 # ( ## ) Subsection title                                                     #
@@ -31,15 +31,15 @@ subsec = subsec+1
 
 try:
     # Do a thing
-    
+
     #TEST: <description here>
     check1 = #<Boolean>
-    check2 = #<Boolean> 
+    check2 = #<Boolean>
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - ")
     else:
         print(str(sec) + chr(subsec) + " X - ")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
@@ -63,7 +63,7 @@ import coast.general_utils as general_utils
 
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
-coast.logging_util.setup_logging(stream=log_file, level=logging.INFO) 
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO)
 ## Alternative logging levels
 #..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 #..., level=logging.INFO) # Confirmation that things are working as expected.
@@ -107,7 +107,7 @@ subsec = 96 # Code for '`' (1 below 'a')
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(path.join(dn_files, fn_nemo_dat), 
+    sci = coast.NEMO(path.join(dn_files, fn_nemo_dat),
                      path.join(dn_files, fn_nemo_dom), grid_ref = 't-grid')
 
     # Test the data has loaded
@@ -267,7 +267,7 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
-        
+
 subsec = subsec+1
 
 '''
@@ -453,7 +453,7 @@ except:
 # ( 3d ) Plot pycnocline depth                                                #
 #                                                                             #
 '''
-subsec = subsec+1                                                             
+subsec = subsec+1
 try:
     fig,ax = IT.quick_plot( 'strat_1st_mom_masked' )
     fig.tight_layout()
@@ -513,7 +513,7 @@ nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 # Create transect object
 tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 
-## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the 
+## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the
 ## future, but for now we use the scale factors at time=0 from the domain_cfg
 # Currently we don't have e3u and e3v vaiables so approximate using e3t
 # e3u = xr.DataArray( tran.data_T.e3t_25h.values,
@@ -543,11 +543,11 @@ subsec = subsec+1
 
 try:
     fig,ax = tran.plot_transect_on_map()
-    ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
+    ax.set_xlim([-20,0]) # Problem: nice to make the land appear.
     ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
     fig.tight_layout()
     fig.savefig(dn_fig + 'transect_map.png')
-    
+
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
@@ -711,9 +711,9 @@ try:
 
     #Check time in interpolated object has same shape
     if interpolated.time.shape == altimetry_nwes.dataset.time.shape :
-        print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
+        print(str(sec) + chr(subsec) + " OK - Time interpolation works ")
     else:
-        print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
+        print(str(sec) + chr(subsec) + "X - Problem with time interpolation")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
@@ -752,7 +752,7 @@ try:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-    
+
 '''
 #-----------------------------------------------------------------------------#
 # ( 6b ) Altimetry subsetting                                                 #
@@ -779,7 +779,7 @@ except:
 #                                                                             #
 '''
 subsec = subsec+1
-# Now lets interpolate a model variable to the altimetry space using 
+# Now lets interpolate a model variable to the altimetry space using
 # obs_operator().
 
 try:
@@ -788,7 +788,7 @@ try:
     try:
         test = altimetry_nwes.dataset.interp_ssh
         if False in np.isnan(altimetry_nwes.dataset.interp_ssh):
-            print(str(sec) + chr(subsec) + " OK - SSH interpolated to altimetry")
+            print(str(sec) + chr(subsec) + " OK - model SSH interpolated to altimetry")
         else:
             print(str(sec) + chr(subsec) + " OK - X - Interpolation to altimetry failed")
     except:
@@ -809,15 +809,15 @@ subsec = subsec+1
 
 try:
     crps = altimetry_nwes.crps(sci, 'ssh', 'sla_filtered')
-    
+
     #TEST: Check length of crps and that it contains values
-    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0] 
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
     else:
         print(str(sec) + chr(subsec) + " X - Altimetry CRPS")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
@@ -834,7 +834,7 @@ subsec = subsec+1
 try:
     stats = altimetry_nwes.basic_stats('sla_filtered', 'interp_ssh')
     altimetry_nwes.basic_stats('sla_filtered','interp_ssh',create_new_object=False)
-    
+
     #TEST: Check new object resembles internal object
     check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
     #TEST: Check lengths and values
@@ -843,7 +843,7 @@ try:
         print(str(sec) + chr(subsec) + " OK - Basic Stats for ALTIMETRY")
     else:
         print(str(sec) + chr(subsec) + " X -  Basic Stats for ALTIMETRY")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
@@ -885,16 +885,16 @@ sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-g
 '''
 subsec = subsec+1
 
-# Tide gauge data can be loaded straight a GESLA data file. 
+# Tide gauge data can be loaded straight a GESLA data file.
 # Here, I load in data for Lowestoft by providing a filename and restricting
 # the dates to January 2007 using two datetime object:
 
 try:
     date0 = datetime.datetime(2007,1,10)
     date1 = datetime.datetime(2007,1,12)
-    lowestoft = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, 
+    lowestoft = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
                                 date_end = date1)
-    
+
     # TEST: Define Attribute dictionary for comparison
     test_attrs = {'site_name': 'Lowestoft',
                   'country': 'United_Kingdom',
@@ -905,7 +905,7 @@ try:
                   'time_zone_hours': 0.0,
                   'precision': 0.001,
                   'null_value': -99.9999}
-    
+
     #TEST: Check attribute dictionary and length of sea_level.
     check1 = len(lowestoft.dataset.sea_level) == 193
     check2 = lowestoft.dataset.attrs == test_attrs
@@ -926,13 +926,13 @@ subsec = subsec+1
 # our tidegauge using obs_operator(). Here, we interpolate linearly in time.
 
 try:
-    
+
     lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear')
-    
+
     #TEST: Check that the resulting interp_sossheig variable is of the same
     # length as sea_level and that it is populated.
     interp = lowestoft.dataset.interp_ssh
-    interp_len = interp.shape[0] 
+    interp_len = interp.shape[0]
     orig_len = lowestoft.dataset.sea_level.shape[0]
     check1 = interp_len == orig_len
     check2 = False in np.isnan(lowestoft.dataset.interp_ssh)
@@ -940,10 +940,10 @@ try:
         print(str(sec) + chr(subsec) + " OK - Tide gauge obs_operator")
     else:
         print(str(sec) + chr(subsec) + " X - Tide gauge obs_operator")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 
 '''
 #-----------------------------------------------------------------------------#
@@ -957,15 +957,15 @@ subsec = subsec+1
 
 try:
     crps = lowestoft.crps(sci, 'ssh')
-    
+
     #TEST: Check length of crps and that it contains values
-    check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.sea_level.shape[0] 
+    check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.sea_level.shape[0]
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - ")
+        print(str(sec) + chr(subsec) + " OK - CRPS between gauge and model exists")
     else:
-        print(str(sec) + chr(subsec) + " X - ")
-    
+        print(str(sec) + chr(subsec) + " X - Problem with guage/model CRPS")
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
@@ -981,7 +981,7 @@ subsec = subsec+1
 try:
     stats = lowestoft.basic_stats('sea_level', 'interp_ssh')
     lowestoft.basic_stats('sea_level','interp_ssh',create_new_object=False)
-    
+
     #TEST: Check new object resembles internal object
     check1 = all(stats.dataset.error == lowestoft.dataset.error)
     #TEST: Check lengths and values
@@ -990,10 +990,9 @@ try:
         print(str(sec) + chr(subsec) + " OK - Basic Stats for TIDEGAUGE")
     else:
         print(str(sec) + chr(subsec) + " X -  Basic Stats for TIDEGAUGE")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
@@ -1004,24 +1003,22 @@ subsec = subsec+1
 # We can load multiple tide gauges into a list of TIDEGAUGE objects using the
 # static method create_multiple_tidegauge.
 
-
 try:
     date0 = datetime.datetime(2007,1,10)
     date1 = datetime.datetime(2007,1,12)
     tidegauge_list = coast.TIDEGAUGE.create_multiple_tidegauge('./example_files/tide_gauges/*',date0,date1)
-    
+
     #TEST: Check length of list
     check1 = len(tidegauge_list) == 2
-    #TEST: Check lowestoft matches 
+    #TEST: Check lowestoft matches
     check2 = all(tidegauge_list[1].dataset == lowestoft.dataset)
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Multiple tide gauge load")
     else:
         print(str(sec) + chr(subsec) + " X - Multiple tide gauge load")
-    
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-subsec = subsec+1
 
 '''
 #-----------------------------------------------------------------------------#
@@ -1037,7 +1034,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Tide gauge map plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 plt.close('all')
 
 '''
@@ -1054,7 +1051,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Tide gauge multiple map plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 plt.close('all')
 
 '''
@@ -1072,7 +1069,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 plt.close('all')
 
 log_file.close()
