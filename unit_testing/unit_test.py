@@ -4,8 +4,45 @@ Script to do unit testing
 Written as procedural code that plods through the code snippets and tests the
 outputs or expected metadata.
 
+***SECTIONS***
+This script is separated into Sections and Subsections, for which there are two
+counters to keep track: sec and subsec respectively.  At the beginning of each
+section, the sec counter should be incremented by 1 and the subsec counter
+should be reset to 96 (code for one below 'a'). At the beginning of each
+subsection, subsec should be incremented by one.
+
+***OTHER FILES***
+There are two accompaniment files to this unit testing script:
+    - unit_test_contents: A list of sections and subsections.
+    - unit_test_guidelines: Further guidelines to creating unit tests.
+
 Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
+
+Unit template:
+
+'''
+#-----------------------------------------------------------------------------#
+# ( ## ) Subsection title                                                     #
+#                                                                             #
+'''
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Do a thing
+
+    #TEST: <description here>
+    check1 = #<Boolean>
+    check2 = #<Boolean>
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - ")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 """
 
 import coast
@@ -14,18 +51,25 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import datetime
+import os.path as path
 import logging
+import coast.general_utils as general_utils
+
+'''
+#################################################
+## ( 0 ) Files, directories for unit testing   ##
+#################################################
+'''
 
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
-coast.logging_util.setup_logging(stream=log_file, level=logging.INFO) 
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO)
 ## Alternative logging levels
 #..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 #..., level=logging.INFO) # Confirmation that things are working as expected.
 #..., level=logging.WARNING) # An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.
 #..., level=logging.ERROR) # Due to a more serious problem, the software has not been able to perform some function
 #..., level=logging.CRITICAL) # A serious error, indicating that the program itself may be unable to continue running
-
 
 dn_files = "./example_files/"
 
@@ -45,22 +89,26 @@ fn_nemo_dat = 'COAsT_example_NEMO_data.nc'
 fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
-dn_tidegauge = dn_files + 'tide_gauges/'
+fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
-
+'''
 #################################################
-## ( 1 ) Test Loading and initialising methods ##
+## ( 1 ) NEMO Loading/Initialisation           ##
 #################################################
-
+'''
+# This section is for testing the loading and initialisation of NEMO objects.
+'''
 #-----------------------------------------------------------------------------#
 # ( 1a ) Load example NEMO data (Temperature, Salinity, SSH)                  #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
-    sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+    sci = coast.NEMO(path.join(dn_files, fn_nemo_dat),
+                     path.join(dn_files, fn_nemo_dom), grid_ref = 't-grid')
 
     # Test the data has loaded
     sci_attrs_ref = dict([('name', 'AMM7_1d_20070101_20070131_25hourm_grid_T'),
@@ -77,32 +125,11 @@ try:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading " + fn_nemo_dat)
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 1b ) Load example altimetry data                                          #
+# ( 1b ) Load data from existing dataset                                      #
 #                                                                             #
-subsec = subsec+1
-
-try:
-    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
-
-    # Test the data has loaded using attribute comparison, as for NEMO_data
-    alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
-                 ('date_created', '2019-02-20T11:20:56Z'),
-                 ('institution', 'CLS, CNES'),
-                 ('Conventions', 'CF-1.6'),])
-
-    # checking is LHS is a subset of RHS
-    if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
-        print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
-    else:
-        print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
-
-#-----------------------------------------------------------------------------#
-# ( 1c ) Load data from existing dataset                                      #
-#                                                                             #
+'''
 subsec = subsec+1
 try:
     ds = xr.open_dataset(dn_files + fn_nemo_dat)
@@ -116,9 +143,11 @@ try:
         print(str(sec) + chr(subsec) + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
+'''
 #-----------------------------------------------------------------------------#
-# ( 1d ) Set NEMO variable name                                          #
-#
+# ( 1c ) Set NEMO variable name                                               #
+#                                                                             #
+'''
 subsec = subsec+1
 try:
     sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref='t-grid')
@@ -130,9 +159,11 @@ try:
         print(str(sec) + chr(subsec) + " OK - variable name reset (to temperature)")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
+'''
 #-----------------------------------------------------------------------------#
-# ( 1e ) Set NEMO grid attributes - dimension names                                          #
-#
+# ( 1d ) Set NEMO grid attributes - dimension names                           #
+#                                                                             #
+'''
 subsec = subsec+1
 try:
     if sci.dataset.temperature.dims == ('t_dim', 'z_dim', 'y_dim', 'x_dim'):
@@ -141,10 +172,11 @@ try:
         print(str(sec) + chr(subsec) + " X - dimension names not reset")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 1f ) Load only domain data in NEMO                #
+# ( 1e ) Load only domain data in NEMO                                        #
 #                                                                             #
+'''
 subsec = subsec+1
 
 pass_test = False
@@ -161,10 +193,11 @@ if pass_test:
     print(str(sec) + chr(subsec) + " OK - NEMO loaded domain data only")
 else:
     print(str(sec) + chr(subsec) + " X - NEMO didn't load domain data correctly")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 1g ) Calculate depth_0 for t,u,v,w,f grids                 #
+# ( 1f ) Calculate depth_0 for t,u,v,w,f grids                                #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -187,10 +220,11 @@ try:
     print(str(sec) + chr(subsec) + " OK - NEMO depth_0 calculations correct")
 except ValueError as err:
             print(str(sec) + chr(subsec) + str(err))
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 1h ) Load a subregion dataset with a full domain (AMM7)                #
+# ( 1g ) Load a subregion dataset with a full domain (AMM7)                   #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -210,10 +244,11 @@ except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {}.'\
           .format(fn_nemo_dat_subset) )
 
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 1i ) Load and combine (by time) multiple files  (AMM7)               #
+# ( 1h ) Load and combine (by time) multiple files  (AMM7)                    #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -232,33 +267,36 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
-        
+
 subsec = subsec+1
 
-
+'''
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2a ) Copying a COAsT object                                               #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
-    altimetry_copy = altimetry.copy()
-    if altimetry_copy.dataset == altimetry.dataset:
+    sci_copy = sci.copy()
+    if sci_copy.dataset == sci.dataset:
         print(str(sec) +chr(subsec) + " OK - Copied COAsT object ")
     else:
         print(str(sec) +chr(subsec) + " X - Copy Failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2b ) COAsT __getitem__ returns variable                                   #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -268,30 +306,33 @@ try:
         print(str(sec) +chr(subsec) + " X - Problem with COAsT.__getitem__ ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 2c ) Renaming variables inside a COAsT object                             #
 #                                                                             #
+'''
 subsec = subsec+1
 try:
-    altimetry_copy.rename({'sla_filtered':'renamed'})
-    if altimetry['sla_filtered'].equals(altimetry_copy['renamed']):
+    sci_copy.rename({'ssh':'renamed'})
+    if sci['ssh'].equals(sci_copy['renamed']):
         print(str(sec) +chr(subsec) + " OK - Renaming of variable in dataset ")
     else:
         print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
-
+'''
 #################################################
 ## ( 3 ) Test Diagnostic methods               ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 3a ) Computing a vertical spatial derivative                              #
 #                                                                             #
+'''
 subsec = subsec+1
 
 # Initialise DataArrays
@@ -337,10 +378,11 @@ try:
 except:
     print(str(sec) +chr(subsec) + " X - setting derivative attributes failed ")
 
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 3b ) Construct density                                                    #
 #                                                                             #
+'''
 subsec = subsec+1
 nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
@@ -358,10 +400,11 @@ except ValueError as err:
     print(err)
 densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt,dims=['r_dim']),
                         y_dim=xr.DataArray(yt,dims=['r_dim']))
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 3c ) Construct pycnocline depth and thickness                             #
 #                                                                             #
+'''
 subsec = subsec+1
 
 nemo_t = None; nemo_w = None
@@ -405,11 +448,12 @@ try:
 except:
     print(str(sec) +chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 3d ) Plot pycnocline depth                                                #
-#
-subsec = subsec+1                                                                             #
+#                                                                             #
+'''
+subsec = subsec+1
 try:
     fig,ax = IT.quick_plot( 'strat_1st_mom_masked' )
     fig.tight_layout()
@@ -418,16 +462,18 @@ try:
 except:
     print(str(sec) + chr(subsec) + "X - quickplot() failed")
 
-
+'''
 #################################################
 ## ( 4 ) Test Transect related methods         ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 4a ) Determining and extracting transect indices                          #
 #                                                                             #
+'''
 subsec = subsec+1
 
 # Extract transect indices
@@ -449,10 +495,11 @@ if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
     print(str(sec) + chr(subsec) + " OK - NEMO transect indices extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from NEMO")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 4b ) Transport velocity and depth calculations                            #
 #
+'''
 subsec = subsec+1
 
 nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
@@ -466,7 +513,7 @@ nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 # Create transect object
 tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 
-## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the 
+## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the
 ## future, but for now we use the scale factors at time=0 from the domain_cfg
 # Currently we don't have e3u and e3v vaiables so approximate using e3t
 # e3u = xr.DataArray( tran.data_T.e3t_25h.values,
@@ -487,19 +534,20 @@ if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -48.675
     print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
 else:
     print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 4c ) Transport and velocity plotting                                      #
 #
+'''
 subsec = subsec+1
 
 try:
     fig,ax = tran.plot_transect_on_map()
-    ax.set_xlim([-20,0]) # Problem: nice to make the land appear. 
+    ax.set_xlim([-20,0]) # Problem: nice to make the land appear.
     ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
     fig.tight_layout()
     fig.savefig(dn_fig + 'transect_map.png')
-    
+
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
     fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
@@ -511,10 +559,11 @@ try:
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + " !!!")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 4d ) Construct density on z_levels along transect                         #
 #
+'''
 subsec = subsec+1
 tran.construct_density_on_z_levels()
 try:
@@ -541,10 +590,11 @@ tran.data_T.density_z_levels.isel(t_dim=0).plot.pcolormesh(
     ax=ax2,yincrease=False, y='depth_z_levels')
 plt.xticks([0,57],['A','B'])
 plt.show()
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
+'''
 subsec = subsec+1
 
 #tran = coast.Transect( (54,-15), (56,-12), nemo_f)
@@ -560,16 +610,18 @@ if np.isclose(cksum1, 25.148127481586844) and np.isclose(cksum2, -5.097331047058
     print(str(sec) + chr(subsec) + " OK - TRANSECT geostrophic velocities and transports are correct")
 else:
     print(str(sec) + chr(subsec) + " X - TRANSECT geostrophic calculations do not match the checksums")
-
+'''
 #################################################
 ## ( 5 ) Object Manipulation (e.g. subsetting) ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 5a ) Subsetting single variable                                           #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -585,10 +637,11 @@ try:
         print(str(sec) + chr(subsec) + " X - Issue with NEMO COAsT get_subset_as_xarray method")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
 # ( 5b ) Indices by distance method                                           #
 #                                                                             #
+'''
 subsec = subsec+1
 
 try:
@@ -607,27 +660,18 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
+'''
 #-----------------------------------------------------------------------------#
-# ( 5c ) Subsetting entire COAsT object and return as copy                    #
+# ( 5c ) Find nearest xy indices                                              #
 #                                                                             #
+'''
 subsec = subsec+1
 try:
+    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
     altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
-
-    if (altimetry_nwes.dataset.dims['t_dim'] == 213) :
-        print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
-    else:
-        print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
-
-#-----------------------------------------------------------------------------#
-# ( 5d ) Find nearest xy indices                                              #
-#                                                                             #
-subsec = subsec+1
-try:
-    ind_x, ind_y = sci.nearest_xy_indices(sci.dataset,
+    ind_x, ind_y = general_utils.nearest_xy_indices(sci.dataset.longitude,
+                                                    sci.dataset.latitude,
                                           altimetry_nwes.dataset.longitude,
                                           altimetry_nwes.dataset.latitude)
     if ind_x.shape == altimetry_nwes.dataset.longitude.shape:
@@ -636,10 +680,11 @@ try:
         print(str(sec) + chr(subsec) + "X - Problem with nearest_xy_indices()")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 5e ) Interpolate in space (nearest)                                       #
+# ( 5d ) Interpolate in space (nearest)                                       #
 #                                                                             #
+'''
 subsec = subsec+1
 try:
     interp_lon = np.array(altimetry_nwes.dataset.longitude).flatten()
@@ -654,10 +699,11 @@ try:
         print(str(sec) + chr(subsec) + "X - Problem with space interpolation")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 5f ) Interpolate in time                                                  #
+# ( 5e ) Interpolate in time                                                  #
 #                                                                             #
+'''
 subsec = subsec+1
 try:
     interpolated = sci.interpolate_in_time(interpolated,
@@ -665,76 +711,76 @@ try:
 
     #Check time in interpolated object has same shape
     if interpolated.time.shape == altimetry_nwes.dataset.time.shape :
+        print(str(sec) + chr(subsec) + " OK - Time interpolation works ")
+    else:
+        print(str(sec) + chr(subsec) + "X - Problem with time interpolation")
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
+
+'''
+#################################################
+## ( 6 ) ALTIMETRY Methods                     ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+# This section is for testing and demonstrating the use of the ALTIMETRY
+# object. First begin by reloading NEMO t-grid test data:
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6a ) Load example altimetry data                                          #
+#                                                                             #
+'''
+subsec = subsec+1
+# We can load altimetry data straight from a CMEMS netcdf file on initialisation
+try:
+    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
+
+    # Test the data has loaded using attribute comparison, as for NEMO_data
+    alt_attrs_ref = dict([('source', 'Jason-1 measurements'),
+                 ('date_created', '2019-02-20T11:20:56Z'),
+                 ('institution', 'CLS, CNES'),
+                 ('Conventions', 'CF-1.6'),])
+
+    # checking is LHS is a subset of RHS
+    if alt_attrs_ref.items() <= altimetry.dataset.attrs.items():
+        print(str(sec) +chr(subsec) + " OK - Altimetry data loaded: " + fn_altimetry)
+    else:
+        print(str(sec) + chr(subsec) + " X - There is an issue with loading: " + fn_altimetry)
+except:
+    print(str(sec) + chr(subsec) +" FAILED")
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6b ) Altimetry subsetting                                                 #
+#                                                                             #
+'''
+subsec = subsec+1
+# The altimetry that we loaded is global so lets subset it for the North
+# West European Shelf.
+try:
+    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+    ind = ind[::4]
+    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
+
+    if (altimetry_nwes.dataset.dims['t_dim'] == 54) :
         print(str(sec) + chr(subsec) + " OK - ALTIMETRY object subsetted using isel ")
     else:
         print(str(sec) + chr(subsec) + "X - Failed to subset object/ return as copy")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
-#################################################
-## ( 6 ) Validation Methods                    ##
-#################################################
-sec = sec+1
-subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 6a ) Calculate single obs CRPS values                                     #
+# ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
+'''
 subsec = subsec+1
-try:
-    nemo = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
-    altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
-    ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-    altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
-    crps = coast.CRPS(nemo, altimetry_nwes, 'ssh','sla_filtered', nh_radius=30)
-
-    try:
-        if len(crps.dataset.crps)==len(altimetry_nwes['sla_filtered']):
-            print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-        else:
-            print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
-
-            if len(crps.crps)==len(altimetry_nwes['sla_filtered']):
-                print(str(sec) + chr(subsec) + " OK - CRPS SONF done for every observation")
-            else:
-                print(str(sec) + chr(subsec) + " X - Problem with CRPS SONF method")
-    except:
-        print(str(sec) + chr(subsec) +" FAILED")
-except:
-    print(str(sec) + chr(subsec) +" FAILED")
-
-#-----------------------------------------------------------------------------#
-# ( 6b ) CRPS Map Plots                                                       #
-#                                                                             #
-subsec = subsec+1
-plt.close('all')
-try:
-    fig, ax = crps.map_plot()
-    fig.savefig(dn_fig + 'crps_map_plot.png')
-    #plt.close(fig)
-    print(str(sec) + chr(subsec) + " OK - CRPS Map plot saved")
-except:
-    print(str(sec) + chr(subsec) + " X - CRPS Map plot not saved")
-
-#-----------------------------------------------------------------------------#
-# ( 6c ) CRPS Map Plots                                                       #
-#                                                                             #
-
-plt.close('all')
-subsec = subsec+1
-try:
-    fig, ax = crps.cdf_plot(0)
-    fig.savefig(dn_fig + 'crps_cdf_plot.png')
-    #plt.close(fig)
-    print(str(sec) + chr(subsec) + " OK - CRPS CDF plot saved")
-except:
-    print(str(sec) + chr(subsec) + " X - CRPS CDF plot not saved")
-
-#-----------------------------------------------------------------------------#
-# ( 6d ) Interpolate model to altimetry                                       #
-#                                                                             #
-subsec = subsec+1
-plt.close('all')
+# Now lets interpolate a model variable to the altimetry space using
+# obs_operator().
 
 try:
     altimetry_nwes.obs_operator(sci, 'ssh')
@@ -742,7 +788,7 @@ try:
     try:
         test = altimetry_nwes.dataset.interp_ssh
         if False in np.isnan(altimetry_nwes.dataset.interp_ssh):
-            print(str(sec) + chr(subsec) + " OK - SSH interpolated to altimetry")
+            print(str(sec) + chr(subsec) + " OK - model SSH interpolated to altimetry")
         else:
             print(str(sec) + chr(subsec) + " OK - X - Interpolation to altimetry failed")
     except:
@@ -750,22 +796,69 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
-
-#################################################
-## ( 7 ) Plotting Methods                      ##
-#################################################
-sec = sec+1
-subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 7a ) Altimetry quick_plot()                                               #
+# ( 6d ) ALTIMETRY CRPS                                                       #
 #                                                                             #
+'''
+
 subsec = subsec+1
+# Compare modelled SSH to observed sea level using CRPS. This can be done
+# either by creating a new object (create_new_object=True) or by saving it
+# to the existing object. Here we look at the first option.
+
+try:
+    crps = altimetry_nwes.crps(sci, 'ssh', 'sla_filtered')
+
+    #TEST: Check length of crps and that it contains values
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check2 = False in np.isnan(crps.dataset.crps)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
+    else:
+        print(str(sec) + chr(subsec) + " X - Altimetry CRPS")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6e ) ALTIMETRY Stats methods                                              #
+#                                                                             #
+'''
+subsec = subsec+1
+# We can batch return the basic stats methods from ALTIMETRY using basic_stats().
+# We test all of the stats routines here by using this batch function.
+# Here we compare an altimetry variable to our interpolate model SSH
+
+try:
+    stats = altimetry_nwes.basic_stats('sla_filtered', 'interp_ssh')
+    altimetry_nwes.basic_stats('sla_filtered','interp_ssh',create_new_object=False)
+
+    #TEST: Check new object resembles internal object
+    check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
+    #TEST: Check lengths and values
+    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Basic Stats for ALTIMETRY")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Basic Stats for ALTIMETRY")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 6f ) Altimetry quick_plot()                                               #
+#                                                                             #
+'''
+subsec = subsec+1
+# Now lets take a look at our CRPS values on a map
 plt.close('all')
 
 try:
-    fig, ax = altimetry.quick_plot('sla_filtered')
-    fig.savefig(dn_fig + 'altimetry_quick_plot.png')
+    fig, ax = crps.quick_plot('crps')
+    fig.savefig(dn_fig + 'altimetry_crps_quick_plot.png')
     #plt.close(fig)
     print(str(sec) + chr(subsec) + " OK - Altimetry quick plot saved")
 except:
@@ -773,74 +866,224 @@ except:
 
 plt.close('all')
 
+'''
 #################################################
-## ( 8 ) TIDEGAUGE Methods                     ##
+## ( 7 ) TIDEGAUGE Methods                     ##
 #################################################
+'''
 sec = sec+1
 subsec = 96
 
+# This section is for testing and demonstrating the use of the TIDEGAUGE
+# object. First begin by reloading NEMO t-grid test data:
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+
+'''
 #-----------------------------------------------------------------------------#
-# ( 8a ) Load in GESLA tide gauge files from directory                        #
+# ( 7a ) Load in GESLA tide gauge files from directory                        #
 #                                                                             #
+'''
 subsec = subsec+1
 
+# Tide gauge data can be loaded straight a GESLA data file.
+# Here, I load in data for Lowestoft by providing a filename and restricting
+# the dates to January 2007 using two datetime object:
+
 try:
-    date0 = datetime.datetime(2010,1,1)
-    date1 = datetime.datetime(2010,12,1)
-    tg = coast.TIDEGAUGE(dn_tidegauge, date_start = date0, date_end = date1)
-    
-    # Check length of dataset_list is correct and that
-    test_attrs = {'site_name': 'FUKAURA', 'country': 'Japan',
-    'contributor': 'Japan_Meteorological_Agency',
-    'latitude': 40.65, 'longitude': 139.9333,
-    'coordinate_system': 'Unspecified',
-    'original_start_date': np.datetime64('1971-12-31 15:00:00'),
-    'original_end_date': np.datetime64('2013-12-31 14:00:00'),
-    'time_zone_hours': 0.0, 'precision': 0.01, 'null_value': -99.9999}
-    if len(tg.dataset_list) == 9 and tg.dataset_list[0].attrs == test_attrs:
-        print(str(sec) + chr(subsec) + " OK - Tide gauges loaded")
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,12)
+    lowestoft = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
+                                date_end = date1)
+
+    # TEST: Define Attribute dictionary for comparison
+    test_attrs = {'site_name': 'Lowestoft',
+                  'country': 'United_Kingdom',
+                  'contributor': 'British_Oceanographic_Data_Centre',
+                  'coordinate_system': 'UK',
+                  'original_start_date': np.datetime64('1964-01-01 00:00:00'),
+                  'original_end_date': np.datetime64('2014-12-31 23:45:00'),
+                  'time_zone_hours': 0.0,
+                  'precision': 0.001,
+                  'null_value': -99.9999}
+
+    #TEST: Check attribute dictionary and length of sea_level.
+    check1 = len(lowestoft.dataset.sea_level) == 193
+    check2 = lowestoft.dataset.attrs == test_attrs
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Tide gauge loaded")
+    else:
+        print(str(sec) + chr(subsec) + " X - Failed to load tide gauge")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+'''
 #-----------------------------------------------------------------------------#
-# ( 8b ) TIDEGAUGE map plot                                                   #
+# ( 7b ) TIDEGAUGE obs_operator                                               #
 #                                                                             #
+'''
 subsec = subsec+1
+# Lets interpolate the sossheig variable in sci onto the location and times of
+# our tidegauge using obs_operator(). Here, we interpolate linearly in time.
 
 try:
-    f,a = tg.plot_map()
+
+    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear')
+
+    #TEST: Check that the resulting interp_sossheig variable is of the same
+    # length as sea_level and that it is populated.
+    interp = lowestoft.dataset.interp_ssh
+    interp_len = interp.shape[0]
+    orig_len = lowestoft.dataset.sea_level.shape[0]
+    check1 = interp_len == orig_len
+    check2 = False in np.isnan(lowestoft.dataset.interp_ssh)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Tide gauge obs_operator")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tide gauge obs_operator")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7c ) TIDEGAUGE CRPS                                                       #
+#                                                                             #
+'''
+subsec = subsec+1
+# Compare modelled SSH to observed sea level using CRPS. This can be done
+# either by creating a new object (create_new_object=True) or by saving it
+# to the existing object. Here we look at the first option.
+
+try:
+    crps = lowestoft.crps(sci, 'ssh')
+
+    #TEST: Check length of crps and that it contains values
+    check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.sea_level.shape[0]
+    check2 = False in np.isnan(crps.dataset.crps)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - CRPS between gauge and model exists")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with guage/model CRPS")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7d ) TIDEGAUGE Stats methods                                              #
+#                                                                             #
+'''
+subsec = subsec+1
+# We can batch return the basic stats methods from TIDEGAUGE using basic_stats().
+# We test all of the stats routines here by using this batch function.
+
+try:
+    stats = lowestoft.basic_stats('sea_level', 'interp_ssh')
+    lowestoft.basic_stats('sea_level','interp_ssh',create_new_object=False)
+
+    #TEST: Check new object resembles internal object
+    check1 = all(stats.dataset.error == lowestoft.dataset.error)
+    #TEST: Check lengths and values
+    check2 = stats.dataset.absolute_error.shape[0] == lowestoft.dataset.sea_level.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Basic Stats for TIDEGAUGE")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Basic Stats for TIDEGAUGE")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7e ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
+#                                                                             #
+'''
+subsec = subsec+1
+# We can load multiple tide gauges into a list of TIDEGAUGE objects using the
+# static method create_multiple_tidegauge.
+
+try:
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,12)
+    tidegauge_list = coast.TIDEGAUGE.create_multiple_tidegauge('./example_files/tide_gauges/l*',date0,date1)
+
+    #TEST: Check length of list
+    check1 = len(tidegauge_list) == 2
+    #TEST: Check lowestoft matches
+    check2 = all(tidegauge_list[1].dataset == lowestoft.dataset)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Multiple tide gauge load")
+    else:
+        print(str(sec) + chr(subsec) + " X - Multiple tide gauge load")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7f ) TIDEGAUGE map plot (single)                                          #
+#                                                                             #
+'''
+subsec = subsec+1
+
+# We can take a look at the location of the loaded tidegauge:
+try:
+    f,a = lowestoft.plot_on_map()
     f.savefig(dn_fig + 'tidegauge_map.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge map plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 plt.close('all')
 
+'''
 #-----------------------------------------------------------------------------#
-# ( 8c ) TIDEGAUGE Time series plot                                           #
+# ( 7g ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
+'''
 subsec = subsec+1
 
+# Or we can plot up multiple from the list we loaded:
+try:
+    f,a = coast.TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
+    f.savefig(dn_fig + 'tidegauge_multiple_map.png')
+    print(str(sec) + chr(subsec) + " OK - Tide gauge multiple map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+plt.close('all')
+
+'''
+#-----------------------------------------------------------------------------#
+# ( 7h ) TIDEGAUGE Time series plot                                           #
+#                                                                             #
+'''
+subsec = subsec+1
+
+# Take a look at the sea level time series stored within the object:
 
 try:
-    f,a = tg.plot_timeseries(0)
+    f,a = lowestoft.plot_timeseries('sea_level')
     f.savefig(dn_fig + 'tidegauge_timeseries.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 plt.close('all')
 
-
+'''
 ###############################################################################
-## ( 9 ) Isobath Contour Methods                                            ##
+## ( 8 ) Isobath Contour Methods                                            ##
 ###############################################################################
+'''
 sec = sec+1
 subsec = 96
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 9a ) Extract isbath contour between two points and create contour object  #
+# ( 8a ) Extract isbath contour between two points and create contour object  #
 #                                                                             #
+'''
 subsec = subsec+1
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
@@ -852,10 +1095,11 @@ if np.isclose( cont_f.y_ind.sum() + cont_f.y_ind.sum(), 190020 ) and \
     print(str(sec) + chr(subsec) + " OK - Isobath contour extracted")
 else:
     print(str(sec) + chr(subsec) + " X - Isobath contour failed to extract correctly")
-    
+'''
 #-----------------------------------------------------------------------------#
-# ( 9b ) Plot contour on map                                                  #
+# ( 8b ) Plot contour on map                                                  #
 #                                                                             #
+'''
 subsec = subsec+1
 coast.Contour.plot_contour(nemo_f, contour)
 cont_path = dn_fig + 'contour.png'
@@ -867,10 +1111,11 @@ try:
         print(str(sec) + chr(subsec) + " X - Contour plot did not save correctly")
 except OSError:
     print(str(sec) + chr(subsec) + " X - Contour plot did not save correctly")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 9c ) Calculate pressure along contour                                     #
+# ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
+'''
 subsec = subsec+1
 nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
@@ -884,10 +1129,11 @@ if np.allclose((cont_t.data_contour.pressure_s + cont_t.data_contour.pressure_h_
     print(str(sec) + chr(subsec) + " OK - Perturbation pressure calculation is as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Perturbation pressure calculation is not as expected")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 9d ) Calculate flow across contour                                        #
+# ( 8d ) Calculate flow across contour                                        #
 #                                                                             #
+'''
 subsec = subsec+1
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat, 
@@ -905,10 +1151,11 @@ if np.allclose((cont_f.data_cross_flow.normal_velocities +
     print(str(sec) + chr(subsec) + " OK - Cross-contour flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
-
+'''
 #-----------------------------------------------------------------------------#
-# ( 9e ) Calculate pressure gradient driven flow across contour               #
+# ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
+'''
 subsec = subsec+1
 cont_f.calc_geostrophic_flow(nemo_t, 1027)
 if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg + 
