@@ -9,7 +9,7 @@ Probability Score.
 
 import numpy as np
 import xarray as xr
-from . import CDF
+from .CDF import CDF
 
 def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time, 
                       nh_radius: float, cdf_type:str, time_interp:str
