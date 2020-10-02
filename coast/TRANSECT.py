@@ -36,7 +36,7 @@ class Transect:
 
         Parameters
         ----------
-        variable_slice : Variable to interpolate (z_dim, transect_dim)
+        variable_slice : Variable to interpolate (z_dim, r_dim)
         depth : The depth at each z point for each point along the transect
         interpolated_depth : (optional) desired depth profile to interpolate to. If not supplied
             a uniform depth profile uniformaly spaced between zero and variable max depth will be used
@@ -62,9 +62,14 @@ class Transect:
     
     @staticmethod
     def gen_z_levels(max_depth):
-        ''' Generates a pre-defined 1d vertical depth coordinates,
+        ''' Generates a pre-defined 1d vertical depth coordinate,
         i.e. horizontal z-level vertical coordinates up to a supplied 
-        maximum depth, 'max_depth' '''
+        maximum depth, 'max_depth' 
+        
+        Parameters
+        ----------
+        max_depth : int, bottom level depth 
+        '''
         
         max_depth = max_depth + 650
         z_levels_0_50 = np.arange(0,55,5)
@@ -79,29 +84,29 @@ class Transect:
     
     def __init__(self, nemo: COAsT, point_A: tuple=None, point_B: tuple=None, y_indices=None, x_indices=None):
         '''
-        Class defining a generic transect type, which is a 3d dataset between a point A and 
-        a point B, with a time dimension, a depth dimension and a transect dimension. The 
-        transect dimension defines the points along the transect.
-        The model Data is subsetted in its entirety along these dimensions.
+        Class defining a generic transect type, which is a 3d dataset along 
+        a linear path between a point A and a point B, with a time dimension,
+        a depth dimension and an along transect dimension. 
+        The model Data on the supplied grid is subsetted in its entirety along these dimensions.
         
         Note that Point A should be closer to the southern boundary of the model domain.
         
         The user can either supply the start and end (lat,lon) coordinates of the
-        transect, point_A and point_B respectively, or the model y,x indices defining it.
+        transect, point_A and point_B respectively, or the model y, x indices defining it.
         In the latter case the user must ensure that the indices define a continuous
-        transect. Only limited checks are performed on the indices.
+        transect, e.g. y=[10,11,11,12], x=[5,5,6,6].
+        Only limited checks are performed on the suitability of the indices.
         
         Example usage:
             point_A = (54,-15)
             point_B = (56,-12)
             transect = coast.Transect( nemo_t, point_A, point_B )
+            or 
+            transect = coast.Transect( nemo_f, y_indices=y_ind, x_indices=x_ind )
             
-        It is also possible 
-            
-
         Parameters
         ----------
-        nemo : NEMO object
+        nemo : NEMO object 
         point_A : tuple, (lat,lon)
         point_B : tuple, (lat,lon)
         y_indices : 1d array of model y indices defining the points of the transect 
@@ -162,31 +167,36 @@ class Transect:
 
         Parameters
         ----------
-        nemo_F : the model grid to define the transect on
+        nemo : the model grid to define the transect on
         
         Return
         ----------
-        tran_y : array of y_dim indices
-        tran_x : array of x_dim indices
+        tran_y_ind : array of y_dim indices
+        tran_x_ind : array of x_dim indices
 
         '''
         debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(nemo)}")
-     
-        # Redefine transect so that each point on the transect is seperated
-        # from its neighbours by a single index change in y or x, but not both
-        dist_option_1 = nemo.dataset.e2.values[tran_y_ind, tran_x_ind] + nemo.dataset.e1.values[tran_y_ind+1, tran_x_ind]
-        dist_option_2 = nemo.dataset.e2.values[tran_y_ind, tran_x_ind+1] + nemo.dataset.e1.values[tran_y_ind, tran_x_ind]
-        spacing = np.abs( np.diff(tran_y_ind) ) + np.abs( np.diff(tran_x_ind) )
-        spacing[spacing!=2]=0
-        doublespacing = np.nonzero( spacing )[0]
-        for ispacing in doublespacing[::-1]:
-            if dist_option_1[ispacing] < dist_option_2[ispacing]:
-                tran_y_ind = np.insert( tran_y_ind, ispacing+1, tran_y_ind[ispacing+1] )
-                tran_x_ind = np.insert( tran_x_ind, ispacing+1, tran_x_ind[ispacing] )
-            else:
-                tran_y_ind = np.insert( tran_y_ind, ispacing+1, tran_y_ind[ispacing] )
-                tran_x_ind = np.insert( tran_x_ind, ispacing+1, tran_x_ind[ispacing+1] ) 
-        return tran_y_ind, tran_x_ind
+        try:
+            # Redefine transect so that each point on the transect is seperated
+            # from its neighbours by a single index change in y or x, but not both
+            dist_option_1 = nemo.dataset.e2.values[tran_y_ind, tran_x_ind] + nemo.dataset.e1.values[tran_y_ind+1, tran_x_ind]
+            dist_option_2 = nemo.dataset.e2.values[tran_y_ind, tran_x_ind+1] + nemo.dataset.e1.values[tran_y_ind, tran_x_ind]
+            spacing = np.abs( np.diff(tran_y_ind) ) + np.abs( np.diff(tran_x_ind) )
+            if spacing.max() > 2:
+                raise ValueError("The transect is not continuous. The transect must be defined on " 
+                                     "adjacent grid points.")
+            spacing[spacing!=2]=0
+            doublespacing = np.nonzero( spacing )[0]
+            for ispacing in doublespacing[::-1]:
+                if dist_option_1[ispacing] < dist_option_2[ispacing]:
+                    tran_y_ind = np.insert( tran_y_ind, ispacing+1, tran_y_ind[ispacing+1] )
+                    tran_x_ind = np.insert( tran_x_ind, ispacing+1, tran_x_ind[ispacing] )
+                else:
+                    tran_y_ind = np.insert( tran_y_ind, ispacing+1, tran_y_ind[ispacing] )
+                    tran_x_ind = np.insert( tran_x_ind, ispacing+1, tran_x_ind[ispacing+1] ) 
+            return tran_y_ind, tran_x_ind
+        except ValueError:
+            print(traceback.format_exc())
         
      
     def plot_transect_on_map(self):
@@ -241,25 +251,38 @@ class Transect:
 
 class Transect_f(Transect):
     '''
-    Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
-    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
-    The contour dimension defines the points along the contour.
-    The supplied model t-grid Data is subsetted in its entirety along these dimensions and
-    calculations can be performed on this dataset.
+    Class defining a transect on the f-grid, which is a 3d dataset along 
+    a linear path between a point A and a point B, with a time dimension,
+    a depth dimension and an along transect dimension. The model Data on f-grid 
+    is subsetted in its entirety along these dimensions.
     
+    Note that Point A should be closer to the southern boundary of the model domain.
+    
+    The user can either supply the start and end (lat,lon) coordinates of the
+    transect, point_A and point_B respectively, or the model y, x indices defining it.
+    In the latter case the user must ensure that the indices define a continuous
+    transect, e.g. y=[10,11,11,12], x=[5,5,6,6].
+    Only limited checks are performed on the suitability of the indices.
+    
+    Example usage:
+        point_A = (54,-15)
+        point_B = (56,-12)
+        transect = coast.Transect_f( nemo_f, point_A, point_B )
+        or 
+        transect = coast.Transect_f( nemo_f, y_indices=y_ind, x_indices=x_ind )
+        
     Parameters
     ----------
-    nemo : COAsT
-        t-grid nemo object containing the model dataset.
-    y_ind : numpy.ndarray
-        1d array of y indices defining the contour on the model grid
-    x_ind : numpy.ndarray
-        1d array of x indices defining the contour on the model grid
-    depth : int
-        Depth of contour isobath
+    nemo_f : NEMO object on the f-grid
+    point_A : tuple, (lat,lon)
+    point_B : tuple, (lat,lon)
+    y_indices : 1d array of model y indices defining the points of the transect 
+    x_indices : 1d array of model x indices defining the points of the transect 
+
     '''
     
-    def __init__(self, nemo_f: COAsT, point_A: tuple=None, point_B: tuple=None, y_indices=None, x_indices=None):
+    def __init__(self, nemo_f: COAsT, point_A: tuple=None, point_B: tuple=None, 
+                 y_indices=None, x_indices=None):
         super().__init__(nemo_f, point_A, point_B, y_indices, x_indices)
         
         
@@ -269,12 +292,17 @@ class Transect_f(Transect):
         Computes the flow through the transect at each segment and creates a new 
         dataset 'Transect_f.data_cross_tran_flow' defined on the normal velocity
         points along the transect.
-        Transect normal velocities ara calculated at each grid point and stored in
+        Transect normal velocities are calculated at each grid point and stored in
         in Transect_f.data_cross_tran_flow.normal_velocities,
         Depth integrated volume transport across the transect is calculated 
         at each transect segment and stored in Transect_f.data_cross_tran_flow.normal_transports
         The latitude, longitude and the horizontal and vertical scale factors
         on the normal velocity points are also stored in the dataset.
+        
+        parameters
+        ----------
+        nemo_u : Nemo object on the u-grid containing the i-component velocities
+        nemo_v : Nemo object on the v-gridc ontaining the j-component velocities
         
         """
         debug(f"Computing flow across the transect for {get_slug(self)}")
@@ -301,7 +329,7 @@ class Transect_f(Transect):
         e2 = np.ma.zeros( (u_ds.r_dim.size-1) )
         e3_0 = np.ma.zeros( (u_ds.z_dim.size, u_ds.r_dim.size-1) )
         
-        # Find the indices where the derivative of the contour in the north, south, east and west
+        # Find the indices where the derivative of the transect in the north, south, east and west
         # directions are positive.
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,self.data.r_dim.size-1), np.nan )
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
@@ -367,91 +395,37 @@ class Transect_f(Transect):
         self.data_cross_tran_flow.depth_0.attrs['standard_name'] = 'depth'
         self.data_cross_tran_flow.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points'
                         
-
-    def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, velocity_component):
-        """
-        Calculates the hydrostatic and surface pressure gradients at an f-point
-        along the transect, i.e. a specific value of r_dim (but for all time and depth).
-        The caller must supply four datasets that define
-        the hydrostatic and surface pressure at all vertical z_levels and all time 
-        on the t-points around the transect i.e. for an f-point on the transect 
-        defined at (j+1/2, i+1/2), we want t-points at (j,i), (j+1,i), (j,i+1), (j+1,i+1), 
-        corresponding to  ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, respectively. 
-        ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1 will have dimensions in time and depth.
-        
-        The velocity_component defines whether u or v is normal to the transect 
-        for that particular segment of the transect. A segment of transect is 
-        defined as being r_dim to r_dim+1 where r_dim is the dimension along the transect.
-
-
-        Returns
-        -------
-        hpg_f : DataArray with dimensions in time and depth
-            hydrostatic pressure gradient at an f-point point along the transect
-            for all time and depth
-        spg_f : DataArray with dimensions in time and depth
-            surface pressure gradient at an f-point point along the transect
-
-        """
-        if velocity_component == "u":
-            # required scale factors for derivative and averaging
-            e2v = 0.5*( ds_T_j1.e2 + ds_T.e2 )
-            e2v_i1 = 0.5*( ds_T_j1i1.e2 + ds_T_i1.e2 )
-            e1v = 0.5*( ds_T_j1.e1 + ds_T.e1 )
-            e1v_i1 = 0.5*( ds_T_j1i1.e1 + ds_T_i1.e1 )
-            e1f = 0.5*( e1v + e1v_i1 )            
-            # calculate gradients at v-points either side of f-point
-            hpg = (ds_T_j1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e2v
-            hpg_i1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_i1.pressure_h_zlevels) / e2v_i1   
-            # average onto f-point
-            hpg_f = 0.5 * ( ( e1v * hpg ) + ( e1v_i1 * hpg_i1 ) ) / e1f 
-            # as aboave            
-            spg = (ds_T_j1.pressure_s - ds_T.pressure_s) / e2v
-            spg_i1 = (ds_T_j1i1.pressure_s - ds_T_i1.pressure_s) / e2v_i1
-            spg_f = 0.5 * ( (e1v * spg) + (e1v_i1 * spg_i1) ) / e1f 
-        elif velocity_component == "v":
-            # required scale factors for derivative and averaging
-            e1u = 0.5 * ( ds_T_i1.e1 + ds_T.e1 ) 
-            e1u_j1 = 0.5 * ( ds_T_j1i1.e1 + ds_T_j1.e1 )
-            e2u = 0.5 * ( ds_T_i1.e2 + ds_T.e2 )
-            e2u_j1 = 0.5 * ( ds_T_j1i1.e2 + ds_T_j1.e2 )
-            e2f = 0.5 * ( e2u + e2u_j1 )
-            # calculate gradients at u-points either side of f-point
-            hpg = (ds_T_i1.pressure_h_zlevels - ds_T.pressure_h_zlevels) / e1u
-            hpg_j1 = (ds_T_j1i1.pressure_h_zlevels - ds_T_j1.pressure_h_zlevels) / e1u_j1 
-            # average onto f-point
-            hpg_f = 0.5 * ( (e2u * hpg) + (e2u_j1 * hpg_j1) ) / e2f
-            # as above
-            spg = (ds_T_i1.pressure_s - ds_T.pressure_s) / e1u
-            spg_j1 = (ds_T_j1i1.pressure_s - ds_T_j1.pressure_s) / e1u_j1 
-            spg_f = 0.5 * ( (e2u * spg) + (e2u_j1 * spg_j1) ) / e2f
-        
-        return (hpg_f, spg_f)
-    
-    
-    def __pressure_grad_fpoint2(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, r_ind, velocity_component):
+  
+    def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, r_ind, velocity_component):
         """
         Calculates the hydrostatic and surface pressure gradients at a set of f-points
-        along the contour, i.e. at a set of specific values of r_dim (but for all time and depth).
+        along the transect, i.e. at a set of specific values of r_dim (but for all time and depth).
         The caller must supply four datasets that contain the variables which define
         the hydrostatic and surface pressure at all vertical z_levels and all time 
-        on the t-points around the contour i.e. for a set of f-points on the contour 
-        defined each defined at (j+1/2, i+1/2), we want t-points at (j,i), (j+1,i), (j,i+1), (j+1,i+1), 
+        on the t-points around the transect i.e. for a set of f-points on the transect 
+        defined at (j+1/2, i+1/2), t-points are supplied at (j,i), (j+1,i), (j,i+1), (j+1,i+1), 
         corresponding to ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, respectively. 
-        ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1 will have dimensions in time and depth.
         
-        The velocity_component defines whether u or v is normal to the contour 
-        for the segments of the contour. A segment of contour is 
-        defined as being r_dim to r_dim+1 where r_dim is the along contour dimension.
+        The velocity_component defines whether u or v is normal to the transect 
+        for the segments of the transect. A segment of transect is 
+        defined as being r_dim to r_dim+1 where r_dim is the along transect dimension.
 
-
+        Parameters
+        ----------
+        ds_T : coast.Transect_t on y=self.y_ind, x=self.x_ind
+        ds_T_j1 : coast.Transect_t on y=self.y_ind+1, x=self.x_ind
+        ds_T_i1 : coast.Transect_t on y=self.y_ind, x=self.x_ind+1
+        ds_T_j1i1 : coast.Transect_t on y=self.y_ind+1, x=self.x_ind+1
+        r_ind: 1d array, along transect indices 
+        velocity_component : str, normal velocity at r_ind
+        
         Returns
         -------
-        hpg_f : DataArray with dimensions in time and depth and along contour
-            hydrostatic pressure gradient at a set of f-points along the contour
+        hpg_f : DataArray with dimensions in time and depth and along transect
+            hydrostatic pressure gradient at a set of f-points along the transect
             for all time and depth
-        spg_f : DataArray with dimensions in time and depth and along contour
-            surface pressure gradient at a set of f-points along the contour
+        spg_f : DataArray with dimensions in time and depth and along transect
+            surface pressure gradient at a set of f-points along the transect
 
         """
         if velocity_component == "u":
@@ -493,32 +467,31 @@ class Transect_f(Transect):
     def calc_geostrophic_flow(self, nemo_t: COAsT, ref_density=None):
         """
         This method will calculate the geostrophic velocity and volume transport
-        (due to the geostrophic vurrent) across the transect. 
-        4 variables are added to the TRANSECT.tran_data dataset:
+        (due to the geostrophic current) across the transect. 
+        4 variables are added to the Transect_f.data_cross_tran_flow dataset:
             1. normal_velocity_hpg      (t_dim, depth_z_levels, r_dim)
             This is the velocity due to the hydrostatic pressure gradient
             2. normal_velocity_spg      (t_dim, r_dim)
             This is the velocity due to the surface pressure gradient
-            3. transport_across_AB_hpg  (t_dim, r_dim)
+            3. normal_transport_hpg  (t_dim, r_dim)
             This is the volume transport due to the hydrostatic pressure gradient
-            4. transport_across_AB_spg  (t_dim, r_dim
+            4. normal_transport_AB_spg  (t_dim, r_dim
             This is the volume transport due to the surface pressure gradient
                                                                        
-        Ths implementation works by regridding from s_levels to z_levels in order
-        to perform the horizontal gradients. Currently the s_level depths are
-        assumed fixed at their initial depths, i.e. at time zero.
+        The implementation works by regridding from the native vertical grid to 
+        horizontal z_levels in order to perform the horizontal gradients.
+        Currently the level depths are assumed fixed at their initial depths,
+        i.e. at time zero.
         
         Parameters
         ----------
-        nemo_t_object : COAsT
+        nemo_t : COAsT
             This is the nemo model data on the t-grid for the entire domain. It
             must contain the temperature, salinity and t-grid domain data (e1t, e2t, e3t_0).
-        ref_density : TYPE, optional
-            reference density value. The default is 1027.
+        ref_density : float, optional
+            reference density value. If None a transect mean density will be calculated 
+            and used.
 
-        Returns
-        -------
-        None.
 
         """
         debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with "
@@ -533,8 +506,8 @@ class Transect_f(Transect):
         #We need to calculate the pressure at four t-points to get an
         # average onto the pressure gradient at the f-points, which will then
         # be averaged onto the normal velocity points. Here we subset the nemo_t 
-        # data around the contour so we have these four t-grid points at each 
-        # point along the contour        
+        # data around the transect so we have these four t-grid points at each 
+        # point along the transect        
         tran_t = Transect_t(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind)            # j,i
         tran_t_j1 = Transect_t(nemo_t_local, y_indices=self.y_ind+1, x_indices=self.x_ind)       # j+1,i
         tran_t_i1 = Transect_t(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind+1)       # j,i+1
@@ -576,7 +549,7 @@ class Transect_f(Transect):
         # Coriolis parameter
         f = 2 * self.EARTH_ROT_RATE * np.sin( np.deg2rad(self.data.latitude) )
         
-        # Find the indices where the derivative of the contour in the north, south, east and west
+        # Find the indices where the derivative of the transect in the north, south, east and west
         # directions are positive.
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,self.data.r_dim.size-1), np.nan )
         dr_e = np.where(np.diff(self.x_ind)>0, np.arange(0,self.data.r_dim.size-1), np.nan )
@@ -585,7 +558,7 @@ class Transect_f(Transect):
                    dr_e[~np.isnan(dr_e)].astype(int), dr_w[~np.isnan(dr_w)].astype(int)]
         
         # horizontal scale factors on the relevent u and v grids that are
-        # normal to the contour for dr_n, dr_e, dr_w
+        # normal to the transect for dr_n, dr_e, dr_w
         e2u_j1  = 0.5 * ( tran_t_j1.data.e2.data[dr_list[0]] + tran_t_j1i1.data.e2.data[dr_list[0]] )
         e1v_i1  = 0.5 * ( tran_t_i1.data.e1.data[dr_list[1]] + tran_t_j1i1.data.e1.data[dr_list[1]] )
         e1v     = 0.5 * ( tran_t.data.e1.data[dr_list[2]] + tran_t_j1.data.e1.data[dr_list[2]] )
@@ -593,9 +566,9 @@ class Transect_f(Transect):
         # Horizontal scale factors on f-grid for dr_n, dr_e, dr_w
         e_horiz_f   = [self.data.e2,  
                        self.data.e1, self.data.e1]
-        # velocity component normal to contour for dr_n, dr_s, dr_e, dr_w
+        # velocity component normal to transect for dr_n, dr_s, dr_e, dr_w
         velocity_component = ["u","v","v"]
-        # Geostrophic flow direction across contour
+        # Geostrophic flow direction across transect
         flow_direction = [-1,-1,1]   
         
         # The cross transect flow is defined on the u and v points that are across
@@ -616,15 +589,15 @@ class Transect_f(Transect):
         latitude = np.zeros( (u_ds.r_dim.size-1) )
         longitude = np.zeros( (u_ds.r_dim.size-1) )
         depth_0 = np.ma.zeros( (u_ds.z_dim.size, u_ds.r_dim.size-1) )
-        # horizontal scale factors for each segmant of contour
+        # horizontal scale factors for each segmant of transect
         e_horiz = np.zeros( (tran_t.data.t_dim.size, tran_t.data.r_dim.size-1) ) 
         # Contruct geostrophic flow
         for dr, vel_comp, flow_dir, e_hor_vel, e_hor_f, i_ds in \
                 zip(dr_list, velocity_component, flow_direction, e_horiz_vel, e_horiz_f, ds) :
-            hpg, spg        = self.__pressure_grad_fpoint2( tran_t.data, 
+            hpg, spg        = self.__pressure_grad_fpoint( tran_t.data, 
                                 tran_t_j1.data, tran_t_i1.data, 
                                 tran_t_j1i1.data, dr, vel_comp )
-            hpg_r1, spg_r1  = self.__pressure_grad_fpoint2( tran_t.data,
+            hpg_r1, spg_r1  = self.__pressure_grad_fpoint( tran_t.data,
                                 tran_t_j1.data,
                                 tran_t_i1.data, 
                                 tran_t_j1i1.data, dr+1, vel_comp )
@@ -634,10 +607,10 @@ class Transect_f(Transect):
             normal_velocity_spg[:,dr]   = ( flow_dir * 0.5 * (e_hor_f.data[dr]*spg/f.data[dr] 
                                             + e_hor_f.data[dr+1]*spg_r1/f.data[dr+1]) 
                                             / (e_hor_vel * ref_density) ) 
-            e_horiz[:,dr]               = e_hor_vel
-            depth_0[:,dr]               = i_ds.depth_0.to_masked_array()[:,dr]
-            latitude[dr]                = i_ds.latitude.data[dr]
-            longitude[dr]               = i_ds.longitude.data[dr]
+            e_horiz[:,dr] = e_hor_vel
+            depth_0[:,dr] = i_ds.depth_0.to_masked_array()[:,dr]
+            latitude[dr]  = i_ds.latitude.data[dr]
+            longitude[dr] = i_ds.longitude.data[dr]
             
         # Bathymetry at normal velocity points             
         #H = np.zeros_like( self.data.bathymetry.values )[:-1]
@@ -674,12 +647,12 @@ class Transect_f(Transect):
                 coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg)
         self.data_cross_tran_flow['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
-        self.data_cross_tran_flow['transport_across_AB_hpg'] = ( self.data_cross_tran_flow
+        self.data_cross_tran_flow['normal_transport_hpg'] = ( self.data_cross_tran_flow
                 .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * e_horiz / 1000000   
-        self.data_cross_tran_flow.transport_across_AB_hpg.attrs = {'units': 'Sv', 
+        self.data_cross_tran_flow.normal_transport_hpg.attrs = {'units': 'Sv', 
                 'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}        
-        self.data_cross_tran_flow['transport_across_AB_spg'] = self.data_cross_tran_flow.normal_velocity_spg * H * e_horiz / 1000000
-        self.data_cross_tran_flow.transport_across_AB_spg.attrs = {'units': 'Sv', 
+        self.data_cross_tran_flow['normal_transport_spg'] = self.data_cross_tran_flow.normal_velocity_spg * H * e_horiz / 1000000
+        self.data_cross_tran_flow.normal_transport_spg.attrs = {'units': 'Sv', 
                 'standard_name': 'volume transport across transect due to the surface pressure gradient'}       
                     
         self.data_cross_tran_flow['latitude'] = xr.DataArray( latitude, dims=['r_dim'] ) 
@@ -712,9 +685,9 @@ class Transect_f(Transect):
         '''
         debug(f"Plotting normal velocity for {get_slug(self)} with plot_info {plot_info}")
         try:
-            data = self.data_tran.sel(t_dim = time)
+            data = self.data_cross_tran_flow.sel(t_dim = time)
         except KeyError:
-            data = self.data_tran.isel(t_dim = time)        
+            data = self.data_cross_tran_flow.isel(t_dim = time)        
         
         if smoothing_window != 0:
             normal_velocities, depth = self.interpolate_slice( data.normal_velocities, data.depth_0 )            
@@ -763,14 +736,14 @@ class Transect_f(Transect):
         '''
         debug(f"Generating quick plot for {get_slug(self)} with plot_info {plot_info}")
         try:
-            data = self.data_tran.sel(t_dim = time)
+            data = self.data_cross_tran_flow.sel(t_dim = time)
         except KeyError:
-            data = self.data_tran.isel(t_dim = time)            
+            data = self.data_cross_tran_flow.isel(t_dim = time)            
         
         if smoothing_window != 0:    
-            transport = self.moving_average(data.depth_integrated_transport_across_AB, smoothing_window, axis=-1)
+            transport = self.moving_average(data.normal_transports, smoothing_window, axis=-1)
         else:
-            transport = data.depth_integrated_transport_across_AB
+            transport = data.normal_transports
         
         import matplotlib.pyplot as plt
         plt.close('all')
@@ -788,25 +761,38 @@ class Transect_f(Transect):
     
 class Transect_t(Transect):
     '''
-    Class defining a Contour type on the t-grid, which is a 3d dataset of points between a point A and 
-    a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
-    The contour dimension defines the points along the contour.
-    The supplied model t-grid Data is subsetted in its entirety along these dimensions and
-    calculations can be performed on this dataset.
+    Class defining a transect on the t-grid, which is a 3d dataset along 
+    a linear path between a point A and a point B, with a time dimension,
+    a depth dimension and an along transect dimension. The model Data on t-grid 
+    is subsetted in its entirety along these dimensions.
     
+    Note that Point A should be closer to the southern boundary of the model domain.
+    
+    The user can either supply the start and end (lat,lon) coordinates of the
+    transect, point_A and point_B respectively, or the model y, x indices defining it.
+    In the latter case the user must ensure that the indices define a continuous
+    transect, e.g. y=[10,11,11,12], x=[5,5,6,6].
+    Only limited checks are performed on the suitability of the indices.
+    
+    Example usage:
+        point_A = (54,-15)
+        point_B = (56,-12)
+        transect = coast.Transect_t( nemo_t, point_A, point_B )
+        or 
+        transect = coast.Transect_t( nemo_t, y_indices=y_ind, x_indices=x_ind )
+        
     Parameters
     ----------
-    nemo : COAsT
-        t-grid nemo object containing the model dataset.
-    y_ind : numpy.ndarray
-        1d array of y indices defining the contour on the model grid
-    x_ind : numpy.ndarray
-        1d array of x indices defining the contour on the model grid
-    depth : int
-        Depth of contour isobath
+    nemo_t : NEMO object  on the t-grid
+    point_A : tuple, (lat,lon)
+    point_B : tuple, (lat,lon)
+    y_indices : 1d array of model y indices defining the points of the transect 
+    x_indices : 1d array of model x indices defining the points of the transect 
+
     '''
     
-    def __init__(self, nemo_t: COAsT, point_A: tuple=None, point_B: tuple=None, y_indices=None, x_indices=None):
+    def __init__(self, nemo_t: COAsT, point_A: tuple=None, point_B: tuple=None,
+                 y_indices=None, x_indices=None):
         super().__init__(nemo_t, point_A, point_B, y_indices, x_indices)
         
         
@@ -824,7 +810,7 @@ class Transect_t(Transect):
             Absolute Salinity and Conservate Temperature.
             
             Three new variables (density, hydrostatic pressure, surface pressure)
-            are created and added to the Contour_t.data dataset:
+            are created and added to the Transect_t.data dataset:
                 density_zlevels       (t_dim, depth_z_levels, r_dim)
                 pressure_h_zlevels    (t_dim, depth_z_levels, r_dim)
                 pressure_s            (t_dim, r_dim)
@@ -835,17 +821,15 @@ class Transect_t(Transect):
         Parameters
         ----------
         ref_density: float
-            reference density value, if None, then the Contour mean across time, 
-            depth and along contour will be used.
+            reference density value, if None, then the transect mean across time, 
+            depth and along transect will be used.
         z_levels : (optional) numpy array
             1d array that defines the depths to interpolate the density and pressure
-            on to.
+            on to. If not supplied, the Transect.gen_z_levels method will be used.
         extrapolate : boolean, default False
-            If true the variables are extrapolated to the deepest z_level, if false,
+            If true the variables are extrapolated to the deepest level, if false,
             values below the bathymetry are set to NaN
-        Returns
-        -------
-        None.
+
 
         '''        
         
@@ -942,117 +926,3 @@ class Transect_t(Transect):
                                   'standard_name': 'Surface perturbation pressure'}
         
 
-
-    def construct_density_on_z_levels( self, EOS='EOS10'):#, z_levels=None ):        
-        '''
-            For s-level model output this method recontructs the in-situ density 
-            onto z_levels along the transect. The z_levels and density field
-            are added to the data_T dataset attribute. 
-            
-            Requirements: The supplied t-grid dataset must contain the 
-            Practical Salinity and the Potential Temperature variables. The depth_0
-            field must also be supplied. The GSW package is used to calculate
-            The Absolute Pressure, Absolute Salinity and Conservate Temperature.
-            
-            This method is useful when horizontal gradients of the density field 
-            are required. Currently z_levels cannot be specified, the 
-            method will contruct a z_levels profile from the s_levels.
-            
-            Note that currently density can only be constructed using the EOS10
-            equation of state.
-
-        Parameters
-        ----------
-        EOS : equation of state, optional
-            DESCRIPTION. The default is 'EOS10'.
-
-
-        Returns
-        -------
-        None.
-        adds attributes Transect.data_T.depth_z_levels and Transect.data_T.density_z_levels
-
-        '''
-        debug(f"Constructing in-situ density on z-levels for {get_slug(self)} with EOS \"{EOS}\"")
-        try:
-            if EOS != 'EOS10': 
-                raise ValueError(get_slug(self) + ': Density calculation for ' + EOS + ' not implemented.')
-            if self.data_T is None:
-                raise ValueError(get_slug(self) + ': Density calculation can only be performed \
-                    when a t-grid object has been assigned to the nemo_T attribute. This\
-                    can be done at initialisation.' )
-         # TODO Should this be reinstated and converted to a log message?
-          #  if not self.data_T.ln_sco.item():
-           #     raise ValueError(str(self) + ': Density calculation only implemented for s-vertical-coordinates.')            
-    
-            #if z_levels is None:
-            z_levels = self.data_T.depth_0.max(dim=(['r_dim']))                
-            z_levels_min = self.data_T.depth_0[0,:].max(dim=(['r_dim']))
-            z_levels[0] = z_levels_min
-            #else:
-             #   z_max = self.data_T.depth_0.max(dim=(['r_dim','z_dim'])).item()
-              #  z_min = self.data_T.depth_0[0,:].max(dim=(['r_dim'])).item()
-               # z_levels = z_levels[z_levels<=z_max]
-                #z_levels = z_levels[z_levels>=z_min]                     
-            
-            try:    
-                shape_ds = ( self.data_T.t_dim.size, z_levels.size, 
-                                self.data_T.r_dim.size )
-                sal = self.data_T.salinity.to_masked_array()
-                temp = self.data_T.temperature.to_masked_array()                
-            except AttributeError:
-                shape_ds = ( 1, z_levels.size, self.data_T.r_dim.size )
-                sal = self.data_T.salinity.to_masked_array()[np.newaxis,...]
-                temp = self.data_T.temperature.to_masked_array()[np.newaxis,...]
-            
-            sal_z_levels = np.ma.zeros( shape_ds )
-            temp_z_levels = np.ma.zeros( shape_ds )
-            density_z_levels = np.ma.zeros( shape_ds )
-            
-            s_levels = self.data_T.depth_0.to_masked_array()
-            lat = self.data_T.latitude.values
-            lon = self.data_T.longitude.values
-    
-            for it in np.arange(0, shape_ds[0]):
-                for ir in self.data_T.r_dim:
-                    if np.all(np.isnan(sal[it,:,ir])):
-                        density_z_levels[it,:,ir] = np.nan
-                        density_z_levels[it,:,ir].mask = True
-                    else:                      
-                        sal_func = interpolate.interp1d( s_levels[:,ir], sal[it,:,ir], 
-                                    bounds_error=False, kind='linear')
-                        temp_func = interpolate.interp1d( s_levels[:,ir], temp[it,:,ir], 
-                                    bounds_error=False, kind='linear')
-                        
-                        sal_z_levels[it,:,ir] = sal_func(z_levels.values)
-                        temp_z_levels[it,:,ir] = temp_func(z_levels.values)
-                        
-            # Absolute Pressure    
-            pressure_absolute = np.ma.masked_invalid(
-                gsw.p_from_z( -z_levels.values[:,np.newaxis], lat ) ) # depth must be negative           
-            # Absolute Salinity           
-            sal_absolute = np.ma.masked_invalid(
-                gsw.SA_from_SP( sal_z_levels, pressure_absolute, lon, lat ) )
-            sal_absolute = np.ma.masked_less(sal_absolute,0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(
-                gsw.CT_from_pt( sal_absolute, temp_z_levels ) )
-            # In-situ density
-            density_z_levels = np.ma.masked_invalid( gsw.rho( 
-                sal_absolute, temp_conservative, pressure_absolute ) )
-            
-            coords={'depth_z_levels': (('z_dim'), z_levels.values),
-                    'latitude': (('r_dim'), self.data_T.latitude.values),
-                    'longitude': (('r_dim'), self.data_T.longitude.values)}
-            dims=['z_dim', 'r_dim']
-            attributes = {'units': 'kg / m^3', 'standard name': 'In-situ density on the z-level vertical grid'}
-            
-            if shape_ds[0] != 1:
-                coords['time'] = (('t_dim'), self.data_T.time.values)
-                dims.insert(0, 't_dim')
-              
-            self.data_T['density_z_levels'] = xr.DataArray( np.squeeze(density_z_levels), 
-                    coords=coords, dims=dims, attrs=attributes )
-
-        except AttributeError as err:
-            error(err)

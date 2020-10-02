@@ -54,6 +54,7 @@ import datetime
 import os.path as path
 import logging
 import coast.general_utils as general_utils
+import traceback
 
 '''
 #################################################
@@ -500,40 +501,27 @@ else:
 # ( 4b ) Transport velocity and depth calculations                            #
 #
 '''
-subsec = subsec+1
-
-nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
-nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
-nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
-
-# Create transect object
-tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-
-## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the
-## future, but for now we use the scale factors at time=0 from the domain_cfg
-# Currently we don't have e3u and e3v vaiables so approximate using e3t
-# e3u = xr.DataArray( tran.data_T.e3t_25h.values,
-#                    coords={'time': tran.data_U.time},
-#                    dims=['t_dim', 'z_dim', 'r_dim'])
-# tran.data_U = tran.data_U.assign(e3=e3u)
-# e3v = xr.DataArray( tran.data_T.e3t_25h.values,
-#                    coords={'time': tran.data_U.time},
-#                    dims=['t_dim', 'z_dim', 'r_dim'])
-# tran.data_V = tran.data_V.assign(e3=e3v)
-
-output = tran.transport_across_AB()
-# Check the calculations are as expected
-if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -48.675621368738874)  \
-        and np.isclose(tran.data_tran.depth_0.sum(), 2301799.05444336) \
-        and np.isclose(np.nansum(tran.data_tran.normal_velocities.values), -253.6484375):
-
-    print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
-else:
-    print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
+try:
+    subsec = subsec+1
+    
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
+    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
+    nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
+    
+    tran_f = coast.Transect_f( nemo_f, (54,-15), (56,-12) )    
+    output = tran_f.calc_flow_across_transect(nemo_u,nemo_v)
+    cksum1 = tran_f.data_cross_tran_flow.normal_velocities.sum(dim=('t_dim', 'z_dim', 'r_dim')).item()
+    cksum2 = tran_f.data_cross_tran_flow.normal_transports.sum(dim=('t_dim', 'r_dim')).item()
+    if np.isclose(cksum1,-253.6484375) and np.isclose(cksum2,-48.67562136873888):
+        print(str(sec) + chr(subsec) + " OK - TRANSECT cross flow calculations as expected")
+    else:
+        print(str(sec) + chr(subsec) + " X - TRANSECT cross flow calculations not as expected")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 '''
 #-----------------------------------------------------------------------------#
 # ( 4c ) Transport and velocity plotting                                      #
