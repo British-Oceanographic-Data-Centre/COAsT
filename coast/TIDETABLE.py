@@ -5,15 +5,35 @@ import pandas as pd
 import glob
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
-from .logging_util import get_slug, debug, error
+from .logging_util import get_slug, debug, error, info
 import datetime
 
+def npdatetime64_2_datetime(date):
+    """
+    Convert from numpy.dateime64 to datetime
+    Helpful guidance: https://stackoverflow.com/questions/13703720/converting-between-datetime-timestamp-and-datetime64
+    """
+    print('type(date):',type(date))
+    dt64 = np.datetime64(date) # already this type, but just to be explicit
+    unix_epoch = np.datetime64(0, 's')
+    one_second = np.timedelta64(1, 's')
+    seconds_since_epoch = (dt64 - unix_epoch) / one_second
+    return datetime.datetime.utcfromtimestamp(seconds_since_epoch)
 
 def nearest_datetime_ind(items, pivot):
     """
     find the index from items for the nearest value to pivot
     This method should surely be stored somewhere else...
+
+    items - an array of timezone aware datetime objects
+       E.g. array([datetime.datetime(2020, 1, 1, 2, 36, tzinfo=datetime.timezone(datetime.timedelta(0), 'GMT')),
+        datetime.datetime(2020, 1, 1, 21, 41, tzinfo=datetime.timezone(datetime.timedelta(0), 'GMT'))],
+        dtype=object)
     """
+    debug("nearest_datetime_ind",pivot.tzinfo)
+    debug(type(pivot.tzinfo))
+    debug( [date.tzinfo for date in items] )
+    debug( [type(date.tzinfo) for date in items] )
     time_diff = np.abs([date - pivot for date in items])
     return time_diff.argmin(0)
 
@@ -181,9 +201,51 @@ class TIDETABLE(object):
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
         dataset = dataset.assign_coords(time = ('t_dim', time))
 
+        print('Time zone type', type(time[0].tzinfo) )
+
         # Assign local dataset to object-scope dataset
         return dataset
 
+    def get_tidetabletimes(self, time_guess:datetime = None, window:int = 2):
+        """
+        Get tide times and heights from tide table.
+        input:
+        time_guess : np.datetime64 or datetime
+                assumes localised time zone unless specified otherwise
+        window:  +/- hours window size (int)
+
+        returns:
+        height (m), time (timezone aware)
+        """
+
+        # Ensure the date objects are datetime
+        if type(time_guess) is np.datetime64:
+            info('Convert date to datetime')
+            time_guess = npdatetime64_2_datetime(time_guess)
+
+        if time_guess.tzinfo == None:
+            time_guess = time_guess.astimezone()
+
+        if time_guess == None:
+            info("Use today's date")
+            time_guess = datetime.datetime.utcnow().astimezone()
+
+        # Return only values between stated dates
+        start_index = 0
+        end_index = len(self.dataset.time)
+
+        debug('time_guess',type(time_guess.tzinfo))
+        debug('time_guess',time_guess.tzinfo)
+        debug('time:', type(self.dataset.time.values[0].tzinfo) )
+        debug('test', time_guess - datetime.timedelta(hours=2) )
+        #print('2h', type(datetime.timedelta(hours=2).tzinfo))
+        start_index = nearest_datetime_ind(self.dataset.time.values, time_guess - datetime.timedelta(hours=window))
+        end_index  =  nearest_datetime_ind(self.dataset.time.values, time_guess + datetime.timedelta(hours=window))
+
+        time = self.dataset.time[start_index:end_index].values
+        sea_level = self.dataset.sea_level[start_index:end_index].values
+
+        return sea_level, time
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###
