@@ -20,7 +20,7 @@ class Transect:
     
     
     @staticmethod
-    def moving_average(self, array_to_smooth, window=2, axis=-1):
+    def moving_average(array_to_smooth, window=2, axis=-1):
         '''
         Returns the input array smoothed along the given axis using convolusion
         '''
@@ -29,7 +29,7 @@ class Transect:
 
 
     @staticmethod
-    def interpolate_slice(self, variable_slice, depth, interpolated_depth=None ):
+    def interpolate_slice(variable_slice, depth, interpolated_depth=None ):
         '''
         Linearly interpolates the variable at a single time along the z_dim, which must be the
         first axis.
@@ -690,8 +690,8 @@ class Transect_f(Transect):
             data = self.data_cross_tran_flow.isel(t_dim = time)        
         
         if smoothing_window != 0:
-            normal_velocities, depth = self.interpolate_slice( data.normal_velocities, data.depth_0 )            
-            normal_velocities = self.moving_average(normal_velocities, smoothing_window, axis=-1)
+            normal_velocities, depth = Transect.interpolate_slice( data.normal_velocities, data.depth_0 )            
+            normal_velocities = Transect.moving_average(normal_velocities, smoothing_window, axis=-1)
             r_dim_2d = np.broadcast_to( data.r_dim, normal_velocities.shape  )
         else:
             normal_velocities = data.normal_velocities
