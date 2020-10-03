@@ -42,16 +42,20 @@ class TIDETABLE(object):
     This is where the main things happen.
     Where user input is managed and methods are launched
     """
-    def __init__(self, file_path = None, date_start=None, date_end=None):
+    def __init__(self, file_path = None, \
+                date_start = None, \
+                date_end = None):
         '''
         Initialise TIDEGAUGE object either as empty (no arguments) or by
-        reading GESLA data from a directory between two datetime objects.
+        reading HLW data from a directory between two datetime objects.
+
+        date objects can be datetime or np.datetime64
 
         # Read tide gauge data for 2020
-        filnam = 'data/Liverpool_2015_2020_HLW.txt'
+        filnam = '/Users/jeff/GitHub/DeeBore/data/Liverpool_2015_2020_HLW.txt'
         date_start = datetime.datetime(2020,1,1)
         date_end = datetime.datetime(2020,12,31)
-        tg = TIDEGAUGE(filnam, date_start, date_end)
+        tg = TIDETABLE(filnam, date_start, date_end)
 
         # Access the data
         tg.dataset
@@ -60,12 +64,19 @@ class TIDETABLE(object):
         tg.dataset.plot.scatter(x="time", y="sea_level")
 
         '''
+        # Ensure the date objects are datetime
+        if type(date_start) is np.datetime64:
+            print('Convert date to datetime')
+            date_start = npdatetime64_2_datetime(date_start)
+            date_end = npdatetime64_2_datetime(date_end)
+
         # If file list is supplied, read files from directory
         if file_path is None:
             self.dataset = None
         else:
-            self.dataset = self.read_HLW_to_xarray(file_path,
-                                                        date_start, date_end)
+            self.dataset = self.read_HLW_to_xarray(file_path, \
+                                                date_start , \
+                                                date_end )
         return
 
     @classmethod
@@ -86,7 +97,7 @@ class TIDETABLE(object):
             header_dict = cls.read_HLW_header(filnam)
             dataset = cls.read_HLW_data(filnam, header_dict, date_start, date_end)
             if header_dict['field'] == 'TZ:UT(GMT)/BST':
-                print('Assign BST as timezone')
+                log('Assign BST as timezone')
                 #assignBST = lambda t: t.astimezone()
                 #dataset.time = [assignBST(i) for i in dataset.time]
 
@@ -114,7 +125,7 @@ class TIDETABLE(object):
         -------
         dictionary of attributes
         '''
-        print(f"Reading HLW header from \"{filnam}\"")
+        log(f"Reading HLW header from \"{filnam}\"")
         fid = open(filnam)
 
         # Read lines one by one (hopefully formatting is consistent)
@@ -131,7 +142,7 @@ class TIDETABLE(object):
         datum = header[7:10]
         datum = '_'.join(datum).replace(':_',':')
 
-        print(f"Read done, close file \"{filnam}\"")
+        log(f"Read done, close file \"{filnam}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name' : site_name, 'field':field,
@@ -147,8 +158,8 @@ class TIDETABLE(object):
         Parameters
         ----------
         filnam (str) : path to HLW tide gauge file
-        date_start (datetime) : start date for returning data
-        date_end (datetime) : end date for returning data
+        date_start (datetime) : start date for returning data. These are datetime obj
+        date_end (datetime) : end date for returning data. Datetime obj
         header_length (int) : number of lines in header (to skip when reading)
 
         Returns
@@ -156,7 +167,7 @@ class TIDETABLE(object):
         xarray.Dataset containing times, High and Low water values
         '''
         # Initialise empty dataset and lists
-        print(f"Reading HLW data from \"{filnam}\"")
+        log(f"Reading HLW data from \"{filnam}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -185,7 +196,7 @@ class TIDETABLE(object):
                         sea_level.append(float(working_line[2]))
 
                 line_count = line_count + 1
-            print(f"Read done, close file \"{filnam}\"")
+            log(f"Read done, close file \"{filnam}\"")
 
         # Return only values between stated dates
         start_index = 0
@@ -201,7 +212,7 @@ class TIDETABLE(object):
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
         dataset = dataset.assign_coords(time = ('t_dim', time))
 
-        print('Time zone type', type(time[0].tzinfo) )
+        log('Time zone type', type(time[0].tzinfo) )
 
         # Assign local dataset to object-scope dataset
         return dataset
