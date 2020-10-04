@@ -13,11 +13,13 @@ def npdatetime64_2_datetime(date):
     Convert from numpy.dateime64 to datetime
     Helpful guidance: https://stackoverflow.com/questions/13703720/converting-between-datetime-timestamp-and-datetime64
     """
-    print('type(date):',type(date))
+    print('type(in_date):',type(date))
     dt64 = np.datetime64(date) # already this type, but just to be explicit
+    print('type(dt64):',type(dt64))
     unix_epoch = np.datetime64(0, 's')
     one_second = np.timedelta64(1, 's')
     seconds_since_epoch = (dt64 - unix_epoch) / one_second
+    print('type(out_date):',type(datetime.datetime.utcfromtimestamp(seconds_since_epoch)))
     return datetime.datetime.utcfromtimestamp(seconds_since_epoch)
 
 def nearest_datetime_ind(items, pivot):
@@ -30,10 +32,10 @@ def nearest_datetime_ind(items, pivot):
         datetime.datetime(2020, 1, 1, 21, 41, tzinfo=datetime.timezone(datetime.timedelta(0), 'GMT'))],
         dtype=object)
     """
-    debug("nearest_datetime_ind",pivot.tzinfo)
-    debug(type(pivot.tzinfo))
-    debug( [date.tzinfo for date in items] )
-    debug( [type(date.tzinfo) for date in items] )
+    #debug("nearest_datetime_ind",pivot.tzinfo)
+    #debug(type(pivot.tzinfo))
+    #debug( [date.tzinfo for date in items] )
+    #debug( [type(date.tzinfo) for date in items] )
     time_diff = np.abs([date - pivot for date in items])
     return time_diff.argmin(0)
 
@@ -64,11 +66,11 @@ class TIDETABLE(object):
         tg.dataset.plot.scatter(x="time", y="sea_level")
 
         '''
-        # Ensure the date objects are datetime
-        if type(date_start) is np.datetime64:
-            print('Convert date to datetime')
-            date_start = npdatetime64_2_datetime(date_start)
-            date_end = npdatetime64_2_datetime(date_end)
+        # Ensure the date objects are np.datetime64 and days
+        if date_start is not None:
+            date_start = np.datetime64(date_start, 'D')
+        if date_end is not None:
+            date_end = np.datetime64(date_end, 'D') + np.timedelta64(1,'D')
 
         # If file list is supplied, read files from directory
         if file_path is None:
@@ -80,14 +82,15 @@ class TIDETABLE(object):
         return
 
     @classmethod
-    def read_HLW_to_xarray(cls, filnam, date_start=None, date_end=None):
+    def read_HLW_to_xarray(cls, filnam, date_start:np.datetime64=None, \
+                                        date_end:np.datetime64=None):
         '''
 
         Parameters
         ----------
         filnam (str) : path to gesla tide gauge file
-        date_start (datetime) : start date for returning data
-        date_end (datetime) : end date for returning data
+        date_start (np.datetime64) : start date for returning data
+        date_end (np.datetime64) : end date for returning data
 
         Returns
         -------
@@ -97,12 +100,9 @@ class TIDETABLE(object):
             header_dict = cls.read_HLW_header(filnam)
             dataset = cls.read_HLW_data(filnam, header_dict, date_start, date_end)
             if header_dict['field'] == 'TZ:UT(GMT)/BST':
-                log('Assign BST as timezone')
-                #assignBST = lambda t: t.astimezone()
-                #dataset.time = [assignBST(i) for i in dataset.time]
-
+                info('Read in as BST, stored as UTC')
             else:
-                print("Not expecting that timezone")
+                debug("Not expecting that timezone")
 
         except:
             raise Exception('Problem reading HLW file: ' + filnam)
@@ -125,7 +125,7 @@ class TIDETABLE(object):
         -------
         dictionary of attributes
         '''
-        log(f"Reading HLW header from \"{filnam}\"")
+        info(f"Reading HLW header from \"{filnam}\" ")
         fid = open(filnam)
 
         # Read lines one by one (hopefully formatting is consistent)
@@ -142,7 +142,7 @@ class TIDETABLE(object):
         datum = header[7:10]
         datum = '_'.join(datum).replace(':_',':')
 
-        log(f"Read done, close file \"{filnam}\"")
+        info(f"Read done, close file \"{filnam}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name' : site_name, 'field':field,
@@ -158,8 +158,8 @@ class TIDETABLE(object):
         Parameters
         ----------
         filnam (str) : path to HLW tide gauge file
-        date_start (datetime) : start date for returning data. These are datetime obj
-        date_end (datetime) : end date for returning data. Datetime obj
+        date_start (np.datetime64) : start date for returning data.
+        date_end (np.datetime64) : end date for returning data.
         header_length (int) : number of lines in header (to skip when reading)
 
         Returns
@@ -167,15 +167,15 @@ class TIDETABLE(object):
         xarray.Dataset containing times, High and Low water values
         '''
         # Initialise empty dataset and lists
-        log(f"Reading HLW data from \"{filnam}\"")
+        info(f"Reading HLW data from \"{filnam}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
 
         if header_dict['field'] == 'TZ:UT(GMT)/BST':
             localtime_flag = True
-            if date_start is not None: date_start = date_start.astimezone()
-            if date_end is not None: date_end = date_end.astimezone()
+            #if date_start is not None: date_start = date_start.astimezone()
+            #if date_end is not None: date_end = date_end.astimezone()
         else:
             localtime_flag = False
 
@@ -188,31 +188,34 @@ class TIDETABLE(object):
                     working_line = line.split()
                     if working_line[0] != '#':
                         time_str = working_line[0] + ' ' + working_line[1]
+                        # Read time as datetime.datetime because it can handle local timezone easily
                         datetime_obj = datetime.datetime.strptime( time_str , '%d/%m/%Y %H:%M')
                         if localtime_flag == True:
-                            time.append( datetime_obj.astimezone() )
+                            time.append( np.datetime64(datetime_obj.astimezone() ))
                         else:
-                            time.append( datetime_obj )
+                            time.append( np.datetime64(datetime_obj) )
                         sea_level.append(float(working_line[2]))
 
                 line_count = line_count + 1
-            log(f"Read done, close file \"{filnam}\"")
+            info(f"Read done, close file \"{filnam}\"")
 
         # Return only values between stated dates
         start_index = 0
         end_index = len(time)
+
+
         if date_start is not None:
             start_index = nearest_datetime_ind(time, date_start)
         if date_end is not None:
             end_index = nearest_datetime_ind(time, date_end)
-        time = time[start_index:end_index]
-        sea_level = sea_level[start_index:end_index]
+        time = time[start_index:end_index+1]
+        sea_level = sea_level[start_index:end_index+1]
 
         # Assign arrays to Dataset
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
         dataset = dataset.assign_coords(time = ('t_dim', time))
 
-        log('Time zone type', type(time[0].tzinfo) )
+        #info('Time zone type', type(time[0].tzinfo) )
 
         # Assign local dataset to object-scope dataset
         return dataset
