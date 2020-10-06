@@ -7,6 +7,7 @@ import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, error, info
 import datetime
+import re
 
 def npdatetime64_2_datetime(date):
     """
@@ -101,6 +102,8 @@ class TIDETABLE(object):
             dataset = cls.read_HLW_data(filnam, header_dict, date_start, date_end)
             if header_dict['field'] == 'TZ:UT(GMT)/BST':
                 info('Read in as BST, stored as UTC')
+            elif header_dict['field'] == 'TZ:GMTonly':
+                info('Read and store as GMT/UTC')
             else:
                 debug("Not expecting that timezone")
 
@@ -129,18 +132,32 @@ class TIDETABLE(object):
         fid = open(filnam)
 
         # Read lines one by one (hopefully formatting is consistent)
-        header = fid.readline().split()
-        site_name = header[:3]
-        site_name = '_'.join(site_name)
+        header = re.split( r"\s{2,}", fid.readline() )
+        site_name = header[0]
+        site_name = site_name.replace(' ','')
 
-        field = header[3:5]
-        field = '_'.join(field).replace(':_',':')
+        field = header[1]
+        field = field.replace(' ','')
 
-        units = header[5:7]
-        units = '_'.join(units).replace(':_',':')
+        units = header[2]
+        units = units.replace(' ','')
 
-        datum = header[7:10]
-        datum = '_'.join(datum).replace(':_',':')
+        datum = header[3]
+        datum = datum.replace(' ','')
+
+        if(0):
+            header = fid.readline().split()
+            site_name = header[:3]
+            site_name = '_'.join(site_name)
+
+            field = header[3:5]
+            field = '_'.join(field).replace(':_',':')
+
+            units = header[5:7]
+            units = '_'.join(units).replace(':_',':')
+
+            datum = header[7:10]
+            datum = '_'.join(datum).replace(':_',':')
 
         info(f"Read done, close file \"{filnam}\"")
         fid.close()
@@ -225,39 +242,41 @@ class TIDETABLE(object):
         Get tide times and heights from tide table.
         input:
         time_guess : np.datetime64 or datetime
-                assumes localised time zone unless specified otherwise
+                assumes utc
         window:  +/- hours window size (int)
 
         returns:
-        height (m), time (timezone aware)
+        height (m), time (utc)
+
+        The function nearest_datetime_ind makes the window searching a bit irrelevant for short windows
         """
 
         # Ensure the date objects are datetime
-        if type(time_guess) is np.datetime64:
-            info('Convert date to datetime')
-            time_guess = npdatetime64_2_datetime(time_guess)
-
-        if time_guess.tzinfo == None:
-            time_guess = time_guess.astimezone()
+        if type(time_guess) is not np.datetime64:
+            info('Convert date to np.datetime64')
+            time_guess = np.datetime64(time_guess)
 
         if time_guess == None:
             info("Use today's date")
-            time_guess = datetime.datetime.utcnow().astimezone()
+            time_guess = np.datetime64('now')
 
         # Return only values between stated dates
         start_index = 0
         end_index = len(self.dataset.time)
 
-        debug('time_guess',type(time_guess.tzinfo))
-        debug('time_guess',time_guess.tzinfo)
-        debug('time:', type(self.dataset.time.values[0].tzinfo) )
-        debug('test', time_guess - datetime.timedelta(hours=2) )
+        debug('test', time_guess - np.timedelta64(window, 'h'))
         #print('2h', type(datetime.timedelta(hours=2).tzinfo))
-        start_index = nearest_datetime_ind(self.dataset.time.values, time_guess - datetime.timedelta(hours=window))
-        end_index  =  nearest_datetime_ind(self.dataset.time.values, time_guess + datetime.timedelta(hours=window))
 
-        time = self.dataset.time[start_index:end_index].values
-        sea_level = self.dataset.sea_level[start_index:end_index].values
+        start_index = nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
+        #if self.dataset.time[start_index] > time_guess: start_index = start_index - 1
+        end_index  =  nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
+        #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
+
+        debug('time_guess - win', time_guess-np.timedelta64(window, 'h'))
+        debug('time[start_index-1:+1]', self.dataset.time.values[start_index-1:start_index+1])
+
+        time = self.dataset.time[start_index:end_index+1].values
+        sea_level = self.dataset.sea_level[start_index:end_index+1].values
 
         return sea_level, time
 
