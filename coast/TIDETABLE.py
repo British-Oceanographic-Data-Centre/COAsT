@@ -601,7 +601,7 @@ class TIDETABLE(object):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = TIDEGAUGE()
+            new_object = TIDETABLE()
             new_dataset = self.dataset[['longitude','latitude','time']]
             new_dataset['absolute_error'] = ae
             new_dataset['error'] = diff
