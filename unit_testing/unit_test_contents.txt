@@ -2,16 +2,17 @@
 |    Unit Testing Contents                                                    |
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
+0. Files, directories for unit testing
+
 1. Loading & Initialisation
     a. Loading NEMO data file
-    b. Loading Altimetry file
-    c. Load data from existing dataset
-    d. Set NEMO variable name
-    e. Set NEMO grid attribute - dimension names
-    f. Load only Domain
-    g. Calculate depth_0 for t,u,v,w,f grids 
-    h. Load NEMO that is a subregion in the domain file
-    i. Multi load (over time) for NEMO files
+    b. Load data from existing dataset
+    c. Set NEMO variable name
+    d. Set NEMO grid attribute - dimension names
+    e. Load only Domain
+    f. Calculate depth_0 for t,u,v,w,f grids 
+    g. Load a subregion dataset with a full domain (AMM7)
+    h. Load and combine multiple files.
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
@@ -29,21 +30,36 @@
     b. Transport velocity and depth calculations
     c. Transport and velocity plotting
     d. Contrust density on z-levels along the transect. Compare with item 3b.
+    e. Geostrophic velocity & transport calculations
 
 5. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
     b. Indices by distance
-    c. Subsetting entire COAsT object and return as copy
-    d. Find nearest xy indices
-    e. NEMO.interpolate_in_space()
-    f. NEMO.interpolate_in_time()
+    c. Find nearest xy indices
+    d. NEMO.interpolate_in_space()
+    e. NEMO.interpolate_in_time()
 
-6. Validation Methods
-    a. Calculate single obs CRPS values using different methods
-    b. CRPS map plot
-    c. CRPS CDF plot
-    d. Interpolate model to altimetry
+6. Altimetry Methods
+    a. Load example data
+    b. Subset altimetry data
+    c. Interpolate model onto altimetry using obs_operator
+    d. Calculate CRPS
+    e. ALTIMETRY basic stats
+    f. Altimetry plotting
 
-7. Plotting Methods
-    a. Altimetry quick_plot()
-    b. Open, view and save tide gauge data from GESLA database
+7. TIDEGAUGE Methods
+    a. Load GESLA data
+    b. TIDEGAUGE obs operator
+    c. Tidegauge CRPS
+    d. Tiudegauge basic stats
+    e. Loading multiple tidegauges
+    f. Plotting a single tidegauge location
+    g. Plotting multiple tidegauge locations
+    h. Tidegauge time series plot
+
+8. Isobath Contour Methods
+    a. Extract isbath contour between two points
+    b. Plot contour on map
+    c. Calculate pressure along contour
+    d. Calculate flow across contour
+    e. Calculate pressure gradient driven flow across contour
