@@ -10,7 +10,11 @@ COAsT/__pycache__/
 COAsT.egg-info/
 
 *.png
-example_files/*.nc
+example_files/
 example_scripts/temp*py
 
+unit_testing/*log
+
 .ipynb_checkpoints/
+
+*.DS_Store
