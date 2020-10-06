@@ -13,6 +13,7 @@ class TIDEGAUGE():
     Functionality available for reading and organisation of GESLA files.
     (Source: https://www.gesla.org/).  However, any fixed time series data can 
     be used if in the correct format.
+
     The data format used for this object is as follows:
         
     *Data Format Overview*
