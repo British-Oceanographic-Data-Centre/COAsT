@@ -491,7 +491,7 @@ class TIDETABLE(object):
                                obs_var.time.values,
                                nh_radius, cdf_type, time_interp )
         if create_new_obj:
-            new_object = TIDEGAUGE()
+            new_object = TIDETABLE()
             new_dataset = self.dataset[['longitude','latitude','time']]
             new_dataset['crps'] =  (('t_dim'),crps_list)
             new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
