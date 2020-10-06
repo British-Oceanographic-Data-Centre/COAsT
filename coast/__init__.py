@@ -1,6 +1,5 @@
 from .COAsT import COAsT
 from .COAsT import setup_dask_client
-from .DOMAIN import DOMAIN
 from .NEMO import NEMO
 from .TRANSECT import Transect
 from .ALTIMETRY import ALTIMETRY
