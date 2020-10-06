@@ -71,7 +71,63 @@ is extracted for pairing with the variables an appropriate subsetting of the gri
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat_subset&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;COAsT_example_NEMO_subset_data.nc&amp;#39;&lt;/span>
 &lt;span style="color:#000">amm7&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dat_subset&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
 &lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
+&lt;p>Here we give a short tutorial of how to use the ALTIMETRY object for reading data and
+comparing to NEMO data.&lt;/p>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;pre>&lt;code>import coast
+&lt;/code>&lt;/pre>&lt;p>And by defining some file paths. There are the example files that can be obtained with
+the COAsT package:&lt;/p>
+&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
+fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
+fn_altimetry = './example_files/COAsT_example_altimetry_data.nc'
+&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
+&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, ALTIMETRY is set up
+to read in CMEMS netCDF files. However, if no path is supplied, then the
+object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
+if desired, as long as it follows the data formatting for ALTIMETRY.&lt;/p>
+&lt;pre>&lt;code>altimetry = coast.ALTIMETRY(fn_altimetry)
+&lt;/code>&lt;/pre>&lt;p>Before going any further, lets just cut out the bit of the altimetry that
+is over the model domain. This can be done using subset_indices_lonlat_box
+to find relevant indices and then isel to extract them. The data has also
+been thinned slightly.&lt;/p>
+&lt;pre>&lt;code>ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+ind = ind[::4]
+altimetry = altimetry.isel(t_dim=ind)
+&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
+variable to the same time and geographical space as the altimetry. This is
+done using the obs_operator() method:&lt;/p>
+&lt;pre>&lt;code>altimetry.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
+&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
+saved it back into our ALTIMETRY object. Take a look at altimetry.dataset
+to see for yourself.&lt;/p>
+&lt;p>Next we will compare this interpolated variable to an observed variable
+using some basic metrics. The basic_stats() routine can be used for this,
+which calculates some simple metrics including differences, RMSE and
+correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
+&lt;pre>&lt;code>stats = altimetry.basic_stats('interp_ssh', 'sla_filtered')
+&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
+basic stats, the returned object is also an ALTIMETRY object, so all of the
+same methods can be applied. Alternatively, if you want to save the new
+metrics to the original altimetry object, set create_new_object = False.&lt;/p>
+&lt;p>Now we will do a more complex comparison using the Continuous Ranked
+Probability Score (CRPS). For this, we need to hand over the model object,
+a model variable and an observed variable. We also give it a neighbourhood
+radius in km (nh_radius).&lt;/p>
+&lt;pre>&lt;code>crps = altimetry.crps(nemo, model_var_name = 'ssh',
+obs_var_name = 'sla_filtered', nh_radius = 20)
+&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
+to basic_stats, create_new_object can be set to false to save output to
+the original altimetry object.&lt;/p>
+&lt;p>ALTIMETRY has a ready built quick_plot() routine for taking a look at any
+of the observed or derived quantities above. So to take a look at the
+&amp;lsquo;sla_filtered&amp;rsquo; variable:&lt;/p>
+&lt;pre>&lt;code>fig, ax = altimetry.quick_plot('sla_filtered')
+&lt;/code>&lt;/pre>&lt;p>As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:&lt;/p>
+&lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
+fig, ax = stats.quick_plot('absolute_error')
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
 &lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
 &lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
 &lt;h1 id="code-styling-conventions">Code Styling Conventions&lt;/h1>
@@ -132,7 +188,85 @@ These specific characters should be avoided because they present an accessibilit
 &lt;p>When defining a class that inherits from another, it is important to remember that overridden methods (in particular, this behaviour is important when dealing with __init__ methods) do not implicitly call the parent method. What this means is that unless you want to deliberately prevent the behaviour of the parent class (this is a very niche use-case), it is important to include a reference to the parent method. An example of this is: super().__init__()
 This functionality is advantageous as it prevents unnecessary duplication of code, which is a key tenet of object-oriented software.&lt;/p>
 &lt;/li>
-&lt;/ul></description></item><item><title>Docs: Transect analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
+&lt;/ul></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
+&lt;p>This is a demonstration script for using the TIDEGAUGE object in the COAsT
+package. This object has strict data formatting requirements, which are
+outlined in TIDEGAUGE.py.&lt;/p>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;pre>&lt;code>import coast
+import datetime
+&lt;/code>&lt;/pre>&lt;p>And by defining some file paths from the COAsT example files&lt;/p>
+&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
+fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
+fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
+fn_tidegauge_mult = './example_files/tide_gauges/l*'
+&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
+&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, TIDEGAUGE is set up
+to read in GESLA ASCII files. However, if no path is supplied, then the
+object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
+if desired, as long as it follows the data formatting for TIDEGAUGE. Here
+we load data between two specified dates:&lt;/p>
+&lt;pre>&lt;code>date0 = datetime.datetime(2007,1,10)
+date1 = datetime.datetime(2007,1,12)
+tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
+&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
+variable to the same time and geographical space as the tidegauge. This is
+done using the obs_operator() method:&lt;/p>
+&lt;pre>&lt;code>tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
+&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
+saved it back into our TIDEGAUGE object. Take a look at tidegauge.dataset
+to see for yourself.&lt;/p>
+&lt;p>Next we will compare this interpolated variable to an observed variable
+using some basic metrics. The basic_stats() routine can be used for this,
+which calculates some simple metrics including differences, RMSE and
+correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
+&lt;pre>&lt;code>stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
+&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
+basic stats, the returned object is also an TIDEGAUGE object, so all of the
+same methods can be applied. Alternatively, if you want to save the new
+metrics to the original TIDEGAUGE object, set create_new_object = False.&lt;/p>
+&lt;p>Now we will do a more complex comparison using the Continuous Ranked
+Probability Score (CRPS). For this, we need to hand over the model object,
+a model variable and an observed variable. We also give it a neighbourhood
+radius in km (nh_radius).&lt;/p>
+&lt;pre>&lt;code>crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
+nh_radius = 20)
+&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
+to basic_stats, create_new_object can be set to false to save output to
+the original tidegauge object.&lt;/p>
+&lt;p>TIDEGAUGE has ready made quick plotting routines for viewing time series
+and tide gauge location. To look at the tide gauge location:&lt;/p>
+&lt;pre>&lt;code>fig, ax = tidegauge.plot_on_map()
+&lt;/code>&lt;/pre>&lt;p>Or to look at a time series of the sea_level variable:&lt;/p>
+&lt;pre>&lt;code>fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
+&lt;/code>&lt;/pre>&lt;p>Note that start and end dates can also be specified for plot_timeseries().&lt;/p>
+&lt;p>As stats and crps are also TIDEGAUGE objects, the same time series plotting
+functionality can be used:&lt;/p>
+&lt;pre>&lt;code>crps.plot_timeseries('crps')
+stats.plot_timeseries('absolute_error')
+&lt;/code>&lt;/pre>&lt;p>Each TIDEGAUGE object only holds data for a single tidegauge. There is some
+functionality for dealing with multiple gauges in COAsT. To load multiple
+GESLA tidegauge files, we use the static method create_multiple_tidegauge().
+This routine takes a list of files or a wildcard string and loads them all
+into a list of TIDEGAUGE objects.&lt;/p>
+&lt;pre>&lt;code>from coast.TIDEGAUGE import TIDEGAUGE
+date0 = datetime.datetime(2007,1,10)
+date1 = datetime.datetime(2007,1,12)
+tidegauge_list = TIDEGAUGE.create_multiple_tidegauge(fn_tidegauge_mult,
+date0,date1)
+&lt;/code>&lt;/pre>&lt;p>Now that we have tidegauge_list, we can plot the locations of all tide gauges
+as follows:&lt;/p>
+&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
+&lt;/code>&lt;/pre>&lt;p>To do analysis on multiple gauges, a simple looping script can be setup.
+For example, to obtain basic stats:&lt;/p>
+&lt;pre>&lt;code>for tg in tidegauge_list:
+tg.obs_operator(nemo, 'ssh')
+tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
+&lt;/code>&lt;/pre>&lt;p>And now some of these new values can be plotted on a map, again using
+plot_on_map_multiple:&lt;/p>
+&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Transect analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
 &lt;p>Coming soon&amp;hellip;&lt;/p></description></item><item><title>Docs: Python: Structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</guid><description>
 &lt;p>** Notes on Object Structure and Loading (for contributors):&lt;/p>
 &lt;p>COAsT is an object-orientated package, meaning that data is stored within Python object
