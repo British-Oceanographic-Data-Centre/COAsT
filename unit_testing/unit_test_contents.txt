@@ -10,7 +10,7 @@
     c. Set NEMO variable name
     d. Set NEMO grid attribute - dimension names
     e. Load only Domain
-    f. Calculate depth_0 for t,u,v,w,f grids 
+    f. Calculate depth_0 for t,u,v,w,f grids
     g. Load a subregion dataset with a full domain (AMM7)
     h. Load and combine multiple files.
 
@@ -22,7 +22,7 @@
 3. Diagnostic Methods
     a. Compute vertical spatial derivative
     b. Construct density method inside NEMO class
-    c. Construct pycnocline depth and thickness                             
+    c. Construct pycnocline depth and thickness
     d. Plot pycnocline depth
 
 4. Transect Methods
@@ -63,3 +63,6 @@
     c. Calculate pressure along contour
     d. Calculate flow across contour
     e. Calculate pressure gradient driven flow across contour
+
+9. Example script testing
+    a. Run scripts on example_files
