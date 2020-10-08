@@ -24,7 +24,7 @@ Unit template:
 
 
 #-----------------------------------------------------------------------------#
-#%% ( ## ) Subsection title                                                     #
+# ( ## ) Subsection title                                                     #
 #                                                                             #
 
 subsec = subsec+1
