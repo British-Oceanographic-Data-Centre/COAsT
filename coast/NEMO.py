@@ -182,9 +182,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """
        
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
-        
-        bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'}) 
         try:
+            bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'}) 
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
                 depth_0 = np.zeros_like( e3w_0 )
@@ -228,8 +227,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
             self.dataset['bathymetry'] = bathymetry
             self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
                 'description':'depth of last w-level on the horizontal {}'.format(self.grid_ref)}
-        except ValueError as err:
-            error(err)
+        except: #ValueError as err:
+            debug("Possibly missing bathymetry variable") #error(err)
 
 
     # Add subset method to NEMO class
