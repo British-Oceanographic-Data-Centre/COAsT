@@ -38,5 +38,5 @@ sci_w = coast.NEMO( fn_domain = dom_nam, grid_ref='w-grid')
 
 
 #%% Plot
-plt.pcolormesh( sci_t.dataset.zos.isel(t_dim=0)) ;plt.show()
+plt.pcolormesh( sci_t.dataset.ssh.isel(t_dim=0)) ;plt.show()
 
