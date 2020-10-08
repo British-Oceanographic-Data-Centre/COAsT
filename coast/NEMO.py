@@ -273,8 +273,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
         :return: the y and x coordinates for the given grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
-        internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
+        internal_lat = dataset_domain[self.grid_vars[1]] #[f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain[self.grid_vars[0]] #[f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = xr.ufuncs.square(internal_lat - lat) \
               + xr.ufuncs.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
