@@ -528,18 +528,17 @@ if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -48.675
     print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
 else:
     print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
-'''
+
 #-----------------------------------------------------------------------------#
-# ( 4c ) Transport and velocity plotting                                      #
+#%% ( 4c ) Transport and velocity plotting                                      #
 #
-'''
 subsec = subsec+1
 
 try:
     fig,ax = tran.plot_transect_on_map()
     ax.set_xlim([-20,0]) # Problem: nice to make the land appear.
     ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
-    fig.tight_layout()
+    #fig.tight_layout()
     fig.savefig(dn_fig + 'transect_map.png')
 
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
@@ -553,11 +552,10 @@ try:
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + " !!!")
-'''
+
 #-----------------------------------------------------------------------------#
-# ( 4d ) Construct density on z_levels along transect                         #
+#%% ( 4d ) Construct density on z_levels along transect                         #
 #
-'''
 subsec = subsec+1
 tran.construct_density_on_z_levels()
 try:
@@ -584,11 +582,10 @@ tran.data_T.density_z_levels.isel(t_dim=0).plot.pcolormesh(
     ax=ax2,yincrease=False, y='depth_z_levels')
 plt.xticks([0,57],['A','B'])
 plt.show()
-'''
+
 #-----------------------------------------------------------------------------#
-# ( 4e ) Calculate the geostrophic flow across the transect                   #
+#%% ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
-'''
 subsec = subsec+1
 
 #tran = coast.Transect( (54,-15), (56,-12), nemo_f)
@@ -611,11 +608,9 @@ else:
 '''
 sec = sec+1
 subsec = 96
-'''
 #-----------------------------------------------------------------------------#
-# ( 5a ) Subsetting single variable                                           #
+#%% ( 5a ) Subsetting single variable                                           #
 #                                                                             #
-'''
 subsec = subsec+1
 
 try:
