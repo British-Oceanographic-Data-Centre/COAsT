@@ -54,12 +54,11 @@ import datetime
 import os.path as path
 import logging
 import coast.general_utils as general_utils
+from socket import gethostname# to get hostname
 
-'''
 #################################################
-## ( 0 ) Files, directories for unit testing   ##
+#%% ( 0 ) Files, directories for unit testing   ##
 #################################################
-'''
 
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w") # Need log_file.close()
@@ -93,11 +92,10 @@ fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
-'''
+
 #################################################
-## ( 1 ) NEMO Loading/Initialisation           ##
+#%% ( 1 ) NEMO Loading/Initialisation           ##
 #################################################
-'''
 # This section is for testing the loading and initialisation of NEMO objects.
 '''
 #-----------------------------------------------------------------------------#
@@ -270,11 +268,9 @@ except:
 
 subsec = subsec+1
 
-'''
 #################################################
-## ( 2 ) Test general utility methods in COAsT ##
+#%% ( 2 ) Test general utility methods in COAsT ##
 #################################################
-'''
 sec = sec+1
 subsec = 96
 '''
@@ -321,11 +317,9 @@ try:
 except:
     print(str(sec) + chr(subsec) +" FAILED")
 
-'''
 #################################################
-## ( 3 ) Test Diagnostic methods               ##
+#%% ( 3 ) Test Diagnostic methods               ##
 #################################################
-'''
 sec = sec+1
 subsec = 96
 '''
@@ -1072,11 +1066,9 @@ except:
 
 plt.close('all')
 
-'''
 ###############################################################################
-## ( 8 ) Isobath Contour Methods                                            ##
+#%% ( 8 ) Isobath Contour Methods                                            ##
 ###############################################################################
-'''
 sec = sec+1
 subsec = 96
 '''
@@ -1087,7 +1079,7 @@ subsec = 96
 subsec = subsec+1
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
-y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], 
+y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0],
                                                           [50,-10], [60,3])
 cont_f = coast.Contour_f(nemo_f, y_ind, x_ind, 200)
 if np.isclose( cont_f.y_ind.sum() + cont_f.y_ind.sum(), 190020 ) and \
@@ -1117,10 +1109,10 @@ except OSError:
 #                                                                             #
 '''
 subsec = subsec+1
-nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat, 
+nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
 contours, no_contours = coast.Contour.get_contours(nemo_t, 200)
-y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], 
+y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0],
                                                           [50,-10], [60,3])
 cont_t = coast.Contour_t(nemo_t, y_ind, x_ind, 200)
 cont_t.construct_pressure(1027)
@@ -1136,16 +1128,16 @@ else:
 '''
 subsec = subsec+1
 nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
-nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat, 
+nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
-nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat, 
+nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
-y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], 
+y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0],
                                                           [50,-10], [60,3])
 cont_f = coast.Contour_f(nemo_f, y_ind, x_ind, 200)
 cont_f.calc_cross_contour_flow(nemo_u, nemo_v)
-if np.allclose((cont_f.data_cross_flow.normal_velocities + 
+if np.allclose((cont_f.data_cross_flow.normal_velocities +
                 cont_f.data_cross_flow.depth_integrated_normal_transport).sum(),
                 -1152.3771):
     print(str(sec) + chr(subsec) + " OK - Cross-contour flow calculations as expected")
@@ -1158,14 +1150,56 @@ else:
 '''
 subsec = subsec+1
 cont_f.calc_geostrophic_flow(nemo_t, 1027)
-if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg + 
-                cont_f.data_cross_flow.normal_velocity_spg + 
-                cont_f.data_cross_flow.transport_across_AB_hpg + 
+if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg +
+                cont_f.data_cross_flow.normal_velocity_spg +
+                cont_f.data_cross_flow.transport_across_AB_hpg +
                 cont_f.data_cross_flow.transport_across_AB_spg).sum(), 74.65002414 ):
     print(str(sec) + chr(subsec) + " OK - Cross-contour geostrophic flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
 
+###############################################################################
+#%% ( 9 ) Example script testing                                             ##
+###############################################################################
+sec = sec+1
+subsec = 96
+#
+#-----------------------------------------------------------------------------#
+# ( 9a ) Example script testing                                               #
+#                                                                             #
+subsec = subsec+1
+# Test machine name (to check for file access) in order to test additional scripts.
+example_script_flag = True if 'livljobs' in gethostname().lower() else False
+
+try:
+    # Do a thing
+    from example_scripts import altimetry_tutorial # This runs on example_files
+    from example_scripts import tidegauge_tutorial # This runs on example_files
+
+    if example_script_flag:
+        from example_scripts import AMM15_example_plot
+        from example_scripts import ANChor_plots_of_NSea_wvel
+        from example_scripts import BLZ_example_plot
+        from example_scripts import SEAsia_R12_example_plot
+        from example_scripts import WCSSP_India_example_plot
+        from example_scripts import internal_tide_pycnocline_diagnostics
+    else:
+        print("Don't forget to test on a LIVLJOBS machine")
+
+    #TEST: <description here>
+    check1 = example_script_flag
+    if check1:
+        print(str(sec) + chr(subsec) + " OK - example_scripts ran on",gethostname())
+    else:
+        print(str(sec) + chr(subsec) + " X - example_scripts failed on",gethostname())
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+
+
+
+
+#%%
 
 log_file.close()
-
