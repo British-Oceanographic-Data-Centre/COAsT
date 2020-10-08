@@ -136,7 +136,7 @@ class TIDEGAUGE():
         return dataset
     
     @staticmethod
-    def read_gesla_header_v3(fn_gesla):
+    def _read_gesla_header_v3(fn_gesla):
         '''
         Reads header from a GESLA file (format version 3.0).
             
