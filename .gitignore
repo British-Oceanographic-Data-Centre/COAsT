@@ -4,7 +4,7 @@ Example_Python_Package.egg-info/
 .idea/
 venv/
 COAsT/__pycache__/
-
+example_scripts/__pycache__/
 .eggs/
 
 COAsT.egg-info/
