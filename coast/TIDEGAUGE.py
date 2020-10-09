@@ -324,6 +324,8 @@ class TIDEGAUGE():
         title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
         Y = self.dataset.latitude
+        print(X)
+        print(Y)
         fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
                                          xlim = [X-10, X+10],
                                          ylim = [Y-10, Y+10])
@@ -436,7 +438,8 @@ class TIDEGAUGE():
 ###                ~        Model Comparison         ~                     ###
 ##############################################################################
     
-    def obs_operator(self, model, mod_var_name:str, time_interp = 'nearest'):
+    def obs_operator(self, model, mod_var_name:str, time_interp = 'nearest',
+                     model_mask = None):
         '''
         Interpolates a model array (specified using a model object and variable
         string) to TIDEGAUGE location and times. Takes the nearest model grid
@@ -447,11 +450,19 @@ class TIDEGAUGE():
         model : MODEL object (e.g. NEMO)
         model_var_name (str) : Name of variable (inside MODEL) to interpolate.
         time_interp (str) : type of scipy time interpolation (e.g. linear)
+        model_mask : Mask to apply to model data in geographical interpolation 
+                     of model. For example, use to ignore land points. 
+                     If None, no mask is applied. If 'bathy', model variable
+                     (bathymetry==0) is used. Custom 2D mask arrays can be
+                     supplied.
           
         Returns
         -------
         Saves interpolated array to TIDEGAUGE.dataset
         '''
+        # Determine mask
+        if model_mask=='bathy':
+            model_mask = model.dataset.bathymetry.values==0
         
         # Get data arrays
         mod_var_array = model.dataset[mod_var_name]
@@ -465,7 +476,7 @@ class TIDEGAUGE():
         obs_lat = np.array([self.dataset.latitude])
         
         interpolated = model.interpolate_in_space(mod_var_array, obs_lon, 
-                                                  obs_lat)
+                                                  obs_lat, mask=model_mask)
         
         interpolated = model.interpolate_in_time(interpolated, 
                                                  self.dataset.time)
