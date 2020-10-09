@@ -7,12 +7,12 @@ This needs to move to the above
 
 #%%
 import coast
-import numpy as np
-import xarray as xr
+#import numpy as np
+#import xarray as xr
 #import dask
 #import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors # colormap fiddling
+#import matplotlib.colors as colors # colormap fiddling
 
 #################################################
 #%%  Loading and initialising methods ##
@@ -28,7 +28,7 @@ fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 sci_w = coast.NEMO(dir_nam + fil_nam, 
                  dom_nam, grid_ref='w-grid', multiple=True)
 
-
+sci_w.dataset = sci_w.dataset.swap_dims({'depthw':'z_dim'})
 #################################################
 #%% subset of data and domain ##
 #################################################
@@ -36,23 +36,30 @@ sci_w = coast.NEMO(dir_nam + fil_nam,
 ind_sci = sci_w.subset_indices([51,-4], [60,15])
 sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1]) #nwes = northwest europe shelf
 
-#sci_nwes_w.dataset.wo.isel(depthw=5).isel(t_dim=1).plot()
-#%% Apply masks to temperature and salimity
-#sci_nwes_w.dataset['temperature_m'] = sci_nwes_w.dataset.temperature.where( sci_nwes_w.dataset.mask.expand_dims(dim=sci_nwes_w.dataset['t_dim'].sizes) > 0) 
-#sci_nwes_w.dataset['salinity_m'] = sci_nwes_w.dataset.salinity.where( sci_nwes_w.dataset.mask.expand_dims(dim=sci_nwes_w.dataset['t_dim'].sizes) > 0) 
+#%% Compute a diffusion from w-vel
+Kz = (sci_nwes_w.dataset.wo * sci_nwes_w.dataset.e3_0).sum(dim='z_dim').mean(dim='t_dim')
 
+# plot map      
+lon =  sci_nwes_w.dataset.longitude.squeeze()
+lat =  sci_nwes_w.dataset.latitude.squeeze()
 
+fig = plt.figure()
+plt.rcParams['figure.figsize'] = 8,8
+
+fig = plt.figure()
+plt.rcParams['figure.figsize'] = 8,8
+plt.pcolormesh(lon, lat, Kz.squeeze(), shading='auto', cmap='seismic')
+plt.title("Kz(w)")
+plt.clim([-50e-3,50e-3])
+plt.colorbar()
+#fig.savefig("")
    
 #%% Transect Method
+tran_w = coast.Transect_t( sci_nwes_w, (51, 2.5), (61, 2.5) )
 
-#tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-tran = coast.Transect( (51, 2.5), (60, 2.5), sci_nwes_w )
-
-#print( tran.data_F.latitude.expand_dims(dim={'z_dim':51}).shape, tran.data_F.depth_0.shape, tran.data_F.temperature_m.shape )
-
-lat_sec = tran.data_F.latitude.expand_dims(dim={'z_dim':51})
-dep_sec = tran.data_F.depth_0
-wo_sec = tran.data_F.wo
+lat_sec = tran_w.data.latitude.expand_dims(dim={'z_dim':51})
+dep_sec = tran_w.data.depthw
+wo_sec = tran_w.data.wo
 #wo_sec = tran.data_F.wo.mean(dim='t_dim')
 
 
@@ -137,7 +144,7 @@ plt.xlabel('latitude')
 plt.ylabel('depth (m)')
 plt.gca().invert_yaxis()
 plt.colorbar()
-fig.savefig(f"w_section_tmean.png")
+fig.savefig("w_section_tmean.png")
 
 
 
