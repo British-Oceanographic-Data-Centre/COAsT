@@ -1153,14 +1153,27 @@ try:
     # Do a thing
     from example_scripts import altimetry_tutorial # This runs on example_files
     from example_scripts import tidegauge_tutorial # This runs on example_files
+    print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
+    subsec = subsec+1
 
     if example_script_flag:
         from example_scripts import AMM15_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
+        subsec = subsec+1
         from example_scripts import ANChor_plots_of_NSea_wvel
+        print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
+        subsec = subsec+1
         from example_scripts import BLZ_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
+        subsec = subsec+1
         from example_scripts import SEAsia_R12_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
+        subsec = subsec+1
         from example_scripts import WCSSP_India_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
+        subsec = subsec+1
         from example_scripts import internal_tide_pycnocline_diagnostics
+        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 
