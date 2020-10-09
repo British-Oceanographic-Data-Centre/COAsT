@@ -323,9 +323,6 @@ class TIDEGAUGE():
         
         title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
-        Y = self.dataset.latitude
-        print(X)
-        print(Y)
         fig, ax =  plot_util.geo_scatter(X, Y, title=title, 
                                          xlim = [X-10, X+10],
                                          ylim = [Y-10, Y+10])
