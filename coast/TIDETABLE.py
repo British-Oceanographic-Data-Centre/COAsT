@@ -264,7 +264,7 @@ class TIDETABLE(object):
         start_index = 0
         end_index = len(self.dataset.time)
 
-        debug('test', time_guess - np.timedelta64(window, 'h'))
+        debug(f"test: {time_guess - np.timedelta64(window, 'h')}")
         #print('2h', type(datetime.timedelta(hours=2).tzinfo))
 
         start_index = nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
@@ -272,8 +272,8 @@ class TIDETABLE(object):
         end_index  =  nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
         #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
 
-        debug('time_guess - win', time_guess-np.timedelta64(window, 'h'))
-        debug('time[start_index-1:+1]', self.dataset.time.values[start_index-1:start_index+1])
+        debug(f"time_guess - win: {time_guess-np.timedelta64(window, 'h')}")
+        debug(f"time[start_index-1:+1]: {self.dataset.time.values[start_index-1:start_index+1]}")
 
         time = self.dataset.time[start_index:end_index+1].values
         sea_level = self.dataset.sea_level[start_index:end_index+1].values
