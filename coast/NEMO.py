@@ -202,7 +202,31 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 depth_0 = np.zeros_like( e3t_0 )
                 depth_0[0,:,:] = 0.0
                 depth_0[1:,:,:] = np.cumsum( e3t_0, axis=0 )[:-1,:,:]
-             
+            elif self.grid_ref == 'u-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_u = 0.5 * ( e3w_0[:,:,:-1] + e3w_0[:,:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]
+                depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 )
+                bathymetry[:,:-1] = 0.5 * ( bathymetry[:,:-1] + bathymetry[:,1:] )  
+            elif self.grid_ref == 'v-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]
+                depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 )
+                bathymetry[:-1,:] = 0.5 * ( bathymetry[:-1,:] + bathymetry[1:,:] )   
+            elif self.grid_ref == 'f-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] +
+                                     e3w_0[:,1:,:-1] + e3w_0[:,1:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]
+                depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 )
+                bathymetry[:-1,:-1] = 0.25 * ( bathymetry[:-1,:-1] + bathymetry[:-1,1:] 
+                                             + bathymetry[1:,:-1] + bathymetry[1:,1:] )  
+            else:
+                raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
             dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(depth_0,
                     dims=['z_dim', 'y_dim', 'x_dim'],
