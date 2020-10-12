@@ -124,7 +124,7 @@ class ALTIMETRY(COAsT):
 ##############################################################################
     
     def obs_operator(self, model, mod_var_name:str, 
-                                time_interp = 'nearest'):
+                                time_interp = 'nearest', model_mask=None):
         '''
         For interpolating a model dataarray onto altimetry locations and times.
         
@@ -144,12 +144,24 @@ class ALTIMETRY(COAsT):
         time_interp: time interpolation method (optional, default: 'nearest')
             This can take any string scipy.interpolate would take. e.g.
             'nearest', 'linear' or 'cubic'
+        model_mask : Mask to apply to model data in geographical interpolation 
+             of model. For example, use to ignore land points. 
+             If None, no mask is applied. If 'bathy', model variable
+             (bathymetry==0) is used. Custom 2D mask arrays can be
+             supplied.
         Returns
         -------
         Adds a DataArray to self.dataset, containing interpolated values.
         '''
 
         debug(f"Interpolating {get_slug(model)} \"{mod_var_name}\" with time_interp \"{time_interp}\"")
+
+        # Determine mask
+        if model_mask=='bathy':
+            model_mask = model.dataset.bathymetry.values==0
+        
+        # Get data arrays
+        mod_var_array = model.dataset[mod_var_name]
 
         # Get data arrays
         mod_var = model.dataset[mod_var_name]
