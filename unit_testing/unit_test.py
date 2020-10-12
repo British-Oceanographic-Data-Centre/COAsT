@@ -56,7 +56,7 @@ import os.path as path
 import logging
 import coast.general_utils as general_utils
 from socket import gethostname# to get hostname
-import traceback
+#import traceback
 '''
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
@@ -559,7 +559,7 @@ try:
               ' X - TRANSECT density and pressure calculations not as expected')
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
-'''
+
 #-----------------------------------------------------------------------------#
 #%% ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
