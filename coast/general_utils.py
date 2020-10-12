@@ -64,10 +64,10 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     A = A.reshape(original_shape)
     return A
 
-def nearest_xy_indices(mod_lon, mod_lat, new_lon, new_lat, 
+def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat, 
                        mask = None):
     '''
-    Obtains the x and y indices of the nearest model points to specified
+    Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
     and its BallTree haversine method. 
     
@@ -85,9 +85,9 @@ def nearest_xy_indices(mod_lon, mod_lat, new_lon, new_lat,
     mod_lat (2D array): Model latitude (degrees) array (2-dimensions)
     new_lon (1D array): Array of longitudes (degrees) to compare with model
     new_lat (1D array): Array of latitudes (degrees) to compare with model
-    mask (2D array): Mask array. Where True (or 1), elements of mod_lons
-                     and mod lats will be removed prior to finding nearest
-                     neighbours. e.g. if the nearest ocean point is 
+    mask (2D array): Mask array. Where True (or 1), elements of array will
+                     not be included. For example, use to mask out land in 
+                     case it ends up as the nearest point.
         
     Returns
     -------
