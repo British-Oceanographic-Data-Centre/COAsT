@@ -309,7 +309,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         return jj1, ii1, line_length
     
     @staticmethod
-    def interpolate_in_space(model_array, new_lon, new_lat):
+    def interpolate_in_space(model_array, new_lon, new_lat, mask=None):
         '''
         Interpolates a provided xarray.DataArray in space to new longitudes
         and latitudes using a nearest neighbour method (BallTree).
@@ -324,6 +324,9 @@ class NEMO(COAsT):  # TODO Complete this docstring
         model_array (xr.DataArray): Model variable DataArray to interpolate
         new_lons (1Darray): Array of longitudes (degrees) to compare with model
         new_lats (1Darray): Array of latitudes (degrees) to compare with model
+        mask (2D array): Mask array. Where True (or 1), elements of array will
+                     not be included. For example, use to mask out land in 
+                     case it ends up as the nearest point.
         
         Returns
         -------
@@ -331,9 +334,9 @@ class NEMO(COAsT):  # TODO Complete this docstring
         '''
         debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
         # Get nearest indices
-        ind_x, ind_y = general_utils.nearest_xy_indices(model_array.longitude,
+        ind_x, ind_y = general_utils.nearest_indices_2D(model_array.longitude,
                                                 model_array.latitude,
-                                                new_lon, new_lat)
+                                                new_lon, new_lat, mask=mask)
         
         # Geographical interpolation (using BallTree indices)
         interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
