@@ -65,4 +65,10 @@
     e. Calculate pressure gradient driven flow across contour
 
 9. Example script testing
-    a. Run scripts on example_files
+    a. tutorials using example_files (altimetry and tidegauges)
+    b. tutorial on AMM15 data
+    c. tutorial on AMM60 data
+    d. tutorial on Belize data
+    e. tutorial on SEAsia data
+    f. tutorial on WCSSP-India data
+    g. tutorial on internal tides
