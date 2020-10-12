@@ -642,7 +642,7 @@ try:
     altimetry = coast.ALTIMETRY(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
     altimetry_nwes = altimetry.isel(t_dim=ind) #nwes = northwest europe shelf
-    ind_x, ind_y = general_utils.nearest_xy_indices(sci.dataset.longitude,
+    ind_x, ind_y = general_utils.nearest_indices_2D(sci.dataset.longitude,
                                                     sci.dataset.latitude,
                                           altimetry_nwes.dataset.longitude,
                                           altimetry_nwes.dataset.latitude)
@@ -899,7 +899,8 @@ subsec = subsec+1
 
 try:
 
-    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear')
+    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear', 
+                           model_mask='bathy')
 
     #TEST: Check that the resulting interp_sossheig variable is of the same
     # length as sea_level and that it is populated.
