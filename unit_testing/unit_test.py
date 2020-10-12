@@ -56,7 +56,7 @@ import os.path as path
 import logging
 import coast.general_utils as general_utils
 from socket import gethostname# to get hostname
-#import traceback
+import traceback
 '''
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
