@@ -176,9 +176,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
-
         The depths are assigned to domain_dataset.depth_0
-
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         
@@ -239,7 +237,6 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 'description':'depth of last wet w-level on the horizontal {}'.format(self.grid_ref)}
         except ValueError as err:
             error(err)
-
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:
