@@ -1,12 +1,13 @@
-from .COAsT import COAsT
+#from .COAsT import COAsT
+from .NEMO import NEMO
 import numpy as np
 import xarray as xr
 import copy
-import gsw  # TODO Use this or remove the import
+#import gsw  # TODO Use this or remove the import
 from .logging_util import get_slug, debug
 
 
-class INTERNALTIDE(COAsT):
+class INTERNALTIDE(NEMO):
     """
     Object for handling and storing necessary information, methods and outputs
     for calculation of internal tide diagnostics.
@@ -38,6 +39,7 @@ class INTERNALTIDE(COAsT):
     def __init__(self, nemo_t: xr.Dataset, nemo_w: xr.Dataset):  # TODO We're not calling super init...
         debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
+        self.filename_domain = nemo_t.filename_domain
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         self.nt = nemo_t.dataset.dims['t_dim']
@@ -119,7 +121,7 @@ class INTERNALTIDE(COAsT):
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in z_dim, ydim, xdim
         nt = nemo_t.dataset.dims['t_dim']
-        nz = nemo_t.dataset.dims['z_dim']
+        #nz = nemo_t.dataset.dims['z_dim']
         ny = nemo_t.dataset.dims['y_dim']
         nx = nemo_t.dataset.dims['x_dim']
 
@@ -179,7 +181,6 @@ class INTERNALTIDE(COAsT):
         self.dataset.strat_1st_mom.attrs['standard_name'] = 'pycnocline depth'
         self.dataset.strat_1st_mom.attrs['long_name'] = 'First depth moment of stratification'
 
-
         #%% Mask pycnocline variables in weak stratification
         #zd_m = zd.where( strat_m > 0, -999, drop=False )
         #zt_m = zt.where( strat_m > 0, -999, drop=False )
@@ -201,6 +202,16 @@ class INTERNALTIDE(COAsT):
         self.dataset.strat_1st_mom_masked.attrs['units'] = 'm'
         self.dataset.strat_1st_mom_masked.attrs['standard_name'] = 'masked pycnocline depth'
         self.dataset.strat_1st_mom_masked.attrs['long_name'] = 'First depth moment of stratification, masked in weak stratification'
+
+        # Inhert horizontal grid information from nemo_w
+        self.dataset['e1'] = xr.DataArray( nemo_w.dataset.e1,
+            coords = {  'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
+                    'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)},
+            dims=['y_dim', 'x_dim'])
+        self.dataset['e2'] = xr.DataArray( nemo_w.dataset.e2,
+            coords = {  'latitude': (('y_dim','x_dim'), nemo_t.dataset.latitude.values),
+                    'longitude': (('y_dim','x_dim'), nemo_t.dataset.longitude.values)},
+            dims=['y_dim', 'x_dim'])
 
     def quick_plot(self, var : xr.DataArray = None):
         """
