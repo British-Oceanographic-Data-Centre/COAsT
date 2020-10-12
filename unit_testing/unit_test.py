@@ -519,7 +519,7 @@ try:
         print(str(sec) + chr(subsec) + " X - TRANSECT cross flow calculations not as expected")
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
-'''
+
 #-----------------------------------------------------------------------------#
 #%% ( 4c ) Transport and velocity plotting                                      #
 #
@@ -542,7 +542,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
-'''
+
 #-----------------------------------------------------------------------------#
 #%% ( 4d ) Construct density and pressure along the transect                    #
 #
@@ -561,7 +561,7 @@ try:
               ' X - TRANSECT density and pressure calculations not as expected')
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
-'''
+
 #-----------------------------------------------------------------------------#
 #%% ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
