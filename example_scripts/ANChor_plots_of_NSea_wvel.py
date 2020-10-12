@@ -25,8 +25,9 @@ dom_nam = "/projectsa/anchor/NEMO/AMM60/mesh_mask.nc"
 dir_nam = '/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/'
 fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 
+chunks = {"x":10, "y":10, "time_counter":10}
 sci_w = coast.NEMO(dir_nam + fil_nam, 
-                 dom_nam, grid_ref='w-grid', multiple=True)
+                 dom_nam, grid_ref='w-grid', multiple=True, chunks=chunks)
 
 sci_w.dataset = sci_w.dataset.swap_dims({'depthw':'z_dim'})
 #################################################

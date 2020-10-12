@@ -1161,9 +1161,9 @@ try:
     #TEST: <description here>
     check1 = example_script_flag
     if check1:
-        print(str(sec) + chr(subsec) + " OK - example_scripts ran on",gethostname())
+        print(str(sec) + " OK - example_scripts ran on",gethostname())
     else:
-        print(str(sec) + chr(subsec) + " X - example_scripts failed on",gethostname())
+        print(str(sec) + " X - example_scripts failed on",gethostname())
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
