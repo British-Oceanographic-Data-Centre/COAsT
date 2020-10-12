@@ -176,12 +176,22 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
-
         The depths are assigned to domain_dataset.depth_0
-
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
-        if self.grid_ref == 't-grid' or self.grid_ref == 'w-grid': # bathymetry not necessary
+        
+        try:
+            bathymetry = dataset_domain.bathy_metry.squeeze()
+        except AttributeError:
+            bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+            (warnings.warn(f"The model domain loaded, '{self.filename_domain}', does not contain the "
+                          "bathy_metry' variable. This will result in the "
+                          "NEMO.dataset.bathymetry variable being set to zero, which "
+                          "may result in unexpected behaviour from routines that require "
+                          "this variable."))
+            debug(f"The bathy_metry variable was missing from the domain_cfg for "
+                  f"{get_slug(self)} with {get_slug(dataset_domain)}")
+        try:
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
                 depth_0 = np.zeros_like( e3w_0 )
@@ -192,59 +202,41 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 depth_0 = np.zeros_like( e3t_0 )
                 depth_0[0,:,:] = 0.0
                 depth_0[1:,:,:] = np.cumsum( e3t_0, axis=0 )[:-1,:,:]
-
+            elif self.grid_ref == 'u-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_u = 0.5 * ( e3w_0[:,:,:-1] + e3w_0[:,:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]
+                depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 )
+                bathymetry[:,:-1] = 0.5 * ( bathymetry[:,:-1] + bathymetry[:,1:] )  
+            elif self.grid_ref == 'v-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]
+                depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 )
+                bathymetry[:-1,:] = 0.5 * ( bathymetry[:-1,:] + bathymetry[1:,:] )   
+            elif self.grid_ref == 'f-grid':
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] +
+                                     e3w_0[:,1:,:-1] + e3w_0[:,1:,1:] )
+                depth_0 = np.zeros_like( e3w_0 )
+                depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]
+                depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 )
+                bathymetry[:-1,:-1] = 0.25 * ( bathymetry[:-1,:-1] + bathymetry[:-1,1:] 
+                                             + bathymetry[1:,:-1] + bathymetry[1:,1:] )  
+            else:
+                raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
             dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(depth_0,
                     dims=['z_dim', 'y_dim', 'x_dim'],
                     attrs={'units':'m',
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
-            try:
-                bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'})
-                self.dataset['bathymetry'] = bathymetry
-                self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
-                    'description':'depth of last w-level on the horizontal {}'.format(self.grid_ref)}
-            except: #ValueError as err:
-                debug("Possibly missing bathymetry variable") #error(err)
-
-        else: # not t-grid or w-grid (i.e bathymetry is necessary)
-            try:
-                bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'})
-                if self.grid_ref == 'u-grid':
-                    e3w_0 = dataset_domain.e3w_0.values.squeeze()
-                    e3w_0_on_u = 0.5 * ( e3w_0[:,:,:-1] + e3w_0[:,:,1:] )
-                    depth_0 = np.zeros_like( e3w_0 )
-                    depth_0[0,:,:-1] = 0.5 * e3w_0_on_u[0,:,:]
-                    depth_0[1:,:,:-1] = depth_0[0,:,:-1] + np.cumsum( e3w_0_on_u[1:,:,:], axis=0 )
-                    bathymetry[:,:-1] = 0.5 * ( bathymetry[:,:-1] + bathymetry[:,1:] )
-                elif self.grid_ref == 'v-grid':
-                    e3w_0 = dataset_domain.e3w_0.values.squeeze()
-                    e3w_0_on_v = 0.5 * ( e3w_0[:,:-1,:] + e3w_0[:,1:,:] )
-                    depth_0 = np.zeros_like( e3w_0 )
-                    depth_0[0,:-1,:] = 0.5 * e3w_0_on_v[0,:,:]
-                    depth_0[1:,:-1,:] = depth_0[0,:-1,:] + np.cumsum( e3w_0_on_v[1:,:,:], axis=0 )
-                    bathymetry[:-1,:] = 0.5 * ( bathymetry[:-1,:] + bathymetry[1:,:] )
-                elif self.grid_ref == 'f-grid':
-                    e3w_0 = dataset_domain.e3w_0.values.squeeze()
-                    e3w_0_on_f = 0.25 * ( e3w_0[:,:-1,:-1] + e3w_0[:,:-1,1:] +
-                                         e3w_0[:,1:,:-1] + e3w_0[:,1:,1:] )
-                    depth_0 = np.zeros_like( e3w_0 )
-                    depth_0[0,:-1,:-1] = 0.5 * e3w_0_on_f[0,:,:]
-                    depth_0[1:,:-1,:-1] = depth_0[0,:-1,:-1] + np.cumsum( e3w_0_on_f[1:,:,:], axis=0 )
-                    bathymetry[:-1,:-1] = 0.25 * ( bathymetry[:-1,:-1] + bathymetry[:-1,1:]
-                                                 + bathymetry[1:,:-1] + bathymetry[1:,1:] )
-                else:
-                    raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
-                # Write the depth_0 variable to the domain_dataset DataSet, with grid type
-                dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(depth_0,
-                        dims=['z_dim', 'y_dim', 'x_dim'],
-                        attrs={'units':'m',
-                        'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
-                self.dataset['bathymetry'] = bathymetry
-                self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
-                    'description':'depth of last w-level on the horizontal {}'.format(self.grid_ref)}
-            except: #ValueError as err:
-                debug("Possibly missing bathymetry variable") #error(err)
-
+            self.dataset['bathymetry'] = bathymetry
+            self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
+                'description':'depth of last wet w-level on the horizontal {}'.format(self.grid_ref)}
+        except ValueError as err:
+            error(err)
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:

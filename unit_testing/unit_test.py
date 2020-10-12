@@ -498,7 +498,6 @@ else:
 #-----------------------------------------------------------------------------#
 #%% ( 4b ) Transport velocity and depth calculations                            #
 #
-
 subsec = subsec+1
 try:
     nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
@@ -519,6 +518,7 @@ try:
         print(str(sec) + chr(subsec) + " X - TRANSECT cross flow calculations not as expected")
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
 #-----------------------------------------------------------------------------#
 #%% ( 4c ) Transport and velocity plotting                                      #
 #
@@ -541,8 +541,9 @@ try:
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
 #-----------------------------------------------------------------------------#
-#%% ( 4d ) Construct density on z_levels along transect                         #
+#%% ( 4d ) Construct density and pressure along the transect                    #
 #
 subsec = subsec+1
 try:
