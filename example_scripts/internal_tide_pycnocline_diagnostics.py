@@ -114,22 +114,24 @@ IT.quick_plot()
 #%% Make transects
 print('* Construct transects to inspect stratification. This is an abuse of the transect code...')
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-tran = coast.Transect( (51, 2.5), (61, 2.5), nemo_F = sci_nwes_w, nemo_T = sci_nwes_t, nemo_U = IT )
-print(' - I have forced the w-pt nemo data into the f-point Transect slot and the w-pts IT object into the u-point Transet slot\n')
+tran_it = coast.Transect_t( IT, (51, 2.5), (61, 2.5) )
+tran_w = coast.Transect_t( sci_nwes_w, (51, 2.5), (61, 2.5) )
+tran_t = coast.Transect_t( sci_nwes_t, (51, 2.5), (61, 2.5) )
+print(' - I have forced the w-pt nemo data and w-pt IT data into the t-point Transect objects\n')
 
-lat_sec = tran.data_T.latitude.expand_dims(dim={'z_dim':IT.nz})
-dep_sec = tran.data_T.depth_0
-tem_sec = tran.data_T.temperature_m.mean(dim='t_dim')
+lat_sec = tran_t.data.latitude.expand_dims(dim={'z_dim':IT.nz})
+dep_sec = tran_t.data.depth_0
+tem_sec = tran_t.data.temperature_m.mean(dim='t_dim')
 
-sal_sec = tran.data_T.salinity_m.mean(dim='t_dim')
-rho_sec = tran.data_T.density.mean(dim='t_dim')
-strat_sec = tran.data_F.rho_dz.mean(dim='t_dim')
+sal_sec = tran_t.data.salinity_m.mean(dim='t_dim')
+rho_sec = tran_t.data.density.mean(dim='t_dim')
+strat_sec = tran_w.data.rho_dz.mean(dim='t_dim')
 
-zd_sec = tran.data_U.strat_1st_mom.mean(dim='t_dim', skipna=False)
-zd_m_sec = tran.data_U.strat_1st_mom_masked.mean(dim='t_dim', skipna=False)
+zd_sec = tran_it.data.strat_1st_mom.mean(dim='t_dim', skipna=False)
+zd_m_sec = tran_it.data.strat_1st_mom_masked.mean(dim='t_dim', skipna=False)
 
-zt_sec = tran.data_U.strat_2nd_mom.mean(dim='t_dim', skipna=False)
-zt_m_sec = tran.data_U.strat_2nd_mom_masked.mean(dim='t_dim', skipna=False)
+zt_sec = tran_it.data.strat_2nd_mom.mean(dim='t_dim', skipna=False)
+zt_m_sec = tran_it.data.strat_2nd_mom_masked.mean(dim='t_dim', skipna=False)
 
 
 #%% Plot sections
@@ -145,13 +147,13 @@ plt.colorbar()
 plt.show()
 
 plt.pcolormesh(  lat_sec, dep_sec, strat_sec)
-plt.plot( tran.data_F.latitude, zd_sec, 'g', label='unmasked' )
-plt.plot( tran.data_F.latitude, zd_sec + zt_sec, 'g--' )
-plt.plot( tran.data_F.latitude, zd_sec - zt_sec, 'g--' )
+plt.plot( tran_it.data.latitude, zd_sec, 'g', label='unmasked' )
+plt.plot( tran_it.data.latitude, zd_sec + zt_sec, 'g--' )
+plt.plot( tran_it.data.latitude, zd_sec - zt_sec, 'g--' )
 
-plt.plot( tran.data_F.latitude, zd_m_sec, 'r.', label='masked' )
-plt.plot( tran.data_F.latitude, zd_m_sec + zt_m_sec, 'r.' )
-plt.plot( tran.data_F.latitude, zd_m_sec - zt_m_sec, 'r.' )
+plt.plot( tran_it.data.latitude, zd_m_sec, 'r.', label='masked' )
+plt.plot( tran_it.data.latitude, zd_m_sec + zt_m_sec, 'r.' )
+plt.plot( tran_it.data.latitude, zd_m_sec - zt_m_sec, 'r.' )
 
 plt.title('stratification section with pycno vars')
 plt.xlim([51,62])
