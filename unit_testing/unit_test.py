@@ -54,6 +54,7 @@ import datetime
 import os.path as path
 import logging
 import coast.general_utils as general_utils
+import traceback
 
 '''
 #################################################
@@ -501,115 +502,95 @@ else:
 #
 '''
 subsec = subsec+1
-
-nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
-nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
-nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
-
-# Create transect object
-tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-
-## Edit AW 11/09/20. Adding time dependent vertical scale factors can be a ticket for the
-## future, but for now we use the scale factors at time=0 from the domain_cfg
-# Currently we don't have e3u and e3v vaiables so approximate using e3t
-# e3u = xr.DataArray( tran.data_T.e3t_25h.values,
-#                    coords={'time': tran.data_U.time},
-#                    dims=['t_dim', 'z_dim', 'r_dim'])
-# tran.data_U = tran.data_U.assign(e3=e3u)
-# e3v = xr.DataArray( tran.data_T.e3t_25h.values,
-#                    coords={'time': tran.data_U.time},
-#                    dims=['t_dim', 'z_dim', 'r_dim'])
-# tran.data_V = tran.data_V.assign(e3=e3v)
-
-output = tran.transport_across_AB()
-# Check the calculations are as expected
-if np.isclose(tran.data_tran.depth_integrated_transport_across_AB.sum(), -48.675621368738874)  \
-        and np.isclose(tran.data_tran.depth_0.sum(), 2301799.05444336) \
-        and np.isclose(np.nansum(tran.data_tran.normal_velocities.values), -253.6484375):
-
-    print(str(sec) + chr(subsec) + " OK - TRANSECT transport velocities good")
-else:
-    print(str(sec) + chr(subsec) + " X - TRANSECT transport velocities not good")
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
+    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
+    nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
+    
+    tran_f = coast.Transect_f( nemo_f, (54,-15), (56,-12) )    
+    tran_f.calc_flow_across_transect(nemo_u,nemo_v)
+    cksum1 = tran_f.data_cross_tran_flow.normal_velocities.sum(dim=('t_dim', 'z_dim', 'r_dim')).item()
+    cksum2 = tran_f.data_cross_tran_flow.normal_transports.sum(dim=('t_dim', 'r_dim')).item()
+    if np.isclose(cksum1,-253.6484375) and np.isclose(cksum2,-48.67562136873888):
+        print(str(sec) + chr(subsec) + " OK - TRANSECT cross flow calculations as expected")
+    else:
+        print(str(sec) + chr(subsec) + " X - TRANSECT cross flow calculations not as expected")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 '''
 #-----------------------------------------------------------------------------#
 # ( 4c ) Transport and velocity plotting                                      #
 #
 '''
 subsec = subsec+1
-
 try:
-    fig,ax = tran.plot_transect_on_map()
+    fig,ax = tran_f.plot_transect_on_map()
     ax.set_xlim([-20,0]) # Problem: nice to make the land appear.
     ax.set_ylim([45,65]) #   But can not call plt.show() before adjustments are made...
     fig.tight_layout()
     fig.savefig(dn_fig + 'transect_map.png')
 
     plot_dict = {'fig_size':(5,3), 'title':'Normal velocities'}
-    fig,ax = tran.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
+    fig,ax = tran_f.plot_normal_velocity(time=0,cmap="seismic",plot_info=plot_dict,smoothing_window=2)
     fig.tight_layout()
     fig.savefig(dn_fig + 'transect_velocities.png')
     plot_dict = {'fig_size':(5,3), 'title':'Transport across AB'}
-    fig,ax = tran.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
+    fig,ax = tran_f.plot_depth_integrated_transport(time=0, plot_info=plot_dict, smoothing_window=2)
     fig.tight_layout()
     fig.savefig(dn_fig + 'transect_transport.png')
     print(str(sec) + chr(subsec) + " OK - TRANSECT velocity and transport plots saved")
 except:
-    print(str(sec) + chr(subsec) + " !!!")
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 '''
 #-----------------------------------------------------------------------------#
-# ( 4d ) Construct density on z_levels along transect                         #
+# ( 4d ) Construct density and pressure along the transect                    #
 #
 '''
 subsec = subsec+1
-tran.construct_density_on_z_levels()
 try:
-    if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
-                20142532.548826512 ):
-        raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
-    # tran.data_T = tran.data_T.drop('density_z_levels')
-    # z_levels = tran.data_T.depth_z_levels.copy()
-    # tran.data_T = tran.data_T.drop('depth_z_levels')
-    # tran.construct_density_on_z_levels( z_levels=z_levels )
-    # if not np.allclose( tran.data_T.density_z_levels.sum(dim=['t_dim','r_dim','z_dim']).item(),
-    #             20142532.548826512 ):
-    #     raise ValueError(str(sec) + chr(subsec) + ' X - TRANSECT density on z-levels incorrect')
-    print(str(sec) + chr(subsec) + ' OK - TRANSECT density on z-levels correct')
-except ValueError as err:
-    print(err)
-
-fig, (ax1,ax2) = plt.subplots(1,2, figsize=(14,4))
-densitycopy.isel(t_dim=0).plot.pcolormesh(
-            ax=ax1,yincrease=False,y='depth_0')
-ax1.set_xticks([0,30])
-ax1.set_xticklabels(['A','B'])
-tran.data_T.density_z_levels.isel(t_dim=0).plot.pcolormesh(
-    ax=ax2,yincrease=False, y='depth_z_levels')
-plt.xticks([0,57],['A','B'])
-plt.show()
+    tran_t = coast.Transect_t( nemo_t, (54,-15), (56,-12) )
+    tran_t.construct_pressure()
+    cksum1 = tran_t.data.density_zlevels.sum(dim=['t_dim','r_dim','depth_z_levels']).item()
+    cksum2 = tran_t.data.pressure_h_zlevels.sum(dim=['t_dim','r_dim','depth_z_levels']).item()
+    cksum3 = tran_t.data.pressure_s.sum(dim=['t_dim','r_dim']).item()
+    if np.allclose([cksum1,cksum2,cksum3],[23800545.87457855,135536478.93335825,-285918.5625]):
+        print(str(sec) + chr(subsec) + 
+              ' OK - TRANSECT density and pressure calculations as expected')
+    else:
+        print(str(sec) + chr(subsec) + 
+              ' X - TRANSECT density and pressure calculations not as expected')
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
 '''
 #-----------------------------------------------------------------------------#
 # ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
 '''
 subsec = subsec+1
-
-#tran = coast.Transect( (54,-15), (56,-12), nemo_f)
-tran.geostrophic_transport(nemo_t)
-cksum1 = tran.data_tran.normal_velocity_hpg.sum(dim=('t_dim', 'depth_z_levels', 'r_dim')).item()
-cksum2 = tran.data_tran.normal_velocity_spg.sum(dim=('t_dim', 'r_dim')).item()
-cksum3 = tran.data_tran.transport_across_AB_hpg.sum(dim=('t_dim', 'r_dim')).item()
-cksum4 = tran.data_tran.transport_across_AB_spg.sum(dim=('t_dim', 'r_dim')).item()
-
-if np.isclose(cksum1, 25.148127481586844) and np.isclose(cksum2, -5.0973310470581055) \
-    and np.isclose(cksum3, 54.574599270341324) and np.isclose(cksum4, -106.64431766285404):
-
-    print(str(sec) + chr(subsec) + " OK - TRANSECT geostrophic velocities and transports are correct")
-else:
-    print(str(sec) + chr(subsec) + " X - TRANSECT geostrophic calculations do not match the checksums")
+try:
+    tran_f.calc_geostrophic_flow( nemo_t )
+    cksum1 = (tran_f.data_cross_tran_flow.normal_velocity_hpg
+                .sum(dim=('t_dim', 'depth_z_levels', 'r_dim')).item())
+    cksum2 = (tran_f.data_cross_tran_flow.normal_velocity_spg
+                .sum(dim=('t_dim', 'r_dim')).item())
+    cksum3 = (tran_f.data_cross_tran_flow.normal_transport_hpg
+                .sum(dim=('t_dim', 'r_dim')).item())
+    cksum4 = (tran_f.data_cross_tran_flow.normal_transport_spg
+                .sum(dim=('t_dim', 'r_dim')).item())
+    
+    if np.allclose( [cksum1,cksum2,cksum3,cksum4], 
+            [84.8632969783,-5.09718418121,115.2587369660,-106.7897376093] ):    
+        print(str(sec) + chr(subsec) + 
+              " OK - TRANSECT geostrophic flow calculations as expected")
+    else:
+        print(str(sec) + chr(subsec) + 
+              " X - TRANSECT geostrophic flow calculations now as expected")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())  
 '''
 #################################################
 ## ( 5 ) Object Manipulation (e.g. subsetting) ##
