@@ -23,12 +23,13 @@ fil_nam = "20130415_25hourm_grid_T.nc"
 dom_nam = "/projectsa/NEMO/gmaya/AMM15_GRID/amm15.mesh_mask.cs3x.nc"
 
         
+chunks = {"x":10, "y":10, "time_counter":10}
 
 sci_t = coast.NEMO(dir_nam + fil_nam, 
-        dom_nam, grid_ref='t-grid', multiple=False)
+        dom_nam, grid_ref='t-grid', multiple=False, chunks=chunks)
 
 # create an empty w-grid object, to store stratification
-sci_w = coast.NEMO( fn_domain = dom_nam, grid_ref='w-grid')
+sci_w = coast.NEMO( fn_domain = dom_nam, grid_ref='w-grid', chunks=chunks)
 
 
 print('* Loaded ',config, ' data')
