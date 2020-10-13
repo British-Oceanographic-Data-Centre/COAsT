@@ -3,6 +3,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import pandas as pd
 import glob
+import re
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, error
@@ -99,6 +100,8 @@ class TIDEGAUGE():
                                                         date_start, date_end)
         debug(f"{get_slug(self)} initialised")
         return
+
+############ tide gauge methods ##############################################
     
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
@@ -303,6 +306,194 @@ class TIDEGAUGE():
                 # Problem with reading file: file TODO: add debug message here
                 pass
         return tidegauge_list
+
+############ tide table methods (HLW) #########################################
+    @classmethod
+    def read_HLW_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
+        '''
+        For reading from a file of tidetable High and Low Waters (HLW) data into an
+        xarray dataset. File contains high water and low water heights and times
+        
+        If no data lies between the specified dates, a dataset is still created
+        containing information on the tide gauge, but the time dimension will
+        be empty.
+        Parameters
+        ----------
+        fn_hlw (str) : path to tabulated High Low Water file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+          
+        Returns
+        -------
+        xarray.Dataset object.
+        '''
+        debug(f"Reading \"{fn_hlw}\" as a HLW file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        try:
+            header_dict = cls.read_HLW_header(fn_hlw)
+            dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
+            if header_dict['field'] == 'TZ:UT(GMT)/BST':
+                debug('Read in as BST, stored as UTC')
+            elif header_dict['field'] == 'TZ:GMTonly':
+                debug('Read and store as GMT/UTC')
+            else:
+                debug("Not expecting that timezone")
+
+        except:
+            raise Exception('Problem reading HLW file: ' + fn_hlw)
+
+        dataset.attrs = header_dict
+
+        return dataset
+
+
+    @staticmethod
+    def read_HLW_header(filnam):
+        '''
+        Reads header from a HWL file.
+
+        Parameters
+        ----------
+        filnam (str) : path to file
+
+        Returns
+        -------
+        dictionary of attributes
+        '''
+        debug(f"Reading HLW header from \"{filnam}\" ")
+        fid = open(filnam)
+
+        # Read lines one by one (hopefully formatting is consistent)
+        header = re.split( r"\s{2,}", fid.readline() )
+        site_name = header[0]
+        site_name = site_name.replace(' ','')
+
+        field = header[1]
+        field = field.replace(' ','')
+
+        units = header[2]
+        units = units.replace(' ','')
+
+        datum = header[3]
+        datum = datum.replace(' ','')
+
+        debug(f"Read done, close file \"{filnam}\"")
+        fid.close()
+        # Put all header info into an attributes dictionary
+        header_dict = {'site_name' : site_name, 'field':field,
+                       'units':units, 'datum':datum}
+        return header_dict
+
+    @staticmethod
+    def read_HLW_data(filnam, header_dict, date_start=None, date_end=None,
+                           header_length:int=1):
+        '''
+        Reads HLW data from a tidetable file.
+
+        Parameters
+        ----------
+        filnam (str) : path to HLW tide gauge file
+        date_start (np.datetime64) : start date for returning data.
+        date_end (np.datetime64) : end date for returning data.
+        header_length (int) : number of lines in header (to skip when reading)
+
+        Returns
+        -------
+        xarray.Dataset containing times, High and Low water values
+        '''
+        import datetime
+        # Initialise empty dataset and lists
+        debug(f"Reading HLW data from \"{filnam}\"")
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+
+        if header_dict['field'] == 'TZ:UT(GMT)/BST':
+            localtime_flag = True
+        else:
+            localtime_flag = False
+
+        # Open file and loop until EOF
+        with open(filnam) as file:
+            line_count = 0
+            for line in file:
+                # Read all data. Date boundaries are set later.
+                if line_count>header_length:
+                    working_line = line.split()
+                    if working_line[0] != '#':
+                        time_str = working_line[0] + ' ' + working_line[1]
+                        # Read time as datetime.datetime because it can handle local timezone easily AND the unusual date format
+                        datetime_obj = datetime.datetime.strptime( time_str , '%d/%m/%Y %H:%M')
+                        if localtime_flag == True:
+                            time.append( np.datetime64(datetime_obj.astimezone() ))
+                        else:
+                            time.append( np.datetime64(datetime_obj) )
+                        sea_level.append(float(working_line[2]))
+                line_count = line_count + 1
+            debug(f"Read done, close file \"{filnam}\"")
+
+        # Return only values between stated dates
+        start_index = 0
+        end_index = len(time)
+
+
+        if date_start is not None:
+            start_index = general_utils.nearest_datetime_ind(time, date_start)
+        if date_end is not None:
+            end_index = general_utils.nearest_datetime_ind(time, date_end)
+        time = time[start_index:end_index+1]
+        sea_level = sea_level[start_index:end_index+1]
+
+        # Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
+        dataset = dataset.assign_coords(time = ('t_dim', time))
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+    
+
+    def get_tidetabletimes(self, time_guess:np.datetime64 = None, window:int = 2):
+        """
+        Get tide times and heights from tide table.
+        input:
+        time_guess : np.datetime64 or datetime
+                assumes utc
+        window:  +/- hours window size (int)
+
+        returns:
+        height (m), time (utc)
+
+        The function nearest_datetime_ind makes the window searching a bit irrelevant for short windows
+        """
+
+        # Ensure the date objects are datetime
+        if type(time_guess) is not np.datetime64:
+            debug('Convert date to np.datetime64')
+            time_guess = np.datetime64(time_guess)
+
+        if time_guess == None:
+            debug("Use today's date")
+            time_guess = np.datetime64('now')
+
+        # Return only values between stated dates
+        start_index = 0
+        end_index = len(self.dataset.time)
+
+        debug(f"test: {time_guess - np.timedelta64(window, 'h')}")
+        #print('2h', type(datetime.timedelta(hours=2).tzinfo))
+
+        start_index = nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
+        #if self.dataset.time[start_index] > time_guess: start_index = start_index - 1
+        end_index  =  nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
+        #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
+
+        debug(f"time_guess - win: {time_guess-np.timedelta64(window, 'h')}")
+        debug(f"time[start_index-1:+1]: {self.dataset.time.values[start_index-1:start_index+1]}")
+
+        time = self.dataset.time[start_index:end_index+1].values
+        sea_level = self.dataset.sea_level[start_index:end_index+1].values
+
+        return sea_level, time
+
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###

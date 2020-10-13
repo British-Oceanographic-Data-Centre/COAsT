@@ -145,3 +145,15 @@ def dataarray_time_slice(data_array, date0, date1):
         data_array_sliced = data_array_sliced.sel(time = slice(date0, date1))
         data_array_sliced = data_array_sliced.swap_dims({'time':'t_dim'})
         return data_array_sliced
+    
+def nearest_datetime_ind(items, pivot):
+     """
+     find the index from items for the nearest value to pivot
+ 
+     items - an array of datetime objects
+        E.g. array([datetime.datetime(2020, 1, 1, 2, 36),
+         datetime.datetime(2020, 1, 1, 21, 41)],
+         dtype=object)
+     """
+     time_diff = np.abs([date - pivot for date in items])
+     return time_diff.argmin(0)
