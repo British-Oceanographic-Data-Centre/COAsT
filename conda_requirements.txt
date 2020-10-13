@@ -2,11 +2,11 @@ numpy>=1.16
 dask>=2
 dask[complete]>=2
 xarray>=0.1
-matplotlib>=3
+matplotlib==3.2.1
 netCDF4>=1
 scipy>=1
 gsw==3.3.1
 scikit-learn>=0.2
 scikit-image>=0.15
-cartopy
+cartopy>=0.18
 spyder>=4

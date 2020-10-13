@@ -34,9 +34,10 @@ try:
     elif mon == 'Feb':
         fil_names_AMM60 = "AMM60_1d_201002*_grid_T.nc"
 
-
+    chunks = {"x":10, "y":10, "time_counter":10}
     sci_t = coast.NEMO(dir_AMM60 + fil_names_AMM60,
-                     dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid', multiple=True)
+                     dir_AMM60 + "mesh_mask.nc", grid_ref='t-grid',
+                     multiple=True, chunks=chunks)
 
     # create an empty w-grid object, to store stratification
     sci_w = coast.NEMO( fn_domain = dir_AMM60 + "mesh_mask.nc", grid_ref='w-grid')
