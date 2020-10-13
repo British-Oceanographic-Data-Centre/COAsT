@@ -507,8 +507,8 @@ try:
     nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
                         fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
     nemo_f = coast.NEMO( fn_domain=dn_files+fn_nemo_dom, grid_ref='f-grid' )
-    
-    tran_f = coast.Transect_f( nemo_f, (54,-15), (56,-12) )    
+
+    tran_f = coast.Transect_f( nemo_f, (54,-15), (56,-12) )
     tran_f.calc_flow_across_transect(nemo_u,nemo_v)
     cksum1 = tran_f.data_cross_tran_flow.normal_velocities.sum(dim=('t_dim', 'z_dim', 'r_dim')).item()
     cksum2 = tran_f.data_cross_tran_flow.normal_transports.sum(dim=('t_dim', 'r_dim')).item()
@@ -553,10 +553,10 @@ try:
     cksum2 = tran_t.data.pressure_h_zlevels.sum(dim=['t_dim','r_dim','depth_z_levels']).item()
     cksum3 = tran_t.data.pressure_s.sum(dim=['t_dim','r_dim']).item()
     if np.allclose([cksum1,cksum2,cksum3],[23800545.87457855,135536478.93335825,-285918.5625]):
-        print(str(sec) + chr(subsec) + 
+        print(str(sec) + chr(subsec) +
               ' OK - TRANSECT density and pressure calculations as expected')
     else:
-        print(str(sec) + chr(subsec) + 
+        print(str(sec) + chr(subsec) +
               ' X - TRANSECT density and pressure calculations not as expected')
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
@@ -575,16 +575,16 @@ try:
                 .sum(dim=('t_dim', 'r_dim')).item())
     cksum4 = (tran_f.data_cross_tran_flow.normal_transport_spg
                 .sum(dim=('t_dim', 'r_dim')).item())
-    
-    if np.allclose( [cksum1,cksum2,cksum3,cksum4], 
-            [84.8632969783,-5.09718418121,115.2587369660,-106.7897376093] ):    
-        print(str(sec) + chr(subsec) + 
+
+    if np.allclose( [cksum1,cksum2,cksum3,cksum4],
+            [84.8632969783,-5.09718418121,115.2587369660,-106.7897376093] ):
+        print(str(sec) + chr(subsec) +
               " OK - TRANSECT geostrophic flow calculations as expected")
     else:
-        print(str(sec) + chr(subsec) + 
+        print(str(sec) + chr(subsec) +
               " X - TRANSECT geostrophic flow calculations now as expected")
 except:
-    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())  
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 '''
 #################################################
 ## ( 5 ) Object Manipulation (e.g. subsetting) ##
@@ -1161,9 +1161,9 @@ try:
     #TEST: <description here>
     check1 = example_script_flag
     if check1:
-        print(str(sec) + chr(subsec) + " OK - example_scripts ran on",gethostname())
+        print(str(sec) + " OK - example_scripts ran on",gethostname())
     else:
-        print(str(sec) + chr(subsec) + " X - example_scripts failed on",gethostname())
+        print(str(sec) + " X - example_scripts failed on",gethostname())
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
@@ -1172,6 +1172,6 @@ except:
 
 
 
-#%%
-
+#%% Close log file
+#################################################
 log_file.close()
