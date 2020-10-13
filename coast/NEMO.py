@@ -176,14 +176,21 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
-
         The depths are assigned to domain_dataset.depth_0
-
         """
-       
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         
-        bathymetry = dataset_domain.bathy_metry.squeeze() #.rename({'y':'y_dim', 'x':'x_dim'}) 
+        try:
+            bathymetry = dataset_domain.bathy_metry.squeeze()
+        except AttributeError:
+            bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+            (warnings.warn(f"The model domain loaded, '{self.filename_domain}', does not contain the "
+                          "bathy_metry' variable. This will result in the "
+                          "NEMO.dataset.bathymetry variable being set to zero, which "
+                          "may result in unexpected behaviour from routines that require "
+                          "this variable."))
+            debug(f"The bathy_metry variable was missing from the domain_cfg for "
+                  f"{get_slug(self)} with {get_slug(dataset_domain)}")
         try:
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze( dataset_domain.e3w_0.values )
@@ -227,10 +234,9 @@ class NEMO(COAsT):  # TODO Complete this docstring
                     'standard_name': 'Depth at time zero on the {}'.format(self.grid_ref)})
             self.dataset['bathymetry'] = bathymetry
             self.dataset['bathymetry'].attrs = {'units': 'm','standard_name':'bathymetry',
-                'description':'depth of last w-level on the horizontal {}'.format(self.grid_ref)}
+                'description':'depth of last wet w-level on the horizontal {}'.format(self.grid_ref)}
         except ValueError as err:
             error(err)
-
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:
@@ -274,8 +280,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
         :return: the y and x coordinates for the given grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
-        internal_lat = dataset_domain[f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[f"glam{self.grid_ref.replace('-grid','')}"]
+        internal_lat = dataset_domain[self.grid_vars[1]] #[f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain[self.grid_vars[0]] #[f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = xr.ufuncs.square(internal_lat - lat) \
               + xr.ufuncs.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
@@ -464,7 +470,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         debug(f"Trimming {get_slug(self)} variables with {get_slug(dataset_domain)}")
         if (self.dataset['x_dim'].size != dataset_domain['x_dim'].size)  \
                 or (self.dataset['y_dim'].size != dataset_domain['y_dim'].size):
-            warn(
+            info(
                 'The domain  and dataset objects are different sizes:'
                 ' [{},{}] cf [{},{}]. Trim domain.'
                 .format(

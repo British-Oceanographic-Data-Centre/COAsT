@@ -17,4 +17,6 @@ unit_testing/*log
 
 .ipynb_checkpoints/
 
+*.pyc
+
 *.DS_Store
