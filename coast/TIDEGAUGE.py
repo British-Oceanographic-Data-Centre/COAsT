@@ -102,7 +102,6 @@ class TIDEGAUGE():
         return
 
 ############ tide gauge methods ##############################################
-
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
         '''
