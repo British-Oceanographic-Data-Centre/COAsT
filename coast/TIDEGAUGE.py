@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob
 import re
+import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, error
@@ -433,15 +434,19 @@ class TIDEGAUGE():
         # Return only values between stated dates
         start_index = 0
         end_index = len(time)
-
-
         if date_start is not None:
-            start_index = general_utils.nearest_datetime_ind(time, date_start)
+            #start_index = general_utils.nearest_datetime_ind(time, date_start)
+            date_start = np.datetime64(date_start)
+            start_index = np.argmax(time>=date_start)
+            debug(f"date_start: {date_start}. start_index: {start_index}")
         if date_end is not None:
-            end_index = general_utils.nearest_datetime_ind(time, date_end)
-        time = time[start_index:end_index+1]
-        sea_level = sea_level[start_index:end_index+1]
-
+            #end_index = general_utils.nearest_datetime_ind(time, date_end)
+            date_end = np.datetime64(date_end)
+            end_index = np.argmax(time>date_end)
+            debug(f"date_end: {date_end}. end_index: {end_index}")
+        time = time[start_index:end_index]
+        sea_level = sea_level[start_index:end_index]
+        debug(f"sea_level: {sea_level}")
         # Assign arrays to Dataset
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
         dataset = dataset.assign_coords(time = ('t_dim', time))
@@ -449,49 +454,98 @@ class TIDEGAUGE():
         # Assign local dataset to object-scope dataset
         return dataset
 
+    def show(self, timezone:str=None):
+        """
+        Print out the values in the xarray
+        Displays with specified timezone
+        """
+        #print(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
+        if timezone == None:
+            for i in range(len(self.dataset.sea_level)):
+#               print('time:', self.dataset.time[i].values,
+                print('time (UTC):', np.datetime_as_string(self.dataset.time[i], unit='m'),
+                'height:',self.dataset.sea_level[i].values, 'm' )
+        else: # display timezone aware times
+            for i in range(len(self.dataset.sea_level)):
+#               print('time:', self.dataset.time[i].values,
+                print('time (' + timezone + '):', np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
+                'height:',self.dataset.sea_level[i].values, 'm' )
 
-    def get_tidetabletimes(self, time_guess:np.datetime64 = None, window:int = 2):
+    def get_tidetabletimes(self, time_guess:np.datetime64 = None, method: str='window', winsize:int=2): # window:int = 2):
         """
         Get tide times and heights from tide table.
         input:
         time_guess : np.datetime64 or datetime
                 assumes utc
-        window:  +/- hours window size (int)
+        method =
+            window:  +/- hours window size, winsize, (int) return values in that window
+                uses additional variable winsize (int) [default 2hrs]
+            nearest_1: return only the nearest event
+            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low)
 
-        returns:
-        height (m), time (utc)
+        returns: xr.DataArray( sea_level, coords=time)
+            sea_level (m), time (utc)
 
-        The function nearest_datetime_ind makes the window searching a bit irrelevant for short windows
         """
+
+        #if window == None: pass
+        #if nearest_1 == True: pass
+        #if nearest_2 == True: pass
 
         # Ensure the date objects are datetime
         if type(time_guess) is not np.datetime64:
             debug('Convert date to np.datetime64')
             time_guess = np.datetime64(time_guess)
+        print('Test what happens with a datetime.datetime guess')
 
+        print('logging should be INFO not DEBUG')
         if time_guess == None:
             debug("Use today's date")
             time_guess = np.datetime64('now')
 
-        # Return only values between stated dates
-        start_index = 0
-        end_index = len(self.dataset.time)
+        if method == 'window':
+            # Return only values between stated dates
+            #start_index = 0
+            #end_index = len(self.dataset.time)
+            print('Need to initialise start_index and end_index')
+            date_start = time_guess - np.timedelta64(winsize, 'h')
+            start_index = np.argmax(self.dataset.time.values>=date_start)
 
-        debug(f"test: {time_guess - np.timedelta64(window, 'h')}")
-        #print('2h', type(datetime.timedelta(hours=2).tzinfo))
+            date_end = time_guess + np.timedelta64(winsize, 'h')
+            end_index = np.argmax(self.dataset.time.values>date_end)
 
-        start_index = general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
-        #if self.dataset.time[start_index] > time_guess: start_index = start_index - 1
-        end_index  =  general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
-        #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
+            time = self.dataset.time[start_index:end_index]
+            sea_level = self.dataset.sea_level[start_index:end_index]
 
-        debug(f"time_guess - win: {time_guess-np.timedelta64(window, 'h')}")
-        debug(f"time[start_index-1:+1]: {self.dataset.time.values[start_index-1:start_index+1]}")
+            return sea_level, time
 
-        time = self.dataset.time[start_index:end_index+1].values
-        sea_level = self.dataset.sea_level[start_index:end_index+1].values
+        elif method == 'nearest_1':
+            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
+            return self.dataset.sea_level[index[0]], self.dataset.time[index[0]]
 
-        return sea_level, time
+        elif method == 'nearest_2':
+            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
+            return self.dataset.sea_level[index[0:1+1]] #, self.dataset.time[index[0:1+1]]
+
+        else:
+            print('Not expecting that option / method')
+
+        if(0):
+            debug(f"test: {time_guess - np.timedelta64(window, 'h')}")
+            #print('2h', type(datetime.timedelta(hours=2).tzinfo))
+
+            start_index = general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
+            #if self.dataset.time[start_index] > time_guess: start_index = start_index - 1
+            end_index  =  general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
+            #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
+
+            debug(f"time_guess - win: {time_guess-np.timedelta64(window, 'h')}")
+            debug(f"time[start_index-1:+1]: {self.dataset.time.values[start_index-1:start_index+1]}")
+
+            time = self.dataset.time[start_index:end_index+1].values
+            sea_level = self.dataset.sea_level[start_index:end_index+1].values
+
+            return sea_level, time
 
 
 ##############################################################################
