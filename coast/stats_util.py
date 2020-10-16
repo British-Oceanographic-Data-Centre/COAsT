@@ -11,6 +11,51 @@ import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, info, warn, error
 
+def doodson_xo_filter(elevation, ax=0):
+    ''' 
+    The Doodson X0 filter is a simple filter designed to damp out the main 
+    tidal frequencies. It takes hourly values, 19 values either side of the 
+    central one and applies a weighted average using:
+              (1010010110201102112 0 2112011020110100101)/30.
+    ( http://www.ntslf.org/files/acclaimdata/gloup/doodson_X0.html )
+    
+    In "Data Analaysis and Methods in Oceanography":
+    
+    "The cosine-Lanczos filter, the transform filter, and the
+    Butterworth filter are often preferred to the Godin filter,
+    to earlier Doodson filter, because of their superior ability
+    to remove tidal period variability from oceanic signals."
+    
+    This routine can be used for any dimension input array.
+    
+    Parameters
+    ----------
+        elevation (ndarray) : Array of hourly elevation values.
+        axis (int) : Time axis of input array
+       
+    Returns
+    -------
+        Filtered array of same rank as elevation.
+    ''' 
+    # Define DOODSON XO weights
+    kern = np.array([1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 2, 0, 1, 1, 0, 2, 1, 1, 2, 
+                     0,
+                     2, 1, 1, 2, 0, 1, 1, 0, 2, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1])
+    kern = kern/30
+
+    # Convolve input array with weights along the specified axis.
+    filtered = np.apply_along_axis(lambda m: np.convolve(m, kern, mode=1), 
+                                   axis=ax, arr=elevation)
+
+    # Pad out boundary areas with NaNs for given (arbitrary) axis.
+    # DB: Is this the best way to do this?? Can put_along_axis be used instead
+    filtered = filtered.swapaxes(0,ax)
+    filtered[:19] = np.nan
+    filtered[-19:] = np.nan
+    filtered = filtered.swapaxes(0,ax)
+    return filtered
+
+
 def normal_distribution(self, mu: float=0, sigma: float=1, 
                         x: np.ndarray=None, n_pts: int=1000):
     """Generates a discrete normal distribution.

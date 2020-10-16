@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob
 import sklearn.metrics as metrics
-from . import general_utils, plot_util, crps_util
+from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -654,3 +654,12 @@ class TIDEGAUGE():
             self.dataset['rmse'] = rmse
             self.dataset['corr'] = corr
             self.dataset['cov'] = cov
+
+##############################################################################
+###                ~            Analysis             ~                     ###
+##############################################################################
+
+    def apply_doodson_xo_filter(self, var_str):
+        
+        filtered = stats_util.doodson_xo_filter(self.dataset[var_str], ax=0)
+        self.dataset[var_str+'_dxo'] = filtered 
