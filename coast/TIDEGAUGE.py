@@ -525,11 +525,11 @@ class TIDEGAUGE():
             time = self.dataset.time[start_index:end_index]
             sea_level = self.dataset.sea_level[start_index:end_index]
 
-            return sea_level, time
+            return sea_level
 
         elif method == 'nearest_1':
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            return self.dataset.sea_level[index[0]], self.dataset.time[index[0]]
+            return self.dataset.sea_level[index[0]]
 
         elif method == 'nearest_2':
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
