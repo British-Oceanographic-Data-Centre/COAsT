@@ -318,6 +318,13 @@ class TIDEGAUGE():
         containing information on the tide gauge, but the time dimension will
         be empty.
 
+        The data takes the form:
+        LIVERPOOL (GLADSTONE DOCK)    TZ: UT(GMT)/BST     Units: METRES    Datum: Chart Datum
+        01/10/2020  06:29    1.65
+        01/10/2020  11:54    9.01
+        01/10/2020  18:36    1.87
+        ...
+
         Parameters
         ----------
         fn_hlw (str) : path to tabulated High Low Water file
@@ -351,6 +358,13 @@ class TIDEGAUGE():
     def read_HLW_header(filnam):
         '''
         Reads header from a HWL file.
+
+        The data takes the form:
+        LIVERPOOL (GLADSTONE DOCK)    TZ: UT(GMT)/BST     Units: METRES    Datum: Chart Datum
+        01/10/2020  06:29    1.65
+        01/10/2020  11:54    9.01
+        01/10/2020  18:36    1.87
+        ...
 
         Parameters
         ----------
