@@ -50,7 +50,6 @@ def doodson_xo_filter(elevation, ax=0):
     # Convolve input array with weights along the specified axis.
     filtered = np.apply_along_axis(lambda m: np.convolve(m, kern, mode=1), 
                                    axis=ax, arr=elevation)
-    print(filtered.shape)
 
     # Pad out boundary areas with NaNs for given (arbitrary) axis.
     # DB: Is this the best way to do this?? Can put_along_axis be used instead

@@ -962,9 +962,52 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+#%% ( 7e ) TIDEGAUGE Resample to hourly                                       #
+#                                                                             #
+subsec = subsec+1
+# Lets resample the tide gauge data to be hourly.
+
+try:
+    lowestoft.resample_mean('sea_level','1H')
+
+    #TEST: Check new times have right frequency
+    td0 = lowestoft.dataset.time_1H[1] - lowestoft.dataset.time_1H[0]
+    check1 = td0.values.astype('timedelta64[h]') == np.timedelta64(1,'h')
+    #TEST: Check length
+    check2 = np.ceil(lowestoft.dataset.time.shape[0]/4) == lowestoft.dataset.time_1H.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE resampled")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Resample TIDEGAUGE")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+#%% ( 7f ) Apply Doodson XO filter to hourly data                             #
+#                                                                             #
+subsec = subsec+1
+# Lets resample the tide gauge data to be hourly.
+
+try:
+    lowestoft.apply_doodson_xo_filter('sea_level_1H')
+
+    #TEST: Check new times are same length as variable
+    check1 = lowestoft.dataset.time_1H.shape == lowestoft.dataset.sea_level_1H_dxo.shape
+    #TEST: Check there are number values in output 
+    check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dxo)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE doodson XO")
+    else:
+        print(str(sec) + chr(subsec) + " X -  TIDEGAUGE doodson XO")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7e ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
+#%% ( 7g ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
 #                                                                             #
 subsec = subsec+1
 # We can load multiple tide gauges into a list of TIDEGAUGE objects using the
@@ -988,7 +1031,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7f ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7h ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -1003,7 +1046,7 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7g ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7i ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -1018,14 +1061,14 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7h ) TIDEGAUGE Time series plot                                           #
+#%% ( 7j ) TIDEGAUGE Time series plot                                           #
 #                                                                             #
 subsec = subsec+1
 
 # Take a look at the sea level time series stored within the object:
 
 try:
-    f,a = lowestoft.plot_timeseries('sea_level')
+    f,a = lowestoft.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dxo'])
     f.savefig(dn_fig + 'tidegauge_timeseries.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:

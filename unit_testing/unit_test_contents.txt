@@ -52,10 +52,12 @@
     b. TIDEGAUGE obs operator
     c. Tidegauge CRPS
     d. Tiudegauge basic stats
-    e. Loading multiple tidegauges
-    f. Plotting a single tidegauge location
-    g. Plotting multiple tidegauge locations
-    h. Tidegauge time series plot
+    e. Resample TIDEGAUGE
+    f. Apply Doodson XO Filter to data
+    g. Loading multiple tidegauges
+    h. Plotting a single tidegauge location
+    i. Plotting multiple tidegauge locations
+    j. Tidegauge time series plot
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points

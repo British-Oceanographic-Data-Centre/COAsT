@@ -623,7 +623,9 @@ class NEMO(COAsT):  # TODO Complete this docstring
         
         !!WARNING: Will load in entire variable to memory. If dataset large,
         then subset before using this method or ensure you have enough free 
-        RAM to hold the variable (twice). '''
+        RAM to hold the variable (twice). 
+        
+        DB:: Currently not tested in unit_test.py'''
         var = self.dataset[var_str]
         new_var_str = var_str + '_dxo'
         old_dims = var.dims
