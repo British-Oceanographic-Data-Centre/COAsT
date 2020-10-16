@@ -615,6 +615,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
             warn(f"{in_varstr} does not exist in {get_slug(self)} dataset")
             return None
         
+    def apply_doodson_xo_filter(self, var_str):
+        
+        return
+        
         
 
         
