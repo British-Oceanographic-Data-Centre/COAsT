@@ -559,7 +559,7 @@ try:
         print(str(sec) + chr(subsec) +
               ' X - TRANSECT density and pressure calculations not as expected')
 except:
-    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 
 #-----------------------------------------------------------------------------#
 #%% ( 4e ) Calculate the geostrophic flow across the transect                   #
@@ -900,7 +900,7 @@ subsec = subsec+1
 
 try:
 
-    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear', 
+    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear',
                            model_mask='bathy')
 
     #TEST: Check that the resulting interp_sossheig variable is of the same
@@ -1057,7 +1057,7 @@ try:
     if check1 and check2 and check3 and check4 and check5:
         print(str(sec) + chr(subsec) + " OK - Tide table processing")
     else:
-        print(str(sec) + chr(subsec) + " X - Tide table processing")    
+        print(str(sec) + chr(subsec) + " X - Tide table processing")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
@@ -1163,6 +1163,7 @@ try:
     # Do a thing
     from example_scripts import altimetry_tutorial # This runs on example_files
     from example_scripts import tidegauge_tutorial # This runs on example_files
+    from example_scripts import tidetable_tutorial # This runs on example_files
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec+1
 
