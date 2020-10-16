@@ -1151,6 +1151,9 @@ else:
 '''
 sec = sec+1
 subsec = 96
+
+print(str(sec) + ". Example script testing")
+print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
 #%% ( 9a ) Example script testing                                               #
