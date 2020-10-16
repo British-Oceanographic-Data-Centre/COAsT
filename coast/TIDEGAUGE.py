@@ -58,6 +58,10 @@ class TIDEGAUGE():
         -> time_correlation(): Correlation between two variables
         -> time_covariance(): Covariance between two variables
         -> basic_stats(): Calculates multiple of the above metrics.
+        
+        *Analysis*
+        -> resample_mean(): For resampling data in time using averaging
+        -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
     '''  
     
 ##############################################################################
@@ -679,6 +683,8 @@ class TIDEGAUGE():
         
 
     def apply_doodson_xo_filter(self, var_str):
-        ''' Applies doodson XO filter to a specified TIDEGAUGE variable '''
+        ''' Applies doodson XO filter to a specified TIDEGAUGE variable
+        Input ius expected to be hourly. Use resample_mean to average data
+        to hourly frequency.'''
         filtered = stats_util.doodson_xo_filter(self.dataset[var_str], ax=0)
         self.dataset[var_str+'_dxo'] = ( ('time_1H'),filtered )

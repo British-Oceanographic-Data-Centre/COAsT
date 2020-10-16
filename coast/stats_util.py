@@ -31,12 +31,16 @@ def doodson_xo_filter(elevation, ax=0):
     Parameters
     ----------
         elevation (ndarray) : Array of hourly elevation values.
-        axis (int) : Time axis of input array
+        axis (int) : Time axis of input array. This axis must have >= 39 
+        elements
        
     Returns
     -------
         Filtered array of same rank as elevation.
     ''' 
+    if elevation.shape[ax] < 39:
+        print('Doodson_XO: Ensure time axis has >=39 elements. Returning.')
+        return
     # Define DOODSON XO weights
     kern = np.array([1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 2, 0, 1, 1, 0, 2, 1, 1, 2, 
                      0,
@@ -46,6 +50,7 @@ def doodson_xo_filter(elevation, ax=0):
     # Convolve input array with weights along the specified axis.
     filtered = np.apply_along_axis(lambda m: np.convolve(m, kern, mode=1), 
                                    axis=ax, arr=elevation)
+    print(filtered.shape)
 
     # Pad out boundary areas with NaNs for given (arbitrary) axis.
     # DB: Is this the best way to do this?? Can put_along_axis be used instead

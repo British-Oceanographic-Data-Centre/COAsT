@@ -1,5 +1,5 @@
 from .COAsT import COAsT
-from . import general_utils
+from . import general_utils, stats_util
 import xarray as xr
 import numpy as np
 # from dask import delayed, compute, visualize
@@ -616,7 +616,21 @@ class NEMO(COAsT):  # TODO Complete this docstring
             return None
         
     def apply_doodson_xo_filter(self, var_str):
+        ''' Applies Doodson XO filter to a variable. 
+    
+        Input variable is expected to be hourly.
+        Output is saved back to original dataset as {var_str}_dxo
         
+        !!WARNING: Will load in entire variable to memory. If dataset large,
+        then subset before using this method or ensure you have enough free 
+        RAM to hold the variable (twice). '''
+        var = self.dataset[var_str]
+        new_var_str = var_str + '_dxo'
+        old_dims = var.dims
+        time_index = old_dims.index('t_dim')
+        filtered = stats_util.doodson_xo_filter(var, ax=time_index)
+        if filtered is not None:
+            self.dataset[new_var_str] = (old_dims, filtered)
         return
         
         
