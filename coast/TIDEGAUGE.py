@@ -482,6 +482,7 @@ class TIDEGAUGE():
                 uses additional variable winsize (int) [default 2hrs]
             nearest_1: return only the nearest event
             nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low)
+            nearest_HT: return nearest High Tide event
 
         returns: xr.DataArray( sea_level, coords=time)
             sea_level (m), time (utc)
@@ -525,7 +526,14 @@ class TIDEGAUGE():
 
         elif method == 'nearest_2':
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            return self.dataset.sea_level[index[0:1+1]] #, self.dataset.time[index[0:1+1]]
+            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            return nearest_2
+            
+        elif method == 'nearest_HT':
+            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
+            #return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
+            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            return nearest_2[ np.argmax(nearest_2) ]
 
         else:
             print('Not expecting that option / method')

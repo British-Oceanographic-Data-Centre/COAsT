@@ -57,5 +57,10 @@ HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_
 # Or the nearest two events to the input timestamp
 HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' )
 
-# Get the Hight Tide value
+# Get the High Tide value
 print('HT:', HLW[ np.argmax(HLW) ].values, 'm at', HLW[ np.argmax(HLW) ].time.values )
+
+# Or the nearest High Tide
+HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HT' )
+print('HT:', HT.values, 'm at', HT.time.values )
+
