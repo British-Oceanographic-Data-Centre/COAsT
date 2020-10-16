@@ -24,9 +24,10 @@ The following demonstration would allow you to pass these data.
 """
 import coast
 import numpy as np
+import xarray as xr
 
 
-
+#%% Load and plot High and Low Water data
 print('load and plot HLW data')
 filnam = 'example_files/Gladstone_2020-10_HLW.txt'
 
@@ -43,6 +44,7 @@ tg.show(timezone = 'Europe/London')
 # Do a basic plot of these points
 tg.dataset.plot.scatter(x="time", y="sea_level")
 
+#%% 
 
 # There is a method to locate HLW events around an approximate date and time
 # First state the time of interest

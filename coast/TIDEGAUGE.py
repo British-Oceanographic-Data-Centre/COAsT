@@ -317,6 +317,7 @@ class TIDEGAUGE():
         If no data lies between the specified dates, a dataset is still created
         containing information on the tide gauge, but the time dimension will
         be empty.
+
         Parameters
         ----------
         fn_hlw (str) : path to tabulated High Low Water file
@@ -450,7 +451,6 @@ class TIDEGAUGE():
         # Assign arrays to Dataset
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
         dataset = dataset.assign_coords(time = ('t_dim', time))
-
         # Assign local dataset to object-scope dataset
         return dataset
 
@@ -488,27 +488,20 @@ class TIDEGAUGE():
             sea_level (m), time (utc)
 
         """
-
-        #if window == None: pass
-        #if nearest_1 == True: pass
-        #if nearest_2 == True: pass
-
         # Ensure the date objects are datetime
         if type(time_guess) is not np.datetime64:
             debug('Convert date to np.datetime64')
             time_guess = np.datetime64(time_guess)
-        print('Test what happens with a datetime.datetime guess')
 
-        print('logging should be INFO not DEBUG')
         if time_guess == None:
             debug("Use today's date")
             time_guess = np.datetime64('now')
 
         if method == 'window':
-            # Return only values between stated dates
-            #start_index = 0
-            #end_index = len(self.dataset.time)
-            print('Need to initialise start_index and end_index')
+            # initialise start_index and end_index
+            start_index = 0
+            end_index = len(self.dataset.time)
+
             date_start = time_guess - np.timedelta64(winsize, 'h')
             start_index = np.argmax(self.dataset.time.values>=date_start)
 
@@ -528,7 +521,7 @@ class TIDEGAUGE():
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
             nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
             return nearest_2
-            
+
         elif method == 'nearest_HT':
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
             #return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
@@ -537,24 +530,6 @@ class TIDEGAUGE():
 
         else:
             print('Not expecting that option / method')
-
-        if(0):
-            debug(f"test: {time_guess - np.timedelta64(window, 'h')}")
-            #print('2h', type(datetime.timedelta(hours=2).tzinfo))
-
-            start_index = general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess - np.timedelta64(window, 'h'))
-            #if self.dataset.time[start_index] > time_guess: start_index = start_index - 1
-            end_index  =  general_utils.nearest_datetime_ind(self.dataset.time.values, time_guess + np.timedelta64(window, 'h'))
-            #if self.dataset.time[end_index] < time_guess: end_index = end_index + 1
-
-            debug(f"time_guess - win: {time_guess-np.timedelta64(window, 'h')}")
-            debug(f"time[start_index-1:+1]: {self.dataset.time.values[start_index-1:start_index+1]}")
-
-            time = self.dataset.time[start_index:end_index+1].values
-            sea_level = self.dataset.sea_level[start_index:end_index+1].values
-
-            return sea_level, time
-
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###
