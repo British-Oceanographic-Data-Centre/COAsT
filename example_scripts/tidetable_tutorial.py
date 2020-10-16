@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
+Tutorial for processing tabulated tide gauge data
+
 Created on Mon Oct 12 22:30:21 2020
 
-You might scrpae tidal highs and lows from a website such as
+You might scrape tidal highs and lows from a website such as
 
 <a title="NTSLF tidal predictions"
 href="https://www.ntslf.org/tides/tidepred?port=Liverpool">
@@ -51,7 +52,7 @@ tg.dataset.plot.scatter(x="time", y="sea_level")
 time_guess = np.datetime64('2020-10-13 12:48')
 # Then recover all the HLW events in a +/- window, of specified size (iteger hrs)
 # The default winsize = 2 (hrs)
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='window', winsize=3 )
+HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='window', winsize=24 )
 
 # Alternatively recover the closest HLW event to the input timestamp
 HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_1' )
@@ -59,10 +60,12 @@ HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_
 # Or the nearest two events to the input timestamp
 HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' )
 
-# Get the High Tide value
+# Extract the Low Tide value
+print('LT:', HLW[ np.argmin(HLW) ].values, 'm at', HLW[ np.argmin(HLW) ].time.values )
+
+# Extract the High Tide value
 print('HT:', HLW[ np.argmax(HLW) ].values, 'm at', HLW[ np.argmax(HLW) ].time.values )
 
-# Or the nearest High Tide
+# Or use the the nearest High Tide method to get High Tide
 HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HT' )
 print('HT:', HT.values, 'm at', HT.time.values )
-
