@@ -477,12 +477,12 @@ class TIDEGAUGE():
         if timezone == None:
             for i in range(len(self.dataset.sea_level)):
 #               print('time:', self.dataset.time[i].values,
-                print('time (UTC):', np.datetime_as_string(self.dataset.time[i], unit='m'),
+                print('time (UTC):', general_utils.dayoweek(self.dataset.time[i].values), np.datetime_as_string(self.dataset.time[i], unit='m'),
                 'height:',self.dataset.sea_level[i].values, 'm' )
         else: # display timezone aware times
             for i in range(len(self.dataset.sea_level)):
 #               print('time:', self.dataset.time[i].values,
-                print('time (' + timezone + '):', np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
+                print('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values), np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
                 'height:',self.dataset.sea_level[i].values, 'm' )
 
     def get_tidetabletimes(self, time_guess:np.datetime64 = None, method: str='window', winsize:int=2): # window:int = 2):

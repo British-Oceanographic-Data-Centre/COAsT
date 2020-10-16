@@ -46,7 +46,7 @@ def remove_indices_by_mask(A, mask):
     A = np.array(A).flatten()
     mask = np.array(mask, dtype=bool).flatten()
     array_removed = A[~mask]
-        
+
     return array_removed
 
 def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
@@ -64,13 +64,13 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     A = A.reshape(original_shape)
     return A
 
-def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat, 
+def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
                        mask = None):
     '''
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
-    and its BallTree haversine method. 
-    
+    and its BallTree haversine method.
+
     Example Useage
     ----------
     # Get indices of model points closest to altimetry points
@@ -78,7 +78,7 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
                                         altimetry.dataset.latitude)
     # Nearest neighbour interpolation of model dataset to these points
     interpolated = nemo.dataset.isel(x_dim = ind_x, y_dim = ind_y)
-    
+
     Parameters
     ----------
     mod_lon (2D array): Model longitude (degrees) array (2-dimensional)
@@ -86,9 +86,9 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     new_lon (1D array): Array of longitudes (degrees) to compare with model
     new_lat (1D array): Array of latitudes (degrees) to compare with model
     mask (2D array): Mask array. Where True (or 1), elements of array will
-                     not be included. For example, use to mask out land in 
+                     not be included. For example, use to mask out land in
                      case it ends up as the nearest point.
-        
+
     Returns
     -------
     Array of x indices, Array of y indices
@@ -99,7 +99,7 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     mod_lon = np.array(mod_lon)
     mod_lat = np.array(mod_lat)
     original_shape = mod_lon.shape
-    
+
     # If a mask is supplied, remove indices from arrays.
     if mask is None:
         mod_lon = mod_lon.flatten()
@@ -109,19 +109,19 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lat[mask] = np.nan
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
-    
+
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     mod_loc = np.vstack((mod_lat, mod_lon)).transpose()
     new_loc = np.vstack((new_lat, new_lon)).transpose()
-    
+
     # Convert lat/lon to radians for BallTree
     mod_loc = np.radians(mod_loc)
     new_loc = np.radians(new_loc)
-    
+
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(mod_loc, leaf_size=5, metric='haversine')
     _, ind_1d = tree.query(new_loc, k=1)
-    
+
     # Get 2D indices from 1D index output from BallTree
     ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
     ind_x = xr.DataArray(ind_x.squeeze())
@@ -129,12 +129,12 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     return ind_x, ind_y
 
 def dataarray_time_slice(data_array, date0, date1):
-    ''' Takes an xr.DataArray object and returns a new object with times 
+    ''' Takes an xr.DataArray object and returns a new object with times
     sliced between dates date0 and date1. date0 and date1 may be a string or
     datetime type object.'''
     if date0 is None and date1 is None:
         return data_array
-    else: 
+    else:
         data_array_sliced = data_array.swap_dims({'t_dim':'time'})
         time_max = data_array.time.max().values
         time_min = data_array.time.min().values
@@ -145,3 +145,24 @@ def dataarray_time_slice(data_array, date0, date1):
         data_array_sliced = data_array_sliced.sel(time = slice(date0, date1))
         data_array_sliced = data_array_sliced.swap_dims({'time':'t_dim'})
         return data_array_sliced
+
+def dayoweek( date:np.datetime64=None):
+    """ Return the day of the week (3 letter str)"""
+    if date == None:
+        date = np.datetime64('now')
+
+    val = (np.datetime64(date, 'D')-np.datetime64(date, 'W')).astype(int)
+    if val == 0:
+        return 'Thu'
+    elif val == 1:
+        return 'Fri'
+    elif val == 2:
+        return 'Sat'
+    elif val == 3:
+        return 'Sun'
+    elif val == 4:
+        return 'Mon'
+    elif val == 5:
+        return 'Tue'
+    elif val == 6:
+        return 'Wed'
