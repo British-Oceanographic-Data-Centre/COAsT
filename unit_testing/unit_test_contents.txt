@@ -18,6 +18,7 @@
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
     c. Renaming variables inside a COAsT object
+    d. day of the week function
 
 3. Diagnostic Methods
     a. Compute vertical spatial derivative

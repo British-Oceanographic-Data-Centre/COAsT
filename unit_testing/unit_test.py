@@ -320,6 +320,23 @@ try:
         print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
+
+#-----------------------------------------------------------------------------#
+#%% ( 2d ) day of the week function                                           #
+#                                                                             #
+
+subsec = subsec+1
+try:
+    check = general_utils.dayoweek( np.datetime64('2020-10-16') ) == 'Fri'
+    
+    if check:
+        print(str(sec) + chr(subsec) + " OK - day of the week method")
+    else:
+        print(str(sec) + chr(subsec) + " X - day of the week method")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED: day of the week method')  
+         
 '''
 #################################################
 ## ( 3 ) Test Diagnostic methods               ##
