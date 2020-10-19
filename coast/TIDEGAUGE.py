@@ -419,7 +419,6 @@ class TIDEGAUGE():
         plt.legend(var_list)
         # Title and axes
         plt.xlabel('Date')
-        plt.ylabel(var_str + ' (m)')
         plt.title('Site: ' + self.dataset.site_name)
         
         return fig, ax
@@ -682,9 +681,9 @@ class TIDEGAUGE():
         self.dataset[new_var_str] = resampled
         
 
-    def apply_doodson_xo_filter(self, var_str):
-        ''' Applies doodson XO filter to a specified TIDEGAUGE variable
+    def apply_doodson_x0_filter(self, var_str):
+        ''' Applies doodson X0 filter to a specified TIDEGAUGE variable
         Input ius expected to be hourly. Use resample_mean to average data
         to hourly frequency.'''
         filtered = stats_util.doodson_xo_filter(self.dataset[var_str], ax=0)
-        self.dataset[var_str+'_dxo'] = ( ('time_1H'),filtered )
+        self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
