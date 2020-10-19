@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import glob
 import sklearn.metrics as metrics
-from . import general_utils, plot_util, crps_util
+from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -654,3 +654,35 @@ class TIDEGAUGE():
             self.dataset['rmse'] = rmse
             self.dataset['corr'] = corr
             self.dataset['cov'] = cov
+            
+    def find_high_and_low_water(self, var_str, method='comp'):
+        '''
+        Finds high and low water for a given variable.
+        Returns in a new TIDEGAUGE object with similar data format to 
+        a TIDETABLE.
+        
+        Methods:
+        'comp' :: Find maxima by comparison with neighbouring values.
+                  Uses scipy.signal.find_peaks. **kwargs passed to this routine
+                  will be passed to scipy.signal.find_peaks.
+        DB NOTE: Currently only the 'comp' method is implemented. Future
+                 methods include linear interpolation and cublic splines.
+        '''
+        
+        x = self.dataset.time
+        y = self.dataset[var_str]
+        
+        time_max, values_max = stats_util.find_maxima(x, y, method=method)
+        time_min, values_min = stats_util.find_maxima(x,-y, method=method)
+        
+        new_dataset = xr.Dataset()
+        new_dataset.attrs = self.dataset.attrs
+        new_dataset[var_str + '_highs'] = ('time_highs', values_max)
+        new_dataset[var_str + '_lows'] = ('time_lows', values_min)
+        new_dataset['time_highs'] = ('time_highs', time_max)
+        new_dataset['time_lows'] = ('time_lows', time_min)
+        
+        new_object = TIDEGAUGE()
+        new_object.dataset = new_dataset
+        
+        return new_object

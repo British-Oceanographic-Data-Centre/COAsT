@@ -10,8 +10,28 @@ Python definitions used to aid with statistical calculations.
 import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, info, warn, error
+import scipy.signal
 
-def normal_distribution(self, mu: float=0, sigma: float=1, 
+def find_maxima(x, y, method='comp', **kwargs):
+    '''
+    Finds maxima of a time series y. Returns maximum values of y (e.g heights)
+    and corresponding values of x (e.g. times). 
+    **kwargs are dependent on method.
+    
+    Methods:
+        'comp' :: Find maxima by comparison with neighbouring values.
+                  Uses scipy.signal.find_peaks. **kwargs passed to this routine
+                  will be passed to scipy.signal.find_peaks.
+        DB NOTE: Currently only the 'comp' method is implemented. Future
+                 methods include linear interpolation and cublic splines.
+    '''
+
+    if method == 'comp':
+        peaks, props = scipy.signal.find_peaks(y, **kwargs)
+        return x[peaks], y[peaks]
+        
+
+def normal_distribution(mu: float=0, sigma: float=1, 
                         x: np.ndarray=None, n_pts: int=1000):
     """Generates a discrete normal distribution.
 
@@ -31,7 +51,7 @@ def normal_distribution(self, mu: float=0, sigma: float=1,
     exponent = -0.5*((x-mu)/sigma)**2
     return term1*np.exp( exponent )
 
-def cumulative_distribution(self, mu: float=0, sigma: float=1, 
+def cumulative_distribution(mu: float=0, sigma: float=1, 
                             x: np.ndarray=None, cdf_func: str='gaussian'):
     """Integrates under a discrete PDF to obtain an estimated CDF.
 
@@ -45,13 +65,13 @@ def cumulative_distribution(self, mu: float=0, sigma: float=1,
     """
     debug(f"Estimating CDF using {get_slug(x)}")
     if cdf_func=='gaussian': #If Gaussian, integrate under pdf
-        pdf = self.normal_distribution(mu=mu, sigma=sigma, x=x)
+        pdf = normal_distribution(mu=mu, sigma=sigma, x=x)
         cdf = [np.trapz(pdf[:ii],x[:ii]) for ii in range(0,len(x))]
     else: 
         raise NotImplementedError
     return np.array(cdf)
 
-def empirical_distribution(self, x, sample):
+def empirical_distribution(x, sample):
     """Estimates a CDF empirically.
 
     Keyword arguments:
