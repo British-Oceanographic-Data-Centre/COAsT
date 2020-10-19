@@ -992,16 +992,16 @@ subsec = subsec+1
 # Lets resample the tide gauge data to be hourly.
 
 try:
-    lowestoft.apply_doodson_xo_filter('sea_level_1H')
+    lowestoft.apply_doodson_x0_filter('sea_level_1H')
 
     #TEST: Check new times are same length as variable
-    check1 = lowestoft.dataset.time_1H.shape == lowestoft.dataset.sea_level_1H_dxo.shape
+    check1 = lowestoft.dataset.time_1H.shape == lowestoft.dataset.sea_level_1H_dx0.shape
     #TEST: Check there are number values in output 
-    check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dxo)
+    check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dx0)
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE doodson XO")
+        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE doodson X0")
     else:
-        print(str(sec) + chr(subsec) + " X -  TIDEGAUGE doodson XO")
+        print(str(sec) + chr(subsec) + " X -  TIDEGAUGE doodson X0")
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
@@ -1068,7 +1068,7 @@ subsec = subsec+1
 # Take a look at the sea level time series stored within the object:
 
 try:
-    f,a = lowestoft.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dxo'])
+    f,a = lowestoft.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dx0'])
     f.savefig(dn_fig + 'tidegauge_timeseries.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:

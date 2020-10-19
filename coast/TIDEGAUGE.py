@@ -685,5 +685,5 @@ class TIDEGAUGE():
         ''' Applies doodson X0 filter to a specified TIDEGAUGE variable
         Input ius expected to be hourly. Use resample_mean to average data
         to hourly frequency.'''
-        filtered = stats_util.doodson_xo_filter(self.dataset[var_str], ax=0)
+        filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
         self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
