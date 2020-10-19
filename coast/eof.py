@@ -42,8 +42,7 @@ class EOF:
         scale = np.max(np.abs(PCs),axis=0)
         EOFs = np.reshape(EOFs, (I,J,T)) * scale
         PCs = np.transpose(Q) * D / scale
-        
-        
+              
         # Assign to xarray variables
         # copy the coordinates 
         coords = {'mode':(('mode'),np.arange(1,T+1))}
