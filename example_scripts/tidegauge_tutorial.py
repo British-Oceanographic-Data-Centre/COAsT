@@ -72,7 +72,7 @@ crps.plot_timeseries('crps')
 stats.plot_timeseries('absolute_error')
 
 # Lets do some analysis on just the data in TIDEGAUGE. We can attempt to remove
-# the tidal signal using a Doodson XO filter. To do this, we must first
+# the tidal signal using a Doodson x0 filter. To do this, we must first
 # resample the data to an hourly frequency. TIDEGAUGE.resample_mean() can do
 # just this using averaging.
 tidegauge.resample_mean('sea_level', '1H')
@@ -82,14 +82,14 @@ tidegauge.resample_mean('sea_level', '1H')
 # can be subsitituted for other strings (e.g. 1D = 1 day) or using timedelta
 # object. 
 #
-# Now, we can apply the doodson XO filter to the new variable:
-tidegauge.apply_doodson_xo_filter('sea_level_1H')
+# Now, we can apply the doodson x0 filter to the new variable:
+tidegauge.apply_doodson_x0_filter('sea_level_1H')
 
-# The new variable tidegauge.sea_level_1H_dxo contains the filtered data.
+# The new variable tidegauge.sea_level_1H_dx0 contains the filtered data.
 # Now lets do another time series plot, but this time looking at the three
-# variables sea_level, sea_level_1H and sea_level_1H_dxo. We can do this
+# variables sea_level, sea_level_1H and sea_level_1H_dx0. We can do this
 # by providing a list of variable names:
-f,a = tidegauge.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dxo'])
+f,a = tidegauge.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dx0'])
 
 # Each TIDEGAUGE object only holds data for a single tidegauge. There is some
 # functionality for dealing with multiple gauges in COAsT. To load multiple
