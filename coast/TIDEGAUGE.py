@@ -6,7 +6,7 @@ import glob
 import re
 import pytz
 import sklearn.metrics as metrics
-from . import general_utils, plot_util, crps_util
+from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
@@ -21,13 +21,13 @@ class TIDEGAUGE():
     *Data Format Overview*
 
         1. Data for a single tide gauge is stored in an xarray Dataset object.
-           This can be accessed using TIDEGAUGE.dataset.
-        2. The dataset has a single dimension: t_dim.
+           This can be accessed using TIDEGAUGE.dataset. 
+        2. The dataset has a single dimension: time.
         3. Latitude/Longitude and other single values parameters are stored as
            attributes or single float variables.
-        4. Time is a coordinate variable and t_dim dimension.
-        5. Data variables are stored along the t_dim dimension.
-
+        4. Time is a coordinate variable and time dimension.
+        5. Data variables are stored along the time dimension.
+           
     *Methods Overview*
 
         *Initialisation and File Reading*
@@ -60,8 +60,12 @@ class TIDEGAUGE():
         -> time_correlation(): Correlation between two variables
         -> time_covariance(): Covariance between two variables
         -> basic_stats(): Calculates multiple of the above metrics.
-    '''
-
+        
+        *Analysis*
+        -> resample_mean(): For resampling data in time using averaging
+        -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
+    '''  
+    
 ##############################################################################
 ###                ~ Initialisation and File Reading ~                     ###
 ##############################################################################
@@ -254,10 +258,10 @@ class TIDEGAUGE():
         sea_level[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
-        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['t_dim'])
-        dataset = dataset.assign_coords(time = ('t_dim', time))
-
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+        
         # Assign local dataset to object-scope dataset
         return dataset
 
@@ -604,10 +608,9 @@ class TIDEGAUGE():
                                              xlim = [min(X)-10, max(X)+10],
                                              ylim = [min(Y)-10, max(Y)+10])
         return fig, ax
-
-    def plot_timeseries(self, var_name = 'sea_level',
-                        date_start=None, date_end=None,
-                        qc_colors=False,
+    
+    def plot_timeseries(self, var_list = ['sea_level'], 
+                        date_start=None, date_end=None, 
                         plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
@@ -615,8 +618,7 @@ class TIDEGAUGE():
         ----------
         date_start (datetime) : Start date for plotting
         date_end (datetime) : End date for plotting
-        var_name (str) : Variable to plot. Default: sea_level
-        qc_colors (bool) : If true, markers are coloured according to qc values
+        var_list  (str)  : List of variables to plot. Default: just sea_level
         plot_line (bool) : If true, draw line between markers
 
         Returns
@@ -624,52 +626,41 @@ class TIDEGAUGE():
         matplotlib figure and axes objects
         '''
         debug(f"Plotting timeseries for {get_slug(self)}")
-        x = np.array(self.dataset.time)
-        y = np.array(self.dataset[var_name])
-        if qc_colors:
-           qc = np.array(self.dataset.qc_flags)
-        # Use only values between stated dates
-        start_index = 0
-        end_index = len(x)
-        if date_start is not None:
-            date_start = np.datetime64(date_start)
-            start_index = np.argmax(x>=date_start)
-        if date_end is not None:
-            date_end = np.datetime64(date_end)
-            end_index = np.argmax(x>date_end)
-        x = x[start_index:end_index]
-        y = y[start_index:end_index]
-        if qc_colors:
-           qc = qc[start_index:end_index]
-
-        # Plot lines first if needed
-        if plot_line:
-            plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
-
-        # Two plotting routines for whether or not to use qc flags.
-        if qc_colors:
-            size = 5
-            fig = plt.figure(figsize=(10,10))
-            ax = plt.scatter(x[qc==0], y[qc==0], s=size)
-            plt.scatter(x[qc==1], y[qc==1], s=size)
-            plt.scatter(x[qc==2], y[qc==2], s=size)
-            plt.scatter(x[qc==3], y[qc==3], s=size)
-            plt.scatter(x[qc==4], y[qc==4], s=size)
-            plt.grid()
-            plt.legend(['No QC','Correct','Interpolated','Doubtful','Spike'],
-                       loc='upper left', ncol=5)
-            plt.xticks(rotation=45)
-        else:
-            fig = plt.figure(figsize=(10,10))
-            ax = plt.scatter(x,y)
-            plt.grid()
-            plt.xticks(rotation=65)
-
+        fig = plt.figure(figsize=(10,10))
+        # Check input is a list (even for one variable)
+        if type(var_list) is str:
+            var_list = [var_list]
+        
+        for var_str in var_list:
+            dim_str = self.dataset[var_str].dims[0]
+            x = np.array(self.dataset[dim_str])
+            y = np.array(self.dataset[var_str])
+    
+            # Use only values between stated dates
+            start_index = 0
+            end_index = len(x)
+            if date_start is not None:
+                date_start = np.datetime64(date_start)
+                start_index = np.argmax(x>=date_start)
+            if date_end is not None:
+                date_end = np.datetime64(date_end)
+                end_index = np.argmax(x>date_end)
+            x = x[start_index:end_index]
+            y = y[start_index:end_index]
+            
+            # Plot lines first if needed
+            if plot_line:
+                plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
+            
+            ax = plt.scatter(x,y, s=10)
+            
+        plt.grid()
+        plt.xticks(rotation=45)
+        plt.legend(var_list)
         # Title and axes
         plt.xlabel('Date')
-        plt.ylabel(var_name + ' (m)')
-        plt.title(var_name + ' at site: ' + self.dataset.site_name)
-
+        plt.title('Site: ' + self.dataset.site_name)
+        
         return fig, ax
 
 ##############################################################################
@@ -769,14 +760,14 @@ class TIDEGAUGE():
         if create_new_obj:
             new_object = TIDEGAUGE()
             new_dataset = self.dataset[['longitude','latitude','time']]
-            new_dataset['crps'] =  (('t_dim'),crps_list)
-            new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            new_dataset['crps'] =  (('time'),crps_list)
+            new_dataset['crps_n_model_pts'] = (('time'), n_model_pts)
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset['crps'] =  (('t_dim'),crps_list)
-            self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
-
+            self.dataset['crps'] =  (('time'),crps_list)
+            self.dataset['crps_n_model_pts'] = (('time'), n_model_pts)
+    
     def difference(self, var_str0:str, var_str1:str, date0=None, date1=None):
         ''' Difference two variables defined by var_str0 and var_str1 between
         two dates date0 and date1. Returns xr.DataArray '''
@@ -785,7 +776,7 @@ class TIDEGAUGE():
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return xr.DataArray(diff, dims='t_dim', name='error',
+        return xr.DataArray(diff, dims='time', name='error',
                             coords={'time':self.dataset.time})
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
@@ -796,7 +787,7 @@ class TIDEGAUGE():
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
-        return xr.DataArray(adiff, dims='t_dim', name='absolute_error',
+        return xr.DataArray(adiff, dims='time', name='absolute_error', 
                             coords={'time':self.dataset.time})
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
@@ -894,3 +885,45 @@ class TIDEGAUGE():
             self.dataset['rmse'] = rmse
             self.dataset['corr'] = corr
             self.dataset['cov'] = cov
+
+##############################################################################
+###                ~            Analysis             ~                     ###
+##############################################################################
+
+    def resample_mean(self, var_str:str, time_freq:str, **kwargs):
+        ''' Resample a TIDEGAUGE variable in time by calculating the mean
+            of all data points at a given frequency.
+        
+        Parameters
+        ----------
+        var_str (str)    : Variable name to resample
+        time_freq (str)  : Time frequency. e.g. '1H' for hourly, '1D' for daily
+                           Can also be a timedelta object. See Pandas resample
+                           method for more info.
+        **kwargs (other) : Other arguments to pass to xarray.Dataset.resample
+        (http://xarray.pydata.org/en/stable/generated/xarray.Dataset.resample.html)
+          
+        Returns
+        -------
+        New variable (var_str_freq) and dimension (time_freq) in tg.dataset
+        '''
+        # Define new variable and dimension names
+        var = self.dataset[var_str]
+        new_var_str = var_str + '_' + time_freq
+        new_dim_str = 'time_'+ time_freq
+        
+        # Resample using xarray.resample
+        resampled = var.resample(time=time_freq, **kwargs).mean()
+        
+        # Rename dimensions and variables. Put into original dataset.
+        resampled = resampled.rename({'time': new_dim_str})
+        resampled = resampled.rename(new_var_str)
+        self.dataset[new_var_str] = resampled
+        
+
+    def apply_doodson_x0_filter(self, var_str):
+        ''' Applies doodson X0 filter to a specified TIDEGAUGE variable
+        Input ius expected to be hourly. Use resample_mean to average data
+        to hourly frequency.'''
+        filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
+        self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
