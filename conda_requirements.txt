@@ -1,7 +1,7 @@
 numpy>=1.16
 dask>=2
 dask[complete]>=2
-xarray>=0.1
+xarray>=0.15
 matplotlib==3.2.1
 netCDF4>=1
 scipy>=1
