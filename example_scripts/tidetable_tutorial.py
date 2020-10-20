@@ -33,19 +33,20 @@ print('load and plot HLW data')
 filnam = 'example_files/Gladstone_2020-10_HLW.txt'
 
 # Set the start and end dates
-date_start = np.datetime64('2020-10-11 07:59')
-date_end = np.datetime64('2020-10-14 20:21')
+date_start = np.datetime64('2020-10-12 23:59')
+date_end = np.datetime64('2020-10-14 00:01')
 
 # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA type object
 tg = coast.TIDEGAUGE()
 # specify the data read as a High Low Water dataset
 tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
-# Show dataset. If timezone is specified then it is presented as requested, otherwise uses UTC    
+# Show dataset. If timezone is specified then it is presented as requested, otherwise uses UTC
+print("Try the TIDEGAUGE.show() method:")
 tg.show(timezone = 'Europe/London')
 # Do a basic plot of these points
 tg.dataset.plot.scatter(x="time", y="sea_level")
 
-#%% 
+#%%
 
 # There is a method to locate HLW events around an approximate date and time
 # First state the time of interest
@@ -61,11 +62,12 @@ HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_
 HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' )
 
 # Extract the Low Tide value
+print("Try the TIDEGAUGE.get_tidetabletimes() methods:")
 print('LT:', HLW[ np.argmin(HLW) ].values, 'm at', HLW[ np.argmin(HLW) ].time.values )
 
 # Extract the High Tide value
 print('HT:', HLW[ np.argmax(HLW) ].values, 'm at', HLW[ np.argmax(HLW) ].time.values )
 
 # Or use the the nearest High Tide method to get High Tide
-HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HT' )
+HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' )
 print('HT:', HT.values, 'm at', HT.time.values )
