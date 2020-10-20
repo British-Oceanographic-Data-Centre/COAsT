@@ -85,14 +85,10 @@ def hilbert_eof(variable:xr.DataArray, full_matrices=False, time_dim_name:str='t
         #for i in range(A.shape[0]):
         #    C[i,:] = signal.hilbert(A[i,:])
         
-        P, D, Q = linalg.svd(C,full_matrices=0)
-        
-        # Calculate eofs and pcs using SVD        
-        P, D, Q = linalg.svd( A, full_matrices=full_matrices )
+        # Calculate eofs and pcs using SVD 
+        P, D, Q = linalg.svd(C, full_matrices=full_matrices)        
         EOFs = np.zeros_like(F, dtype=P.dtype)
-        # EOFs if we didn't normalise by std
         EOFs[active_ind,:] = P 
-        #EOFs[active_ind,:] = std[:,np.newaxis] * P # if normalised by std, get back units
         
         # Calculate variance explained
         if full_matrices:        
@@ -111,11 +107,12 @@ def hilbert_eof(variable:xr.DataArray, full_matrices=False, time_dim_name:str='t
         
         # Extract the amplitude and phase of the spatial component
         EOFs = np.reshape(EOFs, (I,J,T)) 
-        EOF_amp = np.absolute(EOF)
-        EOF_phase = np.angle(EOF)
+        EOF_amp = np.absolute(EOFs)
+        EOF_phase = np.angle(EOFs)
 
         # Assign to xarray variables
         # copy the coordinates 
+        dataset = xr.Dataset()
         coords = {'mode':(('mode'),np.arange(1,T+1))}
         time_coords = {'mode':(('mode'),np.arange(1,T+1))}
         for coord in variable.coords:
@@ -124,16 +121,20 @@ def hilbert_eof(variable:xr.DataArray, full_matrices=False, time_dim_name:str='t
             else:
                 if (variable.dims[2],) == variable[coord].dims:
                     time_coords[coord] = (variable[coord].dims, variable[coord])
-        dataset = xr.Dataset()
+                    
         dims = (variable.dims[:2]) + ('mode',)
-        dataset['EOF'] = xr.DataArray(EOFs, coords=coords, dims=dims)
-        dataset.EOF.attrs['standard name'] = 'EOFs'
-        if 'units' in variable.attrs:
-            dataset.EOF.attrs['units'] = variable.units
-        
+        dataset['EOF_amp'] = xr.DataArray(EOF_amp, coords=coords, dims=dims)
+        dataset.EOF_amp.attrs['standard_name'] = 'EOF amplitude'
+        dataset['EOF_phase'] = xr.DataArray(np.rad2deg(EOF_phase), coords=coords, dims=dims)
+        dataset.EOF_phase.attrs['standard_name'] = 'EOF phase'
+        dataset.EOF_phase.attrs['units'] = 'degrees'
+     
         dims = (variable.dims[2],'mode')
-        dataset['PC'] = xr.DataArray(PCs, coords=time_coords, dims=dims)
-        
+        dataset['temporal_amp'] = xr.DataArray(PC_amp, coords=time_coords, dims=dims)
+        dataset.temporal_amp.attrs['standard_name'] = 'temporal projection amplitude'
+        dataset['temporal_phase'] = xr.DataArray(PC_phase, coords=time_coords, dims=dims)
+        dataset.temporal_amp.attrs['standard_name'] = 'temporal projection amplitude'
+
         dataset['variance'] = (xr.DataArray(variance_explained, 
                 coords={'mode':(('mode'),np.arange(1,T+1))}, dims=['mode']))
                 
