@@ -21,13 +21,13 @@ class TIDEGAUGE():
     *Data Format Overview*
 
         1. Data for a single tide gauge is stored in an xarray Dataset object.
-           This can be accessed using TIDEGAUGE.dataset. 
+           This can be accessed using TIDEGAUGE.dataset.
         2. The dataset has a single dimension: time.
         3. Latitude/Longitude and other single values parameters are stored as
            attributes or single float variables.
         4. Time is a coordinate variable and time dimension.
         5. Data variables are stored along the time dimension.
-           
+
     *Methods Overview*
 
         *Initialisation and File Reading*
@@ -60,12 +60,12 @@ class TIDEGAUGE():
         -> time_correlation(): Correlation between two variables
         -> time_covariance(): Covariance between two variables
         -> basic_stats(): Calculates multiple of the above metrics.
-        
+
         *Analysis*
         -> resample_mean(): For resampling data in time using averaging
         -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
-    '''  
-    
+    '''
+
 ##############################################################################
 ###                ~ Initialisation and File Reading ~                     ###
 ##############################################################################
@@ -261,7 +261,7 @@ class TIDEGAUGE():
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
         dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
         dataset = dataset.assign_coords(time = ('time', time))
-        
+
         # Assign local dataset to object-scope dataset
         return dataset
 
@@ -543,7 +543,7 @@ class TIDEGAUGE():
             index = np.argsort(np.abs(self.dataset.time - time_guess)).values
             #return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
             nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
-            return nearest_2[ np.argmax(nearest_2) ]
+            return nearest_2[ nearest_2.argmax() ]
 
         else:
             print('Not expecting that option / method')
@@ -608,9 +608,9 @@ class TIDEGAUGE():
                                              xlim = [min(X)-10, max(X)+10],
                                              ylim = [min(Y)-10, max(Y)+10])
         return fig, ax
-    
-    def plot_timeseries(self, var_list = ['sea_level'], 
-                        date_start=None, date_end=None, 
+
+    def plot_timeseries(self, var_list = ['sea_level'],
+                        date_start=None, date_end=None,
                         plot_line = False):
         '''
         Quick plot of time series stored within object's dataset
@@ -630,12 +630,12 @@ class TIDEGAUGE():
         # Check input is a list (even for one variable)
         if type(var_list) is str:
             var_list = [var_list]
-        
+
         for var_str in var_list:
             dim_str = self.dataset[var_str].dims[0]
             x = np.array(self.dataset[dim_str])
             y = np.array(self.dataset[var_str])
-    
+
             # Use only values between stated dates
             start_index = 0
             end_index = len(x)
@@ -647,20 +647,20 @@ class TIDEGAUGE():
                 end_index = np.argmax(x>date_end)
             x = x[start_index:end_index]
             y = y[start_index:end_index]
-            
+
             # Plot lines first if needed
             if plot_line:
                 plt.plot(x,y, c=[0.5,0.5,0.5], linestyle='--', linewidth=0.5)
-            
+
             ax = plt.scatter(x,y, s=10)
-            
+
         plt.grid()
         plt.xticks(rotation=45)
         plt.legend(var_list)
         # Title and axes
         plt.xlabel('Date')
         plt.title('Site: ' + self.dataset.site_name)
-        
+
         return fig, ax
 
 ##############################################################################
@@ -767,7 +767,7 @@ class TIDEGAUGE():
         else:
             self.dataset['crps'] =  (('time'),crps_list)
             self.dataset['crps_n_model_pts'] = (('time'), n_model_pts)
-    
+
     def difference(self, var_str0:str, var_str1:str, date0=None, date1=None):
         ''' Difference two variables defined by var_str0 and var_str1 between
         two dates date0 and date1. Returns xr.DataArray '''
@@ -787,7 +787,7 @@ class TIDEGAUGE():
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
-        return xr.DataArray(adiff, dims='time', name='absolute_error', 
+        return xr.DataArray(adiff, dims='time', name='absolute_error',
                             coords={'time':self.dataset.time})
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
@@ -893,7 +893,7 @@ class TIDEGAUGE():
     def resample_mean(self, var_str:str, time_freq:str, **kwargs):
         ''' Resample a TIDEGAUGE variable in time by calculating the mean
             of all data points at a given frequency.
-        
+
         Parameters
         ----------
         var_str (str)    : Variable name to resample
@@ -902,7 +902,7 @@ class TIDEGAUGE():
                            method for more info.
         **kwargs (other) : Other arguments to pass to xarray.Dataset.resample
         (http://xarray.pydata.org/en/stable/generated/xarray.Dataset.resample.html)
-          
+
         Returns
         -------
         New variable (var_str_freq) and dimension (time_freq) in tg.dataset
@@ -911,15 +911,15 @@ class TIDEGAUGE():
         var = self.dataset[var_str]
         new_var_str = var_str + '_' + time_freq
         new_dim_str = 'time_'+ time_freq
-        
+
         # Resample using xarray.resample
         resampled = var.resample(time=time_freq, **kwargs).mean()
-        
+
         # Rename dimensions and variables. Put into original dataset.
         resampled = resampled.rename({'time': new_dim_str})
         resampled = resampled.rename(new_var_str)
         self.dataset[new_var_str] = resampled
-        
+
 
     def apply_doodson_x0_filter(self, var_str):
         ''' Applies doodson X0 filter to a specified TIDEGAUGE variable
