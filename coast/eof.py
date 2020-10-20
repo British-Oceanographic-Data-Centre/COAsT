@@ -42,6 +42,7 @@ class EOF:
         scale = np.max(np.abs(PCs),axis=0)
         EOFs = np.reshape(EOFs, (I,J,T)) * scale
         PCs = np.transpose(Q) * D / scale
+        
               
         # Assign to xarray variables
         # copy the coordinates 
@@ -51,13 +52,14 @@ class EOF:
             if self.variable.dims[2] not in self.variable[coord].dims:
                 coords[coord] = (self.variable[coord].dims, self.variable[coord])
             else:
-                if self.variable.dims[2] == self.variable[coord].dims:
+                if (self.variable.dims[2],) == self.variable[coord].dims:
                     time_coords[coord] = (self.variable[coord].dims, self.variable[coord])
         self.dataset = xr.Dataset()
         dims = (self.variable.dims[:2]) + ('mode',)
         self.dataset['EOF'] = xr.DataArray(EOFs, coords=coords, dims=dims)
         self.dataset.EOF.attrs['standard name'] = 'EOFs'
-        self.dataset.EOF.attrs['units'] = self.variable.units
+        if 'units' in self.variable.attrs:
+            self.dataset.EOF.attrs['units'] = self.variable.units
         
         dims = (self.variable.dims[2],'mode')
         self.dataset['PC'] = xr.DataArray(PCs, coords=time_coords, dims=dims)
