@@ -45,7 +45,7 @@ class COAsT:
     def load(self, file_or_dir, chunks: dict = None, multiple=False):
         """
         Loads a file into a COAsT object's dataset variable using xarray
-        
+
         Args:
             file_or_dir (str)     : file name or directory to multiple files.
             chunks (dict)  : Chunks to use in Dask [default None]
@@ -55,7 +55,7 @@ class COAsT:
         if multiple:
             self.load_multiple(file_or_dir, chunks)
         else:
-            self.load_single(file_or_dir, chunks)    
+            self.load_single(file_or_dir, chunks)
 
     def __getitem__(self, name: str):
         return self.dataset[name]
@@ -69,21 +69,21 @@ class COAsT:
         """ Loads multiple files from directory into dataset variable. """
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
-            directory_to_files, chunks=chunks, parallel=True, 
+            directory_to_files, chunks=chunks, parallel=True,
             combine="by_coords") #, compat='override')
 
     def load_dataset(self, dataset):
-        """        
+        """
         :param dataset: The dataset to use
         :type dataset: xarray.Dataset
         """
         self.dataset = dataset
         debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
-    
+
     def set_dimension_mapping(self):
         self.dim_mapping = None
         debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
-        
+
     def set_variable_mapping(self):
         self.var_mapping = None
         debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
@@ -93,10 +93,10 @@ class COAsT:
         debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: dict):
-        """ 
+        """
         Relabel dimensions in COAsT object xarray.dataset to ensure
         consistent naming throughout the COAsT package.
-        
+
         Args:
             dim_mapping (dict): keys are dimension names to change and values
                                 new dimension names
@@ -109,12 +109,12 @@ class COAsT:
                 self.dataset = self.dataset.rename_dims({ key : value })
             except:  # TODO Catch specific exception(s)
                 warning(f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}")
-                
+
     def set_variable_names(self, var_mapping: dict):
-        """ 
+        """
         Relabel variables in COAsT object xarray.dataset to ensure
         consistent naming throughout the COAsT package.
-        
+
         Args:
             var_mapping (dict): keys are variable names to change and values
                                 are new variable names
@@ -145,11 +145,11 @@ class COAsT:
         new = copy.copy(self)
         debug(f"Copied {get_slug(self)} to new {get_slug(new)}")
         return new
-        
+
     def isel(self, indexers: dict = None, drop: bool = False,
              **kwargs):
         '''
-        Indexes COAsT object along specified dimensions using xarray isel. 
+        Indexes COAsT object along specified dimensions using xarray isel.
         Input is of same form as xarray.isel. Basic use, hand in either:
             1. Dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
@@ -158,11 +158,11 @@ class COAsT:
         debug(f"Indexing (isel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
         return obj_copy
-    
+
     def sel(self, indexers: dict = None, drop: bool = False,
              **kwargs):
         '''
-        Indexes COAsT object along specified dimensions using xarray sel. 
+        Indexes COAsT object along specified dimensions using xarray sel.
         Input is of same form as xarray.sel. Basic use, hand in either:
             1. Dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
@@ -171,7 +171,7 @@ class COAsT:
         debug(f"Indexing (sel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
-    
+
     def rename(self, rename_dict, inplace: bool=None, **kwargs):
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
         self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
@@ -186,7 +186,7 @@ class COAsT:
         '''
         debug(f"Subsetting {get_slug(self)}")
         self.dataset = self.dataset.isel(kwargs)
-        
+
     def subset_as_copy(self, **kwargs):
         '''
         Similar to COAsT.subset() however applies the subsetting to a copy of
@@ -201,8 +201,8 @@ class COAsT:
 
     def distance_between_two_points(self):
         raise NotImplementedError
-        
-    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
+
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float,
                                    radius: float):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
@@ -222,13 +222,13 @@ class COAsT:
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat,
                                                  lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
-    
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
@@ -237,7 +237,7 @@ class COAsT:
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-        
+
         return: Indices corresponding to datapoints inside specified box
         """
         debug(f"Subsetting {get_slug(self)} indices within lon/lat")
@@ -438,3 +438,33 @@ class COAsT:
 
     def plot_movie(self):
         raise NotImplementedError
+
+
+    def export_netcdf(self, ofile:str=None, var_str:str=None, format="NETCDF4"):
+        """
+        Export xr.Dataset as netcdf file
+        A simple implementation from xarray
+        http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html
+
+        Inputs:
+         ofile - name of target file [optional]
+         var_str - name of xr.DataArray variable [optional]
+         format - options for saving (see url) [optional]
+
+        Example usages (for e.g. NEMO object: nemo):
+        nemo.export_netcdf( var_str = 'bathymetry' )
+        nemo.export_netcdf( 'tmp.cdf', var_str = 'bathymetry' )
+        nemo.export_netcdf( 'tmp.cdf', var_str='bathymetry', format='NETCDF3_CLASSIC' )
+
+        """
+        if ofile == None:
+            ofile = input('Enter a filename for netCDF export:')
+        if var_str == None: # save whole xr.DataSet
+            obj = self.dataset
+        else: # save only one xarray variable
+            obj = self.dataset[var_str]
+
+        try:
+            obj.to_netcdf( ofile, format=format )
+        except:
+            warning(f"{get_slug(obj)}: Problem saving object")
