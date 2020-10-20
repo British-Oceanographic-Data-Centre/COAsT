@@ -3,6 +3,7 @@ import xarray as xr
 import xarray.ufuncs as uf
 import numpy as np
 from scipy import linalg
+from scipy import signal
 
 class EOF:
     def __init__(self, variable:xr.DataArray, full_matrices=False, time_dim_name:str='t_dim'):
@@ -79,12 +80,12 @@ def hilbert_eof(variable:xr.DataArray, full_matrices=False, time_dim_name:str='t
         mean = A.mean(axis=1)
         A = A - mean[:, np.newaxis]
         
-        C = np.empty([A.shape[0],A.shape[1]],dtype=np.complex64)
         C = signal.hilbert(A, axis=1)
+        #C = np.empty([A.shape[0],A.shape[1]],dtype=np.complex64)
         #for i in range(A.shape[0]):
         #    C[i,:] = signal.hilbert(A[i,:])
         
-        P, D, Q = sp.linalg.svd(C,full_matrices=0)
+        P, D, Q = linalg.svd(C,full_matrices=0)
         
         # Calculate eofs and pcs using SVD        
         P, D, Q = linalg.svd( A, full_matrices=full_matrices )
@@ -103,13 +104,16 @@ def hilbert_eof(variable:xr.DataArray, full_matrices=False, time_dim_name:str='t
             mult = var1 / var2
             variance_explained = 100.*mult*( D**2 / np.sum( D**2 ) )
         
-        # Reshape and scale PCs
+        # Extract amplitude and phase of the time component
         PCs = np.transpose(Q) * D
-        scale = np.max(np.abs(PCs),axis=0)
-        EOFs = np.reshape(EOFs, (I,J,T)) * scale
-        PCs = np.transpose(Q) * D / scale
+        PC_amp = np.absolute(PCs)
+        PC_phase = np.angle(PCs)
         
-              
+        # Extract the amplitude and phase of the spatial component
+        EOFs = np.reshape(EOFs, (I,J,T)) 
+        EOF_amp = np.absolute(EOF)
+        EOF_phase = np.angle(EOF)
+
         # Assign to xarray variables
         # copy the coordinates 
         coords = {'mode':(('mode'),np.arange(1,T+1))}
