@@ -63,10 +63,10 @@ HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_
 
 # Extract the Low Tide value
 print("Try the TIDEGAUGE.get_tidetabletimes() methods:")
-print('LT:', HLW[ np.argmin(HLW) ].values, 'm at', HLW[ np.argmin(HLW) ].time.values )
+print('LT:', HLW[ HLW.argmin() ].values, 'm at', HLW[ HLW.argmin() ].time.values )
 
 # Extract the High Tide value
-print('HT:', HLW[ np.argmax(HLW) ].values, 'm at', HLW[ np.argmax(HLW) ].time.values )
+print('HT:', HLW[ HLW.argmax() ].values, 'm at', HLW[ HLW.argmax() ].time.values )
 
 # Or use the the nearest High Tide method to get High Tide
 HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' )
