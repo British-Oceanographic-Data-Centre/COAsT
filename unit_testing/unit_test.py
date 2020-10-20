@@ -1109,7 +1109,7 @@ try:
     tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
 
     check1 = len(tg.dataset.sea_level) == 37
-    check2 = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HT' ).values == 8.01
+    check2 = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' ).values == 8.01
     check3 = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_1' ).time.values == np.datetime64('2020-10-13 14:36')
     check4 = np.array_equal( tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' ).values, [2.83, 8.01] )
     check5 = np.array_equal( tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='window', winsize=24 ).values,  [3.47, 7.78, 2.8 , 8.01, 2.83, 8.45, 2.08, 8.71])
