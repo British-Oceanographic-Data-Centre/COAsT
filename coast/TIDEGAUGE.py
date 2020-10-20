@@ -548,6 +548,159 @@ class TIDEGAUGE():
         else:
             print('Not expecting that option / method')
 
+
+############ BODC tide gauge methods ##############################################
+    @classmethod
+    def read_bodc_to_xarray(cls, fn_bodc, date_start=None, date_end=None):
+        '''
+        For reading from a single BODC (processed) file into an
+        xarray dataset.
+        If no data lies between the specified dates, a dataset is still created
+        containing information on the tide gauge, but the time dimension will
+        be empty.
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+
+        Returns
+        -------
+        xarray.Dataset object.
+        '''
+        debug(f"Reading \"{fn_bodc}\" as a BODC file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        try:
+            header_dict = cls.read_bodc_header(fn_bodc)
+            dataset = cls.read_bodc_data(fn_bodc, date_start, date_end)
+        except:
+            raise Exception('Problem reading BODC file: ' + fn_bodc)
+        # Attributes
+        dataset['longitude'] = header_dict['longitude']
+        dataset['latitude'] = header_dict['latitude']
+        del header_dict['longitude']
+        del header_dict['latitude']
+
+        dataset.attrs = header_dict
+
+        return dataset
+
+    @staticmethod
+    def read_bodc_header(fn_bodc):
+        '''
+        Reads header from a BODC file (format version 3.0).
+
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+
+        Returns
+        -------
+        dictionary of attributes
+        '''
+        debug(f"Reading BODC header from \"{fn_bodc}\"")
+        fid = open(fn_bodc)
+
+        # Read lines one by one (hopefully formatting is consistent)
+        # Geographical stuff
+        header_dict = {}
+        header = True
+        for line in fid:
+            if ':' in line and header == True:
+                (key, val) = line.split(':')
+                key = key.lower().strip().replace(' ','_')
+                val = val.lower().strip().replace(' ','_')
+                header_dict[key] = val
+                #print( key, val)
+            else:
+                #print('No colon')
+                header = False
+        debug(f"Read done, close file \"{fn_bodc}\"")
+        fid.close()
+
+        header_dict['latitude'] = float( header_dict['latitude'] )
+        header_dict['longitude'] = float( header_dict['longitude'] )
+
+        return header_dict
+
+    @staticmethod
+    def read_bodc_data(fn_bodc, date_start=None, date_end=None,
+                           header_length:int=10):
+        '''
+        Reads observation data from a BODC file.
+
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+        header_length (int) : number of lines in header (to skip when reading)
+
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+        '''
+        # Initialise empty dataset and lists
+        debug(f"Reading BODC data from \"{fn_bodc}\"")
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+        qc_flags = []
+        residual = []
+        # Open file and loop until EOF
+        with open(fn_bodc) as file:
+            line_count = 0
+            for line in file:
+                # Read all data. Date boundaries are set later.
+                if line_count>header_length:
+                    working_line = line.split()
+                    time_str = working_line[1] + ' ' + working_line[2] # Empty lines cause trouble
+                    sea_level_str = working_line[3]
+                    residual_str = working_line[4]
+                    if sea_level_str[-1].isalpha():
+                        qc_flag_str = sea_level_str[-1]
+                        sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                        residual_str = residual_str.replace(qc_flag_str,'')
+                    else:
+                        qc_flag_str = ''
+                    print(working_line, sea_level_str, qc_flag_str)
+                    time.append(time_str)
+                    qc_flags.append(qc_flag_str)
+                    sea_level.append(float(sea_level_str))
+                    residual.append(float(residual_str))
+
+                line_count = line_count + 1
+            debug(f"Read done, close file \"{fn_bodc}\"")
+
+        # Convert time list to datetimes using pandas
+        time = np.array(pd.to_datetime(time))
+
+        # Return only values between stated dates
+        start_index = 0
+        end_index = len(time)
+        if date_start is not None:
+            date_start = np.datetime64(date_start)
+            start_index = np.argmax(time>=date_start)
+        if date_end is not None:
+            date_end = np.datetime64(date_end)
+            end_index = np.argmax(time>date_end)
+        time = time[start_index:end_index]
+        sea_level = sea_level[start_index:end_index]
+        qc_flags=qc_flags[start_index:end_index]
+
+        # Set null values to nan
+        sea_level = np.array(sea_level)
+        qc_flags = np.array(qc_flags)
+        #sea_level[qc_flags==5] = np.nan
+
+        # Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+
+
 ##############################################################################
 ###                ~            Plotting             ~                     ###
 ##############################################################################

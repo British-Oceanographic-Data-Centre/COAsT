@@ -115,3 +115,21 @@ for tg in tidegauge_list:
 # And now some of these new values can be plotted on a map, again using
 # plot_on_map_multiple:
 fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
+
+
+#%%  Additionally, alternative data streams can be read in and similarly
+# processed. For example the BODC processed data from the UK Tidegauge network.
+# URL
+
+# Load and plot BODC processed data
+fn_bodc = 'example_files/LIV2008.txt'
+
+# Set the start and end dates
+date_start = np.datetime64('2020-08-12 23:59')
+date_end = np.datetime64('2020-08-14 00:01')
+
+# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA type object
+tg = coast.TIDEGAUGE()
+# specify the data read as a High Low Water dataset
+tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
+
