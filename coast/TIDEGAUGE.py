@@ -338,7 +338,7 @@ class TIDEGAUGE():
         try:
             obj.to_netcdf( ofile, format=format )
         except:
-            warning(f"{get_slug(obj)}: Problem saving object")
+            warning(f"{get_slug(obj)}: KNOWN Problem saving TIDEGAUGE object")
 
 ############ tide table methods (HLW) #########################################
     @classmethod
