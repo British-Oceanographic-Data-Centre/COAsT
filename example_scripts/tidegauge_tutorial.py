@@ -119,7 +119,8 @@ fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
 
 #%%  Additionally, alternative data streams can be read in and similarly
 # processed. For example the BODC processed data from the UK Tidegauge network.
-# URL
+# Data name: UK Tide Gauge Network, processed data.
+# Source: https://www.bodc.ac.uk/
 
 # Load and plot BODC processed data
 fn_bodc = 'example_files/LIV2008.txt'

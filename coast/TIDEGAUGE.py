@@ -558,6 +558,30 @@ class TIDEGAUGE():
         If no data lies between the specified dates, a dataset is still created
         containing information on the tide gauge, but the time dimension will
         be empty.
+
+        Data name: UK Tide Gauge Network, processed data.
+        Source: https://www.bodc.ac.uk/
+        See data notes from source for description of QC flags.
+
+        The data takes the form:
+            Port:              P234
+            Site:              Liverpool, Gladstone Dock
+            Latitude:          53.44969
+            Longitude:         -3.01800
+            Start Date:        01AUG2020-00.00.00
+            End Date:          31AUG2020-23.45.00
+            Contributor:       National Oceanography Centre, Liverpool
+            Datum information: The data refer to Admiralty Chart Datum (ACD)
+            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum) of the water body by bubbler tide gauge (second sensor)
+              Cycle    Date      Time    ASLVBG02   Residual
+             Number yyyy mm dd hh mi ssf         f          f
+                 1) 2020/08/01 00:00:00     5.354M     0.265M
+                 2) 2020/08/01 00:15:00     5.016M     0.243M
+                 3) 2020/08/01 00:30:00     4.704M     0.241M
+                 4) 2020/08/01 00:45:00     4.418M     0.255M
+                 5) 2020/08/01 01:00:00     4.133      0.257
+                 ...
+
         Parameters
         ----------
         fn_bodc (str) : path to bodc tide gauge file
@@ -610,7 +634,7 @@ class TIDEGAUGE():
                 key = key.lower().strip().replace(' ','_')
                 val = val.lower().strip().replace(' ','_')
                 header_dict[key] = val
-                #print( key, val)
+                debug(f"Header key: {key} and value: {val}")
             else:
                 #print('No colon')
                 header = False
@@ -699,7 +723,6 @@ class TIDEGAUGE():
 
         # Assign local dataset to object-scope dataset
         return dataset
-
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###
