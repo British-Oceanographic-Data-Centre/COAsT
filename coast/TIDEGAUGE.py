@@ -223,7 +223,7 @@ class TIDEGAUGE():
         qc_flags = []
         # Open file and loop until EOF
         with open(fn_gesla) as file:
-            line_count = 0
+            line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
@@ -433,7 +433,7 @@ class TIDEGAUGE():
 
         # Open file and loop until EOF
         with open(filnam) as file:
-            line_count = 0
+            line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
@@ -624,7 +624,7 @@ class TIDEGAUGE():
 
     @staticmethod
     def read_bodc_data(fn_bodc, date_start=None, date_end=None,
-                           header_length:int=10):
+                           header_length:int=11):
         '''
         Reads observation data from a BODC file.
 
@@ -648,7 +648,7 @@ class TIDEGAUGE():
         residual = []
         # Open file and loop until EOF
         with open(fn_bodc) as file:
-            line_count = 0
+            line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
