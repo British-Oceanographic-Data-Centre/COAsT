@@ -7,6 +7,7 @@ outlined in TIDEGAUGE.py.
 # Begin by importing coast and other packages
 import coast
 import datetime
+import numpy as np
 
 # And by defining some file paths
 fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc' 
