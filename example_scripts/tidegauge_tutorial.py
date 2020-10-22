@@ -23,7 +23,7 @@ nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
 # if desired, as long as it follows the data formatting for TIDEGAUGE. Here
 # we load data between two specified dates:
 date0 = datetime.datetime(2007,1,10)
-date1 = datetime.datetime(2007,1,12)
+date1 = datetime.datetime(2007,1,16)
 tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
 
 # Before comparing our observations to the model, we will interpolate a model
@@ -49,7 +49,7 @@ stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
 # Now we will do a more complex comparison using the Continuous Ranked
 # Probability Score (CRPS). For this, we need to hand over the model object,
 # a model variable and an observed variable. We also give it a neighbourhood
-# radius in km (nh_radius).
+# radius in km (nh_radius). This may take a minute to run.
 crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level', 
                       nh_radius = 20)
 
@@ -62,7 +62,7 @@ crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
 fig, ax = tidegauge.plot_on_map()
 
 # Or to look at a time series of the sea_level variable:
-fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
+fig, ax = tidegauge.plot_timeseries('sea_level')
 
 # Note that start and end dates can also be specified for plot_timeseries().
 #
@@ -70,6 +70,26 @@ fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
 # functionality can be used:
 crps.plot_timeseries('crps')
 stats.plot_timeseries('absolute_error')
+
+# Lets do some analysis on just the data in TIDEGAUGE. We can attempt to remove
+# the tidal signal using a Doodson x0 filter. To do this, we must first
+# resample the data to an hourly frequency. TIDEGAUGE.resample_mean() can do
+# just this using averaging.
+tidegauge.resample_mean('sea_level', '1H')
+
+# Here we have resampled the 'sea_level' object. Now, in tidegauge.dataset
+# there is a new variable sea_level_1H, along a new dimension time_1H. 1H
+# can be subsitituted for other strings (e.g. 1D = 1 day) or using timedelta
+# object. 
+#
+# Now, we can apply the doodson x0 filter to the new variable:
+tidegauge.apply_doodson_x0_filter('sea_level_1H')
+
+# The new variable tidegauge.sea_level_1H_dx0 contains the filtered data.
+# Now lets do another time series plot, but this time looking at the three
+# variables sea_level, sea_level_1H and sea_level_1H_dx0. We can do this
+# by providing a list of variable names:
+f,a = tidegauge.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dx0'])
 
 # Each TIDEGAUGE object only holds data for a single tidegauge. There is some
 # functionality for dealing with multiple gauges in COAsT. To load multiple

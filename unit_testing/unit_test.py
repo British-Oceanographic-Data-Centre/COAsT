@@ -320,6 +320,23 @@ try:
         print(str(sec) +chr(subsec) + " X - Variable renaming failed ")
 except:
     print(str(sec) + chr(subsec) +" FAILED")
+
+#-----------------------------------------------------------------------------#
+#%% ( 2d ) day of the week function                                           #
+#                                                                             #
+
+subsec = subsec+1
+try:
+    check = general_utils.dayoweek( np.datetime64('2020-10-16') ) == 'Fri'
+
+    if check:
+        print(str(sec) + chr(subsec) + " OK - day of the week method")
+    else:
+        print(str(sec) + chr(subsec) + " X - day of the week method")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED: day of the week method')
+
 '''
 #################################################
 ## ( 3 ) Test Diagnostic methods               ##
@@ -559,7 +576,7 @@ try:
         print(str(sec) + chr(subsec) +
               ' X - TRANSECT density and pressure calculations not as expected')
 except:
-    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())        
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 
 #-----------------------------------------------------------------------------#
 #%% ( 4e ) Calculate the geostrophic flow across the transect                   #
@@ -900,7 +917,7 @@ subsec = subsec+1
 
 try:
 
-    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear', 
+    lowestoft.obs_operator(sci, 'ssh', time_interp = 'linear',
                            model_mask='bathy')
 
     #TEST: Check that the resulting interp_sossheig variable is of the same
@@ -964,7 +981,50 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7e ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
+#%% ( 7e ) TIDEGAUGE Resample to hourly                                       #
+#                                                                             #
+subsec = subsec+1
+# Lets resample the tide gauge data to be hourly.
+
+try:
+    lowestoft.resample_mean('sea_level','1H')
+
+    #TEST: Check new times have right frequency
+    td0 = lowestoft.dataset.time_1H[1] - lowestoft.dataset.time_1H[0]
+    check1 = td0.values.astype('timedelta64[h]') == np.timedelta64(1,'h')
+    #TEST: Check length
+    check2 = np.ceil(lowestoft.dataset.time.shape[0]/4) == lowestoft.dataset.time_1H.shape[0]
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE resampled")
+    else:
+        print(str(sec) + chr(subsec) + " X -  Resample TIDEGAUGE")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+#%% ( 7f ) Apply Doodson XO filter to hourly data                             #
+#                                                                             #
+subsec = subsec+1
+# Lets resample the tide gauge data to be hourly.
+
+try:
+    lowestoft.apply_doodson_x0_filter('sea_level_1H')
+
+    #TEST: Check new times are same length as variable
+    check1 = lowestoft.dataset.time_1H.shape == lowestoft.dataset.sea_level_1H_dx0.shape
+    #TEST: Check there are number values in output
+    check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dx0)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - TIDEGAUGE doodson X0")
+    else:
+        print(str(sec) + chr(subsec) + " X -  TIDEGAUGE doodson X0")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+#%% ( 7g ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
 #                                                                             #
 subsec = subsec+1
 # We can load multiple tide gauges into a list of TIDEGAUGE objects using the
@@ -988,7 +1048,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7f ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7h ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -1003,7 +1063,7 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7g ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7i ) TIDEGAUGE map plot (single)                                          #
 #                                                                             #
 subsec = subsec+1
 
@@ -1018,20 +1078,49 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7h ) TIDEGAUGE Time series plot                                           #
+#%% ( 7j ) TIDEGAUGE Time series plot                                           #
 #                                                                             #
 subsec = subsec+1
 
 # Take a look at the sea level time series stored within the object:
 
 try:
-    f,a = lowestoft.plot_timeseries('sea_level')
+    f,a = lowestoft.plot_timeseries(['sea_level', 'sea_level_1H', 'sea_level_1H_dx0'])
     f.savefig(dn_fig + 'tidegauge_timeseries.png')
     print(str(sec) + chr(subsec) + " OK - Tide gauge time series saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 plt.close('all')
+
+#-----------------------------------------------------------------------------#
+#%% ( 7k ) TIDEGAUGE method for tabulated data                                #
+#                                                                             #
+subsec = subsec+1
+
+# Take a look at the sea level time series stored within the object:
+try:
+    filnam = 'example_files/Gladstone_2020-10_HLW.txt'
+    date_start = np.datetime64('2020-10-11 07:59')
+    date_end = np.datetime64('2020-10-20 20:21')
+
+    # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA type object
+    tg = coast.TIDEGAUGE()
+    tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
+
+    check1 = len(tg.dataset.sea_level) == 37
+    check2 = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' ).values == 8.01
+    check3 = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_1' ).time.values == np.datetime64('2020-10-13 14:36')
+    check4 = np.array_equal( tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' ).values, [2.83, 8.01] )
+    check5 = np.array_equal( tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='window', winsize=24 ).values,  [3.47, 7.78, 2.8 , 8.01, 2.83, 8.45, 2.08, 8.71])
+
+    if check1 and check2 and check3 and check4 and check5:
+        print(str(sec) + chr(subsec) + " OK - Tide table processing")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tide table processing")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 '''
 ###############################################################################
 ## ( 8 ) Isobath Contour Methods                                            ##
@@ -1122,6 +1211,9 @@ else:
 '''
 sec = sec+1
 subsec = 96
+
+print(str(sec) + ". Example script testing")
+print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
 #%% ( 9a ) Example script testing                                               #
@@ -1134,6 +1226,7 @@ try:
     # Do a thing
     from example_scripts import altimetry_tutorial # This runs on example_files
     from example_scripts import tidegauge_tutorial # This runs on example_files
+    from example_scripts import tidetable_tutorial # This runs on example_files
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec+1
 
