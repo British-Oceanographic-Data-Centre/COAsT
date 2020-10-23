@@ -1205,9 +1205,76 @@ if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg +
     print(str(sec) + chr(subsec) + " OK - Cross-contour geostrophic flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
+
+#%%
 '''
 ###############################################################################
-## ( 9 ) Example script testing                                              ##
+## ( 9 ) EOF module testing                                                 ##
+###############################################################################
+'''
+sec = sec+1
+subsec = 96
+
+#%%---------------------------------------------------------------------------#
+# ( 9a ) Compute regular EOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    eofs = coast.eofs( nemo_t.dataset.ssh )
+    
+    ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim='mode'). \
+                        sum(dim=['x_dim','y_dim'])
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point 
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = eofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from EOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from EOFs")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%---------------------------------------------------------------------------#
+# ( 9b ) Compute  HEOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    heofs = coast.hilbert_eofs( nemo_t.dataset.ssh )
+                        
+    ssh_reconstruction = (heofs.EOF_amp * heofs.temporal_amp * \
+        uf.exp( 1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase ) ) ) \
+        .sum(dim='mode').real.sum(dim=['x_dim','y_dim'])
+        
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point                   
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = heofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from HEOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from HEOFs")
+        
+
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%
+'''
+###############################################################################
+## ( 10 ) Example script testing                                              ##
 ###############################################################################
 '''
 sec = sec+1
@@ -1217,7 +1284,7 @@ print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( 9a ) Example script testing                                               #
+#%% ( 10a ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.
@@ -1261,69 +1328,6 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
-#%%
-'''
-###############################################################################
-## ( 10 ) EOF module testing                                                 ##
-###############################################################################
-'''
-sec = sec+1
-subsec = 96
-
-#%%---------------------------------------------------------------------------#
-# ( 10a ) Compute regular EOFs, temporal projections and variance explained   #
-# 
-subsec = subsec+1
-try:
-    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-    eofs = coast.eofs( nemo_t.dataset.ssh )
-    sshrecon_t0 = eofs.EOF * eofs.temporal_proj.isel(t_dim=0)
-    ssh_anom_t0 = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
-                    isel(t_dim=0).sum().item()
-    
-    cksum1 = eofs.EOF.sum(dim=['mode','y_dim','x_dim']).item()
-    cksum2 = eofs.temporal_proj.sum(dim=['t_dim','mode']).item()
-    cksum3 = eofs.variance.sum(dim='mode').item()
-    cksum4 = sshrecon_t0.sum(dim='mode').sum().item()
-    
-    if np.allclose( [-424.945465087, 2.2216894649318e-05, 100.000053405, ssh_anom_t0],\
-                    [cksum1, cksum2, cksum3, cksum4] ):
-        print(str(sec) + chr(subsec) + " OK - EOF, projections and variance as expected")
-    else:
-        print(str(sec) + chr(subsec) + " X - EOF, projections or variance not as expected")
-except:
-    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
-
-#%%---------------------------------------------------------------------------#
-# ( 10b ) Compute  HEOFs, temporal projections and variance explained   #
-# 
-subsec = subsec+1
-try:
-    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
-                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-    heofs = coast.hilbert_eofs( nemo_t.dataset.ssh )
-    sshrecon_t0 =   heofs.EOF_amp * heofs.temporal_amp.isel(t_dim=0) * \
-                    uf.exp( 1j * uf.radians(heofs.EOF_phase + \
-                    heofs.temporal_phase.isel(t_dim=0) ) )
-    ssh_anom_t0 = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
-                    isel(t_dim=0).sum().item()
-    cksum1a = heofs.EOF_amp.sum(dim=['mode','y_dim','x_dim']).item()
-    cksum1b = heofs.EOF_phase.sum(dim=['mode','y_dim','x_dim']).item()
-    cksum2a = heofs.temporal_amp.sum(dim=['t_dim','mode']).item()
-    cksum2b = heofs.temporal_phase.sum(dim=['t_dim','mode']).item()
-    cksum3 = heofs.variance.sum(dim='mode').item()
-    cksum4 = sshrecon_t0.sum(dim='mode').real.sum().item()
-    
-    if np.allclose( [982.7284089897239, 1321140.2381717619, 214.85554052824295, \
-                     1611.2234656364276, 100.000000000000, ssh_anom_t0],\
-                    [cksum1a, cksum1b, cksum2a, cksum2b, cksum3, cksum4] ):
-        print(str(sec) + chr(subsec) + " OK - HEOF, projections and variance as expected")
-    else:
-        print(str(sec) + chr(subsec) + " X - HEOF, projections or variance not as expected")
-except:
-    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 
 
 

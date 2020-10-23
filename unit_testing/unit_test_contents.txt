@@ -68,7 +68,11 @@
     d. Calculate flow across contour
     e. Calculate pressure gradient driven flow across contour
 
-9. Example script testing
+9. EOF methods
+    a. Compute EOFs, projections and variance
+    b. Compute HEOFs, projections and variance
+    
+10. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
     c. tutorial on AMM60 data
@@ -77,6 +81,3 @@
     f. tutorial on WCSSP-India data
     g. tutorial on internal tides
     
-10. EOF methods
-    a. Compute EOFs, projections and variance
-    b. Compute HEOFs, projections and variance
