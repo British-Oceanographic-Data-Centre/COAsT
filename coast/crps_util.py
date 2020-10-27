@@ -165,7 +165,7 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     
     # Get model neighbourhood subset using specified method
     subset_ind = general_utils.subset_indices_by_distance(
-                     mod_array.longitude, mod_array.latitude, 
+                     mod_array.longitude.values, mod_array.latitude.values, 
                      obs_lon, obs_lat, nh_radius)
     mod_subset = mod_array.isel(y_dim = subset_ind[0],
                                   x_dim = subset_ind[1])
@@ -188,10 +188,6 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
                 # Check that neighbourhood contains a value
                 if all(np.isnan(mod_subset_time)):
                     pass
-                else:
-                    # Create model and observation CDF objects
-                    #mod_cdf = CDF(mod_subset_time, cdf_type = cdf_type)
-                
                     # Calculate CRPS and put into output array
                     crps_list[ii] = crps_empirical(mod_subset_time, 
                                                    obs_var[ii])
@@ -244,7 +240,7 @@ def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     
         # Get model neighbourhood subset using specified method
         subset_ind = general_utils.subset_indices_by_distance(
-                         mod_array.longitude, mod_array.latitude, 
+                         mod_array.longitude.values, mod_array.latitude.values, 
                          cntr_lon, cntr_lat, nh_radius)
         
         # Check that the model neighbourhood contains points
@@ -266,9 +262,6 @@ def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time,
             if all(np.isnan(mod_subset)):
                 pass
             else:
-                # Create model and observation CDF objects
-                # mod_cdf = CDF(mod_subset, cdf_type = cdf_type)
-            
                 # Calculate CRPS and put into output array
                 crps_list[ii] = crps_empirical(mod_subset, obs_var[ii])
                 n_model_pts[ii] = int(mod_subset.shape[0])

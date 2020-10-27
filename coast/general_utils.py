@@ -14,7 +14,28 @@ def subset_indices_by_distance(
         radius: float, mask=None
     ):
     """
-
+    Returns the indices of points that lie within a specified radius (km) of
+    central latitude and longitudes. This makes use of BallTree.query_radius.
+    
+    Parameters
+    ----------
+    longitude   : (numpy.ndarray) longitudes in degrees
+    latitude    : (numpy.ndarray) latitudes in degrees
+    centre_lon  : Central longitude. Can be single value or array of values
+    centre_lat  : Central latitude. Can be single value or array of values
+    radius      : (float) Radius in km within which to find indices
+    mask        : (numpy.ndarray) of same dimension as longitude and latitude.
+                  If specified, will mask out points from the routine.
+    Returns
+    -------
+        Returns an array of indices corresponding to points within radius.
+        If more than one central location is specified, this will be a list
+        of index arrays. Each element of which corresponds to one centre.
+    If longitude is 1D:
+        Returns one array of indices per central location
+    If longitude is 2D:
+        Returns arrays of x and y indices per central location.
+        ind_y corresponds to row indices of the original input arrays.
     """
     # Calculate radius in radians
     earth_radius = 6371
@@ -22,9 +43,6 @@ def subset_indices_by_distance(
     
     # For reshaping indices at the end
     original_shape = longitude.shape
-    if type(longitude) is not np.ndarray:
-        longitude = longitude.values
-        latitude = latitude.values
         
     # Check if radius centres are numpy arrays. If not, make them into ndarrays
     if not isinstance(centre_lon, (np.ndarray)):
@@ -61,16 +79,19 @@ def subset_indices_by_distance(
     ind_1d = tree.query_radius(centre, r = r_rad)
 
     if len(original_shape) == 1:
-        return ind_1d
+        return ind_1d[0]
     else:
         # Get 2D indices from 1D index output from BallTree
         ind_y = []
         ind_x = []
         for ii in np.arange(0,n_pts):
-            y_tmp, x_tmp = np.unravel_index(ind_1d[ii], original_shape)
-            ind_x.append(xr.DataArray(x_tmp.squeeze()))
-            ind_y.append(xr.DataArray(y_tmp.squeeze()))
-        return ind_x, ind_y
+            x_tmp, y_tmp = np.unravel_index(ind_1d[ii], original_shape)
+            ind_x.append(x_tmp.squeeze())
+            ind_y.append(y_tmp.squeeze())
+        if n_pts==1:
+            return ind_x[0], ind_y[0]
+        else:
+            return ind_x, ind_y
 
 def subset_indices_by_distance_old(
         longitude, latitude, centre_lon: float, centre_lat: float, 
