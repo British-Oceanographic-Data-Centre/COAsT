@@ -14,25 +14,30 @@ def subset_indices_by_distance(
         radius: float, mask=None
     ):
     """
-    This method returns a `tuple` of indices within the `radius` of the 
-    lon/lat point given by the user.
 
-    Scikit-learn BallTree is used to obtain indices.
-
-    :param centre_lon: The longitude of the users central point
-    :param centre_lat: The latitude of the users central point
-    :param radius: The haversine distance (in km) from the central point
-    :return: All indices in a `tuple` with the haversine distance of the central point
     """
+    # Calculate radius in radians
+    earth_radius = 6371
+    r_rad = radius/earth_radius
     
     # For reshaping indices at the end
     original_shape = longitude.shape
-    longitude = longitude.values
-    latitude = latitude.values
+    if type(longitude) is not np.ndarray:
+        longitude = longitude.values
+        latitude = latitude.values
+        
+    # Check if radius centres are numpy arrays. If not, make them into ndarrays
+    if not isinstance(centre_lon, (np.ndarray)):
+        centre_lat = np.array(centre_lat)
+        centre_lon = np.array(centre_lon)
+        
+    # Determine number of centres provided
+    n_pts = 1 if centre_lat.shape==() else len(centre_lat)
     
-    # If a mask is supplied, remove indices from arrays.
+    # If a mask is supplied, remove indices from arrays. Flatten input ready
+    # for BallTree
     if mask is None:
-        latitude = longitude.flatten()
+        longitude = longitude.flatten()
         latitude = latitude.flatten()
     else:
         longitude[mask] = np.nan
@@ -42,20 +47,30 @@ def subset_indices_by_distance(
     
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     locs = np.vstack((latitude, longitude)).transpose()
-    
-    # Convert lat/lon to radians for BallTree
     locs = np.radians(locs)
     
-    # Do nearest neighbour interpolation using BallTree (gets indices)
-    tree = nb.BallTree(locs, leaf_size=5, metric='haversine')
-    ind_1d = tree.query_radius((centre_lon, centre_lat), r=radius)
+    # Construct central input to BallTree.query_radius
+    if n_pts==1:
+        centre = np.array([[centre_lat, centre_lon]])
+    else:
+        centre = np.vstack((centre_lat, centre_lon)).transpose()
+    centre = np.radians(centre)
     
-    if len(original_shape.shape) == 2:
+    # Do nearest neighbour interpolation using BallTree (gets indices)
+    tree = nb.BallTree(locs, leaf_size=2, metric='haversine')
+    ind_1d = tree.query_radius(centre, r = r_rad)
+
+    if len(original_shape) == 1:
+        return ind_1d
+    else:
         # Get 2D indices from 1D index output from BallTree
-        ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
-        ind_x = xr.DataArray(ind_x.squeeze())
-        ind_y = xr.DataArray(ind_y.squeeze())
-    return ind_x, ind_y
+        ind_y = []
+        ind_x = []
+        for ii in np.arange(0,n_pts):
+            y_tmp, x_tmp = np.unravel_index(ind_1d[ii], original_shape)
+            ind_x.append(xr.DataArray(x_tmp.squeeze()))
+            ind_y.append(xr.DataArray(y_tmp.squeeze()))
+        return ind_x, ind_y
 
 def subset_indices_by_distance_old(
         longitude, latitude, centre_lon: float, centre_lat: float, 
