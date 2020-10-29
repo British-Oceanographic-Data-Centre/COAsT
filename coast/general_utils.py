@@ -9,8 +9,85 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
-def subset_indices_by_distance(
-        longitude, latitude, centre_lon: float, centre_lat: float, 
+def interpolate_in_space(model_array, new_lon, new_lat, mask=None):
+    '''
+    Interpolates a provided xarray.DataArray in space to new longitudes
+    and latitudes using a nearest neighbour method (BallTree). This is for
+    interpolating to a 1D sequence of point locations and should not be used
+    for regridding. Model_array is assumed to contain coordinates called
+    'longitude' and 'latitude' and corresponding dimensions x_dim and y_dim
+    (as is the COAsT data format).
+    
+    Example Usage
+    ----------
+    # Get an interpolated DataArray for temperature onto two locations
+    interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                             [0,1], [45,46])
+    Parameters
+    ----------
+    model_array (xr.DataArray): Model variable DataArray to interpolate
+    new_lons (1Darray): Array of longitudes (degrees) to compare with model
+    new_lats (1Darray): Array of latitudes (degrees) to compare with model
+    mask (2D array): Mask array. Where True (or 1), elements of array will
+                 not be included. For example, use to mask out land in 
+                 case it ends up as the nearest point.
+    
+    Returns
+    -------
+    Interpolated DataArray
+    '''
+    debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
+    # Get nearest indices
+    ind_x, ind_y = nearest_indices_2D(model_array.longitude,
+                                      model_array.latitude,
+                                      new_lon, new_lat, mask=mask)
+    
+    # Geographical interpolation (using BallTree indices)
+    ind_x = xr.DataArray(ind_x)
+    ind_y = xr.DataArray(ind_y)
+    interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
+    if 'dim_0' in interpolated.dims:
+        interpolated = interpolated.rename({'dim_0':'interp_dim'})
+    return interpolated
+
+def interpolate_in_time(model_array, new_times, 
+                           interp_method = 'nearest', extrapolate=True):
+    '''
+    Interpolates a provided xarray.DataArray in time to new python
+    datetimes using a specified scipy.interpolate method. Model_array is
+    assumed to contain a t_dim dimension and a time coordinate.
+    
+    Example Useage
+    ----------
+    # Get an interpolated DataArray for temperature onto altimetry times
+    new_times = altimetry.dataset.time
+    interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
+                                             new_times)
+    Parameters
+    ----------
+    model_array (xr.DataArray): Model variable DataArray to interpolate
+    new_times (array): New times to interpolate to (array of datetimes)
+    interp_method (str): Interpolation method
+    
+    Returns
+    -------
+    Interpolated DataArray
+    '''
+    debug(f"Interpolating {get_slug(model_array)} in time with method \"{interp_method}\"")
+    # Time interpolation
+    interpolated = model_array.swap_dims({'t_dim':'time'})
+    if extrapolate:
+        interpolated = interpolated.interp(time = new_times,
+                                           method = interp_method,
+                                           kwargs={'fill_value':'extrapolate'})
+    else:
+        interpolated = interpolated.interp(time = new_times,
+                                       method = interp_method)
+    # interpolated = interpolated.swap_dims({'time':'t_dim'})  # TODO Do something with this or delete it
+    
+    return interpolated
+
+def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, 
         radius: float, mask=None
     ):
     """
@@ -36,22 +113,21 @@ def subset_indices_by_distance(
     If longitude is 2D:
         Returns arrays of x and y indices per central location.
         ind_y corresponds to row indices of the original input arrays.
+        
+    DB: This is really slow at the moment. But the bottleneck seems to be right
+    at the start somewhere.. Best stick to subset_indices_by_distance for now.
     """
     # Calculate radius in radians
     earth_radius = 6371
     r_rad = radius/earth_radius
-    
     # For reshaping indices at the end
     original_shape = longitude.shape
-        
     # Check if radius centres are numpy arrays. If not, make them into ndarrays
     if not isinstance(centre_lon, (np.ndarray)):
         centre_lat = np.array(centre_lat)
         centre_lon = np.array(centre_lon)
-        
     # Determine number of centres provided
     n_pts = 1 if centre_lat.shape==() else len(centre_lat)
-    
     # If a mask is supplied, remove indices from arrays. Flatten input ready
     # for BallTree
     if mask is None:
@@ -62,22 +138,18 @@ def subset_indices_by_distance(
         latitude[mask] = np.nan
         longitude = longitude.flatten()
         latitude = latitude.flatten()
-    
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     locs = np.vstack((latitude, longitude)).transpose()
     locs = np.radians(locs)
-    
     # Construct central input to BallTree.query_radius
     if n_pts==1:
         centre = np.array([[centre_lat, centre_lon]])
     else:
         centre = np.vstack((centre_lat, centre_lon)).transpose()
     centre = np.radians(centre)
-    
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(locs, leaf_size=2, metric='haversine')
     ind_1d = tree.query_radius(centre, r = r_rad)
-
     if len(original_shape) == 1:
         return ind_1d[0]
     else:
@@ -93,7 +165,7 @@ def subset_indices_by_distance(
         else:
             return ind_x, ind_y
 
-def subset_indices_by_distance_old(
+def subset_indices_by_distance(
         longitude, latitude, centre_lon: float, centre_lat: float, 
         radius: float
     ):
@@ -106,7 +178,8 @@ def subset_indices_by_distance_old(
     :param centre_lon: The longitude of the users central point
     :param centre_lat: The latitude of the users central point
     :param radius: The haversine distance (in km) from the central point
-    :return: All indices in a `tuple` with the haversine distance of the central point
+    :return: All indices in a `tuple` with the haversine distance of the 
+            central point
     """
 
     # Calculate the distances between every model point and the specified
@@ -115,7 +188,7 @@ def subset_indices_by_distance_old(
     dist = calculate_haversine_distance(centre_lon, centre_lat, 
                                         longitude, latitude)
     indices_bool = dist < radius
-    indices = np.where(indices_bool.compute())
+    indices = np.where(indices_bool)
 
     return xr.DataArray(indices[0]), xr.DataArray(indices[1])
 
@@ -198,7 +271,6 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     mask (2D array): Mask array. Where True (or 1), elements of array will
                      not be included. For example, use to mask out land in 
                      case it ends up as the nearest point.
-        
     Returns
     -------
     Array of x indices, Array of y indices
@@ -210,7 +282,7 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     mod_lat = np.array(mod_lat)
     original_shape = mod_lon.shape
     
-    # If a mask is supplied, remove indices from arrays.
+     # If a mask is supplied, remove indices from arrays.
     if mask is None:
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
@@ -219,7 +291,7 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lat[mask] = np.nan
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
-    
+        
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     mod_loc = np.vstack((mod_lat, mod_lon)).transpose()
     new_loc = np.vstack((new_lat, new_lon)).transpose()
@@ -229,14 +301,13 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     new_loc = np.radians(new_loc)
     
     # Do nearest neighbour interpolation using BallTree (gets indices)
-    tree = nb.BallTree(mod_loc, leaf_size=5, metric='haversine')
+    tree = nb.BallTree(mod_loc, leaf_size=2, metric='haversine')
     _, ind_1d = tree.query(new_loc, k=1)
     
     # Get 2D indices from 1D index output from BallTree
     ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
-    ind_x = xr.DataArray(ind_x.squeeze())
-    ind_y = xr.DataArray(ind_y.squeeze())
-    return ind_x, ind_y
+    
+    return ind_x.squeeze(), ind_y.squeeze()
 
 def dataarray_time_slice(data_array, date0, date1):
     ''' Takes an xr.DataArray object and returns a new object with times 

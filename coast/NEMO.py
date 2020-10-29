@@ -8,8 +8,6 @@ import gsw
 import warnings
 from .logging_util import get_slug, debug, info, warn, error
 
-
-
 class NEMO(COAsT):  # TODO Complete this docstring
     """
     Words to describe the NEMO class
@@ -306,79 +304,6 @@ class NEMO(COAsT):  # TODO Complete this docstring
         ii1 = [int(ii) for ii in np.round(np.linspace(i1, i2, num=line_length))]
 
         return jj1, ii1, line_length
-    
-    @staticmethod
-    def interpolate_in_space(model_array, new_lon, new_lat, mask=None):
-        '''
-        Interpolates a provided xarray.DataArray in space to new longitudes
-        and latitudes using a nearest neighbour method (BallTree).
-        
-        Example Usage
-        ----------
-        # Get an interpolated DataArray for temperature onto two locations
-        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
-                                                 [0,1], [45,46])
-        Parameters
-        ----------
-        model_array (xr.DataArray): Model variable DataArray to interpolate
-        new_lons (1Darray): Array of longitudes (degrees) to compare with model
-        new_lats (1Darray): Array of latitudes (degrees) to compare with model
-        mask (2D array): Mask array. Where True (or 1), elements of array will
-                     not be included. For example, use to mask out land in 
-                     case it ends up as the nearest point.
-        
-        Returns
-        -------
-        Interpolated DataArray
-        '''
-        debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
-        # Get nearest indices
-        ind_x, ind_y = general_utils.nearest_indices_2D(model_array.longitude,
-                                                model_array.latitude,
-                                                new_lon, new_lat, mask=mask)
-        
-        # Geographical interpolation (using BallTree indices)
-        interpolated = model_array.isel(x_dim=ind_x, y_dim=ind_y)
-        if 'dim_0' in interpolated.dims:
-            interpolated = interpolated.rename({'dim_0':'interp_dim'})
-        return interpolated
-    
-    @staticmethod
-    def interpolate_in_time(model_array, new_times, 
-                               interp_method = 'nearest', extrapolate=True):
-        '''
-        Interpolates a provided xarray.DataArray in time to new python
-        datetimes using a specified scipy.interpolate method.
-        
-        Example Useage
-        ----------
-        # Get an interpolated DataArray for temperature onto altimetry times
-        new_times = altimetry.dataset.time
-        interpolated = nemo.interpolate_in_space(nemo.dataset.votemper,
-                                                 new_times)
-        Parameters
-        ----------
-        model_array (xr.DataArray): Model variable DataArray to interpolate
-        new_times (array): New times to interpolate to (array of datetimes)
-        interp_method (str): Interpolation method
-        
-        Returns
-        -------
-        Interpolated DataArray
-        '''
-        debug(f"Interpolating {get_slug(model_array)} in time with method \"{interp_method}\"")
-        # Time interpolation
-        interpolated = model_array.swap_dims({'t_dim':'time'})
-        if extrapolate:
-            interpolated = interpolated.interp(time = new_times,
-                                           method = interp_method,
-                                           kwargs={'fill_value':'extrapolate'})
-        else:
-            interpolated = interpolated.interp(time = new_times,
-                                           method = interp_method)
-        # interpolated = interpolated.swap_dims({'time':'t_dim'})  # TODO Do something with this or delete it
-        
-        return interpolated
 
     def construct_density( self, EOS='EOS10' ):
         

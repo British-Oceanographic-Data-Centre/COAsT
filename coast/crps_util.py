@@ -25,7 +25,7 @@ def crps_empirical(sample, obs):
         Args:
             sample (array): Array of points (ensemble or neighbourhood)
             xa (float): A single 'observation' value which to compare against
-                        CDF.
+                        sample CDF.
 
         Returns:
             A single CRPS value.
@@ -125,7 +125,7 @@ def crps_empirical_loop(sample, obs):
         return crps_integral
     
 def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time, 
-                      nh_radius: float, cdf_type:str, time_interp:str
+                      nh_radius: float, time_interp:str,
     ):
     '''
     Handles the calculation of single-observation neighbourhood forecast CRPS
@@ -140,8 +140,6 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     obs_var     : (array) of floatArray of variable values, e.g time series
     obs_time    : (array) of datetimeArray of times, corresponding to obs_var
     nh_radius   : (float) Neighbourhood radius in km
-    cdf_type    : (str) Type of CDF to use for model data. Either 'empirical' 
-                   or 'theoretical'.
     time_interp : (str) Type of time interpolation to use
 
     Returns
@@ -167,8 +165,8 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     subset_ind = general_utils.subset_indices_by_distance(
                      mod_array.longitude.values, mod_array.latitude.values, 
                      obs_lon, obs_lat, nh_radius)
-    mod_subset = mod_array.isel(y_dim = subset_ind[0],
-                                  x_dim = subset_ind[1])
+    mod_subset = mod_array.isel(  y_dim = xr.DataArray(subset_ind[0]),
+                                  x_dim = xr.DataArray(subset_ind[1]))
     mod_subset = mod_subset.swap_dims({'t_dim':'time'})
     
     # Check that the model neighbourhood contains points
@@ -196,23 +194,24 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     return crps_list, n_model_pts, contains_land
 
 def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time, 
-                      nh_radius: float, cdf_type:str, time_interp:str
+                      nh_radius: float, time_interp:str,
+                      obs_batch=10
     ):
     '''
     Handles the calculation of single-observation neighbourhood forecast CRPS
     for a moving observation instrument. Differs from crps_sonf_fixed in that 
-    latitude and longitude are arrays of locations.
+    latitude and longitude are arrays of locations. Mod_array must contain
+    dimensions x_dim, y_dim and t_dim and coordinates longitude, latitude,
+    time.
 
     Parameters
     ----------
     mod_array   : (xarray DataArray) DataArray from a Model Dataset
-    obs_lon     : (array) Longitudes of fixed observation point
-    obs_lat     : (array) Latitudes of fixed observation point
-    obs_var     : (array) of floatArray of variable values, e.g time series
-    obs_time    : (array) of datetimeArray of times, corresponding to obs_var
+    obs_lon     : (1Darray) Longitudes of fixed observation point
+    obs_lat     : (1Darray) Latitudes of fixed observation point
+    obs_var     : (1Darray) of floatArray of variable values, e.g time series
+    obs_time    : (1Darray) of datetimeArray of times, corresponding to obs_var
     nh_radius   : (float) Neighbourhood radius in km
-    cdf_type    : (str) Type of CDF to use for model data. Either 'empirical' 
-                   or 'theoretical'.
     time_interp : (str) Type of time interpolation to use
 
     Returns
@@ -229,27 +228,24 @@ def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     crps_list     = np.zeros( n_neighbourhoods )*np.nan
     n_model_pts   = np.zeros( n_neighbourhoods )*np.nan
     contains_land = np.zeros( n_neighbourhoods , dtype=bool)
-
     # Loop over neighbourhoods
     neighbourhood_indices = np.arange(0,n_neighbourhoods)
     for ii in neighbourhood_indices:
-        
         # Neighbourhood centre
         cntr_lon = obs_lon[ii]
         cntr_lat = obs_lat[ii]
     
         # Get model neighbourhood subset using specified method
         subset_ind = general_utils.subset_indices_by_distance(
-                         mod_array.longitude.values, mod_array.latitude.values, 
+                         mod_array.longitude, mod_array.latitude, 
                          cntr_lon, cntr_lat, nh_radius)
-        
         # Check that the model neighbourhood contains points
         if subset_ind[0].shape[0] == 0 or subset_ind[1].shape[0] == 0:
             crps_list[ii] = np.nan
         else:
             # Subset model data in time and space: model -> obs
-            mod_subset = mod_array.isel(y_dim = subset_ind[0],
-                                        x_dim = subset_ind[1])
+            mod_subset = mod_array.isel(y_dim = xr.DataArray(subset_ind[0]),
+                                        x_dim = xr.DataArray(subset_ind[1]))
             mod_subset = mod_subset.swap_dims({'t_dim':'time'})
             mod_subset = mod_subset.interp(
                              time = obs_time[ii], method = time_interp,
@@ -265,59 +261,6 @@ def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time,
                 # Calculate CRPS and put into output array
                 crps_list[ii] = crps_empirical(mod_subset, obs_var[ii])
                 n_model_pts[ii] = int(mod_subset.shape[0])
+        crps_mean = np.nanmean(crps_list)
                 
     return crps_list, n_model_pts, contains_land
-
-def subset_indices_by_distance(
-        longitude, latitude, centre_lon: float, centre_lat: float, 
-        radius: float
-    ):
-    """
-    This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
-
-    Distance is calculated as haversine - see `self.calculate_haversine_distance`
-
-    :param centre_lon: The longitude of the users central point
-    :param centre_lat: The latitude of the users central point
-    :param radius: The haversine distance (in km) from the central point
-    :return: All indices in a `tuple` with the haversine distance of the central point
-    """
-
-    # Calculate the distances between every model point and the specified
-    # centre. Calls another routine dist_haversine.
-
-    dist = calculate_haversine_distance(centre_lon, centre_lat, 
-                                        longitude, latitude)
-    indices_bool = dist < radius
-    indices = np.where(indices_bool.compute())
-
-    return xr.DataArray(indices[0]), xr.DataArray(indices[1])
-
-def calculate_haversine_distance(lon1, lat1, lon2, lat2, r = 6371.00717):
-    '''
-    # Estimation of geographical distance using the Haversine function.
-    # Input can be single values or 1D arrays of locations. This
-    # does NOT create a distance matrix but outputs another 1D array.
-    # This works for either location vectors of equal length OR a single loc
-    # and an arbitrary length location vector.
-    #
-    # lon1, lat1 :: Location(s) 1.
-    # lon2, lat2 :: Location(s) 2.
-    '''
-
-    # Convert to radians for calculations
-    lon1 = xr.ufuncs.deg2rad(lon1)
-    lat1 = xr.ufuncs.deg2rad(lat1)
-    lon2 = xr.ufuncs.deg2rad(lon2)
-    lat2 = xr.ufuncs.deg2rad(lat2)
-
-    # Latitude and longitude differences
-    dlat = (lat2 - lat1) / 2
-    dlon = (lon2 - lon1) / 2
-
-    # Haversine function.
-    distance = xr.ufuncs.sin(dlat) ** 2 + xr.ufuncs.cos(lat1) *  \
-        xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
-    distance = 2 * r * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
-
-    return distance

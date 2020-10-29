@@ -7,7 +7,7 @@ from . import general_utils, plot_util, crps_util
 
 class ALTIMETRY(COAsT):
     '''
-    An object for reading, storing and manipulating altimetry data.
+    An object for reading, storing and manipulating along-track altimetry data.
     Currently the object contains functionality for reading altimetry netCDF 
     data from the CMEMS database. This is the default for initialisation.
     
@@ -87,15 +87,15 @@ class ALTIMETRY(COAsT):
         return: Indices corresponding to datapoints inside specified box
         """
         debug(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
-        lon = self.dataset.longitude.copy()
-        lat = self.dataset.latitude
+        lon = self.dataset.longitude.values
+        lat = self.dataset.latitude.values
         lon[lon>180] = lon[lon>180] - 360
         lon[lon<-180] = lon[lon<-180] + 360
-        ff1 = ( lon > lonbounds[0] ).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
-        ff2 = ( lon < lonbounds[1] ).astype(int)
-        ff3 = ( lat > latbounds[0] ).astype(int)
-        ff4 = ( lat < latbounds[1] ).astype(int)
-        indices = np.where( ff1 * ff2 * ff3 * ff4 )
+        ff = ( lon > lonbounds[0] ).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
+        ff = ff * ( lon < lonbounds[1] ).astype(int)
+        ff = ff * ( lat > latbounds[0] ).astype(int)
+        ff = ff * ( lat < latbounds[1] ).astype(int)
+        indices = np.where( ff )
         return indices[0]
 
 ##############################################################################
@@ -122,9 +122,8 @@ class ALTIMETRY(COAsT):
 ##############################################################################
 ###                ~        Model Comparison         ~                     ###
 ##############################################################################
-    
-    def obs_operator(self, model, mod_var_name:str, 
-                                time_interp = 'nearest', model_mask=None):
+
+    def obs_operator(self, model_da, time_interp = 'nearest', model_mask=None):
         '''
         For interpolating a model dataarray onto altimetry locations and times.
         
@@ -139,47 +138,34 @@ class ALTIMETRY(COAsT):
 
         Parameters
         ----------
-        model : model object (e.g. NEMO)
+        model_da : model dataarray for a specific variable
         mod_var: variable name string to use from model object
         time_interp: time interpolation method (optional, default: 'nearest')
             This can take any string scipy.interpolate would take. e.g.
             'nearest', 'linear' or 'cubic'
         model_mask : Mask to apply to model data in geographical interpolation 
              of model. For example, use to ignore land points. 
-             If None, no mask is applied. If 'bathy', model variable
-             (bathymetry==0) is used. Custom 2D mask arrays can be
-             supplied.
+             If None, no mask is applied. 
         Returns
         -------
         Adds a DataArray to self.dataset, containing interpolated values.
         '''
-
-        debug(f"Interpolating {get_slug(model)} \"{mod_var_name}\" with time_interp \"{time_interp}\"")
-
-        # Determine mask
-        if model_mask=='bathy':
-            model_mask = model.dataset.bathymetry.values==0
-        
-        # Get data arrays
-        mod_var_array = model.dataset[mod_var_name]
-
-        # Get data arrays
-        mod_var = model.dataset[mod_var_name]
         
         # Depth interpolation -> for now just take 0 index
-        if 'z_dim' in mod_var.dims:
-            mod_var = mod_var.isel(z_dim=0).squeeze()
+        if 'z_dim' in model_da.dims:
+            model_da = model_da.isel(z_dim=0).squeeze()
         
         # Cast lat/lon to numpy arrays
         obs_lon = np.array(self.dataset.longitude).flatten()
         obs_lat = np.array(self.dataset.latitude).flatten()
-        
-        interpolated = model.interpolate_in_space(mod_var, obs_lon, 
-                                                        obs_lat)
+        interpolated = general_utils.interpolate_in_space(model_da, obs_lon, 
+                                                          obs_lat, 
+                                                          mask=model_mask)
+        #interpolated.load()
         
         # Interpolate in time if t_dim exists in model array
-        if 't_dim' in mod_var.dims:
-            interpolated = model.interpolate_in_time(interpolated, 
+        if 't_dim' in model_da.dims:
+            interpolated = general_utils.interpolate_in_time(interpolated, 
                                                      self.dataset.time,
                                                      interp_method=time_interp)
             # Take diagonal from interpolated array (which contains too many points)
@@ -189,7 +175,7 @@ class ALTIMETRY(COAsT):
             interpolated = interpolated.swap_dims({'dim_0':'t_dim'})
 
         # Store interpolated array in dataset
-        new_var_name = 'interp_' + mod_var_name
+        new_var_name = 'interp_' + model_da.name
         self.dataset[new_var_name] = interpolated
     
     def crps(self, model_object, model_var_name, obs_var_name, 
@@ -234,13 +220,14 @@ class ALTIMETRY(COAsT):
                                obs_var.latitude.values, 
                                obs_var.values, 
                                obs_var.time.values, 
-                               nh_radius, cdf_type, time_interp )
+                               nh_radius, time_interp )
         if create_new_object:
             new_object = ALTIMETRY()
             new_dataset = self.dataset[['longitude','latitude','time']]
             new_dataset['crps'] =  (('t_dim'),crps_list)
             new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
             new_dataset['crps_contains_land'] = (('t_dim'), contains_land)
+            new_dataset.attrs = {}
             new_object.dataset = new_dataset
             return new_object
         else:
@@ -356,6 +343,7 @@ class ALTIMETRY(COAsT):
             new_dataset['rmse'] = rmse
             new_dataset['corr'] = corr
             new_dataset['cov'] = cov
+            new_dataset.attrs={}
             new_object.dataset = new_dataset
             return new_object
         else:
@@ -365,3 +353,5 @@ class ALTIMETRY(COAsT):
             self.dataset['rmse'] = rmse
             self.dataset['corr'] = corr
             self.dataset['cov'] = cov
+            self.dataset.attrs={}
+            
