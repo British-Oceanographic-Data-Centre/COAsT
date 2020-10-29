@@ -716,8 +716,7 @@ class TIDEGAUGE():
         return
 
     def crps(self, model_object, model_var_name, obs_var_name:str='sea_level',
-         nh_radius: float = 20, cdf_type:str='empirical',
-         time_interp:str='linear', create_new_obj = True):
+         nh_radius: float = 20, time_interp:str='linear', create_new_obj = True):
         '''
         Comparison of observed variable to modelled using the Continuous
         Ranked Probability Score. This is done using this TIDEGAUGE object.
@@ -756,7 +755,7 @@ class TIDEGAUGE():
                                self.dataset.latitude,
                                obs_var.values,
                                obs_var.time.values,
-                               nh_radius, cdf_type, time_interp )
+                               nh_radius, time_interp )
         if create_new_obj:
             new_object = TIDEGAUGE()
             new_dataset = self.dataset[['longitude','latitude','time']]

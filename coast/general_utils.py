@@ -190,7 +190,100 @@ def subset_indices_by_distance(
     indices_bool = dist < radius
     indices = np.where(indices_bool)
 
-    return xr.DataArray(indices[0]), xr.DataArray(indices[1])
+    if len(longitude.shape) == 1:
+        return xr.DataArray(indices[0])
+    else:
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
+
+def subset_indices_time_window(time_array, time_min, time_max):
+    ''' Gets indices for time_array where time values sit in specified window.
+
+    Parameters
+    ----------
+    time_array (1Darray) : Array of datetime or np.datetime64
+    time_min   (1Darray) : Lower bound(s) of time window.
+    time_max   (1Darray) : Upper bound(s) of time window.
+    
+    time_min and time_max may be either single datetime/datetime64 objects or
+    an array-like object containing multiple datetime objects. In this case,
+    the indices returned are the union of indices for each time window.
+
+    Returns
+    -------
+    1Darray of indices
+    '''
+    
+    if type(time_min) not in [np.ndarray, list, xr.core.dataarray.DataArray]:
+        time_min = [time_min]
+        time_max = [time_max]
+        n_windows=1
+    if type(time_array) == xr.core.dataarray.DataArray:
+        time_array = time_array.values
+    if type(time_min) == xr.core.dataarray.DataArray:
+        time_min = time_min.values
+        time_max = time_max.values
+        
+    indices = np.array([], dtype='int')
+        
+    for ii in range(0,len(time_min)):
+        bool_array = (time_array >= time_min[ii])*(time_array <= time_max[ii])
+        ind_tmp = np.where(bool_array)[0]
+        indices = np.union1d(indices, ind_tmp)
+    
+    return indices
+
+def subset_indices_lonlat_box(longitude, latitude, lon_bounds, lat_bounds):
+    """
+    Get indices corresponding to locations within a specified longitude and
+    latitude box. This converts everything to numpy arrays and may be slow for
+    large dataset. 
+    
+    *Note: For more efficient calculation, use find_j_i instead,
+           however, the output may not be as accurate.
+    *Note: This routine will not work over the longitude 'seam' and may give
+           unexpected output over the poles. (TODO)
+    
+    Parameters
+    ----------
+    longitude (array) : 1D or 2D array of longitudes.
+    latitude  (array) : 1D or 2D array of latitudes.
+    lon_bounds (tuple) : Tuple of longitude bounds to define box.
+    lat_bounds (tuple) : Tuple of latitude bounds to defin box.
+    
+    Returns
+    -------
+    Tuple of indices corresponding to each axis (in numpy order) of input.
+    """
+    # Check longitude and latitude have the same type
+    if type(longitude) != type(latitude):
+        print('Ensure that type(longitude) == type(latitude)')
+        return
+    
+    # Determine type of inputs and allocation variables appropriately
+    if type(longitude) == xr.core.dataarray.DataArray:
+        lon = longitude.copy().values
+        lat = latitude.values
+    elif type(longitude) == np.ndarray:
+        lon = longitude.copy()
+        lat = latitude
+    elif type(longitude) == list:
+        lon = np.array(longitude)
+        lat = np.array(latitude)
+        
+    # Shift longitude values to be consistent.
+    lon[lon>180] = lon[lon>180] - 360
+    lon[lon<-180] = lon[lon<-180] + 360
+    
+    # Do some boolean logic to identify points.
+    bool_array = ( lon > lon_bounds[0] ) * ( lon < lon_bounds[1] ) \
+               * ( lat > lat_bounds[0] ) * ( lat < lat_bounds[1] )
+    
+    # Indices are where all the above booleans are satisfied
+    indices = np.where( bool_array )
+    if len(indices)==1:
+        return indices[0]
+    else:
+        return(indices)
 
 def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     '''

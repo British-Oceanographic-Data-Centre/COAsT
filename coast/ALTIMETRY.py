@@ -75,28 +75,19 @@ class ALTIMETRY(COAsT):
         self.var_mapping = None
         debug(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
         
-    def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """Generates array indices for data which lies in a given lon/lat box.
-
-        Keyword arguments:
-        lon       -- Longitudes, 1D or 2D.
-        lat       -- Latitudes, 1D or 2D
-        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
-        latbounds -- Array of form [min_latitude, max_latitude]
+    def subset_indices_lonlat_box(self, lon_bounds, lat_bounds):
+        """Calls general_utils.subset_lonlat_box() on the longitude and
+        latitude variables stored within this object.
         
-        return: Indices corresponding to datapoints inside specified box
+        Provided tuples lon_bounds and lat_bounds, returns 1D indices for
+        subsetting.
         """
-        debug(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
-        lon = self.dataset.longitude.values
-        lat = self.dataset.latitude.values
-        lon[lon>180] = lon[lon>180] - 360
-        lon[lon<-180] = lon[lon<-180] + 360
-        ff = ( lon > lonbounds[0] ).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
-        ff = ff * ( lon < lonbounds[1] ).astype(int)
-        ff = ff * ( lat > latbounds[0] ).astype(int)
-        ff = ff * ( lat < latbounds[1] ).astype(int)
-        indices = np.where( ff )
-        return indices[0]
+        debug(f"Subsetting {get_slug(self)} indices in {lon_bounds}, {lat_bounds}")
+        ind = general_utils.subset_indices_lonlat_box(self.dataset.longitude, 
+                                                self.dataset.latitude, 
+                                                lon_bounds, lat_bounds)
+        
+        return ind
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###
@@ -178,9 +169,9 @@ class ALTIMETRY(COAsT):
         new_var_name = 'interp_' + model_da.name
         self.dataset[new_var_name] = interpolated
     
-    def crps(self, model_object, model_var_name, obs_var_name, 
-             nh_radius: float = 20, cdf_type:str='empirical', 
-             time_interp:str='linear', create_new_object = True):
+    def crps(self, model_array, obs_var_name, 
+             nh_radius: float = 20, time_interp:str='linear', 
+             create_new_object = True):
         
         '''
         Comparison of observed variable to modelled using the Continuous
@@ -211,11 +202,10 @@ class ALTIMETRY(COAsT):
         crps = altimetry.crps(nemo, 'sossheig', 'sla_filtered')
         '''
         
-        mod_var = model_object.dataset[model_var_name]
         obs_var = self.dataset[obs_var_name]
         
         crps_list, n_model_pts, contains_land = crps_util.crps_sonf_moving( 
-                               mod_var, 
+                               model_array, 
                                obs_var.longitude.values, 
                                obs_var.latitude.values, 
                                obs_var.values, 

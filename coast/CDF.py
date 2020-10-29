@@ -89,7 +89,7 @@ class CDF:
 
         return x, y
     
-    def get_common_x(self, other, n_pts=1000):
+    def get_common_x(self, other, n_pts=5000):
         """Generates a common x vector for two CDF objects."""
         debug(f"Generating common X vector for {get_slug(self)} and {get_slug(other)}")
         xmin = min(self.plot_xmin, other.plot_xmin)
@@ -106,15 +106,24 @@ class CDF:
         ax.grid()
         return
     
-    def diff_plot(self, other):
+    def integral(self, other, plot=False):
         """Plots two CDFS on one plot, with the difference shaded"""
         debug(f"Generating diff plot for {get_slug(self)} and {get_slug(other)}")
-        fig = plt.figure()
-        ax = plt.subplot(111)
+    
         x = self.get_common_x(other)
-        dum, mod_y = self.build_discrete_cdf(x)
-        ax.plot(x, mod_y, c='k', linestyle='--')
-        dum, obs_y = other.build_discrete_cdf(x)
-        ax.plot(x, obs_y, linestyle='--')
-        ax.fill_between(x, mod_y, obs_y, alpha=0.5)
-        return fig, ax
+        x, y1 = self.build_discrete_cdf(x)
+        dum, y2 = other.build_discrete_cdf(x)
+        integral = np.abs(np.trapz(x,y1) - np.trapz(x,y2))
+        if plot:
+            fig = plt.figure()
+            ax = plt.subplot(111)
+            ax.plot(x, y1, c='k', linestyle='--')
+            ax.plot(x, y2, linestyle='--')
+            ax.fill_between(x, y1, y2, alpha=0.5)
+            ax.set_title('Area: ' + str(integral))
+            plt.legend(('1','2'))
+            
+        if plot:
+            return integral, fig, ax
+        else:
+            return integral

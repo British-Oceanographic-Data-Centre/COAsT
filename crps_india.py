@@ -7,6 +7,7 @@ fn_domain = '/Users/Dave/Documents/Projects/WCSSP/Data/domain_cfg_wcssp.nc'
 fn_alt = '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*j3*'
 
 nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
+nemo = nemo.isel(x_dim = np.arange(0,1760,2), y_dim = np.arange(0,1100,2))
 
 alt = coast.ALTIMETRY(fn_alt, multiple=True)
 ind = alt.subset_indices_lonlat_box((65,99),(3.5,27))
@@ -19,7 +20,7 @@ crps_list = []
 for rr in radii:
 
     print(rr)
-    crps = alt.crps(nemo, 'ssh', 'no_dac', 25)
+    crps = alt.crps(ssh, 'sla_unfiltered', 10)
     crps_list.append(crps)
 
 
@@ -32,3 +33,5 @@ for aa in range(0,len(crps_list)):
      crps_mean.append(np.nanmean(cc))
     
 crps_mean=np.array(crps_mean)
+
+alt.obs_operator()
