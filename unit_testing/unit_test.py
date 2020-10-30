@@ -57,6 +57,7 @@ import logging
 import coast.general_utils as general_utils
 from socket import gethostname# to get hostname
 import traceback
+import xarray.ufuncs as uf
 '''
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
@@ -1204,9 +1205,76 @@ if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg +
     print(str(sec) + chr(subsec) + " OK - Cross-contour geostrophic flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
+
+#%%
 '''
 ###############################################################################
-## ( 9 ) Example script testing                                              ##
+## ( 9 ) EOF module testing                                                 ##
+###############################################################################
+'''
+sec = sec+1
+subsec = 96
+
+#%%---------------------------------------------------------------------------#
+# ( 9a ) Compute regular EOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    eofs = coast.eofs( nemo_t.dataset.ssh )
+    
+    ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim='mode'). \
+                        sum(dim=['x_dim','y_dim'])
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point 
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = eofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from EOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from EOFs")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%---------------------------------------------------------------------------#
+# ( 9b ) Compute  HEOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    heofs = coast.hilbert_eofs( nemo_t.dataset.ssh )
+                        
+    ssh_reconstruction = (heofs.EOF_amp * heofs.temporal_amp * \
+        uf.exp( 1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase ) ) ) \
+        .sum(dim='mode').real.sum(dim=['x_dim','y_dim'])
+        
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point                   
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = heofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from HEOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from HEOFs")
+        
+
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%
+'''
+###############################################################################
+## ( 10 ) Example script testing                                              ##
 ###############################################################################
 '''
 sec = sec+1
@@ -1216,7 +1284,7 @@ print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( 9a ) Example script testing                                               #
+#%% ( 10a ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.
@@ -1260,8 +1328,6 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
-
 
 
 
