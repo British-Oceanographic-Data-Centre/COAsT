@@ -64,8 +64,8 @@ class ALTIMETRY(COAsT):
         ''' Reads altimetry data from a CMEMS netcdf file. Calls COAsT.init()
         to make use of its load methods'''
         super().__init__(file, chunks, multiple)
-        self.dataset = self.dataset.rename_dims(self.dim_mapping)
-        #self.dataset.attrs = {}
+        #self.dataset = self.dataset.rename_dims(self.dim_mapping)
+        self.dataset.attrs = {}
 
     def set_dimension_mapping(self):
         self.dim_mapping = {'time': 't_dim'}
@@ -93,7 +93,8 @@ class ALTIMETRY(COAsT):
 ###                ~            Plotting             ~                     ###
 ##############################################################################
 
-    def quick_plot(self, color_var_str: str=None):
+    def quick_plot(self, color_var_str: str=None, date_start=None, 
+                   date_end=None):
         '''
         '''
         
@@ -103,10 +104,20 @@ class ALTIMETRY(COAsT):
         else:
             color_var = None
             title = 'Altimetry observation locations'
+            
+        if date_start is not None:
+            t_ind = general_utils.subset_indices_time_window(self.dataset.time, 
+                                                          date_start, date_end)
+            lon = self.dataset.longitude[t_ind]
+            lat = self.dataset.latitude[t_ind]
+            if color_var_str is not None:
+                color_var = color_var[t_ind]
+        else:
+            lon = self.dataset.longitude
+            lat = self.dataset.latitude
+            
         info("Drawing a quick plot...")
-        fig, ax =  plot_util.geo_scatter(self.dataset.longitude, 
-                                         self.dataset.latitude,
-                                         color_var, title=title )
+        fig, ax =  plot_util.geo_scatter(lon, lat, color_var, title=title )
         info("Plot ready, displaying!")
         return fig, ax
 

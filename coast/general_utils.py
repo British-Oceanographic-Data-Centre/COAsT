@@ -51,7 +51,7 @@ def interpolate_in_space(model_array, new_lon, new_lat, mask=None):
     return interpolated
 
 def interpolate_in_time(model_array, new_times, 
-                           interp_method = 'nearest', extrapolate=True):
+                           interp_method = 'nearest', extrapolate=False):
     '''
     Interpolates a provided xarray.DataArray in time to new python
     datetimes using a specified scipy.interpolate method. Model_array is
