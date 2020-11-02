@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 
+# Paths
 fn_detided = '/Users/Dave/Documents/Projects/WCSSP/Data/fani/detided.nc'
 fn_domain = '/Users/Dave/Documents/Projects/WCSSP/Data/domain_cfg_wcssp.nc'
 fn_alt_list = ['/Users/Dave/Documents/Projects/WCSSP/Data/fani/*j3*',
@@ -17,9 +18,11 @@ fn_alt_list = ['/Users/Dave/Documents/Projects/WCSSP/Data/fani/*j3*',
                '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*c2*']
                   
 
+# Load NEMO data and thin it out a bit for speed/memory
 nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
-nemo = nemo.isel(x_dim = np.arange(0,1760,2), y_dim = np.arange(0,1100,2))
+#nemo = nemo.isel(x_dim = np.arange(0,1760,1), y_dim = np.arange(0,1100,1))
 
+# Merge together all the different sources of altimetry.
 step=15
 lon_bounds = (65,99)
 lat_bounds = (3.5, 27)
@@ -30,41 +33,44 @@ for fn_alt in fn_alt_list:
     ind = alt_tmp.subset_indices_lonlat_box(lon_bounds,lat_bounds)
     alt_tmp = alt_tmp.isel(time=ind[::step])
     alt.dataset = xr.merge((alt_tmp.dataset, alt.dataset))
+alt.dataset = alt.dataset.rename_dims({'time':'t_dim'})
 
+print('Altimetry merged')
+# Remove Dynamic Atmospheric Correction from the data (?)
 #alt.dataset['no_dac'] = alt.dataset.sla_unfiltered + alt.dataset.dac
 
-alon = alt.dataset.longitude
-alat = alt.dataset.latitude
-lon0 = alt.dataset.longitude[300]
-lat0 = alt.dataset.latitude[300]
-time0 = alt.dataset.time[300]
+# Define some variable references for ease
+alt_lon = alt.dataset.longitude
+alt_lat = alt.dataset.latitude
+alt_time = alt.dataset.time
 ssh = nemo.dataset.ssh
 ssh.load()
 mlon = ssh.longitude
 mlat = ssh.latitude
-radii = np.arange(10,200,10)
+radii = np.arange(100,2000,100)
+obs_var = 'sla_unfiltered'
 
 # Obs operator
 print('obs_operator')
 alt.obs_operator(ssh, time_interp='linear')
 
-crps_mean = []
-crps_mean_noland = []
+vals = []
 
+print('Starting loop over radii')
 for rr in radii:
     
-    #### CRPS
-    crps = alt.crps(ssh, 'sla_unfiltered', 10)
-
-    #### > 2D Model Sample Vs Along Track Sample: tva
-    x,y = gu.subset_indices_by_distance(mlon, mlat, lon0, lat0, radius)
-    msub = ssh.isel(x_dim=x, y_dim=y)
-    msub = gu.interpolate_in_time(msub, time0)
-    t = gu.subset_indices_by_distance(alon, alat, lon0, lat0, radius)
-    asub = alt.isel(t_dim=t)
-    mcdf = coast.CDF(msub.values)
-    acdf = coast.CDF(asub.dataset.sla_unfiltered.values)
+    print(rr)
+    tmp = np.zeros(len(alt_lon))        
     
-    #### > Interpolated Sample Vs. Along Track Sample: tvt
-    cdf1 = coast.CDF(alt.dataset.interp_ssh.values[0:50])
-    cdf2 = coast.CDF(alt.dataset.sla_unfiltered.values[0:50])
+    for ii in range(0,len(alt_lon)):
+        print(ii/len(alt_lon))
+
+        d_ind = gu.subset_indices_by_distance(alt_lon, alt_lat, 
+                                              alt_lon[ii], alt_lat[ii], rr)
+        asub = alt.isel(t_dim=d_ind)
+        
+        acdf = coast.CDF(asub.dataset[obs_var].values)
+        mcdf = coast.CDF(alt.dataset.interp_ssh.values)
+        
+        tmp[ii] = mcdf.integral(acdf)
+    vals.append(np.array(tmp))

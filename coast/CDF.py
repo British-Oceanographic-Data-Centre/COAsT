@@ -89,7 +89,7 @@ class CDF:
 
         return x, y
     
-    def get_common_x(self, other, n_pts=5000):
+    def get_common_x(self, other, n_pts=2000):
         """Generates a common x vector for two CDF objects."""
         debug(f"Generating common X vector for {get_slug(self)} and {get_slug(other)}")
         xmin = min(self.plot_xmin, other.plot_xmin)
@@ -113,7 +113,7 @@ class CDF:
         x = self.get_common_x(other)
         x, y1 = self.build_discrete_cdf(x)
         dum, y2 = other.build_discrete_cdf(x)
-        integral = np.abs(np.trapz(x,y1) - np.trapz(x,y2))
+        integral = np.trapz( np.abs(y1 - y2), x)
         if plot:
             fig = plt.figure()
             ax = plt.subplot(111)
