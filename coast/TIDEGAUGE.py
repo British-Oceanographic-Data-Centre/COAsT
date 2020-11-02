@@ -64,6 +64,7 @@ class TIDEGAUGE():
         *Analysis*
         -> resample_mean(): For resampling data in time using averaging
         -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
+        -> find_high_and_low_water(): Find maxima and minima of time series
     '''
 
 ##############################################################################
