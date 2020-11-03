@@ -7,7 +7,7 @@ import re
 import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
-from .logging_util import get_slug, debug, error, warning
+from .logging_util import get_slug, debug, error
 
 class TIDEGAUGE():
     '''
@@ -105,7 +105,6 @@ class TIDEGAUGE():
             self.dataset = self.read_gesla_to_xarray_v3(file_path,
                                                         date_start, date_end)
         debug(f"{get_slug(self)} initialised")
-
         return
 
 ############ tide gauge methods ##############################################
@@ -312,34 +311,6 @@ class TIDEGAUGE():
                 # Problem with reading file: file TODO: add debug message here
                 pass
         return tidegauge_list
-
-    def export_netcdf(self, ofile:str=None, var_str:str=None, format="NETCDF4"):
-        """
-        Export xr.Dataset as netcdf file
-        A simple implementation from xarray
-        http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html
-
-        Inputs:
-         ofile - name of target file [optional]
-         var_str - name of xr.DataArray variable [optional]
-         format - options for saving (see url) [optional]
-
-        Example usages (for e.g. TIDEGAUGE object: tg):
-        tg.export_netcdf( var_str = 'sea_level' )
-        tg.export_netcdf( 'tmp.cdf', var_str = 'sea_level' )
-        tg.export_netcdf( 'tmp.cdf', var_str='sea_level', format='NETCDF3_CLASSIC' )
-        """
-        if ofile == None:
-            ofile = input('Enter a filename for netCDF export:')
-        if var_str == None: # save whole xr.DataSet
-            obj = self.dataset
-        else: # save only one xarray variable
-            obj = self.dataset[var_str]
-
-        try:
-            obj.to_netcdf( ofile, format=format )
-        except:
-            warning(f"{get_slug(obj)}: KNOWN Problem saving TIDEGAUGE object")
 
 ############ tide table methods (HLW) #########################################
     @classmethod
