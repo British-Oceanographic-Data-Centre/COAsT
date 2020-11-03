@@ -60,6 +60,7 @@
     i. Plotting multiple tidegauge locations
     j. Tidegauge time series plot
     k. TIDEGAUGE method for tabulated data
+    l. TIDEGAUGE method for finding peaks and troughs
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points

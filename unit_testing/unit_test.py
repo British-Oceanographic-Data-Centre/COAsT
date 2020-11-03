@@ -1121,6 +1121,43 @@ try:
         print(str(sec) + chr(subsec) + " X - Tide table processing")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+#%% ( 7l ) TIDEGAUGE method for finding extrema and troughs                     #
+#                                                                             #
+subsec = subsec+1
+
+# Take a look at the sea level time series stored within the object:
+try:
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,20)
+    lowestoft2 = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
+                                date_end = date1)
+    
+    extrema = lowestoft2.find_high_and_low_water('sea_level', distance=40)
+    
+    # Check actual maximum/minimum is in output dataset
+    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_highs
+    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_lows
+    # Check new time dimensions have correct length (hardcoded here)
+    check3 = len(extrema.dataset.time_highs) == 19
+    check4 = len(extrema.dataset.time_lows) == 18
+    
+    # Attempt a plot
+    f = plt.figure()
+    plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
+    plt.scatter(extrema.dataset.time_highs, extrema.dataset.sea_level_highs, c='g')
+    plt.scatter(extrema.dataset.time_lows, extrema.dataset.sea_level_lows, c='r')
+    plt.legend(['Time Series','Maxima','Minima'])
+    plt.title('Tide Gauge Optima at Lowestoft')
+    f.savefig(dn_fig + 'tidegauge_optima.png')
+
+    if check1 and check2 and check3 and check4:
+        print(str(sec) + chr(subsec) + " OK - Tidegauge extrema found")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tidegauge extrema")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 '''
 ###############################################################################
