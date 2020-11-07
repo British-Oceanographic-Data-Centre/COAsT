@@ -10,10 +10,10 @@ import datetime
 import numpy as np
 
 # And by defining some file paths
-fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc' 
+fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc'
 fn_nemo_dom  = './example_files/COAsT_example_NEMO_domain.nc'
 fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
-fn_tidegauge_mult = './example_files/tide_gauges/l*' 
+fn_tidegauge_mult = './example_files/tide_gauges/l*'
 
 # We need to load in a NEMO object for doing NEMO things.
 nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
@@ -28,7 +28,7 @@ date1 = datetime.datetime(2007,1,16)
 tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
 
 # Before comparing our observations to the model, we will interpolate a model
-# variable to the same time and geographical space as the tidegauge. This is 
+# variable to the same time and geographical space as the tidegauge. This is
 # done using the obs_operator() method:
 tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 
@@ -38,20 +38,20 @@ tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 #
 # Next we will compare this interpolated variable to an observed variable
 # using some basic metrics. The basic_stats() routine can be used for this,
-# which calculates some simple metrics including differences, RMSE and 
+# which calculates some simple metrics including differences, RMSE and
 # correlations. NOTE: This may not be a wise choice of variables.
 stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
 
 # Take a look inside stats.dataset to see all of the new variables. When using
 # basic stats, the returned object is also an TIDEGAUGE object, so all of the
-# same methods can be applied. Alternatively, if you want to save the new 
+# same methods can be applied. Alternatively, if you want to save the new
 # metrics to the original altimetry object, set create_new_object = False.
 #
 # Now we will do a more complex comparison using the Continuous Ranked
 # Probability Score (CRPS). For this, we need to hand over the model object,
 # a model variable and an observed variable. We also give it a neighbourhood
 # radius in km (nh_radius). This may take a minute to run.
-crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level', 
+crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
                       nh_radius = 20)
 
 # Again, take a look inside crps.dataset to see some new variables. Similarly
@@ -81,7 +81,7 @@ tidegauge.resample_mean('sea_level', '1H')
 # Here we have resampled the 'sea_level' object. Now, in tidegauge.dataset
 # there is a new variable sea_level_1H, along a new dimension time_1H. 1H
 # can be subsitituted for other strings (e.g. 1D = 1 day) or using timedelta
-# object. 
+# object.
 #
 # Now, we can apply the doodson x0 filter to the new variable:
 tidegauge.apply_doodson_x0_filter('sea_level_1H')
@@ -112,7 +112,7 @@ fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
 for tg in tidegauge_list:
     tg.obs_operator(nemo, 'ssh')
     tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
-    
+
 # And now some of these new values can be plotted on a map, again using
 # plot_on_map_multiple:
 fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
@@ -134,4 +134,19 @@ date_end = np.datetime64('2020-08-14 00:01')
 tg = coast.TIDEGAUGE()
 # specify the data read as a High Low Water dataset
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
+tg.plot_timeseries()
 
+#%% Load in data from the Shoothill API
+sg = coast.TIDEGAUGE()
+sg.dataset = sg.read_shoothill_to_xarray()
+sg.plot_timeseries()
+
+#%% Load in data from the EA API
+eg = coast.TIDEGAUGE()
+# load data between dates
+eg.dataset = eg.read_EA_API_to_xarray(date_start=np.datetime64('2020-10-10'), date_end=np.datetime64('2020-10-12') )
+eg.plot_timeseries()
+# Or load the last ndays
+eg.dataset = eg.read_EA_API_to_xarray(ndays=10)
+# by default ndays=5, if no start, end dates or ndays are passed
+eg.plot_timeseries()

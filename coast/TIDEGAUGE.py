@@ -7,7 +7,7 @@ import re
 import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
-from .logging_util import get_slug, debug, error
+from .logging_util import get_slug, debug, error, info
 
 class TIDEGAUGE():
     '''
@@ -549,6 +549,187 @@ class TIDEGAUGE():
             print('Not expecting that option / method')
 
 
+############ shhothill gauge methods ##############################################
+    @classmethod
+    def read_shoothill_to_xarray(cls,
+                                ndays: int=5,
+                                date_start: np.datetime64=None,
+                                date_end: np.datetime64=None,
+                                stationId=7708):
+        """
+        load gauge data via shoothill API
+        Either loads last ndays, or from date_start:date_end
+
+        This reqires an API key that is obtained by emailing shoothill.
+        They provide a public key. Then SHOOTHILL_KEY can be generated using
+        SHOOTHILL_KEY = create_shoothill_key()
+
+        INPUTS:
+            ndays : int
+            date_start : datetime. UTC format string "yyyy-MM-ddThh:mm:ssZ" E.g 2020-01-05T08:20:01.5011423+00:00
+            date_end : datetime
+            stationId : int (station id)
+        OUTPUT:
+            sea_level, time : xr.Dataset
+        """
+        import requests,json
+
+        try:
+            import config_keys # Load secret keys
+        except:
+            info('Need a Shoothil API Key. Use e.g. create_shoothill_key() having obtained a public key')
+            print('Expected a config_keys.py file of the form:')
+            print('')
+            print('# API keys excluded from github repo')
+            print('SHOOTHILL_KEY = "4b6...5ea"')
+            print('SHOOTHILL_PublicApiKey = "9a1...414"')
+
+        cls.SessionHeaderId=config_keys.SHOOTHILL_KEY #'4b6...snip...a5ea'
+        cls.ndays=ndays
+        cls.date_start=date_start
+        cls.date_end=date_end
+        cls.stationId=stationId # Shoothill id
+
+        info("load gauge")
+
+        if cls.stationId == 7708:
+            id_ref = "Gladston Dock"
+        elif cls.stationId == 7899:
+            id_ref = "Chester weir"
+        else:
+            debug(f"Not ready for that station id. {self.stationId}")
+
+        #%% Construct API request
+        headers = {'content-type': 'application/json', 'SessionHeaderId': cls.SessionHeaderId}
+
+        if (cls.date_start == None) & (cls.date_end == None):
+            info(f"GETting ndays= {cls.ndays} of data")
+
+            htmlcall_stationId = 'http://riverlevelsapi.shoothill.com/TimeSeries/GetTimeSeriesRecentDatapoints/?stationId='
+            url  = htmlcall_stationId+str(cls.stationId)+'&dataType=3&numberDays='+str(int(cls.ndays))
+        else:
+            # Check date_start and date_end are timetime objects
+            if (type(cls.date_start) is datetime.datetime) & (type(cls.date_end) is datetime.datetime):
+                info(f"GETting data from {self.date_start} to {self.date_end}")
+                startTime = cls.date_start.replace(tzinfo=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+                endTime = cls.date_end.replace(tzinfo=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+                htmlcall_stationId = 'http://riverlevelsapi.shoothill.com/TimeSeries/GetTimeSeriesDatapointsDateTime/?stationId='
+                url   = htmlcall_stationId+str(cls.stationId)+'&dataType=3&endTime='+endTime+'&startTime='+startTime
+
+            else:
+                debug('Expecting date_start and date_end as datetime objects')
+
+        #%% Get the data
+        request_raw = requests.get(url, headers=headers)
+        request = json.loads(request_raw.content)
+        debug(f"Shoothil API request: {request_raw.text}")
+        # Check the output
+        info(f"Gauge id is {request['gauge']['geoEntityId']}")
+        info(f"timestamp and value of the zero index is {[ str(request['values'][0]['time']), request['values'][0]['value'] ]}")
+
+        #%% Process header information
+        header_dict = request['gauge']
+        header_dict['site_name'] = id_ref
+
+        #%% Process timeseries data
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+        nvals = len(request['values'])
+        time = np.array([np.datetime64(request['values'][i]['time']) for i in range(nvals)])
+        sea_level = np.array([request['values'][i]['value'] for i in range(nvals)])
+
+        #%% Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+        dataset.attrs = header_dict
+        debug(f"Shoothil API request headers: {header_dict}")
+        debug(f"Shoothil API request 1st time: {time[0]} and value: {sea_level[0]}")
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+
+
+############ environment.data.gov.uk gauge methods ###########################
+    @classmethod
+    def read_EA_API_to_xarray(cls,
+                                ndays: int=5,
+                                date_start: np.datetime64=None,
+                                date_end: np.datetime64=None,
+                                stationId='E70124'):
+        """
+        load gauge data via environment.data.gov.uk EA API
+        Either loads last ndays, or from date_start:date_end
+
+        INPUTS:
+            ndays : int
+            date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
+            date_end : datetime
+            stationId : int (station id)
+        OUTPUT:
+            sea_level, time : xr.Dataset
+        """
+        import requests,json
+
+        cls.ndays=ndays
+        cls.date_start=date_start
+        cls.date_end=date_end
+        cls.stationId=stationId # EA id
+
+        #%% Obtain and process header information
+        info("load station info")
+        url = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'.json'
+        request_raw = requests.get(url)
+        header_dict = json.loads(request_raw.content)
+        header_dict['site_name'] = header_dict['items']['label']
+        header_dict['latitude'] = header_dict['items']['lat']
+        header_dict['longitude'] = header_dict['items']['long']
+
+        #%% Construct API request
+        info("load station data")
+        if (cls.date_start == None) & (cls.date_end == None):
+            info(f"GETting ndays= {cls.ndays} of data")
+            htmlcall_stationId = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'/readings?'
+            url  = htmlcall_stationId+'&since='+ \
+            (np.datetime64('now')-np.timedelta64(ndays,'D')).item().strftime('%Y-%m-%dT%H:%M:%SZ')
+            debug(f"url request: {url}")
+        else:
+            # Check date_start and date_end are timetime objects
+            if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
+                info(f"GETting data from {cls.date_start} to {cls.date_end}")
+                startdate = cls.date_start.item().strftime('%Y-%m-%d')
+                enddate = cls.date_end.item().strftime('%Y-%m-%d')
+                htmlcall_stationId = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'/readings?'
+                url   = htmlcall_stationId+'&enddate='+enddate+'&startdate='+startdate
+                debug(f"url request: {url}")
+
+            else:
+                debug('Expecting date_start and date_end as datetime objects')
+
+        #%% Get the data
+        request_raw = requests.get(url)
+        request = json.loads(request_raw.content)
+        debug(f"EA API request: {request_raw.text}")
+
+        #%% Process timeseries data
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+        nvals = len(request['items'])
+        time = np.array([np.datetime64(request['items'][i]['dateTime']) for i in range(nvals)])
+        sea_level = np.array([request['items'][i]['value'] for i in range(nvals)])
+
+        #%% Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+        dataset.attrs = header_dict
+        debug(f"EA API request headers: {header_dict}")
+        debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+
 ############ BODC tide gauge methods ##############################################
     @classmethod
     def read_bodc_to_xarray(cls, fn_bodc, date_start=None, date_end=None):
@@ -638,6 +819,7 @@ class TIDEGAUGE():
             else:
                 #print('No colon')
                 header = False
+        header_dict['site_name'] = header_dict['site'] # duplicate as standard name
         debug(f"Read done, close file \"{fn_bodc}\"")
         fid.close()
 
@@ -724,6 +906,36 @@ class TIDEGAUGE():
         # Assign local dataset to object-scope dataset
         return dataset
 
+
+##############################################################################
+###                ~            Get API keys          ~                    ###
+##############################################################################
+
+    def create_shoothill_key(PublicApiKey=None):
+        """
+        Create API key - Only do if you want a new API key.
+
+        Input
+            PublicApiKey - obtained by email to shoothill
+                        To be stored in config_keys.py
+
+        returns
+            SHOOTHILL_KEY - to be stored in config_keys.py
+        """
+        api_url = 'http://riverlevelsapi.shoothill.com/ApiAccount/ApiLogin'
+        try:
+            if PublicApiKey == None:
+                PublicApiKey = config_keys.SHOOTHILL_PublicApiKey #e.g. '9a1...snip...5e414'
+
+            ApiVersion = '2'
+            postdata = { 'PublicApiKey': PublicApiKey, 'ApiVersion': ApiVersion}
+            headers = {'content-type': 'application/json'}
+            response = requests.post(api_url, data=json.dumps(postdata), headers=headers)
+            print(response.text)
+            return response.text['SessionHeaderId']
+        except:
+            print('Need to obtain a public key by emailing shoothill')
+            return
 ##############################################################################
 ###                ~            Plotting             ~                     ###
 ##############################################################################
