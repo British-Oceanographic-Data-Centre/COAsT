@@ -610,7 +610,7 @@ class TIDEGAUGE():
         else:
             # Check date_start and date_end are timetime objects
             if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
-                info(f"GETting data from {cls.date_start} to {clf.date_end}")
+                info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startTime = cls.date_start.item().strftime('%Y-%m-%dT%H:%M:%SZ')
                 endTime = cls.date_end.item().strftime('%Y-%m-%dT%H:%M:%SZ')
 
