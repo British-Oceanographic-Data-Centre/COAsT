@@ -23,7 +23,7 @@ nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
 #nemo = nemo.isel(x_dim = np.arange(0,1760,1), y_dim = np.arange(0,1100,1))
 
 # Merge together all the different sources of altimetry.
-step=15
+step=10
 lon_bounds = (65,99)
 lat_bounds = (3.5, 27)
 alt = coast.ALTIMETRY()
@@ -50,27 +50,38 @@ mlat = ssh.latitude
 radii = np.arange(100,2000,100)
 obs_var = 'sla_unfiltered'
 
+ctr_lon = nemo.dataset.longitude.values[::20,::20]
+ctr_lat = nemo.dataset.latitude.values[::20,::20]
+ctr_mask = ssh.values[0,::20, ::20]
+ctr_mask = ~np.isnan(ctr_mask)
+ctr_lon = ctr_lon[ctr_mask]
+ctr_lat = ctr_lat[ctr_mask]
+
 # Obs operator
 print('obs_operator')
 alt.obs_operator(ssh, time_interp='linear')
+
+alt.gradient_alongtrack('interp_ssh')
+alt.gradient_alongtrack('sla_unfiltered')
 
 vals = []
 
 print('Starting loop over radii')
 for rr in radii:
     
+    d_ind = gu.subset_indices_by_distance_BT(alt_lon.values, alt_lat.values, 
+                                             ctr_lon, ctr_lat, rr)
     print(rr)
-    tmp = np.zeros(len(alt_lon))        
+    tmp = np.zeros(len(ctr_lon))        
     
-    for ii in range(0,len(alt_lon)):
-        print(ii/len(alt_lon))
-
-        d_ind = gu.subset_indices_by_distance(alt_lon, alt_lat, 
-                                              alt_lon[ii], alt_lat[ii], rr)
-        asub = alt.isel(t_dim=d_ind)
+    for ii in range(0,len(ctr_lon)):
+        asub = alt.dataset['grad_sla_unfiltered'].values
+        asub = asub[d_ind[ii]]
+        msub = alt.dataset['grad_interp_ssh'].values
+        msub = msub[d_ind[ii]]
         
-        acdf = coast.CDF(asub.dataset[obs_var].values)
-        mcdf = coast.CDF(alt.dataset.interp_ssh.values)
+        acdf = coast.CDF(asub)
+        mcdf = coast.CDF(msub)
         
         tmp[ii] = mcdf.integral(acdf)
     vals.append(np.array(tmp))

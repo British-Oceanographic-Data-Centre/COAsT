@@ -704,10 +704,10 @@ class TIDEGAUGE():
         obs_lon = np.array([self.dataset.longitude])
         obs_lat = np.array([self.dataset.latitude])
 
-        interpolated = model.interpolate_in_space(mod_var_array, obs_lon,
+        interpolated = general_utils.interpolate_in_space(mod_var_array, obs_lon,
                                                   obs_lat, mask=model_mask)
 
-        interpolated = model.interpolate_in_time(interpolated,
+        interpolated = general_utils.interpolate_in_time(interpolated,
                                                  self.dataset.time)
 
         # Store interpolated array in dataset
@@ -790,24 +790,27 @@ class TIDEGAUGE():
                             coords={'time':self.dataset.time})
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
-        ''' Mean absolute difference two variables defined by var_str0 and
+        ''' Mean absolute difference two variables defined by var_str0 and 
         var_str1 between two dates date0 and date1. Return xr.DataArray '''
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
-        mae = metrics.mean_absolute_error(var0, var1)
+        ae = np.abs(var0 - var1)
+        mae = np.nanmean(ae)
         return mae
-
+    
     def root_mean_square_error(self, var_str0, var_str1, date0=None, date1=None):
-        ''' Root mean square difference two variables defined by var_str0 and
+        ''' Root mean square difference two variables defined by var_str0 and 
         var_str1 between two dates date0 and date1. Return xr.DataArray '''
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
-        rmse = metrics.mean_squared_error(var0, var1)
-        return np.sqrt(rmse)
+        se = (var0 - var1)**2
+        mse = np.nanmean(se)
+        rmse = np.sqrt(mse)
+        return rmse
 
     def time_mean(self, var_str, date0=None, date1=None):
         ''' Time mean of variable var_str between dates date0, date1'''

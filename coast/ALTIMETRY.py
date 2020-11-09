@@ -125,6 +125,8 @@ class ALTIMETRY(COAsT):
 ###                ~        Model Comparison         ~                     ###
 ##############################################################################
 
+
+
     def obs_operator(self, model_da, time_interp = 'nearest', model_mask=None):
         '''
         For interpolating a model dataarray onto altimetry locations and times.
@@ -265,7 +267,8 @@ class ALTIMETRY(COAsT):
         var1 = self.dataset[var_str1]
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
-        mae = metrics.mean_absolute_error(var0, var1)
+        ae = np.abs(var0 - var1)
+        mae = np.nanmean(ae)
         return mae
     
     def root_mean_square_error(self, var_str0, var_str1, date0=None, date1=None):
@@ -275,8 +278,10 @@ class ALTIMETRY(COAsT):
         var1 = self.dataset[var_str1]
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
-        rmse = metrics.mean_squared_error(var0, var1)
-        return np.sqrt(rmse)
+        se = (var0 - var1)**2
+        mse = np.nanmean(se)
+        rmse = np.sqrt(mse)
+        return rmse
     
     def time_mean(self, var_str, date0=None, date1=None):
         ''' Time mean of variable var_str between dates date0, date1'''
@@ -356,3 +361,23 @@ class ALTIMETRY(COAsT):
             self.dataset['cov'] = cov
             self.dataset.attrs={}
             
+##############################################################################
+###                ~        Model Comparison         ~                     ###
+##############################################################################
+            
+    def gradient_alongtrack(self, var_str):
+        
+        var = self.dataset[var_str].values
+        grad = var[1:] - var[:-1]
+        lon = self.dataset.longitude.values
+        lat = self.dataset.latitude.values
+        dist = np.zeros(len(grad))
+        for ii in range(0,len(lon)-1):
+            dist[ii] = general_utils.calculate_haversine_distance(lon[1:][ii], 
+                                                                  lat[1:][ii], 
+                                                                  lon[:-1][ii], 
+                                                                  lat[:-1][ii])
+        grad = grad/dist
+        grad = np.pad(grad,1)[:-1]
+        grad[0] = np.nan
+        self.dataset['grad_' + var_str] = ('t_dim',grad)

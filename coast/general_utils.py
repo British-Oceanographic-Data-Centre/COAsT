@@ -151,7 +151,7 @@ def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat,
     tree = nb.BallTree(locs, leaf_size=2, metric='haversine')
     ind_1d = tree.query_radius(centre, r = r_rad)
     if len(original_shape) == 1:
-        return ind_1d[0]
+        return ind_1d
     else:
         # Get 2D indices from 1D index output from BallTree
         ind_y = []

@@ -23,7 +23,7 @@ nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
 #nemo = nemo.isel(x_dim = np.arange(0,1760,3), y_dim = np.arange(0,1100,3))
 
 # Merge together all the different sources of altimetry.
-step=1
+step=25
 lon_bounds = (65,99)
 lat_bounds = (3.5, 27)
 alt = coast.ALTIMETRY()
