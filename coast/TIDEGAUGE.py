@@ -662,11 +662,18 @@ class TIDEGAUGE():
         load gauge data via environment.data.gov.uk EA API
         Either loads last ndays, or from date_start:date_end
 
+        API Source:
+        https://environment.data.gov.uk/flood-monitoring/doc/reference
+
+        All tidal stations are recovered with:
+        https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+
         INPUTS:
-            ndays : int
+            ndays : int. Extact the last ndays from now.
             date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
             date_end : datetime
-            stationId : int (station id)
+            stationId : int. Station id. Also referred to as stationReference in
+             EA API. Default value is for Liverpool.
         OUTPUT:
             sea_level, time : xr.Dataset
         """
@@ -675,16 +682,24 @@ class TIDEGAUGE():
         cls.ndays=ndays
         cls.date_start=date_start
         cls.date_end=date_end
-        cls.stationId=stationId # EA id
+        cls.stationId=stationId # EA id: stationReference
 
         #%% Obtain and process header information
         info("load station info")
         url = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'.json'
-        request_raw = requests.get(url)
-        header_dict = json.loads(request_raw.content)
-        header_dict['site_name'] = header_dict['items']['label']
-        header_dict['latitude'] = header_dict['items']['lat']
-        header_dict['longitude'] = header_dict['items']['long']
+        try:
+            request_raw = requests.get(url)
+            header_dict = json.loads(request_raw.content)
+        except ValueError:
+            print(f"Failed request for station {cls.stationId}")
+            return
+
+        try:
+            header_dict['site_name'] = header_dict['items']['label']
+            header_dict['latitude'] = header_dict['items']['lat']
+            header_dict['longitude'] = header_dict['items']['long']
+        except:
+            info(f"possible missing some header info: site_name,latitude,longitude")
 
         #%% Construct API request
         info("load station data")
@@ -708,9 +723,13 @@ class TIDEGAUGE():
                 debug('Expecting date_start and date_end as datetime objects')
 
         #%% Get the data
-        request_raw = requests.get(url)
-        request = json.loads(request_raw.content)
-        debug(f"EA API request: {request_raw.text}")
+        try:
+            request_raw = requests.get(url)
+            request = json.loads(request_raw.content)
+            debug(f"EA API request: {request_raw.text}")
+        except ValueError:
+            debug(f"Failed request: {request_rawl}")
+            return
 
         #%% Process timeseries data
         dataset = xr.Dataset()
