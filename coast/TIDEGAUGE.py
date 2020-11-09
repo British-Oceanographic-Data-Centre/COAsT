@@ -564,6 +564,12 @@ class TIDEGAUGE():
         They provide a public key. Then SHOOTHILL_KEY can be generated using
         SHOOTHILL_KEY = create_shoothill_key(SHOOTHILL_PublicApiKey)
 
+        To discover the StationId for a particular measurement site check the
+         integer id in the url or its twitter page having identified it via
+          https://www.gaugemap.co.uk/#!Map
+         E.g  Liverpool (Gladstone Dock stationId="13482".
+        Liverpool, or stationId="13482", is assumed by default.
+
         INPUTS:
             ndays : int
             date_start : datetime. UTC format string "yyyy-MM-ddThh:mm:ssZ" E.g 2020-01-05T08:20:01.5011423+00:00
@@ -691,8 +697,10 @@ class TIDEGAUGE():
         API Source:
         https://environment.data.gov.uk/flood-monitoring/doc/reference
 
-        All tidal stations are recovered with:
+        Details of available tidal stations are recovered with:
         https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+        Recover the "stationReference" for the gauge of interest and pass as
+        stationId:str. The default stationId="E70124" is Liverpool.
 
         INPUTS:
             ndays : int. Extact the last ndays from now.
