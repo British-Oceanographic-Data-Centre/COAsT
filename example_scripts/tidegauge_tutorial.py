@@ -136,25 +136,28 @@ tg = coast.TIDEGAUGE()
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
 tg.plot_timeseries()
 
-#%% Load in data from the EA API
+
+#%% Alternatively load in data obtained using the Environment Agency (England)
+#  API. This does not require an API key.
+#  Details of available tidal stations are recovered with:
+#  https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+# Recover the "stationReference" for the gauge of interest and pass as stationId:str
+# The default gauge is Liverpool: stationId="E70124"
 eg = coast.TIDEGAUGE()
-# A list of available tidal measuring sites can be found at:
-# https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
-# Extract the desired stationReference variable and pass into coast as stationId
-# For example the default stationId='E70124' is Liverpool.
-# Load the last ndays (the defauly ndays=5)
-eg.dataset = eg.read_EA_API_to_xarray(ndays=10, stationId='E70124')
-eg.plot_timeseries()
-# load data between dates
 eg.dataset = eg.read_EA_API_to_xarray(date_start=np.datetime64('2020-10-10'), date_end=np.datetime64('2020-10-12') )
-# Or load the last 5 days at Liverpool
-eg.dataset = eg.read_EA_API_to_xarray()
-# by default ndays=5, if no start, end dates or ndays are passed
 eg.plot_timeseries()
 
-#%% Alternatively, load in data from the Shoothill API. However this does require
+eg.dataset = eg.read_EA_API_to_xarray(ndays=1)
+eg.plot_timeseries()
+
+#%% Finally, load in data from the Shoothill API. However this does require
 # a key to be setup. It is assumed that the key is privately stored in config_keys.py
-# These API has more data sites but, requiring a key, is trickier to set up.
+# This API has more data sites but, requiring a key, is trickier to set up.
+# To discover the StationId for a particular measurement site check the
+# integer id in the url or its twitter page having identified it via
+#  https://www.gaugemap.co.uk/#!Map
+# E.g  Liverpool (Gladstone Dock stationId="13482", which is read by default.
+# Load in data from the Shoothill API
 sg = coast.TIDEGAUGE()
 sg.dataset = sg.read_shoothill_to_xarray()
 sg.plot_timeseries()
