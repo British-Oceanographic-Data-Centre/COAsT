@@ -555,7 +555,7 @@ class TIDEGAUGE():
                                 ndays: int=5,
                                 date_start: np.datetime64=None,
                                 date_end: np.datetime64=None,
-                                stationId=7708):
+                                stationId="7708"):
         """
         load gauge data via shoothill API
         Either loads last ndays, or from date_start:date_end
@@ -568,7 +568,7 @@ class TIDEGAUGE():
             ndays : int
             date_start : datetime. UTC format string "yyyy-MM-ddThh:mm:ssZ" E.g 2020-01-05T08:20:01.5011423+00:00
             date_end : datetime
-            stationId : int (station id)
+            stationId : str (station id)
         OUTPUT:
             sea_level, time : xr.Dataset
         """
@@ -592,16 +592,41 @@ class TIDEGAUGE():
 
         info("load gauge")
 
-        if cls.stationId == 7708:
+        if cls.stationId == "7708":
             id_ref = "Gladston Dock"
-        elif cls.stationId == 7899:
+        elif cls.stationId == "7899":
             id_ref = "Chester weir"
+        elif cls.stationId == "972":
+            id_ref = "Farndon"
+        elif cls.stationId == "968":
+            id_ref = "Ironbridge (Dee)"
         else:
+            id_ref = "No label"
             debug(f"Not ready for that station id. {cls.stationId}")
 
-        #%% Construct API request
         headers = {'content-type': 'application/json', 'SessionHeaderId': cls.SessionHeaderId}
 
+        #%% Construct station info API request
+        # Obtain and process header information
+        info("load station info")
+        htmlcall_stationId = 'http://riverlevelsapi.shoothill.com/TimeSeries/GetTimeSeriesStationById/?stationId='
+        url  = htmlcall_stationId+str(stationId)
+        try:
+            request_raw = requests.get(url, headers=headers)
+            header_dict = json.loads(request_raw.content)
+        except ValueError:
+            print(f"Failed request for station {cls.stationId}")
+            return
+
+        # Assign expected header_dict information
+        try: # header_dict['latitude'] and header_dict['longitude'] are present
+            header_dict['site_name'] = header_dict['name']
+            #header_dict['latitude'] = header_dict['items']['lat']
+            #header_dict['longitude'] = header_dict['items']['long']
+        except:
+            info(f"possible missing some header info: site_name,latitude,longitude")
+
+        #%% Construct data API request
         if (cls.date_start == None) & (cls.date_end == None):
             info(f"GETting ndays= {cls.ndays} of data")
 
@@ -628,9 +653,10 @@ class TIDEGAUGE():
         info(f"Gauge id is {request['gauge']['geoEntityId']}")
         info(f"timestamp and value of the zero index is {[ str(request['values'][0]['time']), request['values'][0]['value'] ]}")
 
+        #print(request)
         #%% Process header information
-        header_dict = request['gauge']
-        header_dict['site_name'] = id_ref
+        #header_dict = request['gauge']
+        #header_dict['site_name'] = id_ref
 
         #%% Process timeseries data
         dataset = xr.Dataset()
