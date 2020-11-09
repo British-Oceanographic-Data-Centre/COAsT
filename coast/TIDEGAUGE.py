@@ -549,7 +549,7 @@ class TIDEGAUGE():
             print('Not expecting that option / method')
 
 
-############ shhothill gauge methods ##############################################
+############ shoothill gauge methods ##############################################
     @classmethod
     def read_shoothill_to_xarray(cls,
                                 ndays: int=5,
@@ -562,7 +562,7 @@ class TIDEGAUGE():
 
         This reqires an API key that is obtained by emailing shoothill.
         They provide a public key. Then SHOOTHILL_KEY can be generated using
-        SHOOTHILL_KEY = create_shoothill_key()
+        SHOOTHILL_KEY = create_shoothill_key(SHOOTHILL_PublicApiKey)
 
         INPUTS:
             ndays : int
@@ -577,7 +577,7 @@ class TIDEGAUGE():
         try:
             import config_keys # Load secret keys
         except:
-            info('Need a Shoothil API Key. Use e.g. create_shoothill_key() having obtained a public key')
+            info('Need a Shoothil API Key. Use e.g. create_shoothill_key(SHOOTHILL_PublicApiKey) having obtained a public key')
             print('Expected a config_keys.py file of the form:')
             print('')
             print('# API keys excluded from github repo')
@@ -597,7 +597,7 @@ class TIDEGAUGE():
         elif cls.stationId == 7899:
             id_ref = "Chester weir"
         else:
-            debug(f"Not ready for that station id. {self.stationId}")
+            debug(f"Not ready for that station id. {cls.stationId}")
 
         #%% Construct API request
         headers = {'content-type': 'application/json', 'SessionHeaderId': cls.SessionHeaderId}
@@ -609,10 +609,10 @@ class TIDEGAUGE():
             url  = htmlcall_stationId+str(cls.stationId)+'&dataType=3&numberDays='+str(int(cls.ndays))
         else:
             # Check date_start and date_end are timetime objects
-            if (type(cls.date_start) is datetime.datetime) & (type(cls.date_end) is datetime.datetime):
+            if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
                 info(f"GETting data from {self.date_start} to {self.date_end}")
-                startTime = cls.date_start.replace(tzinfo=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-                endTime = cls.date_end.replace(tzinfo=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+                startTime = cls.date_start.item().strftime('%Y-%m-%dT%H:%M:%SZ')
+                endTime = cls.date_end.item().strftime('%Y-%m-%dT%H:%M:%SZ')
 
                 htmlcall_stationId = 'http://riverlevelsapi.shoothill.com/TimeSeries/GetTimeSeriesDatapointsDateTime/?stationId='
                 url   = htmlcall_stationId+str(cls.stationId)+'&dataType=3&endTime='+endTime+'&startTime='+startTime
@@ -728,7 +728,7 @@ class TIDEGAUGE():
             request = json.loads(request_raw.content)
             debug(f"EA API request: {request_raw.text}")
         except ValueError:
-            debug(f"Failed request: {request_rawl}")
+            debug(f"Failed request: {request_raw}")
             return
 
         #%% Process timeseries data
@@ -936,16 +936,20 @@ class TIDEGAUGE():
 
         Input
             PublicApiKey - obtained by email to shoothill
-                        To be stored in config_keys.py
+                        Could be stored in config_keys.py
 
         returns
-            SHOOTHILL_KEY - to be stored in config_keys.py
+            SHOOTHILL_KEY - to be stored in config_keys.py.
+            This is called the SessionHeaderId by Shoothill
         """
+        import requests,json
+
+        if PublicApiKey == None:
+            print('Need to pass a public key to this method. Obtain key by emailing shoothill')
+            return
+
         api_url = 'http://riverlevelsapi.shoothill.com/ApiAccount/ApiLogin'
         try:
-            if PublicApiKey == None:
-                PublicApiKey = config_keys.SHOOTHILL_PublicApiKey #e.g. '9a1...snip...5e414'
-
             ApiVersion = '2'
             postdata = { 'PublicApiKey': PublicApiKey, 'ApiVersion': ApiVersion}
             headers = {'content-type': 'application/json'}
@@ -953,7 +957,7 @@ class TIDEGAUGE():
             print(response.text)
             return response.text['SessionHeaderId']
         except:
-            print('Need to obtain a public key by emailing shoothill')
+            print('Something went wrong when creating the session API key')
             return
 ##############################################################################
 ###                ~            Plotting             ~                     ###
