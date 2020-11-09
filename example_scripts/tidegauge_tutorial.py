@@ -136,17 +136,25 @@ tg = coast.TIDEGAUGE()
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
 tg.plot_timeseries()
 
-#%% Load in data from the Shoothill API
+#%% Load in data from the EA API
+eg = coast.TIDEGAUGE()
+# A list of available tidal measuring sites can be found at:
+# https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+# Extract the desired stationReference variable and pass into coast as stationId
+# For example the default stationId='E70124' is Liverpool.
+# Load the last ndays (the defauly ndays=5)
+eg.dataset = eg.read_EA_API_to_xarray(ndays=10, stationId='E70124')
+eg.plot_timeseries()
+# load data between dates
+eg.dataset = eg.read_EA_API_to_xarray(date_start=np.datetime64('2020-10-10'), date_end=np.datetime64('2020-10-12') )
+# Or load the last 5 days at Liverpool
+eg.dataset = eg.read_EA_API_to_xarray()
+# by default ndays=5, if no start, end dates or ndays are passed
+eg.plot_timeseries()
+
+#%% Alternatively, load in data from the Shoothill API. However this does require
+# a key to be setup. It is assumed that the key is privately stored in config_keys.py
+# These API has more data sites but, requiring a key, is trickier to set up.
 sg = coast.TIDEGAUGE()
 sg.dataset = sg.read_shoothill_to_xarray()
 sg.plot_timeseries()
-
-#%% Load in data from the EA API
-eg = coast.TIDEGAUGE()
-# load data between dates
-eg.dataset = eg.read_EA_API_to_xarray(date_start=np.datetime64('2020-10-10'), date_end=np.datetime64('2020-10-12') )
-eg.plot_timeseries()
-# Or load the last ndays
-eg.dataset = eg.read_EA_API_to_xarray(ndays=10)
-# by default ndays=5, if no start, end dates or ndays are passed
-eg.plot_timeseries()
