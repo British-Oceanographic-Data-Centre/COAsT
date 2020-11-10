@@ -64,6 +64,7 @@ class TIDEGAUGE():
         *Analysis*
         -> resample_mean(): For resampling data in time using averaging
         -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
+        -> find_high_and_low_water(): Find maxima and minima of time series
     '''
 
 ##############################################################################
@@ -467,8 +468,8 @@ class TIDEGAUGE():
         sea_level = sea_level[start_index:end_index]
         debug(f"sea_level: {sea_level}")
         # Assign arrays to Dataset
-        dataset['sea_level'] = xr.DataArray(sea_level, dims=['t_dim'])
-        dataset = dataset.assign_coords(time = ('t_dim', time))
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
         # Assign local dataset to object-scope dataset
         return dataset
 
@@ -1372,3 +1373,38 @@ class TIDEGAUGE():
         to hourly frequency.'''
         filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
         self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
+        
+    def find_high_and_low_water(self, var_str, method='comp', 
+                                **kwargs):
+        '''
+        Finds high and low water for a given variable.
+        Returns in a new TIDEGAUGE object with similar data format to 
+        a TIDETABLE.
+        
+        Methods:
+        'comp' :: Find maxima by comparison with neighbouring values.
+                  Uses scipy.signal.find_peaks. **kwargs passed to this routine
+                  will be passed to scipy.signal.find_peaks.
+        DB NOTE: Currently only the 'comp' method is implemented. Future
+                 methods include linear interpolation and cublic splines.
+        '''
+
+        x = self.dataset.time
+        y = self.dataset[var_str]
+
+        time_max, values_max = stats_util.find_maxima(x, y, method=method, 
+                                                      **kwargs)
+        time_min, values_min = stats_util.find_maxima(x,-y, method=method, 
+                                                      **kwargs)
+
+        new_dataset = xr.Dataset()
+        new_dataset.attrs = self.dataset.attrs
+        new_dataset[var_str + '_highs'] = ('time_highs', values_max)
+        new_dataset[var_str + '_lows'] = ('time_lows', -values_min)
+        new_dataset['time_highs'] = ('time_highs', time_max)
+        new_dataset['time_lows'] = ('time_lows', time_min)
+
+        new_object = TIDEGAUGE()
+        new_object.dataset = new_dataset
+
+        return new_object

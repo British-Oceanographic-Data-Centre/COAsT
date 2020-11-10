@@ -57,6 +57,7 @@ import logging
 import coast.general_utils as general_utils
 from socket import gethostname# to get hostname
 import traceback
+import xarray.ufuncs as uf
 '''
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
@@ -1120,6 +1121,43 @@ try:
         print(str(sec) + chr(subsec) + " X - Tide table processing")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+#%% ( 7l ) TIDEGAUGE method for finding extrema and troughs                     #
+#                                                                             #
+subsec = subsec+1
+
+# Take a look at the sea level time series stored within the object:
+try:
+    date0 = datetime.datetime(2007,1,10)
+    date1 = datetime.datetime(2007,1,20)
+    lowestoft2 = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
+                                date_end = date1)
+    
+    extrema = lowestoft2.find_high_and_low_water('sea_level', distance=40)
+    
+    # Check actual maximum/minimum is in output dataset
+    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_highs
+    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_lows
+    # Check new time dimensions have correct length (hardcoded here)
+    check3 = len(extrema.dataset.time_highs) == 19
+    check4 = len(extrema.dataset.time_lows) == 18
+    
+    # Attempt a plot
+    f = plt.figure()
+    plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
+    plt.scatter(extrema.dataset.time_highs, extrema.dataset.sea_level_highs, c='g')
+    plt.scatter(extrema.dataset.time_lows, extrema.dataset.sea_level_lows, c='r')
+    plt.legend(['Time Series','Maxima','Minima'])
+    plt.title('Tide Gauge Optima at Lowestoft')
+    f.savefig(dn_fig + 'tidegauge_optima.png')
+
+    if check1 and check2 and check3 and check4:
+        print(str(sec) + chr(subsec) + " OK - Tidegauge extrema found")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tidegauge extrema")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 '''
 ###############################################################################
@@ -1204,9 +1242,76 @@ if np.allclose((cont_f.data_cross_flow.normal_velocity_hpg +
     print(str(sec) + chr(subsec) + " OK - Cross-contour geostrophic flow calculations as expected")
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
+
+#%%
 '''
 ###############################################################################
-## ( 9 ) Example script testing                                              ##
+## ( 9 ) EOF module testing                                                 ##
+###############################################################################
+'''
+sec = sec+1
+subsec = 96
+
+#%%---------------------------------------------------------------------------#
+# ( 9a ) Compute regular EOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    eofs = coast.eofs( nemo_t.dataset.ssh )
+    
+    ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim='mode'). \
+                        sum(dim=['x_dim','y_dim'])
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point 
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = eofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from EOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from EOFs")
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%---------------------------------------------------------------------------#
+# ( 9b ) Compute  HEOFs, temporal projections and variance explained   #
+# 
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                    fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    heofs = coast.hilbert_eofs( nemo_t.dataset.ssh )
+                        
+    ssh_reconstruction = (heofs.EOF_amp * heofs.temporal_amp * \
+        uf.exp( 1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase ) ) ) \
+        .sum(dim='mode').real.sum(dim=['x_dim','y_dim'])
+        
+    ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
+                        sum(dim=['x_dim','y_dim'])
+                        
+    # Check ssh anomaly is reconstructed at each time point                   
+    if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
+        var_cksum = heofs.variance.sum(dim='mode').item()
+        if np.isclose(var_cksum, 100):
+            print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from HEOFs")
+        else:
+            print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
+    else:
+        print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from HEOFs")
+        
+
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
+#%%
+'''
+###############################################################################
+## ( 10 ) Example script testing                                              ##
 ###############################################################################
 '''
 sec = sec+1
@@ -1216,7 +1321,7 @@ print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( 9a ) Example script testing                                               #
+#%% ( 10a ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.
@@ -1260,8 +1365,6 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
-
 
 
 
