@@ -28,7 +28,7 @@ class TIDEGAUGE():
         4. Time is a coordinate variable and time dimension.
         5. Data variables are stored along the time dimension.
         6. The attributes: site_name, latitude, longitude are expected. If they
-            are missing functionality may be reduced. 
+            are missing functionality may be reduced.
 
 
     *Methods Overview*
@@ -493,12 +493,18 @@ class TIDEGAUGE():
                 print('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values), np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
                 'height:',self.dataset.sea_level[i].values, 'm' )
 
-    def get_tidetabletimes(self, time_guess:np.datetime64 = None, method: str='window', winsize:int=2): # window:int = 2):
+    def get_tidetabletimes(self, time_guess:np.datetime64 = None,
+                            time_var:str='time',
+                            measure_var:str='sea_level',
+                            method: str='window', winsize:int=2): # window:int = 2):
         """
         Get tide times and heights from tide table.
         input:
         time_guess : np.datetime64 or datetime
                 assumes utc
+        time_var : name of time variable [default: 'time']
+        measure_var : name of sea_level variable [default: 'sea_level']
+
         method =
             window:  +/- hours window size, winsize, (int) return values in that window
                 uses additional variable winsize (int) [default 2hrs]
@@ -506,8 +512,8 @@ class TIDEGAUGE():
             nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low)
             nearest_HW: return nearest High Water event (computed as the max of `nearest_2`)
 
-        returns: xr.DataArray( sea_level, coords=time)
-            sea_level (m), time (utc)
+        returns: xr.DataArray( measure_var, coords=time_var)
+            E.g. sea_level (m), time (utc)
 
         """
         # Ensure the date objects are datetime
@@ -522,31 +528,31 @@ class TIDEGAUGE():
         if method == 'window':
             # initialise start_index and end_index
             start_index = 0
-            end_index = len(self.dataset.time)
+            end_index = len(self.dataset[time_var])
 
             date_start = time_guess - np.timedelta64(winsize, 'h')
-            start_index = np.argmax(self.dataset.time.values>=date_start)
+            start_index = np.argmax(self.dataset[time_var].values>=date_start)
 
             date_end = time_guess + np.timedelta64(winsize, 'h')
-            end_index = np.argmax(self.dataset.time.values>date_end)
+            end_index = np.argmax(self.dataset[time_var].values>date_end)
 
-            sea_level = self.dataset.sea_level[start_index:end_index]
+            sea_level = self.dataset[measure_var][start_index:end_index]
 
             return sea_level
 
         elif method == 'nearest_1':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            return self.dataset.sea_level[index[0]]
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
+            return self.dataset[measure_var][index[0]]
 
         elif method == 'nearest_2':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
+            nearest_2 =  self.dataset[measure_var][ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
             return nearest_2
 
         elif method == 'nearest_HW':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
             #return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
-            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            nearest_2 =  self.dataset[measure_var][index[0:1+1]] #, self.dataset.time[index[0:1+1]]
             return nearest_2[ nearest_2.argmax() ]
 
         else:
