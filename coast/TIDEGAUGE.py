@@ -1379,14 +1379,14 @@ class TIDEGAUGE():
         to hourly frequency.'''
         filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
         self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
-        
-    def find_high_and_low_water(self, var_str, method='comp', 
+
+    def find_high_and_low_water(self, var_str, method='comp',
                                 **kwargs):
         '''
         Finds high and low water for a given variable.
-        Returns in a new TIDEGAUGE object with similar data format to 
+        Returns in a new TIDEGAUGE object with similar data format to
         a TIDETABLE.
-        
+
         Methods:
         'comp' :: Find maxima by comparison with neighbouring values.
                   Uses scipy.signal.find_peaks. **kwargs passed to this routine
@@ -1398,9 +1398,9 @@ class TIDEGAUGE():
         x = self.dataset.time
         y = self.dataset[var_str]
 
-        time_max, values_max = stats_util.find_maxima(x, y, method=method, 
+        time_max, values_max = stats_util.find_maxima(x, y, method=method,
                                                       **kwargs)
-        time_min, values_min = stats_util.find_maxima(x,-y, method=method, 
+        time_min, values_min = stats_util.find_maxima(x,-y, method=method,
                                                       **kwargs)
 
         new_dataset = xr.Dataset()
