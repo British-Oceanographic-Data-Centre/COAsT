@@ -27,6 +27,9 @@ class TIDEGAUGE():
            attributes or single float variables.
         4. Time is a coordinate variable and time dimension.
         5. Data variables are stored along the time dimension.
+        6. The attributes: site_name, latitude, longitude are expected. If they
+            are missing functionality may be reduced. 
+
 
     *Methods Overview*
 
