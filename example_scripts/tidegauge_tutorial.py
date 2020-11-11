@@ -130,7 +130,8 @@ fn_bodc = 'example_files/LIV2008.txt'
 date_start = np.datetime64('2020-08-12 23:59')
 date_end = np.datetime64('2020-08-14 00:01')
 
-# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA type object
+# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+# type object
 tg = coast.TIDEGAUGE()
 # specify the data read as a High Low Water dataset
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
@@ -138,20 +139,28 @@ tg.plot_timeseries()
 
 
 #%% Alternatively load in data obtained using the Environment Agency (England)
-#  API. This does not require an API key.
+#  API. These are only accessible for the last 28 days. This does not require
+# an API key.
 #  Details of available tidal stations are recovered with:
 #  https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
-# Recover the "stationReference" for the gauge of interest and pass as stationId:str
-# The default gauge is Liverpool: stationId="E70124"
+# Recover the "stationReference" for the gauge of interest and pass as
+# stationId:str. The default gauge is Liverpool: stationId="E70124"
+ # Construct a recent 10 days period and extract these data
+date_start = np.datetime64('now')-np.timedelta64(20,'D')
+date_end = np.datetime64('now')-np.timedelta64(10,'D')
 eg = coast.TIDEGAUGE()
-eg.dataset = eg.read_EA_API_to_xarray(date_start=np.datetime64('2020-10-10'), date_end=np.datetime64('2020-10-12') )
+# Extract the data between explicit dates
+eg.dataset = eg.read_EA_API_to_xarray(date_start=date_start, date_end=date_end )
 eg.plot_timeseries()
 
-eg.dataset = eg.read_EA_API_to_xarray(ndays=1)
+# Alternatively extract the data for the last ndays, here for a specific
+# (the default) station.
+eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
 eg.plot_timeseries()
 
 #%% Finally, load in data from the Shoothill API. However this does require
-# a key to be setup. It is assumed that the key is privately stored in config_keys.py
+# a key to be setup. It is assumed that the key is privately stored in
+# config_keys.py
 # This API has more data sites but, requiring a key, is trickier to set up.
 # To discover the StationId for a particular measurement site check the
 # integer id in the url or its twitter page having identified it via
