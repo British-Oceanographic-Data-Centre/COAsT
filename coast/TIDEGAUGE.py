@@ -738,13 +738,17 @@ class TIDEGAUGE():
             header_dict['longitude'] = header_dict['items']['long']
         except:
             info(f"possible missing some header info: site_name,latitude,longitude")
+        try:
+            # Define url call with parameter from station info
+            htmlcall_stationId = header_dict['items']['measures']['@id']+'/readings?'
+        except:
+            debug(f"problem defining the parameter to read")
 
-        #%% Construct API request
+        #%% Construct API request for data recovery
         info("load station data")
         if (cls.date_start == None) & (cls.date_end == None):
             info(f"GETting ndays= {cls.ndays} of data")
-            htmlcall_stationId = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'/readings?'
-            url  = htmlcall_stationId+'&since='+ \
+            url  = htmlcall_stationId+'since='+ \
             (np.datetime64('now')-np.timedelta64(ndays,'D')).item().strftime('%Y-%m-%dT%H:%M:%SZ')
             debug(f"url request: {url}")
         else:
@@ -753,8 +757,7 @@ class TIDEGAUGE():
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime('%Y-%m-%d')
                 enddate = cls.date_end.item().strftime('%Y-%m-%d')
-                htmlcall_stationId = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'/readings?'
-                url   = htmlcall_stationId+'&enddate='+enddate+'&startdate='+startdate
+                url   = htmlcall_stationId+'startdate='+startdate+'&enddate='+enddate
                 debug(f"url request: {url}")
 
             else:
@@ -782,7 +785,7 @@ class TIDEGAUGE():
         dataset = dataset.assign_coords(time = ('time', time))
         dataset.attrs = header_dict
         debug(f"EA API request headers: {header_dict}")
-        debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
+        #debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
 
         # Assign local dataset to object-scope dataset
         return dataset
@@ -925,7 +928,7 @@ class TIDEGAUGE():
                         residual_str = residual_str.replace(qc_flag_str,'')
                     else:
                         qc_flag_str = ''
-                    print(working_line, sea_level_str, qc_flag_str)
+                    #print(working_line, sea_level_str, qc_flag_str)
                     time.append(time_str)
                     qc_flags.append(qc_flag_str)
                     sea_level.append(float(sea_level_str))
