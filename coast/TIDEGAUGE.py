@@ -493,10 +493,11 @@ class TIDEGAUGE():
                 print('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values), np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
                 'height:',self.dataset.sea_level[i].values, 'm' )
 
-    def get_tidetabletimes(self, time_guess:np.datetime64 = None,
+    def get_tidetabletimes(self,
+                            time_guess:np.datetime64 = None,
                             time_var:str='time',
                             measure_var:str='sea_level',
-                            method: str='window', winsize:int=2): # window:int = 2):
+                            method: str='window', winsize=None):
         """
         Get tide times and heights from tide table.
         input:
@@ -508,12 +509,14 @@ class TIDEGAUGE():
         method =
             window:  +/- hours window size, winsize, (int) return values in that window
                 uses additional variable winsize (int) [default 2hrs]
-            nearest_1: return only the nearest event
-            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low)
-            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`)
+            nearest_1: return only the nearest event, if in winsize [default:None]
+            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low), if in winsize [default:None]
+            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`), if in winsize [default:None]
 
         returns: xr.DataArray( measure_var, coords=time_var)
             E.g. sea_level (m), time (utc)
+            If value is not found, it returns a NaN with time value as the
+            guess value.
 
         """
         # Ensure the date objects are datetime
@@ -526,6 +529,7 @@ class TIDEGAUGE():
             time_guess = np.datetime64('now')
 
         if method == 'window':
+            if winsize==None: winsize=2
             # initialise start_index and end_index
             start_index = 0
             end_index = len(self.dataset[time_var])
@@ -541,8 +545,21 @@ class TIDEGAUGE():
             return sea_level
 
         elif method == 'nearest_1':
-            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            return self.dataset[measure_var][index[0]]
+            dt = np.abs(self.dataset[time_var] - time_guess)
+            index = np.argsort(dt).values
+            if winsize is not None: # if search window trucation exists
+                if np.timedelta64(dt[index[0]].values,'m').astype('int') <= 60*winsize: # compare in minutes
+                    debug(f"dt:{np.timedelta64(dt[index[0]].values,'m').astype('int')}")
+                    debug(f"winsize:{winsize}")
+                    return self.dataset[measure_var][index[0]]
+                else:
+                    # return a NaN in an xr.Dataset
+                    # The rather odd trailing zero is to remove the array layer
+                    # on both time and measurement, and to match the other
+                    # alternative for a return object
+                    return xr.DataArray([np.NaN], dims=(time_var), coords={time_var: [time_guess]})[0]
+            else: # give the closest without window search truncation
+                return self.dataset[measure_var][index[0]]
 
         elif method == 'nearest_2':
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
