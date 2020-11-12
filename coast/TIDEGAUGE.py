@@ -941,28 +941,30 @@ class TIDEGAUGE():
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
-                    working_line = line.split()
-                    time_str = working_line[1] + ' ' + working_line[2] # Empty lines cause trouble
-                    sea_level_str = working_line[3]
-                    residual_str = working_line[4]
-                    if sea_level_str[-1].isalpha():
-                        qc_flag_str = sea_level_str[-1]
-                        sea_level_str = sea_level_str.replace(qc_flag_str,'')
-                        residual_str = residual_str.replace(qc_flag_str,'')
-                    elif residual_str[-1].isalpha(): # sometimes residual has a
-                        #flag when elevation does not
-                        qc_flag_str = residual_str[-1]
-                        sea_level_str = sea_level_str.replace(qc_flag_str,'')
-                        residual_str = residual_str.replace(qc_flag_str,'')
-                    else:
-                        qc_flag_str = ''
-                    #print(line_count-header_length, residual_str, float(residual_str))
-                    #print(working_line, sea_level_str, qc_flag_str)
-                    time.append(time_str)
-                    qc_flags.append(qc_flag_str)
-                    sea_level.append(float(sea_level_str))
-                    residual.append(float(residual_str))
-
+                    try:
+                        working_line = line.split()
+                        time_str = working_line[1] + ' ' + working_line[2] # Empty lines cause trouble
+                        sea_level_str = working_line[3]
+                        residual_str = working_line[4]
+                        if sea_level_str[-1].isalpha():
+                            qc_flag_str = sea_level_str[-1]
+                            sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                            residual_str = residual_str.replace(qc_flag_str,'')
+                        elif residual_str[-1].isalpha(): # sometimes residual has a
+                            #flag when elevation does not
+                            qc_flag_str = residual_str[-1]
+                            sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                            residual_str = residual_str.replace(qc_flag_str,'')
+                        else:
+                            qc_flag_str = ''
+                        #print(line_count-header_length, residual_str, float(residual_str))
+                        #print(working_line, sea_level_str, qc_flag_str)
+                        time.append(time_str)
+                        qc_flags.append(qc_flag_str)
+                        sea_level.append(float(sea_level_str))
+                        residual.append(float(residual_str))
+                    except:
+                        debug(f"{file} probably empty line at end. Breaks split()")
                 line_count = line_count + 1
             debug(f"Read done, close file \"{fn_bodc}\"")
 
