@@ -635,7 +635,66 @@ class NEMO(COAsT):  # TODO Complete this docstring
             self.dataset[new_var_str] = (old_dims, filtered)
         return
         
+    @staticmethod
+    def get_e3_from_ssh(nemo_t, e3u=False, e3v=False, e3f=False, e3w=False, dom_fn:str=None):
+        e3_return = []
+        try:
+            ssh = nemo_t.dataset.ssh
+        except AttributeError:
+            print('The nemo_t dataset must contain the ssh variable.')
+            return
+
+        if dom_fn is None:
+            dom_fn = nemo_t.filename_domain
+        try:
+            ds_dom = xr.open_dataset(dom_fn).squeeze().rename(
+                {'z':'z_dim', 'x':'x_dim', 'y':'y_dim'})
+        except OSError:
+            print(f'Problem opening domain_cfg file: {dom_fn}')
+            return 
+            
+        e3t_0 = ds_dom.e3_0
+    
+        # Water column thickness, i.e. depth of bottom w-level on horizontal t-grid
+        H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level-1)
+        e3t_new = e3t_0.data * ( 1 + ssh.expand_dims(dim={'z_dim':e3t_0.z_dim.data},axis=1) / H.data )
+        e3t_new = e3t_new.where(e3t_new.z_dim<ds_dom.bottom_level,e3t_0.data)
+        e3_return.append(e3t_new)
         
+        if np.any([e3u,e3v,e3f]):
+            e1e2t = ds_dom.e1t * ds_dom.e2t
+        if np.any([e3u,e3v,e3w]):
+            e3t_dt = e3t_new - e3t_0
+            
+        if np.any([e3u,e3f]):           
+            e1e2u = ds_dom.e1u * ds_dom.e2u
+            e3u_new = ( (0.5/e1e2u) * ( (e1e2t * e3t_dt)[:,:,:-1] 
+                    + (e1e2t * e3t_dt)[:,:,1:] ) + ds_dom.e3u_0[:,:,:-1] )
+            e3_return.append(e3u_new)
+        
+        if e3v:
+            e1e2v = ds_dom.e1v * ds_dom.e2v
+            e3v_new = ( (0.5/e1e2v) * ( (e1e2t * e3t_dt)[:,:-1,:] 
+                    + (e1e2t * e3t_dt)[:,1:,:] ) + ds_dom.e3u_0[:,:-1,:] )
+            e3_return.append(e3v_new)
+        
+        if e3f:
+            e1e2f = ds_dom.e1f * ds_dom.e2f
+            e3u_dt = e3u_new - ds_dom.e3u_0
+            e3f_new = ( (0.5/e1e2f) * ( (e1e2u * e3u_dt)[:,:-1,:] 
+                    + (e1e2u * e3u_dt)[:,1:,:] ) + ds_dom.e3u_0[:,:-1,:] )
+            e3_return.append(e3f_new)
+            
+        if e3w:
+            e3w_new = ds_dom.e3w_0 + e3t_dt
+            e3w_new[dict(z_dim=slice(1,None))] = ( 0.5*e3t_dt[:,:-1,:,:] 
+                                    + 0.5*e3t_dt[:,1:,:,:] 
+                                    + ds_dom.e3w_0[:,:-1,:,:] )
+            e3_return.append(e3w_new)
+            
+        return tuple(e3_return)
+            
+            
 
         
         
