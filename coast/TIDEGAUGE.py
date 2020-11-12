@@ -949,8 +949,14 @@ class TIDEGAUGE():
                         qc_flag_str = sea_level_str[-1]
                         sea_level_str = sea_level_str.replace(qc_flag_str,'')
                         residual_str = residual_str.replace(qc_flag_str,'')
+                    elif residual_str[-1].isalpha(): # sometimes residual has a
+                        #flag when elevation does not
+                        qc_flag_str = residual_str[-1]
+                        sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                        residual_str = residual_str.replace(qc_flag_str,'')
                     else:
                         qc_flag_str = ''
+                    #print(line_count-header_length, residual_str, float(residual_str))
                     #print(working_line, sea_level_str, qc_flag_str)
                     time.append(time_str)
                     qc_flags.append(qc_flag_str)
