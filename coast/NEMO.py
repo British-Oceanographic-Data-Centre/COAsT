@@ -634,9 +634,44 @@ class NEMO(COAsT):  # TODO Complete this docstring
         if filtered is not None:
             self.dataset[new_var_str] = (old_dims, filtered)
         return
-        
+       
+    
     @staticmethod
-    def get_e3_from_ssh(nemo_t, e3u=False, e3v=False, e3f=False, e3w=False, dom_fn:str=None):
+    def get_e3_from_ssh(nemo_t, e3t=True, e3u=False, e3v=False, e3f=False, 
+                        e3w=False, dom_fn:str=None):
+        '''
+        Where the model has been run with a nonlinear free surface
+        and z* variable volumne (ln_vvl_zstar=True) then the vertical scale factors
+        will vary in time (and space). This function will compute the vertical
+        scale factors e3t, e3u, e3v, e3f and e3w by using the sea surface height
+        field (ssh variable) and initial scale factors from the domain_cfg file.
+        The vertical scale factors will be computed at the same model time as the 
+        ssh and if the ssh field is averaged in time then the scale factors will
+        also be time averages. 
+        
+        A t-grid NEMO object containing the ssh variable must be passed in. Either 
+        the domain_cfg path must have been passed in as an argument when the NEMO 
+        object was created or it must be passed in here using the dom_fn argument.
+        
+        e.g. e3t,e3v,e3f = coast.NEMO.get_e3_from_ssh(nemo_t,true,false,true,true,false)
+        
+        Parameters
+        ----------
+        nemo_t : (COAsT.NEMO), NEMO object on the t-grid containing the ssh variable
+        e3t : (boolean), true if e3t is to be returned. Default True.
+        e3u : (boolean), true if e3u is to be returned. Default False.
+        e3v : (boolean), true if e3v is to be returned. Default False.
+        e3f : (boolean), true if e3f is to be returned. Default False.
+        e3w : (boolean), true if e3w is to be returned. Default False.
+        dom_fn : (str), Optional, path to domain_cfg file. 
+
+        Returns
+        -------
+        Tuple of xarray.DataArrays
+        (e3t, e3u, e3v, e3f, e3w)
+        Only those requested will be returned, but the ordering is always the same.
+
+        '''
         e3_return = []
         try:
             ssh = nemo_t.dataset.ssh
@@ -644,6 +679,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             print('The nemo_t dataset must contain the ssh variable.')
             return
 
+        # Load domain_cfg
         if dom_fn is None:
             dom_fn = nemo_t.filename_domain
         try:
@@ -653,43 +689,89 @@ class NEMO(COAsT):  # TODO Complete this docstring
             print(f'Problem opening domain_cfg file: {dom_fn}')
             return 
             
-        e3t_0 = ds_dom.e3_0
+        e3t_0 = ds_dom.e3t_0
     
         # Water column thickness, i.e. depth of bottom w-level on horizontal t-grid
         H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level-1)
-        e3t_new = e3t_0.data * ( 1 + ssh.expand_dims(dim={'z_dim':e3t_0.z_dim.data},axis=1) / H.data )
+        # Add correction to e3t_0 due to change in ssh
+        e3t_new = e3t_0 * ( 1 + ssh / H )
+        # preserve dimension ordering
+        e3t_new = e3t_new.transpose('t_dim','z_dim','y_dim','x_dim')
+        # mask out correction at layers below bottom level
         e3t_new = e3t_new.where(e3t_new.z_dim<ds_dom.bottom_level,e3t_0.data)
-        e3_return.append(e3t_new)
+        # preserve any other t mask
+        e3t_new = e3t_new.where(~xr.ufuncs.isnan(ssh))
+        if e3t:
+            e3_return.append(e3t_new)
         
         if np.any([e3u,e3v,e3f]):
             e1e2t = ds_dom.e1t * ds_dom.e2t
         if np.any([e3u,e3v,e3w]):
             e3t_dt = e3t_new - e3t_0
             
+        # area averaged interpolation onto the u-grid to get e3u    
         if np.any([e3u,e3f]):           
-            e1e2u = ds_dom.e1u * ds_dom.e2u
-            e3u_new = ( (0.5/e1e2u) * ( (e1e2t * e3t_dt)[:,:,:-1] 
-                    + (e1e2t * e3t_dt)[:,:,1:] ) + ds_dom.e3u_0[:,:,:-1] )
+            e1e2u = ds_dom.e1u * ds_dom.e2u  
+            # interpolate onto u-grid
+            e3u_temp = ( ( (0.5/e1e2u[:,:-1]) * ( (e1e2t[:,:-1] * e3t_dt[:,:,:,:-1]) 
+                    + (e1e2t[:,1:] * e3t_dt[:,:,:,1:]) ) )
+                    .transpose('t_dim','z_dim','y_dim','x_dim') )
+            # u mask
+            e3u_temp = e3u_temp.where(e3t_dt[:,:,:,1:]!=0, 0)
+            # mask out correction at layers below bottom level
+            e3u_temp = e3u_temp.where(e3u_temp.z_dim<ds_dom.bottom_level[:,:-1], 0)
+            # Add correction to e3u_0
+            e3u_temp = ( e3u_temp + ds_dom.e3u_0[:,:,:-1] )
+            e3u_new = xr.zeros_like(e3t_new)
+            e3u_new[:,:,:,:-1] = e3u_temp
+            e3u_new[:,:,:,-1] = ds_dom.e3u_0[:,:,-1]
+            e3u_new['longitude'] = ds_dom.glamu
+            e3u_new['latitude'] = ds_dom.gphiu
             e3_return.append(e3u_new)
         
+        # area averaged interpolation onto the u-grid to get e3v 
         if e3v:
             e1e2v = ds_dom.e1v * ds_dom.e2v
-            e3v_new = ( (0.5/e1e2v) * ( (e1e2t * e3t_dt)[:,:-1,:] 
-                    + (e1e2t * e3t_dt)[:,1:,:] ) + ds_dom.e3u_0[:,:-1,:] )
+            e3v_temp = ( ( (0.5/e1e2v[:-1,:]) * ( (e1e2t[:-1,:] * e3t_dt[:,:,:-1,:]) 
+                    + (e1e2t[1:,:] * e3t_dt[:,:,1:,:]) ) )
+                    .transpose('t_dim','z_dim','y_dim','x_dim') )
+            e3v_temp = e3v_temp.where(e3t_dt[:,:,1:,:]!=0, 0)
+            e3v_temp = e3v_temp.where(e3v_temp.z_dim<ds_dom.bottom_level[:-1,:], 0)
+            e3v_temp = ( e3v_temp + ds_dom.e3v_0[:,:-1,:] )
+            e3v_new = xr.zeros_like(e3t_new)
+            e3v_new[:,:,:-1,:] = e3v_temp
+            e3v_new[:,:,-1,:] = ds_dom.e3v_0[:,-1,:]
+            e3v_new['longitude'] = ds_dom.glamv
+            e3v_new['latitude'] = ds_dom.gphiv
             e3_return.append(e3v_new)
         
+        # area averaged interpolation onto the u-grid to get e3f
         if e3f:
             e1e2f = ds_dom.e1f * ds_dom.e2f
             e3u_dt = e3u_new - ds_dom.e3u_0
-            e3f_new = ( (0.5/e1e2f) * ( (e1e2u * e3u_dt)[:,:-1,:] 
-                    + (e1e2u * e3u_dt)[:,1:,:] ) + ds_dom.e3u_0[:,:-1,:] )
+            e3f_temp = ( ( (0.5/e1e2f[:-1,:]) * ( (e1e2u[:-1,:] * e3u_dt[:,:,:-1,:]) 
+                    + (e1e2u[1:,:] * e3u_dt[:,:,1:,:] ) ) )
+                    .transpose('t_dim','z_dim','y_dim','x_dim') )
+            e3f_temp = e3f_temp.where(e3u_dt[:,:,1:,:]!=0, 0)
+            e3f_temp = e3f_temp.where(e3f_temp.z_dim<ds_dom.bottom_level[:-1,:], 0)        
+            e3f_temp = ( e3f_temp + ds_dom.e3f_0[:,:-1,:] )
+            e3f_new = xr.zeros_like(e3t_new)
+            e3f_new[:,:,:-1,:] = e3f_temp
+            e3f_new[:,:,-1,:] = ds_dom.e3f_0[:,-1,:]
+            e3f_new['longitude'] = ds_dom.glamf
+            e3f_new['latitude'] = ds_dom.gphif
             e3_return.append(e3f_new)
-            
+           
+        # simple vertical interpolation for e3w. Special treatment of top and bottom levels   
         if e3w:
-            e3w_new = ds_dom.e3w_0 + e3t_dt
+            # top levels correction same at e3t
+            e3w_new = (ds_dom.e3w_0 + e3t_dt).transpose('t_dim','z_dim','y_dim','x_dim')
+            # levels between top and bottom
             e3w_new[dict(z_dim=slice(1,None))] = ( 0.5*e3t_dt[:,:-1,:,:] 
                                     + 0.5*e3t_dt[:,1:,:,:] 
-                                    + ds_dom.e3w_0[:,:-1,:,:] )
+                                    + ds_dom.e3w_0[1:,:,:] )
+            # bottom and below levels
+            e3w_new = e3w_new.where(e3w_new.z_dim<ds_dom.bottom_level, e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
             e3_return.append(e3w_new)
             
         return tuple(e3_return)
