@@ -727,7 +727,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
             e3u_new[:,:,:,-1] = ds_dom.e3u_0[:,:,-1]
             e3u_new['longitude'] = ds_dom.glamu
             e3u_new['latitude'] = ds_dom.gphiu
-            e3_return.append(e3u_new)
+            if e3u:
+                e3_return.append(e3u_new)
         
         # area averaged interpolation onto the u-grid to get e3v 
         if e3v:
