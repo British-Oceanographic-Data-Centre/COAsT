@@ -267,7 +267,46 @@ areas are masked (this includes the land):
 &lt;p class="card-text">
 &lt;/p>
 &lt;/div>
-&lt;/div>&lt;/p></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
+&lt;/div>&lt;/p></description></item><item><title>Docs: Export to netCDF</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</guid><description>
+&lt;p>This is a demonstration for how to export intermediate data from COAsT
+to netCDF files for later analysis or storage.
+The tutorial showcases the &lt;code>xarray.to_netcdf()&lt;/code> method.
+&lt;a href="http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html">http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html&lt;/a>&lt;/p>
+&lt;h2 id="load-in-example-data">Load in example data&lt;/h2>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>and by defining some file paths&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_data.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">ofile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;example_export_output.nc&amp;#39;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># The target filename for output&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="export-to-netcdf">Export to netCDF&lt;/h2>
+&lt;p>We can export the &lt;strong>whole&lt;/strong> &lt;code>xr.DataSet&lt;/code> to a netCDF file&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;w&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">format&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;NETCDF4&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Other file formats are available. From the documentation:&lt;/p>
+&lt;pre>&lt;code class="language-quote" data-lang="quote">format:
+NETCDF4: Data is stored in an HDF5 file, using netCDF4 API features.
+NETCDF4_CLASSIC: Data is stored in an HDF5 file, using only netCDF 3 compatible API features.
+NETCDF3_64BIT: 64-bit offset version of the netCDF 3 file format, which fully supports 2+ GB files, but is only compatible with clients linked against netCDF version 3.6.0 or later.
+NETCDF3_CLASSIC: The classic netCDF 3 file format. It does not handle 2+ GB files very well.
+&lt;/code>&lt;/pre>&lt;p>Similarly other &lt;em>modes&lt;/em> are available; &amp;lsquo;w&amp;rsquo; (write) is the default.
+From the documentation:&lt;/p>
+&lt;pre>&lt;code class="language-quote" data-lang="quote">mode ({&amp;quot;w&amp;quot;, &amp;quot;a&amp;quot;}, default: &amp;quot;w&amp;quot;) – Write (‘w’) or append (‘a’) mode.
+If mode=’w’, any existing file at this location will be overwritten.
+If mode=’a’, existing variables will be overwritten.
+&lt;/code>&lt;/pre>&lt;p>Alternatively a &lt;strong>single variable&lt;/strong> (an &lt;code>xr.DataArray&lt;/code> object) can be exported&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">format&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;NETCDF4&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Similarly &lt;code>xr.DataSet&lt;/code>s collections of variables or &lt;code>xr.DataArray&lt;/code> variables can be
+exported to netCDF for objects in the &lt;code>TRANSECT&lt;/code>, &lt;code>TIDEGAUGE&lt;/code>, etc classes.&lt;/p>
+&lt;h2 id="check-the-exported-file">Check the exported file&lt;/h2>
+&lt;p>Check the exported file is as you expect.
+Perhaps using &lt;code>ncdump -h example_export_output.nc&lt;/code>
+Or load file as see that the xarray structure is preserved.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
+&lt;span style="color:#204a87">object&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#204a87">object&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">close&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># close file associated with this object&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
 &lt;p>Code functionality tests are written in
 &lt;code>unit_testing/unit_testing.py&lt;/code> in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/unit_testing">COAsT&lt;/a>
 repository, and therefore contain working examples of the package. These are written to verify the package functionality and to maintain operability following code updates.&lt;/p>

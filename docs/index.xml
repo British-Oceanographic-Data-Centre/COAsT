@@ -71,63 +71,7 @@ is extracted for pairing with the variables an appropriate subsetting of the gri
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat_subset&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;COAsT_example_NEMO_subset_data.nc&amp;#39;&lt;/span>
 &lt;span style="color:#000">amm7&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dat_subset&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
 &lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
-&lt;p>Here we give a short tutorial of how to use the ALTIMETRY object for reading data and
-comparing to NEMO data.&lt;/p>
-&lt;p>Begin by importing coast and other packages&lt;/p>
-&lt;pre>&lt;code>import coast
-&lt;/code>&lt;/pre>&lt;p>And by defining some file paths. There are the example files that can be obtained with
-the COAsT package:&lt;/p>
-&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
-fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
-fn_altimetry = './example_files/COAsT_example_altimetry_data.nc'
-&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
-&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
-&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, ALTIMETRY is set up
-to read in CMEMS netCDF files. However, if no path is supplied, then the
-object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
-if desired, as long as it follows the data formatting for ALTIMETRY.&lt;/p>
-&lt;pre>&lt;code>altimetry = coast.ALTIMETRY(fn_altimetry)
-&lt;/code>&lt;/pre>&lt;p>Before going any further, lets just cut out the bit of the altimetry that
-is over the model domain. This can be done using subset_indices_lonlat_box
-to find relevant indices and then isel to extract them. The data has also
-been thinned slightly.&lt;/p>
-&lt;pre>&lt;code>ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
-ind = ind[::4]
-altimetry = altimetry.isel(t_dim=ind)
-&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
-variable to the same time and geographical space as the altimetry. This is
-done using the obs_operator() method:&lt;/p>
-&lt;pre>&lt;code>altimetry.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
-&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
-saved it back into our ALTIMETRY object. Take a look at altimetry.dataset
-to see for yourself.&lt;/p>
-&lt;p>Next we will compare this interpolated variable to an observed variable
-using some basic metrics. The basic_stats() routine can be used for this,
-which calculates some simple metrics including differences, RMSE and
-correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
-&lt;pre>&lt;code>stats = altimetry.basic_stats('interp_ssh', 'sla_filtered')
-&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
-basic stats, the returned object is also an ALTIMETRY object, so all of the
-same methods can be applied. Alternatively, if you want to save the new
-metrics to the original altimetry object, set create_new_object = False.&lt;/p>
-&lt;p>Now we will do a more complex comparison using the Continuous Ranked
-Probability Score (CRPS). For this, we need to hand over the model object,
-a model variable and an observed variable. We also give it a neighbourhood
-radius in km (nh_radius).&lt;/p>
-&lt;pre>&lt;code>crps = altimetry.crps(nemo, model_var_name = 'ssh',
-obs_var_name = 'sla_filtered', nh_radius = 20)
-&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
-to basic_stats, create_new_object can be set to false to save output to
-the original altimetry object.&lt;/p>
-&lt;p>ALTIMETRY has a ready built quick_plot() routine for taking a look at any
-of the observed or derived quantities above. So to take a look at the
-&amp;lsquo;sla_filtered&amp;rsquo; variable:&lt;/p>
-&lt;pre>&lt;code>fig, ax = altimetry.quick_plot('sla_filtered')
-&lt;/code>&lt;/pre>&lt;p>As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:&lt;/p>
-&lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
-fig, ax = stats.quick_plot('absolute_error')
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
 &lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
 &lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
 &lt;h1 id="code-styling-conventions">Code Styling Conventions&lt;/h1>
@@ -188,86 +132,7 @@ These specific characters should be avoided because they present an accessibilit
 &lt;p>When defining a class that inherits from another, it is important to remember that overridden methods (in particular, this behaviour is important when dealing with __init__ methods) do not implicitly call the parent method. What this means is that unless you want to deliberately prevent the behaviour of the parent class (this is a very niche use-case), it is important to include a reference to the parent method. An example of this is: super().__init__()
 This functionality is advantageous as it prevents unnecessary duplication of code, which is a key tenet of object-oriented software.&lt;/p>
 &lt;/li>
-&lt;/ul></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
-&lt;p>This is a demonstration script for using the TIDEGAUGE object in the COAsT
-package. This object has strict data formatting requirements, which are
-outlined in TIDEGAUGE.py.&lt;/p>
-&lt;p>Begin by importing coast and other packages&lt;/p>
-&lt;pre>&lt;code>import coast
-import datetime
-&lt;/code>&lt;/pre>&lt;p>And by defining some file paths from the COAsT example files&lt;/p>
-&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
-fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
-fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
-fn_tidegauge_mult = './example_files/tide_gauges/l*'
-&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
-&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
-&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, TIDEGAUGE is set up
-to read in GESLA ASCII files. However, if no path is supplied, then the
-object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
-if desired, as long as it follows the data formatting for TIDEGAUGE. Here
-we load data between two specified dates:&lt;/p>
-&lt;pre>&lt;code>date0 = datetime.datetime(2007,1,10)
-date1 = datetime.datetime(2007,1,12)
-tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
-&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
-variable to the same time and geographical space as the tidegauge. This is
-done using the obs_operator() method:&lt;/p>
-&lt;pre>&lt;code>tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
-&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
-saved it back into our TIDEGAUGE object. Take a look at tidegauge.dataset
-to see for yourself.&lt;/p>
-&lt;p>Next we will compare this interpolated variable to an observed variable
-using some basic metrics. The basic_stats() routine can be used for this,
-which calculates some simple metrics including differences, RMSE and
-correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
-&lt;pre>&lt;code>stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
-&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
-basic stats, the returned object is also an TIDEGAUGE object, so all of the
-same methods can be applied. Alternatively, if you want to save the new
-metrics to the original TIDEGAUGE object, set create_new_object = False.&lt;/p>
-&lt;p>Now we will do a more complex comparison using the Continuous Ranked
-Probability Score (CRPS). For this, we need to hand over the model object,
-a model variable and an observed variable. We also give it a neighbourhood
-radius in km (nh_radius).&lt;/p>
-&lt;pre>&lt;code>crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
-nh_radius = 20)
-&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
-to basic_stats, create_new_object can be set to false to save output to
-the original tidegauge object.&lt;/p>
-&lt;p>TIDEGAUGE has ready made quick plotting routines for viewing time series
-and tide gauge location. To look at the tide gauge location:&lt;/p>
-&lt;pre>&lt;code>fig, ax = tidegauge.plot_on_map()
-&lt;/code>&lt;/pre>&lt;p>Or to look at a time series of the sea_level variable:&lt;/p>
-&lt;pre>&lt;code>fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
-&lt;/code>&lt;/pre>&lt;p>Note that start and end dates can also be specified for plot_timeseries().&lt;/p>
-&lt;p>As stats and crps are also TIDEGAUGE objects, the same time series plotting
-functionality can be used:&lt;/p>
-&lt;pre>&lt;code>crps.plot_timeseries('crps')
-stats.plot_timeseries('absolute_error')
-&lt;/code>&lt;/pre>&lt;p>Each TIDEGAUGE object only holds data for a single tidegauge. There is some
-functionality for dealing with multiple gauges in COAsT. To load multiple
-GESLA tidegauge files, we use the static method create_multiple_tidegauge().
-This routine takes a list of files or a wildcard string and loads them all
-into a list of TIDEGAUGE objects.&lt;/p>
-&lt;pre>&lt;code>from coast.TIDEGAUGE import TIDEGAUGE
-date0 = datetime.datetime(2007,1,10)
-date1 = datetime.datetime(2007,1,12)
-tidegauge_list = TIDEGAUGE.create_multiple_tidegauge(fn_tidegauge_mult,
-date0,date1)
-&lt;/code>&lt;/pre>&lt;p>Now that we have tidegauge_list, we can plot the locations of all tide gauges
-as follows:&lt;/p>
-&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
-&lt;/code>&lt;/pre>&lt;p>To do analysis on multiple gauges, a simple looping script can be setup.
-For example, to obtain basic stats:&lt;/p>
-&lt;pre>&lt;code>for tg in tidegauge_list:
-tg.obs_operator(nemo, 'ssh')
-tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
-&lt;/code>&lt;/pre>&lt;p>And now some of these new values can be plotted on a map, again using
-plot_on_map_multiple:&lt;/p>
-&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Transect analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
-&lt;p>Coming soon&amp;hellip;&lt;/p></description></item><item><title>Docs: Python: Structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</guid><description>
+&lt;/ul></description></item><item><title>Docs: Python: Structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</guid><description>
 &lt;p>** Notes on Object Structure and Loading (for contributors):&lt;/p>
 &lt;p>COAsT is an object-orientated package, meaning that data is stored within Python object
 structures. In addition to data storage, these objects contain methods (subroutines)
@@ -343,68 +208,63 @@ example observation objects. Future objects, where applicable, will also follow 
 conventions. If you (as a contributor) add new objects to the toolbox, following
 the above template is strongly encouraged. This includes using xarray dataset/dataarray
 objects where possible, adopting an object oriented approach and adhering to naming
-conventions.&lt;/p></description></item><item><title>Docs: Stratification diagnostics</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</guid><description>
-&lt;p>A demonstration of pycnocline depth and thickness diagnostics.
-The first and second depth moments of stratification are computed as proxies
-for pycnocline depth and thickness, suitable for a nearly two-layer fluid.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">numpy&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">np&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">os&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">dask&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
-&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.colors&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">colors&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># colormap fiddling&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="load-in-the-data">Load in the data&lt;/h2>
-&lt;p>After downloading the &lt;a href="https://linkedsystems.uk/erddap/files/COAsT_example_files/">example files&lt;/a>
-and placing the &lt;code>example_files&lt;/code> directory in your working directory, set some
-aliases and load the t-grid data:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># set some paths&lt;/span>
-&lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;AMM7&amp;#39;&lt;/span>
-&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/&amp;#34;&lt;/span>
-&lt;span style="color:#000">dn_fig&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;&amp;#34;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># somewhere to put the figures&lt;/span>
-&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;nemo_data_T_grid_Aug2015.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
-&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>The stratification variables are computed as centred differences of the t-grid
-variables. These will become w-grid variables.
-So, create an empty w-grid object, to store stratification.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;w-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="subset-the-domain">Subset the domain&lt;/h2>
-&lt;p>We are not interested in the whole doman so it is computationally efficient to
-subset the data for the region of interest. Here we will look at the North Sea between
-(51N: 62N) and (-4E:15E). We will great subset objects for both the t- and w-grids:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ind_sci&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
-&lt;span style="color:#000">sci_nwes_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
-&lt;span style="color:#000">ind_sci&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
-&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="diagnostic-calculations-and-plotting">Diagnostic calculations and plotting&lt;/h2>
-&lt;p>We can use a COAsT method to construct the in-situ density:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_density&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">EOS&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;EOS10&amp;#39;&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we construct stratification using a COAsT method to take the vertical
-derivative. Noting that the inputs are on t-pts and the outputs are on w-pts&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">differentiate&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;density&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;z_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_varstr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;rho_dz&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_obj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># --&amp;gt; sci_nwes_w.rho_dz&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>This has created a variable called &lt;code>sci_nwes_w.rho_dz&lt;/code>.&lt;/p>
-&lt;p>We can now use the &lt;code>INTERNALTIDE&lt;/code> class to construct the first and second
-moments (over depth) of density. In the limit of an idealised two-layer fluid
-these converge to the depth and thickness of the interface. I.e. the pycnocline
-depth and thickness respectively.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#%% Create internal tide diagnostics object&lt;/span>
-&lt;span style="color:#000">IT&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">INTERNALTIDE&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_nwes_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;span style="color:#8f5902;font-style:italic">#%% Construct pycnocline variables: depth and thickness&lt;/span>
-&lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_pycnocline_vars&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Finally we plot pycnocline variables (depth and thickness) using an &lt;code>INTERNALTIDES&lt;/code>
-method:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>for example the pycnocline depth map. In the interest of simplicity, unstratified
-areas are masked (this includes the land):
-&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
-&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/stratification/strat_1st_mom_hu2ed8891258e49ea755dd6f023fe99f6f_75991_600x600_fit_catmullrom_2.png" width="600" height="600">
-&lt;div class="card-body px-0 pt-2 pb-0">
-&lt;p class="card-text">
-&lt;/p>
-&lt;/div>
-&lt;/div>&lt;/p></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
+conventions.&lt;/p></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
+&lt;p>Here we give a short tutorial of how to use the ALTIMETRY object for reading data and
+comparing to NEMO data.&lt;/p>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;pre>&lt;code>import coast
+&lt;/code>&lt;/pre>&lt;p>And by defining some file paths. There are the example files that can be obtained with
+the COAsT package:&lt;/p>
+&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
+fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
+fn_altimetry = './example_files/COAsT_example_altimetry_data.nc'
+&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
+&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, ALTIMETRY is set up
+to read in CMEMS netCDF files. However, if no path is supplied, then the
+object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
+if desired, as long as it follows the data formatting for ALTIMETRY.&lt;/p>
+&lt;pre>&lt;code>altimetry = coast.ALTIMETRY(fn_altimetry)
+&lt;/code>&lt;/pre>&lt;p>Before going any further, lets just cut out the bit of the altimetry that
+is over the model domain. This can be done using subset_indices_lonlat_box
+to find relevant indices and then isel to extract them. The data has also
+been thinned slightly.&lt;/p>
+&lt;pre>&lt;code>ind = altimetry.subset_indices_lonlat_box([-10,10], [45,60])
+ind = ind[::4]
+altimetry = altimetry.isel(t_dim=ind)
+&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
+variable to the same time and geographical space as the altimetry. This is
+done using the obs_operator() method:&lt;/p>
+&lt;pre>&lt;code>altimetry.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
+&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
+saved it back into our ALTIMETRY object. Take a look at altimetry.dataset
+to see for yourself.&lt;/p>
+&lt;p>Next we will compare this interpolated variable to an observed variable
+using some basic metrics. The basic_stats() routine can be used for this,
+which calculates some simple metrics including differences, RMSE and
+correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
+&lt;pre>&lt;code>stats = altimetry.basic_stats('interp_ssh', 'sla_filtered')
+&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
+basic stats, the returned object is also an ALTIMETRY object, so all of the
+same methods can be applied. Alternatively, if you want to save the new
+metrics to the original altimetry object, set create_new_object = False.&lt;/p>
+&lt;p>Now we will do a more complex comparison using the Continuous Ranked
+Probability Score (CRPS). For this, we need to hand over the model object,
+a model variable and an observed variable. We also give it a neighbourhood
+radius in km (nh_radius).&lt;/p>
+&lt;pre>&lt;code>crps = altimetry.crps(nemo, model_var_name = 'ssh',
+obs_var_name = 'sla_filtered', nh_radius = 20)
+&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
+to basic_stats, create_new_object can be set to false to save output to
+the original altimetry object.&lt;/p>
+&lt;p>ALTIMETRY has a ready built quick_plot() routine for taking a look at any
+of the observed or derived quantities above. So to take a look at the
+&amp;lsquo;sla_filtered&amp;rsquo; variable:&lt;/p>
+&lt;pre>&lt;code>fig, ax = altimetry.quick_plot('sla_filtered')
+&lt;/code>&lt;/pre>&lt;p>As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:&lt;/p>
+&lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
+fig, ax = stats.quick_plot('absolute_error')
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
 &lt;p>The Github page for this package can be found
 &lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
 &lt;p>The rest of this page is coming soon.&lt;/p></description></item><item><title>Docs: Logging</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</guid><description>
@@ -538,7 +398,186 @@ complex methods as follows;&lt;/p>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>if you have cloned the COAsT-site &lt;a href="github_repo">repo&lt;/a> you should also now be able to;&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">$ &lt;span style="color:#204a87">cd&lt;/span> COAsT-site
 $ hugo server
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>the above will start a local hugo powered version of the website. you can edit any of the files under /content and see your changes at http://localhost:1313/COAsT/&lt;/p></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>the above will start a local hugo powered version of the website. you can edit any of the files under /content and see your changes at http://localhost:1313/COAsT/&lt;/p></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
+&lt;p>This is a demonstration script for using the TIDEGAUGE object in the COAsT
+package. This object has strict data formatting requirements, which are
+outlined in TIDEGAUGE.py.&lt;/p>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;pre>&lt;code>import coast
+import datetime
+&lt;/code>&lt;/pre>&lt;p>And by defining some file paths from the COAsT example files&lt;/p>
+&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
+fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
+fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
+fn_tidegauge_mult = './example_files/tide_gauges/l*'
+&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
+&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, TIDEGAUGE is set up
+to read in GESLA ASCII files. However, if no path is supplied, then the
+object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
+if desired, as long as it follows the data formatting for TIDEGAUGE. Here
+we load data between two specified dates:&lt;/p>
+&lt;pre>&lt;code>date0 = datetime.datetime(2007,1,10)
+date1 = datetime.datetime(2007,1,12)
+tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
+&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
+variable to the same time and geographical space as the tidegauge. This is
+done using the obs_operator() method:&lt;/p>
+&lt;pre>&lt;code>tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
+&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
+saved it back into our TIDEGAUGE object. Take a look at tidegauge.dataset
+to see for yourself.&lt;/p>
+&lt;p>Next we will compare this interpolated variable to an observed variable
+using some basic metrics. The basic_stats() routine can be used for this,
+which calculates some simple metrics including differences, RMSE and
+correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
+&lt;pre>&lt;code>stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
+&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
+basic stats, the returned object is also an TIDEGAUGE object, so all of the
+same methods can be applied. Alternatively, if you want to save the new
+metrics to the original TIDEGAUGE object, set create_new_object = False.&lt;/p>
+&lt;p>Now we will do a more complex comparison using the Continuous Ranked
+Probability Score (CRPS). For this, we need to hand over the model object,
+a model variable and an observed variable. We also give it a neighbourhood
+radius in km (nh_radius).&lt;/p>
+&lt;pre>&lt;code>crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
+nh_radius = 20)
+&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
+to basic_stats, create_new_object can be set to false to save output to
+the original tidegauge object.&lt;/p>
+&lt;p>TIDEGAUGE has ready made quick plotting routines for viewing time series
+and tide gauge location. To look at the tide gauge location:&lt;/p>
+&lt;pre>&lt;code>fig, ax = tidegauge.plot_on_map()
+&lt;/code>&lt;/pre>&lt;p>Or to look at a time series of the sea_level variable:&lt;/p>
+&lt;pre>&lt;code>fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
+&lt;/code>&lt;/pre>&lt;p>Note that start and end dates can also be specified for plot_timeseries().&lt;/p>
+&lt;p>As stats and crps are also TIDEGAUGE objects, the same time series plotting
+functionality can be used:&lt;/p>
+&lt;pre>&lt;code>crps.plot_timeseries('crps')
+stats.plot_timeseries('absolute_error')
+&lt;/code>&lt;/pre>&lt;p>Each TIDEGAUGE object only holds data for a single tidegauge. There is some
+functionality for dealing with multiple gauges in COAsT. To load multiple
+GESLA tidegauge files, we use the static method create_multiple_tidegauge().
+This routine takes a list of files or a wildcard string and loads them all
+into a list of TIDEGAUGE objects.&lt;/p>
+&lt;pre>&lt;code>from coast.TIDEGAUGE import TIDEGAUGE
+date0 = datetime.datetime(2007,1,10)
+date1 = datetime.datetime(2007,1,12)
+tidegauge_list = TIDEGAUGE.create_multiple_tidegauge(fn_tidegauge_mult,
+date0,date1)
+&lt;/code>&lt;/pre>&lt;p>Now that we have tidegauge_list, we can plot the locations of all tide gauges
+as follows:&lt;/p>
+&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
+&lt;/code>&lt;/pre>&lt;p>To do analysis on multiple gauges, a simple looping script can be setup.
+For example, to obtain basic stats:&lt;/p>
+&lt;pre>&lt;code>for tg in tidegauge_list:
+tg.obs_operator(nemo, 'ssh')
+tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
+&lt;/code>&lt;/pre>&lt;p>And now some of these new values can be plotted on a map, again using
+plot_on_map_multiple:&lt;/p>
+&lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Transect analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
+&lt;p>Coming soon&amp;hellip;&lt;/p></description></item><item><title>Docs: Stratification diagnostics</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</guid><description>
+&lt;p>A demonstration of pycnocline depth and thickness diagnostics.
+The first and second depth moments of stratification are computed as proxies
+for pycnocline depth and thickness, suitable for a nearly two-layer fluid.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">numpy&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">np&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">os&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">dask&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.colors&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">colors&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># colormap fiddling&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="load-in-the-data">Load in the data&lt;/h2>
+&lt;p>After downloading the &lt;a href="https://linkedsystems.uk/erddap/files/COAsT_example_files/">example files&lt;/a>
+and placing the &lt;code>example_files&lt;/code> directory in your working directory, set some
+aliases and load the t-grid data:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># set some paths&lt;/span>
+&lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;AMM7&amp;#39;&lt;/span>
+&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/&amp;#34;&lt;/span>
+&lt;span style="color:#000">dn_fig&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;&amp;#34;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># somewhere to put the figures&lt;/span>
+&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;nemo_data_T_grid_Aug2015.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>The stratification variables are computed as centred differences of the t-grid
+variables. These will become w-grid variables.
+So, create an empty w-grid object, to store stratification.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;w-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="subset-the-domain">Subset the domain&lt;/h2>
+&lt;p>We are not interested in the whole doman so it is computationally efficient to
+subset the data for the region of interest. Here we will look at the North Sea between
+(51N: 62N) and (-4E:15E). We will great subset objects for both the t- and w-grids:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ind_sci&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
+&lt;span style="color:#000">sci_nwes_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
+&lt;span style="color:#000">ind_sci&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
+&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="diagnostic-calculations-and-plotting">Diagnostic calculations and plotting&lt;/h2>
+&lt;p>We can use a COAsT method to construct the in-situ density:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_density&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">EOS&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;EOS10&amp;#39;&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we construct stratification using a COAsT method to take the vertical
+derivative. Noting that the inputs are on t-pts and the outputs are on w-pts&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">differentiate&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;density&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;z_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_varstr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;rho_dz&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_obj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># --&amp;gt; sci_nwes_w.rho_dz&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>This has created a variable called &lt;code>sci_nwes_w.rho_dz&lt;/code>.&lt;/p>
+&lt;p>We can now use the &lt;code>INTERNALTIDE&lt;/code> class to construct the first and second
+moments (over depth) of density. In the limit of an idealised two-layer fluid
+these converge to the depth and thickness of the interface. I.e. the pycnocline
+depth and thickness respectively.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#%% Create internal tide diagnostics object&lt;/span>
+&lt;span style="color:#000">IT&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">INTERNALTIDE&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_nwes_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic">#%% Construct pycnocline variables: depth and thickness&lt;/span>
+&lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_pycnocline_vars&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">sci_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Finally we plot pycnocline variables (depth and thickness) using an &lt;code>INTERNALTIDES&lt;/code>
+method:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>for example the pycnocline depth map. In the interest of simplicity, unstratified
+areas are masked (this includes the land):
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/stratification/strat_1st_mom_hu2ed8891258e49ea755dd6f023fe99f6f_75991_600x600_fit_catmullrom_2.png" width="600" height="600">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>&lt;/p></description></item><item><title>Docs: Export to netCDF</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</guid><description>
+&lt;p>This is a demonstration for how to export intermediate data from COAsT
+to netCDF files for later analysis or storage.
+The tutorial showcases the &lt;code>xarray.to_netcdf()&lt;/code> method.
+&lt;a href="http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html">http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html&lt;/a>&lt;/p>
+&lt;h2 id="load-in-example-data">Load in example data&lt;/h2>
+&lt;p>Begin by importing coast and other packages&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>and by defining some file paths&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_data.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">ofile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;example_export_output.nc&amp;#39;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># The target filename for output&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="export-to-netcdf">Export to netCDF&lt;/h2>
+&lt;p>We can export the &lt;strong>whole&lt;/strong> &lt;code>xr.DataSet&lt;/code> to a netCDF file&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;w&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">format&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;NETCDF4&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Other file formats are available. From the documentation:&lt;/p>
+&lt;pre>&lt;code class="language-quote" data-lang="quote">format:
+NETCDF4: Data is stored in an HDF5 file, using netCDF4 API features.
+NETCDF4_CLASSIC: Data is stored in an HDF5 file, using only netCDF 3 compatible API features.
+NETCDF3_64BIT: 64-bit offset version of the netCDF 3 file format, which fully supports 2+ GB files, but is only compatible with clients linked against netCDF version 3.6.0 or later.
+NETCDF3_CLASSIC: The classic netCDF 3 file format. It does not handle 2+ GB files very well.
+&lt;/code>&lt;/pre>&lt;p>Similarly other &lt;em>modes&lt;/em> are available; &amp;lsquo;w&amp;rsquo; (write) is the default.
+From the documentation:&lt;/p>
+&lt;pre>&lt;code class="language-quote" data-lang="quote">mode ({&amp;quot;w&amp;quot;, &amp;quot;a&amp;quot;}, default: &amp;quot;w&amp;quot;) – Write (‘w’) or append (‘a’) mode.
+If mode=’w’, any existing file at this location will be overwritten.
+If mode=’a’, existing variables will be overwritten.
+&lt;/code>&lt;/pre>&lt;p>Alternatively a &lt;strong>single variable&lt;/strong> (an &lt;code>xr.DataArray&lt;/code> object) can be exported&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">format&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;NETCDF4&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Similarly &lt;code>xr.DataSet&lt;/code>s collections of variables or &lt;code>xr.DataArray&lt;/code> variables can be
+exported to netCDF for objects in the &lt;code>TRANSECT&lt;/code>, &lt;code>TIDEGAUGE&lt;/code>, etc classes.&lt;/p>
+&lt;h2 id="check-the-exported-file">Check the exported file&lt;/h2>
+&lt;p>Check the exported file is as you expect.
+Perhaps using &lt;code>ncdump -h example_export_output.nc&lt;/code>
+Or load file as see that the xarray structure is preserved.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
+&lt;span style="color:#204a87">object&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#204a87">object&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">close&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># close file associated with this object&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
 &lt;p>Code functionality tests are written in
 &lt;code>unit_testing/unit_testing.py&lt;/code> in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/unit_testing">COAsT&lt;/a>
 repository, and therefore contain working examples of the package. These are written to verify the package functionality and to maintain operability following code updates.&lt;/p>
