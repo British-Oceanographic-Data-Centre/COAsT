@@ -241,4 +241,26 @@ complex methods as follows;&lt;/p>
 &lt;p class="card-text">
 &lt;/p>
 &lt;/div>
-&lt;/div></description></item></channel></rss>
+&lt;/div></description></item><item><title>Docs: Build test</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/build_test/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/build_test/</guid><description>
+&lt;p>A short script to install COAsT in a conda environment, download and run some
+build tests.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">&lt;span style="color:#8f5902;font-style:italic"># Fresh build&lt;/span>
+module load anaconda/3-5.1.0 &lt;span style="color:#8f5902;font-style:italic"># or whatever it takes to activate conda&lt;/span>
+yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda env remove --name test_env
+yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda create -n test_env &lt;span style="color:#000">python&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>3.8 &lt;span style="color:#8f5902;font-style:italic"># create a new environment&lt;/span>
+conda activate test_env
+yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda install -c conda-forge -c bodc coast
+&lt;span style="color:#8f5902;font-style:italic"># Download bits and bobs&lt;/span>
+rm -rf coast_test
+mkdir coast_test
+&lt;span style="color:#204a87">cd&lt;/span> coast_test
+git clone https://github.com/British-Oceanographic-Data-Centre/COAsT.git
+wget -c https://linkedsystems.uk/erddap/files/COAsT_example_files/COAsT_example_files.zip &lt;span style="color:#ce5c00;font-weight:bold">&amp;amp;&amp;amp;&lt;/span> unzip COAsT_example_files.zip
+ln -s COAsT/unit_testing/ .
+ln -s COAsT_example_files example_files
+&lt;span style="color:#8f5902;font-style:italic"># Run unit tests&lt;/span>
+python COAsT/unit_testing/unit_test.py &amp;gt; coast_test.txt
+&lt;span style="color:#8f5902;font-style:italic">## If OK then clean up&lt;/span>
+&lt;span style="color:#204a87">cd&lt;/span> ..
+rm -rf coast_test
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
