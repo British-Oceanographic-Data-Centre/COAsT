@@ -250,7 +250,7 @@ yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda env remove --
 yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda create -n test_env &lt;span style="color:#000">python&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>3.8 &lt;span style="color:#8f5902;font-style:italic"># create a new environment&lt;/span>
 conda activate test_env
 yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda install -c conda-forge -c bodc coast
-yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda install &lt;span style="color:#000">cartopy&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>0.18.0 &lt;span style="color:#8f5902;font-style:italic"># used for some of the map plotting&lt;/span>
+yes &lt;span style="color:#000;font-weight:bold">|&lt;/span> conda install -c conda-forge &lt;span style="color:#000">cartopy&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>0.18.0 &lt;span style="color:#8f5902;font-style:italic"># used for some of the map plotting&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Download bits and bobs&lt;/span>
 rm -rf coast_test
 mkdir coast_test
