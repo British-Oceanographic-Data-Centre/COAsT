@@ -9,31 +9,34 @@ import matplotlib.pyplot as plt
 import xarray as xr
 
 # Paths
-fn_detided = '/Users/Dave/Documents/Projects/WCSSP/Data/fani/detided.nc'
+fn_detided = '/Users/Dave/Documents/Projects/WCSSP/Data/nemo/SANH/SANH_1h_20081231_20091231_SSH.nc'
 fn_domain = '/Users/Dave/Documents/Projects/WCSSP/Data/domain_cfg_wcssp.nc'
-fn_alt_list = ['/Users/Dave/Documents/Projects/WCSSP/Data/fani/*j3*',
-               '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*s3a*',
-               '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*s3b*',
-               '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*h2g*',
-               '/Users/Dave/Documents/Projects/WCSSP/Data/fani/*c2*']
+fn_alt_list = ['/Users/Dave/Documents/Projects/WCSSP/Data/altimetry/2009/*en*']#,
+               #'/Users/Dave/Documents/Projects/WCSSP/Data/altimetry/2009/*j2*']#,
+               #'/Users/Dave/Documents/Projects/WCSSP/Data/altimetry/2009/*s3b*',
+               #'/Users/Dave/Documents/Projects/WCSSP/Data/altimetry/2009/*h2g*',
+               #'/Users/Dave/Documents/Projects/WCSSP/Data/altimetry/2009/*c2*']
                   
 
 # Load NEMO data and thin it out a bit for speed/memory
-nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
+nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid', chunks={})
 #nemo = nemo.isel(x_dim = np.arange(0,1760,1), y_dim = np.arange(0,1100,1))
 
 # Merge together all the different sources of altimetry.
 step=10
-lon_bounds = (65,99)
+lon_bounds = (65,80)
 lat_bounds = (3.5, 27)
 alt = coast.ALTIMETRY()
 alt.dataset = xr.Dataset()
 for fn_alt in fn_alt_list:
-    alt_tmp = coast.ALTIMETRY(fn_alt, multiple=True)
+    alt_tmp = coast.ALTIMETRY(fn_alt, multiple=True, chunks={})
     ind = alt_tmp.subset_indices_lonlat_box(lon_bounds,lat_bounds)
     alt_tmp = alt_tmp.isel(time=ind[::step])
     alt.dataset = xr.merge((alt_tmp.dataset, alt.dataset))
 alt.dataset = alt.dataset.rename_dims({'time':'t_dim'})
+
+# Add tide back
+alt.dataset['sla_wtide'] = alt.dataset['ocean_tide'] + alt.dataset['sla_unfiltered']
 
 print('Altimetry merged')
 # Remove Dynamic Atmospheric Correction from the data (?)
@@ -44,10 +47,9 @@ alt_lon = alt.dataset.longitude
 alt_lat = alt.dataset.latitude
 alt_time = alt.dataset.time
 ssh = nemo.dataset.ssh
-ssh.load()
 mlon = ssh.longitude
 mlat = ssh.latitude
-radii = np.arange(100,2000,100)
+radii = np.arange(5,50,1)
 obs_var = 'sla_unfiltered'
 
 ctr_lon = nemo.dataset.longitude.values[::20,::20]
@@ -75,9 +77,9 @@ for rr in radii:
     tmp = np.zeros(len(ctr_lon))        
     
     for ii in range(0,len(ctr_lon)):
-        asub = alt.dataset['grad_sla_unfiltered'].values
+        asub = alt.dataset['sla_unfiltered'].values
         asub = asub[d_ind[ii]]
-        msub = alt.dataset['grad_interp_ssh'].values
+        msub = alt.dataset['interp_ssh'].values
         msub = msub[d_ind[ii]]
         
         acdf = coast.CDF(asub)

@@ -19,7 +19,7 @@ fn_alt_list = ['/Users/Dave/Documents/Projects/WCSSP/Data/fani/*j3*',
                   
 
 # Load NEMO data and thin it out a bit for speed/memory
-nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid')
+nemo = coast.NEMO(fn_detided , fn_domain, grid_ref = 't-grid', chunks={})
 #nemo = nemo.isel(x_dim = np.arange(0,1760,3), y_dim = np.arange(0,1100,3))
 
 # Merge together all the different sources of altimetry.
@@ -47,7 +47,7 @@ ssh = nemo.dataset.ssh
 ssh.load()
 mlon = ssh.longitude
 mlat = ssh.latitude
-radii = np.arange(500,1500,50)
+radii = np.arange(5,50,2)
 obs_var = 'sla_unfiltered'
 
 crps_vals = []
