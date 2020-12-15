@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from . import stats_util
 from .logging_util import get_slug, debug, error
-
+import scipy.stats
 
 class CDF:
     '''
@@ -107,14 +107,15 @@ class CDF:
         return
     
     def integral(self, other, plot=False):
-        """Plots two CDFS on one plot, with the difference shaded"""
+        """Returns the integral between two CDFs. This is equivalent to the
+        first order Wasserstein metric for two probability distributions"""
         debug(f"Generating diff plot for {get_slug(self)} and {get_slug(other)}")
     
-        x = self.get_common_x(other)
-        x, y1 = self.build_discrete_cdf(x)
-        dum, y2 = other.build_discrete_cdf(x)
-        integral = np.trapz( np.abs(y1 - y2), x)
+        integral = scipy.stats.wasserstein_distance(self.sample, other.sample)
         if plot:
+            x = self.get_common_x(other)
+            x, y1 = self.build_discrete_cdf(x)
+            dum, y2 = other.build_discrete_cdf(x)
             fig = plt.figure()
             ax = plt.subplot(111)
             ax.plot(x, y1, c='k', linestyle='--')
@@ -127,3 +128,12 @@ class CDF:
             return integral, fig, ax
         else:
             return integral
+        
+    def hellinger(self, other, plot=False):
+        ''' Calculates the hellinger distance between two discrete probability
+        functions, defined by this input CDF and another.'''
+        
+        if plot:
+            return dist, fig, ax
+        else:
+            return dist

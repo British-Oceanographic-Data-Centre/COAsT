@@ -198,9 +198,6 @@ class ALTIMETRY(COAsT):
         model_var_name (str) : Name of model variable to compare.
         obs_var_name (str)   : Name of observed variable to compare.
         nh_radius (float)    : Neighbourhood rad
-        cdf_type (str)       : Type of cumulative distribution to use for the
-                               model data ('empirical' or 'theoretical').
-                               Observations always use empirical.
         time_interp (str)    : Type of time interpolation to use (s)
         create_new_obj (bool): If True, save output to new ALTIMETRY obj.
                                Otherwise, save to this obj.
