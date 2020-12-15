@@ -124,11 +124,11 @@ fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
 # Source: https://www.bodc.ac.uk/
 
 # Load and plot BODC processed data
-fn_bodc = 'example_files/LIV2008.txt'
+fn_bodc = 'example_files/LIV2010.txt'
 
 # Set the start and end dates
-date_start = np.datetime64('2020-08-12 23:59')
-date_end = np.datetime64('2020-08-14 00:01')
+date_start = np.datetime64('2020-10-12 23:59')
+date_end = np.datetime64('2020-10-14 00:01')
 
 # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
 # type object
