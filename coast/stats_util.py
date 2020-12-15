@@ -10,6 +10,24 @@ Python definitions used to aid with statistical calculations.
 import numpy as np
 import xarray as xr
 from .logging_util import get_slug, debug, info, warn, error
+import scipy
+
+def find_maxima(x, y, method='comp', **kwargs):
+    '''
+    Finds maxima of a time series y. Returns maximum values of y (e.g heights)
+    and corresponding values of x (e.g. times). 
+    **kwargs are dependent on method.
+    
+        Methods:
+        'comp' :: Find maxima by comparison with neighbouring values.
+                  Uses scipy.signal.find_peaks. **kwargs passed to this routine
+                  will be passed to scipy.signal.find_peaks.
+        DB NOTE: Currently only the 'comp' method is implemented. Future
+                 methods include linear interpolation and cublic splines.
+    '''
+    if method == 'comp':
+        peaks, props = scipy.signal.find_peaks(y, **kwargs)
+        return x[peaks], y[peaks]
 
 def doodson_x0_filter(elevation, ax=0):
     ''' 

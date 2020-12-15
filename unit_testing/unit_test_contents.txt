@@ -60,7 +60,7 @@
     i. Plotting multiple tidegauge locations
     j. Tidegauge time series plot
     k. TIDEGAUGE method for tabulated data
-
+    l. TIDEGAUGE method for finding peaks and troughs
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points
@@ -69,7 +69,11 @@
     d. Calculate flow across contour
     e. Calculate pressure gradient driven flow across contour
 
-9. Example script testing
+9. EOF methods
+    a. Compute EOFs, projections and variance
+    b. Compute HEOFs, projections and variance
+    
+10. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
     c. tutorial on AMM60 data
@@ -77,3 +81,4 @@
     e. tutorial on SEAsia data
     f. tutorial on WCSSP-India data
     g. tutorial on internal tides
+    
