@@ -157,16 +157,3 @@ eg.plot_timeseries()
 # (the default) station.
 eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
 eg.plot_timeseries()
-
-#%% Finally, load in data from the Shoothill API. However this does require
-# a key to be setup. It is assumed that the key is privately stored in
-# config_keys.py
-# This API has more data sites but, requiring a key, is trickier to set up.
-# To discover the StationId for a particular measurement site check the
-# integer id in the url or its twitter page having identified it via
-#  https://www.gaugemap.co.uk/#!Map
-# E.g  Liverpool (Gladstone Dock stationId="13482", which is read by default.
-# Load in data from the Shoothill API
-sg = coast.TIDEGAUGE()
-sg.dataset = sg.read_shoothill_to_xarray()
-sg.plot_timeseries()
