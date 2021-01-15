@@ -8,6 +8,18 @@ Python definitions used to help with plotting routines.
 import matplotlib.pyplot as plt
 from warnings import warn
 from .logging_util import get_slug, debug, info, warn, error
+
+def ts_diagram(temperature, salinity, depth):
+    
+    fig = plt.figure(figsize = (10,7))
+    ax = plt.scatter(salinity, temperature, c=depth)
+    cbar = plt.colorbar()
+    cbar.set_label('Depth (m)')
+    plt.title('T-S Diagram')
+    plt.xlabel('Salinity')
+    plt.ylabel('Temperature')
+    
+    return fig, ax
             
 def geo_scatter(longitude, latitude, colors=None, 
                 title='', xlim=None, ylim=None):
