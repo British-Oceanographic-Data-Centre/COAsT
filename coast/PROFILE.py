@@ -5,7 +5,15 @@ import matplotlib.pyplot as plt
 
 class PROFILE(COAsT):
     '''
-
+    OBSERVATION type class for storing data from a CTD Profile (or similar
+    down and up observations). The structure of the class is based on data from
+    the EN4 database. The class dataset should contain two dimensions:
+        
+        > profile :: The profiles dimension. Called N_PROF in EN4 data.
+                     Each element of this dimension contains data for a 
+                     individual location.
+        > level   :: The dimension for depth levels. Called N_LEVELS in EN4
+                     files. 
     '''
 ##############################################################################
 ###                ~ Initialisation and File Reading ~                     ###
