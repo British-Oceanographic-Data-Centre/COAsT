@@ -7,7 +7,7 @@ import re
 import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
-from .logging_util import get_slug, debug, error
+from .logging_util import get_slug, debug, error, info
 
 class TIDEGAUGE():
     '''
@@ -27,6 +27,9 @@ class TIDEGAUGE():
            attributes or single float variables.
         4. Time is a coordinate variable and time dimension.
         5. Data variables are stored along the time dimension.
+        6. The attributes: site_name, latitude, longitude are expected. If they
+            are missing functionality may be reduced.
+
 
     *Methods Overview*
 
@@ -224,7 +227,7 @@ class TIDEGAUGE():
         qc_flags = []
         # Open file and loop until EOF
         with open(fn_gesla) as file:
-            line_count = 0
+            line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
@@ -434,7 +437,7 @@ class TIDEGAUGE():
 
         # Open file and loop until EOF
         with open(filnam) as file:
-            line_count = 0
+            line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count>header_length:
@@ -490,21 +493,30 @@ class TIDEGAUGE():
                 print('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values), np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
                 'height:',self.dataset.sea_level[i].values, 'm' )
 
-    def get_tidetabletimes(self, time_guess:np.datetime64 = None, method: str='window', winsize:int=2): # window:int = 2):
+    def get_tidetabletimes(self,
+                            time_guess:np.datetime64 = None,
+                            time_var:str='time',
+                            measure_var:str='sea_level',
+                            method: str='window', winsize=None):
         """
         Get tide times and heights from tide table.
         input:
         time_guess : np.datetime64 or datetime
                 assumes utc
+        time_var : name of time variable [default: 'time']
+        measure_var : name of sea_level variable [default: 'sea_level']
+
         method =
             window:  +/- hours window size, winsize, (int) return values in that window
                 uses additional variable winsize (int) [default 2hrs]
-            nearest_1: return only the nearest event
-            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low)
-            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`)
+            nearest_1: return only the nearest event, if in winsize [default:None]
+            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low), if in winsize [default:None]
+            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`), if in winsize [default:None]
 
-        returns: xr.DataArray( sea_level, coords=time)
-            sea_level (m), time (utc)
+        returns: xr.DataArray( measure_var, coords=time_var)
+            E.g. sea_level (m), time (utc)
+            If value is not found, it returns a NaN with time value as the
+            guess value.
 
         """
         # Ensure the date objects are datetime
@@ -517,37 +529,340 @@ class TIDEGAUGE():
             time_guess = np.datetime64('now')
 
         if method == 'window':
+            if winsize==None: winsize=2
             # initialise start_index and end_index
             start_index = 0
-            end_index = len(self.dataset.time)
+            end_index = len(self.dataset[time_var])
 
             date_start = time_guess - np.timedelta64(winsize, 'h')
-            start_index = np.argmax(self.dataset.time.values>=date_start)
+            start_index = np.argmax(self.dataset[time_var].values>=date_start)
 
             date_end = time_guess + np.timedelta64(winsize, 'h')
-            end_index = np.argmax(self.dataset.time.values>date_end)
+            end_index = np.argmax(self.dataset[time_var].values>date_end)
 
-            sea_level = self.dataset.sea_level[start_index:end_index]
+            sea_level = self.dataset[measure_var][start_index:end_index]
 
             return sea_level
 
         elif method == 'nearest_1':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            return self.dataset.sea_level[index[0]]
+            dt = np.abs(self.dataset[time_var] - time_guess)
+            index = np.argsort(dt).values
+            if winsize is not None: # if search window trucation exists
+                if np.timedelta64(dt[index[0]].values,'m').astype('int') <= 60*winsize: # compare in minutes
+                    debug(f"dt:{np.timedelta64(dt[index[0]].values,'m').astype('int')}")
+                    debug(f"winsize:{winsize}")
+                    return self.dataset[measure_var][index[0]]
+                else:
+                    # return a NaN in an xr.Dataset
+                    # The rather odd trailing zero is to remove the array layer
+                    # on both time and measurement, and to match the other
+                    # alternative for a return object
+                    return xr.DataArray([np.NaN], dims=(time_var), coords={time_var: [time_guess]})[0]
+            else: # give the closest without window search truncation
+                return self.dataset[measure_var][index[0]]
 
         elif method == 'nearest_2':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
-            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
+            nearest_2 =  self.dataset[measure_var][ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
             return nearest_2
 
         elif method == 'nearest_HW':
-            index = np.argsort(np.abs(self.dataset.time - time_guess)).values
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
             #return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
-            nearest_2 =  self.dataset.sea_level[ index[0:1+1] ] #, self.dataset.time[index[0:1+1]]
+            nearest_2 =  self.dataset[measure_var][index[0:1+1]] #, self.dataset.time[index[0:1+1]]
             return nearest_2[ nearest_2.argmax() ]
 
         else:
             print('Not expecting that option / method')
+
+
+############ environment.data.gov.uk gauge methods ###########################
+    @classmethod
+    def read_EA_API_to_xarray(cls,
+                                ndays: int=5,
+                                date_start: np.datetime64=None,
+                                date_end: np.datetime64=None,
+                                stationId='E70124'):
+        """
+        load gauge data via environment.data.gov.uk EA API
+        Either loads last ndays, or from date_start:date_end
+
+        API Source:
+        https://environment.data.gov.uk/flood-monitoring/doc/reference
+
+        Details of available tidal stations are recovered with:
+        https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+        Recover the "stationReference" for the gauge of interest and pass as
+        stationId:str. The default stationId="E70124" is Liverpool.
+
+        INPUTS:
+            ndays : int. Extact the last ndays from now.
+            date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
+            date_end : datetime
+            stationId : int. Station id. Also referred to as stationReference in
+             EA API. Default value is for Liverpool.
+        OUTPUT:
+            sea_level, time : xr.Dataset
+        """
+        import requests,json
+
+        cls.ndays=ndays
+        cls.date_start=date_start
+        cls.date_end=date_end
+        cls.stationId=stationId # EA id: stationReference
+
+        #%% Obtain and process header information
+        info("load station info")
+        url = 'https://environment.data.gov.uk/flood-monitoring/id/stations/'+cls.stationId+'.json'
+        try:
+            request_raw = requests.get(url)
+            header_dict = json.loads(request_raw.content)
+        except ValueError:
+            print(f"Failed request for station {cls.stationId}")
+            return
+
+        try:
+            header_dict['site_name'] = header_dict['items']['label']
+            header_dict['latitude'] = header_dict['items']['lat']
+            header_dict['longitude'] = header_dict['items']['long']
+        except:
+            info(f"possible missing some header info: site_name,latitude,longitude")
+        try:
+            # Define url call with parameter from station info
+            htmlcall_stationId = header_dict['items']['measures']['@id']+'/readings?'
+        except:
+            debug(f"problem defining the parameter to read")
+
+        #%% Construct API request for data recovery
+        info("load station data")
+        if (cls.date_start == None) & (cls.date_end == None):
+            info(f"GETting ndays= {cls.ndays} of data")
+            url  = htmlcall_stationId+'since='+ \
+            (np.datetime64('now')-np.timedelta64(ndays,'D')).item().strftime('%Y-%m-%dT%H:%M:%SZ')
+            debug(f"url request: {url}")
+        else:
+            # Check date_start and date_end are timetime objects
+            if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
+                info(f"GETting data from {cls.date_start} to {cls.date_end}")
+                startdate = cls.date_start.item().strftime('%Y-%m-%d')
+                enddate = cls.date_end.item().strftime('%Y-%m-%d')
+                url   = htmlcall_stationId+'startdate='+startdate+'&enddate='+enddate
+                debug(f"url request: {url}")
+
+            else:
+                debug('Expecting date_start and date_end as datetime objects')
+
+        #%% Get the data
+        try:
+            request_raw = requests.get(url)
+            request = json.loads(request_raw.content)
+            debug(f"EA API request: {request_raw.text}")
+        except ValueError:
+            debug(f"Failed request: {request_raw}")
+            return
+
+        #%% Process timeseries data
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+        nvals = len(request['items'])
+        time = np.array([np.datetime64(request['items'][i]['dateTime']) for i in range(nvals)])
+        sea_level = np.array([request['items'][i]['value'] for i in range(nvals)])
+
+        #%% Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+        dataset.attrs = header_dict
+        debug(f"EA API request headers: {header_dict}")
+        #debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+
+############ BODC tide gauge methods ##############################################
+    @classmethod
+    def read_bodc_to_xarray(cls, fn_bodc, date_start=None, date_end=None):
+        '''
+        For reading from a single BODC (processed) file into an
+        xarray dataset.
+        If no data lies between the specified dates, a dataset is still created
+        containing information on the tide gauge, but the time dimension will
+        be empty.
+
+        Data name: UK Tide Gauge Network, processed data.
+        Source: https://www.bodc.ac.uk/
+        See data notes from source for description of QC flags.
+
+        The data takes the form:
+            Port:              P234
+            Site:              Liverpool, Gladstone Dock
+            Latitude:          53.44969
+            Longitude:         -3.01800
+            Start Date:        01AUG2020-00.00.00
+            End Date:          31AUG2020-23.45.00
+            Contributor:       National Oceanography Centre, Liverpool
+            Datum information: The data refer to Admiralty Chart Datum (ACD)
+            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum) of the water body by bubbler tide gauge (second sensor)
+              Cycle    Date      Time    ASLVBG02   Residual
+             Number yyyy mm dd hh mi ssf         f          f
+                 1) 2020/08/01 00:00:00     5.354M     0.265M
+                 2) 2020/08/01 00:15:00     5.016M     0.243M
+                 3) 2020/08/01 00:30:00     4.704M     0.241M
+                 4) 2020/08/01 00:45:00     4.418M     0.255M
+                 5) 2020/08/01 01:00:00     4.133      0.257
+                 ...
+
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+
+        Returns
+        -------
+        xarray.Dataset object.
+        '''
+        debug(f"Reading \"{fn_bodc}\" as a BODC file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        try:
+            header_dict = cls.read_bodc_header(fn_bodc)
+            dataset = cls.read_bodc_data(fn_bodc, date_start, date_end)
+        except:
+            raise Exception('Problem reading BODC file: ' + fn_bodc)
+        # Attributes
+        dataset['longitude'] = header_dict['longitude']
+        dataset['latitude'] = header_dict['latitude']
+        del header_dict['longitude']
+        del header_dict['latitude']
+
+        dataset.attrs = header_dict
+
+        return dataset
+
+    @staticmethod
+    def read_bodc_header(fn_bodc):
+        '''
+        Reads header from a BODC file (format version 3.0).
+
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+
+        Returns
+        -------
+        dictionary of attributes
+        '''
+        debug(f"Reading BODC header from \"{fn_bodc}\"")
+        fid = open(fn_bodc)
+
+        # Read lines one by one (hopefully formatting is consistent)
+        # Geographical stuff
+        header_dict = {}
+        header = True
+        for line in fid:
+            if ':' in line and header == True:
+                (key, val) = line.split(':')
+                key = key.lower().strip().replace(' ','_')
+                val = val.lower().strip().replace(' ','_')
+                header_dict[key] = val
+                debug(f"Header key: {key} and value: {val}")
+            else:
+                #print('No colon')
+                header = False
+        header_dict['site_name'] = header_dict['site'] # duplicate as standard name
+        debug(f"Read done, close file \"{fn_bodc}\"")
+        fid.close()
+
+        header_dict['latitude'] = float( header_dict['latitude'] )
+        header_dict['longitude'] = float( header_dict['longitude'] )
+
+        return header_dict
+
+    @staticmethod
+    def read_bodc_data(fn_bodc, date_start=None, date_end=None,
+                           header_length:int=11):
+        '''
+        Reads observation data from a BODC file.
+
+        Parameters
+        ----------
+        fn_bodc (str) : path to bodc tide gauge file
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+        header_length (int) : number of lines in header (to skip when reading)
+
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+        '''
+        # Initialise empty dataset and lists
+        debug(f"Reading BODC data from \"{fn_bodc}\"")
+        dataset = xr.Dataset()
+        time = []
+        sea_level = []
+        qc_flags = []
+        residual = []
+        # Open file and loop until EOF
+        with open(fn_bodc) as file:
+            line_count = 1
+            for line in file:
+                # Read all data. Date boundaries are set later.
+                if line_count>header_length:
+                    try:
+                        working_line = line.split()
+                        time_str = working_line[1] + ' ' + working_line[2] # Empty lines cause trouble
+                        sea_level_str = working_line[3]
+                        residual_str = working_line[4]
+                        if sea_level_str[-1].isalpha():
+                            qc_flag_str = sea_level_str[-1]
+                            sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                            residual_str = residual_str.replace(qc_flag_str,'')
+                        elif residual_str[-1].isalpha(): # sometimes residual has a
+                            #flag when elevation does not
+                            qc_flag_str = residual_str[-1]
+                            sea_level_str = sea_level_str.replace(qc_flag_str,'')
+                            residual_str = residual_str.replace(qc_flag_str,'')
+                        else:
+                            qc_flag_str = ''
+                        #print(line_count-header_length, residual_str, float(residual_str))
+                        #print(working_line, sea_level_str, qc_flag_str)
+                        time.append(time_str)
+                        qc_flags.append(qc_flag_str)
+                        sea_level.append(float(sea_level_str))
+                        residual.append(float(residual_str))
+                    except:
+                        debug(f"{file} probably empty line at end. Breaks split()")
+                line_count = line_count + 1
+            debug(f"Read done, close file \"{fn_bodc}\"")
+
+        # Convert time list to datetimes using pandas
+        time = np.array(pd.to_datetime(time))
+
+        # Return only values between stated dates
+        start_index = 0
+        end_index = len(time)
+        if date_start is not None:
+            date_start = np.datetime64(date_start)
+            start_index = np.argmax(time>=date_start)
+        if date_end is not None:
+            date_end = np.datetime64(date_end)
+            end_index = np.argmax(time>date_end)
+        time = time[start_index:end_index]
+        sea_level = sea_level[start_index:end_index]
+        qc_flags=qc_flags[start_index:end_index]
+
+        # Set null values to nan
+        sea_level = np.array(sea_level)
+        qc_flags = np.array(qc_flags)
+        #sea_level[qc_flags==5] = np.nan
+
+        # Assign arrays to Dataset
+        dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
+        dataset['qc_flags'] = xr.DataArray(qc_flags, dims=['time'])
+        dataset = dataset.assign_coords(time = ('time', time))
+
+        # Assign local dataset to object-scope dataset
+        return dataset
+
 
 ##############################################################################
 ###                ~            Plotting             ~                     ###
@@ -928,14 +1243,14 @@ class TIDEGAUGE():
         to hourly frequency.'''
         filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
         self.dataset[var_str+'_dx0'] = ( ('time_1H'),filtered )
-        
-    def find_high_and_low_water(self, var_str, method='comp', 
+
+    def find_high_and_low_water(self, var_str, method='comp',
                                 **kwargs):
         '''
         Finds high and low water for a given variable.
-        Returns in a new TIDEGAUGE object with similar data format to 
+        Returns in a new TIDEGAUGE object with similar data format to
         a TIDETABLE.
-        
+
         Methods:
         'comp' :: Find maxima by comparison with neighbouring values.
                   Uses scipy.signal.find_peaks. **kwargs passed to this routine
@@ -947,9 +1262,9 @@ class TIDEGAUGE():
         x = self.dataset.time
         y = self.dataset[var_str]
 
-        time_max, values_max = stats_util.find_maxima(x, y, method=method, 
+        time_max, values_max = stats_util.find_maxima(x, y, method=method,
                                                       **kwargs)
-        time_min, values_min = stats_util.find_maxima(x,-y, method=method, 
+        time_min, values_min = stats_util.find_maxima(x,-y, method=method,
                                                       **kwargs)
 
         new_dataset = xr.Dataset()
