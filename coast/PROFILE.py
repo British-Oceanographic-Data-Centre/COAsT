@@ -87,7 +87,7 @@ class PROFILE(COAsT):
         fig, ax = plot_util.geo_scatter(profiles.longitude.values,
                                         profiles.latitude.values)
         
-        return
+        return fig, ax
     
     def plot_ts_diagram(self, profile_index, var_t='POTM_CORRECTED', var_s='PSAL_CORRECTED'):
         
