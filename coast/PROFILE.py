@@ -48,16 +48,11 @@ class PROFILE(COAsT):
         
         return: Indices corresponding to datapoints inside specified box
         """
-        lon_str = 'longitude'
-        lat_str = 'latitude'
-        lon = self.dataset[lon_str].values
-        lat = self.dataset[lat_str].values
-        ff = lon > lonbounds[0]
-        ff *= lon < lonbounds[1]
-        ff *= lat > latbounds[0]
-        ff *= lat < latbounds[1]
-
-        return np.where(ff)[0]
+        ind = general_utils.subset_indices_lonlat_box(self.dataset.longitude, 
+                                                      self.dataset.latitude, 
+                                                      lonbounds[0], lonbounds[1],
+                                                      latbounds[0], latbounds[1])
+        return ind
     
 ##############################################################################
 ###                ~            Plotting             ~                     ###

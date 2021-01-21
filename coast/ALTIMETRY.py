@@ -115,7 +115,7 @@ class ALTIMETRY(COAsT):
         info("Drawing a quick plot...")
         fig, ax =  plot_util.geo_scatter(self.dataset.longitude, 
                                          self.dataset.latitude,
-                                         color_var, title=title )
+                                         c=color_var, title=title )
         info("Plot ready, displaying!")
         return fig, ax
 
