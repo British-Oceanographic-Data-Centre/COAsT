@@ -1507,14 +1507,14 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 #-----------------------------------------------------------------------------#
-# ( 11c ) Plot temperature profile                                            #
+# ( 11d ) Plot temperature profile                                            #
 #                                                                             #
 
 subsec = subsec+1
 # Plot ts diagram
 
 try:
-    f,a = profiles.plot_profile(var='PTOM_CORRECTED',profile_indices=[10])
+    f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
     f.savefig(dn_fig + 'profile_temperature_diagram.png')
     print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
 except:
