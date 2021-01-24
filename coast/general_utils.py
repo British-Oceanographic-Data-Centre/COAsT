@@ -9,6 +9,24 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
+def chunks_advisor(array_shape, dtype, min_mb_per_chunk=100):
+    '''
+    Gives a suggestions for chunking based on the best practice advice on:
+        https://docs.dask.org/en/latest/array-best-practices.html
+
+    '''
+    one_mb = 8e6 #bits
+    dtype_dict = {'float32':32,'float64':64}
+    
+    n_elements = 1
+    for dim in array_shape:
+        n_elements = n_elements*dim
+        
+    n_bits = n_elements*dtype_dict[dtype]
+    n_mb = n_bits/one_mb
+    max_chunks = n_mb/min_mb_per_chunk
+    return max_chunks
+
 def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     '''
     # Estimation of geographical distance using the Haversine function.

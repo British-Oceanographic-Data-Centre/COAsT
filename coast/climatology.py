@@ -37,17 +37,20 @@ class CLIMATOLOGY(COAsT):
         
         # For the sake of it, if an xarray dataset is not provided, check to
         # see if there is a dataset inside it (like a NEMO object)
-        if type(dataset) != xr.core.dataset.Dataset:
+        if type(dataset) not in [xr.core.dataset.Dataset, xr.core.dataarray.DataArray]:
             dataset = dataset.dataset
         
         # Group the dataset by frequency
         clim = dataset.groupby(time_var+"."+frequency)
         
         # Calculate the mean and variance
-        mean = clim.mean(time_var)
-        var = clim.var(time_var)
+        clim_dataset = clim.mean(time_var).to_dataset(name='clim_mean')
+        clim_var = clim.var(time_var)
         
-        return mean, var
+        # Combine into one dataset
+        clim_dataset['clim_var'] = clim_var
+        
+        return clim_dataset
     
     def to_netcdf_in_slices():
         return
