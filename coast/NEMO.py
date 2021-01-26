@@ -85,7 +85,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
                             'toce' : 'temperature',
                             'so' : 'salinity',
                             'vosaline' : 'salinity',
-                            'voce' : 'salinity',
+                            'voce' : 'v_velocity',
+                            'vomecrty' : 'v_velocity',
+                            'uoce' : 'u_velocity',
+                            'vozocrtx' : 'u_velocity',
                             'sossheig' : 'ssh',
                             'zos' : 'ssh' }
         # Variable names mapped from domain to NEMO object

@@ -315,10 +315,12 @@ class Transect_f(Transect):
         
         # If there is no time dimension, add one. This is so
         # indexing can assume a time dimension exists
+        droptime=False
         if 't_dim' not in u_ds.dims:
-            u_ds = u_ds.expand_dims(dim={'t_dim':1},axis=0)
+            u_ds["u_velocity"] = u_ds.u_velocity.expand_dims(dim={'t_dim':1},axis=0)
+            droptime=True
         if 't_dim' not in v_ds.dims:
-            v_ds = v_ds.expand_dims(dim={'t_dim':1},axis=0)
+            v_ds["v_velocity"] = v_ds.v_velocity.expand_dims(dim={'t_dim':1},axis=0)
         
         velocity = np.ma.zeros( (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size-1) )
         vol_transport = np.ma.zeros( (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size-1) )
@@ -339,7 +341,7 @@ class Transect_f(Transect):
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
         
         # u flux (+ in)
-        velocity[:,:,dr_n] = u_ds.vozocrtx.to_masked_array()[:,:,dr_n+1]
+        velocity[:,:,dr_n] = u_ds.u_velocity.to_masked_array()[:,:,dr_n+1]
         vol_transport[:,:,dr_n] = ( velocity[:,:,dr_n] * u_ds.e2.to_masked_array()[dr_n+1] *
                                           u_ds.e3_0.to_masked_array()[:,dr_n+1] )
         depth_0[:,dr_n] = u_ds.depth_0.to_masked_array()[:,dr_n+1]
@@ -350,7 +352,7 @@ class Transect_f(Transect):
         e3_0[:,dr_n] = u_ds.e3_0.values[:,dr_n+1]
         
         # v flux (- in) 
-        velocity[:,:,dr_e] = - v_ds.vomecrty.to_masked_array()[:,:,dr_e+1]
+        velocity[:,:,dr_e] = - v_ds.v_velocity.to_masked_array()[:,:,dr_e+1]
         vol_transport[:,:,dr_e] = ( velocity[:,:,dr_e] * v_ds.e1.to_masked_array()[dr_e+1] *
                                   v_ds.e3_0.to_masked_array()[:,dr_e+1] )
         depth_0[:,dr_e] = v_ds.depth_0.to_masked_array()[:,dr_e+1]
@@ -361,7 +363,7 @@ class Transect_f(Transect):
         e3_0[:,dr_e] = v_ds.e3_0.values[:,dr_e+1]
         
         # v flux (+ in)
-        velocity[:,:,dr_w] = v_ds.vomecrty.to_masked_array()[:,:,dr_w]
+        velocity[:,:,dr_w] = v_ds.v_velocity.to_masked_array()[:,:,dr_w]
         vol_transport[:,:,dr_w] = ( velocity[:,:,dr_w] * v_ds.e1.to_masked_array()[dr_w] *
                                   v_ds.e3_0.to_masked_array()[:,dr_w] )
         depth_0[:,dr_w] = v_ds.depth_0.to_masked_array()[:,dr_w]
@@ -371,16 +373,26 @@ class Transect_f(Transect):
         e2[dr_w] = v_ds.e2.values[dr_w]
         e3_0[:,dr_w] = v_ds.e3_0.values[:,dr_w]
            
-        # Add DataArrays to dataset           
-        self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( np.squeeze(velocity), 
-                    coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), depth_0)
+        # Add DataArrays to dataset 
+        if droptime:
+            self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( velocity.squeeze(), 
+                    coords={'depth_0': (('z_dim','r_dim'), depth_0) 
                             ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude) },
-                    dims=['t_dim', 'z_dim', 'r_dim'] )            
-        self.data_cross_tran_flow['normal_transports'] \
-                    = xr.DataArray( np.squeeze(np.sum(vol_transport, axis=1)) / 1000000.,
-                    coords={'time': (('t_dim'), u_ds.time.values)
-                            ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},
-                    dims=['t_dim', 'r_dim'] )          
+                    dims=['z_dim', 'r_dim'] )        
+            self.data_cross_tran_flow['normal_transports'] \
+                    = xr.DataArray( np.sum(vol_transport.squeeze(), axis=0) / 1000000., \
+                    coords={'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},\
+                    dims=['r_dim'] ).squeeze() 
+        else:
+            self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( velocity, 
+                        coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), depth_0)
+                                ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude) },
+                        dims=['t_dim', 'z_dim', 'r_dim'] )            
+            self.data_cross_tran_flow['normal_transports'] \
+                        = xr.DataArray( np.sum(vol_transport, axis=1) / 1000000.,
+                        coords={'time': (('t_dim'), u_ds.time.values)
+                                ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},
+                        dims=['t_dim', 'r_dim'] ).squeeze()          
         self.data_cross_tran_flow['e1'] = xr.DataArray( e1, dims=['r_dim'] ) 
         self.data_cross_tran_flow['e2'] = xr.DataArray( e2, dims=['r_dim'] ) 
         self.data_cross_tran_flow['e3_0'] = xr.DataArray( e3_0, dims=['z_dim','r_dim'] ) 

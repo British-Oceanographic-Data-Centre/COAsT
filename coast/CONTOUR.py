@@ -327,22 +327,22 @@ class Contour_f(Contour):
         
         # Note that subsetting the dataset first instead of subsetting each array seperately,
         # as we do here, is neater but significantly slower.
-        self.data_cross_flow['normal_velocities'] = xr.full_like(u_ds.vozocrtx, np.nan)        
-        self.data_cross_flow['normal_velocities'][:,:,dr_n] = u_ds.vozocrtx.data[:,:,dr_n+1]
-        self.data_cross_flow['normal_velocities'][:,:,dr_s] = -u_ds.vozocrtx.data[:,:,dr_s]
-        self.data_cross_flow['normal_velocities'][:,:,dr_e] = -v_ds.vomecrty.data[:,:,dr_e+1]
-        self.data_cross_flow['normal_velocities'][:,:,dr_w] = v_ds.vomecrty.data[:,:,dr_w]
+        self.data_cross_flow['normal_velocities'] = xr.full_like(u_ds.u_velocity, np.nan)        
+        self.data_cross_flow['normal_velocities'][:,:,dr_n] = u_ds.u_velocity.data[:,:,dr_n+1]
+        self.data_cross_flow['normal_velocities'][:,:,dr_s] = -u_ds.u_velocity.data[:,:,dr_s]
+        self.data_cross_flow['normal_velocities'][:,:,dr_e] = -v_ds.v_velocity.data[:,:,dr_e+1]
+        self.data_cross_flow['normal_velocities'][:,:,dr_w] = v_ds.v_velocity.data[:,:,dr_w]
         self.data_cross_flow['normal_velocities'].attrs = {'units':'m/s', \
                 'standard_name':'contour-normal velocities'}
              
-        self.data_cross_flow['normal_transport'] = xr.full_like(u_ds.vozocrtx, np.nan)  
-        self.data_cross_flow['normal_transport'][:,:,dr_n] = ( u_ds.vozocrtx.data[:,:,dr_n+1] * 
+        self.data_cross_flow['normal_transport'] = xr.full_like(u_ds.u_velocity, np.nan)  
+        self.data_cross_flow['normal_transport'][:,:,dr_n] = ( u_ds.u_velocity.data[:,:,dr_n+1] * 
                                 u_ds.e2.data[dr_n+1] * u_ds.e3_0.data[:,dr_n+1] )
-        self.data_cross_flow['normal_transport'][:,:,dr_s] = ( -u_ds.vozocrtx.data[:,:,dr_s] * 
+        self.data_cross_flow['normal_transport'][:,:,dr_s] = ( -u_ds.u_velocity.data[:,:,dr_s] * 
                                 u_ds.e2.data[dr_s] * u_ds.e3_0.data[:,dr_s] )
-        self.data_cross_flow['normal_transport'][:,:,dr_e] = ( -v_ds.vomecrty.data[:,:,dr_e+1] *
+        self.data_cross_flow['normal_transport'][:,:,dr_e] = ( -v_ds.v_velocity.data[:,:,dr_e+1] *
                                 v_ds.e1.data[dr_e+1] * v_ds.e3_0.data[:,dr_e+1] )
-        self.data_cross_flow['normal_transport'][:,:,dr_w] = ( v_ds.vomecrty.data[:,:,dr_w] *
+        self.data_cross_flow['normal_transport'][:,:,dr_w] = ( v_ds.v_velocity.data[:,:,dr_w] *
                                 v_ds.e1.data[dr_w] * v_ds.e3_0.data[:,dr_w] )
         self.data_cross_flow['normal_transport'].attrs = {'units':'m^3/s', \
                 'standard_name':'contour-normal volume transport'}
