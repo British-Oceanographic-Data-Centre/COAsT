@@ -676,6 +676,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         indices = np.array(indices).T.squeeze()
         
         # Index the possible names to match file names
+        print(indices)
         names_x = names_x[indices]
         names_y = names_y[indices]
         constituents = constituents[indices]
