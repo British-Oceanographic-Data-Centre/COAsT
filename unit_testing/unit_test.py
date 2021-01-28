@@ -93,6 +93,7 @@ fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
 fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
 fn_tidegauge2 = dn_files + 'tide_gauges/LIV2010.txt'
+fn_EN4 = dn_files + 'EN4_example.nc'
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -1446,7 +1447,78 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+'''
+#################################################
+## ( 11 ) PROFILE Methods                     ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
 
+#-----------------------------------------------------------------------------#
+# ( 11a ) Load EN4 data                                                       #
+#                                                                             #
+
+subsec = subsec+1
+# Create PROFILE object and read EN4 example data file
+
+try:
+    profiles = coast.PROFILE()
+    profiles.read_EN4(fn_EN4)
+
+    #TEST: Check some data
+    check1 = profiles.dataset.dims['N_LEVELS'] == 400
+    check2 = profiles.dataset.longitude[11].values == 9.89777
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+
+#-----------------------------------------------------------------------------#
+# ( 11b ) Plot locations on map                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot profile locations on a map
+
+try:
+    f,a = profiles.plot_map()
+    f.savefig(dn_fig + 'profiles_map.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11c ) Plot ts diagram                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_ts_diagram(10)
+    f.savefig(dn_fig + 'profile_ts_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11d ) Plot temperature profile                                            #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
+    f.savefig(dn_fig + 'profile_temperature_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #%% Close log file
 #################################################

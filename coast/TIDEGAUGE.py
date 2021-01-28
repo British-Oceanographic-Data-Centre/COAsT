@@ -884,9 +884,9 @@ class TIDEGAUGE():
         title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
         Y = self.dataset.latitude
-        fig, ax =  plot_util.geo_scatter(X, Y, title=title,
-                                         xlim = [X-10, X+10],
-                                         ylim = [Y-10, Y+10])
+        fig, ax =  plot_util.geo_scatter(X, Y, title=title)
+        ax.set_xlim((X-10, X+10))
+        ax.set_ylim((Y-10, Y+10))
         return fig, ax
 
     @classmethod
@@ -913,16 +913,13 @@ class TIDEGAUGE():
                 C.append(tg.dataset[color_var_str].values)
 
         title = ''
-
         if color_var_str is None:
-            fig, ax =  plot_util.geo_scatter(X, Y, title=title,
-                                             xlim = [min(X)-10, max(X)+10],
-                                             ylim = [min(Y)-10, max(Y)+10])
+            fig, ax =  plot_util.geo_scatter(X, Y, title=title)
         else:
-            fig, ax =  plot_util.geo_scatter(X, Y, title=title,
-                                             colors = C,
-                                             xlim = [min(X)-10, max(X)+10],
-                                             ylim = [min(Y)-10, max(Y)+10])
+            fig, ax =  plot_util.geo_scatter(X, Y, title=title, c = C)
+            
+        ax.set_xlim((min(X)-10, max(X)+10))
+        ax.set_ylim((min(Y)-10, max(Y)+10))
         return fig, ax
 
     def plot_timeseries(self, var_list = ['sea_level'],
