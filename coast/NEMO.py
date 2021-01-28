@@ -727,13 +727,17 @@ class NEMO(COAsT):  # TODO Complete this docstring
         Modifies NEMO() dataset in place. New variables added.
         '''
         if direction == 'cart2polar':
-            self.dataset[a_var] = np.sqrt(self.dataset[x_var]**2 + \
-                                          self.dataset[y_var]**2)
-            self.dataset[g_var] = np.arctan2(self.dataset[y_var], 
-                                             self.dataset[x_var])
+            a,g = general_utils.cart2polar(self.dataset[x_var], 
+                                           self.dataset[y_var], 
+                                           degrees=degrees)
+            self.dataset[a_var] = a
+            self.dataset[g_var] = g
         elif direction == 'polar2cart':
-            self.dataset[x_var] = self.dataset[a_var]*np.
-            self.dataset[y_var] = 
+            x,y = general_utils.polar2cart(self.dataset[a_var], 
+                                           self.dataset[g_var],
+                                           degrees=degrees)
+            self.dataset[x_var] = x
+            self.dataset[y_var] = y
         else:
             print('Unknown direction setting. Choose cart2polar or polar2cart')
         
