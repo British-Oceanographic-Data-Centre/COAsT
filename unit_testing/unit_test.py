@@ -277,7 +277,7 @@ except:
 subsec = subsec+1
 
 #-----------------------------------------------------------------------------#
-# ( 1i ) Load and combine harmonics                                           #
+# ( 1j ) Load and combine harmonics                                           #
 #                                                                             #
 
 subsec = subsec+1
@@ -293,7 +293,7 @@ try:
     #TEST: Check values in arrays and constituents
     check1 = list(harmonics_combined.dataset.constituent.values) == constituents
     check2 = harmonics_combined.dataset.harmonic_x[1].values == harmonics.dataset.M2x.values
-    if check1 and check2:
+    if check1 and check2.all():
         print(str(sec) + chr(subsec) + " OK - Harmonics loaded and combined")
     else:
         print(str(sec) + chr(subsec) + " X - Problem combining harmonics")
@@ -302,7 +302,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 #-----------------------------------------------------------------------------#
-# ( 1j ) Convert harmonics to a/g and back                                    #
+# ( 1k ) Convert harmonics to a/g and back                                    #
 #                                                                             #
 
 subsec = subsec+1
