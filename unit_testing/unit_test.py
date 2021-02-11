@@ -94,6 +94,8 @@ fn_altimetry = 'COAsT_example_altimetry_data.nc'
 fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
 fn_tidegauge2 = dn_files + 'tide_gauges/LIV2010.txt'
 fn_EN4 = dn_files + 'EN4_example.nc'
+fn_nemo_harmonics = "coast_nemo_harmonics.nc"
+fn_nemo_harmonics_dom    = "coast_nemo_harmonics_dom.nc"
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -273,6 +275,56 @@ except:
           .format(dn_files, file_names_amm7) )
 
 subsec = subsec+1
+
+#-----------------------------------------------------------------------------#
+# ( 1j ) Load and combine harmonics                                           #
+#                                                                             #
+
+subsec = subsec+1
+# Load in a NEMO data file containing harmonics and combine them into a new
+# NEMO obejct and dataset.
+
+try:
+    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics, 
+                           dn_files + fn_nemo_harmonics_dom)
+    constituents = ['K1','M2','S2','K2']
+    harmonics_combined = harmonics.harmonics_combine(constituents)
+
+    #TEST: Check values in arrays and constituents
+    check1 = list(harmonics_combined.dataset.constituent.values) == constituents
+    check2 = harmonics_combined.dataset.harmonic_x[1].values == harmonics.dataset.M2x.values
+    if check1 and check2.all():
+        print(str(sec) + chr(subsec) + " OK - Harmonics loaded and combined")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem combining harmonics")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 1k ) Convert harmonics to a/g and back                                    #
+#                                                                             #
+
+subsec = subsec+1
+# Convert the harmonics loaded in 1i to amplitude and phase
+
+try:
+    harmonics_combined.harmonics_convert(direction='cart2polar')
+    harmonics_combined.harmonics_convert(direction='polar2cart',
+                                         x_var='x_test', y_var='y_test')
+
+    #TEST: Check variables and differences
+    check1 = 'x_test' in harmonics_combined.dataset.keys()
+    diff = harmonics_combined.dataset.harmonic_x[0].values - harmonics_combined.dataset.x_test[0].values
+    check2 = np.max(np.abs(diff)) < 1e-6
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Harmonics converted")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem converting harmonics")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 '''
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
