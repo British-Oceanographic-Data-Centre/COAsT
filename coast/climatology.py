@@ -2,14 +2,13 @@ from .COAsT import COAsT
 import numpy as np
 from .logging_util import get_slug, debug, info, warn, warning, error
 import xarray as xr
-
+import pandas as pd
 
 class CLIMATOLOGY(COAsT):
     def __init__(self):
         return
     
-    def make_climatology(self, dataset, frequency, time_var = "time", 
-                         time_dim = "t_dim"):
+    def make_climatology(self, da, frequency, calculate_var = False):
         '''
         Calculates a climatology for all variables in a supplied dataset.
         The resulting xarray dataset will NOT be loaded to RAM. Instead,
@@ -29,28 +28,52 @@ class CLIMATOLOGY(COAsT):
         frequency :: any xarray groupby string. i.e:
             'month'
             'season'
-            'dayofyear'
-            'hour'
         time_var :: the string name of the time variable in dataset
         time_dim :: the string name of the time dimension variable in dataset
         '''
         
-        # For the sake of it, if an xarray dataset is not provided, check to
-        # see if there is a dataset inside it (like a NEMO object)
-        if type(dataset) not in [xr.core.dataset.Dataset, xr.core.dataarray.DataArray]:
-            dataset = dataset.dataset
+        n_time_dict = {"month":12, "season":4}
+        month_season_dict = {1:4, 2:1, 3:1, 4:1, 5:2, 6:2,
+                             7:2, 8:3, 9:3, 10:3, 11:4, 12:4}
+        sum_array = np.zeros([n_time_dict[frequency], len(da.z_dim), 
+                         len(da.y_dim), len(da.x_dim)])
+        N_weights = np.zeros(n_time_dict[frequency])
         
-        # Group the dataset by frequency
-        clim = dataset.groupby(time_var+"."+frequency)
         
-        # Calculate the mean and variance
-        clim_dataset = clim.mean(time_var).to_dataset(name='clim_mean')
-        clim_var = clim.var(time_var)
+        for tt in range(0,len(da.t_dim)):
+            print(tt)
+            snapshot = da.isel(t_dim=tt).load()
+            dt_time = pd.to_datetime(snapshot.time.values)
+            if frequency=='month':
+                time_index = dt_time.month - 1
+            elif frequency=='season':
+                time_index=month_season_dict(dt_time.month) - 1
+                
+            if tt == 0:
+                sum_array[time_index] = snapshot
+            else:
+                sum_array[time_index] = sum_array[time_index] + snapshot
+            N_weights[time_index] = N_weights[time_index] + 1
+            
+        if calculate_var:
+            pass
+                
+        for tt in range(0,len(da.t_dim)):
+            print(tt)
+            sum_array[tt] = sum_array[tt]/N_weights[tt]
+            
+        sum_array = xr.Dataset(data_vars = dict(
+                         mean = ([frequency, 'z_dim','y_dim','x_dim'], sum_array),
+                     ),
+                     coords = dict(
+                         longitude=da.longitude,
+                         latitude=da.latitude,
+                     ))
+            
+        return sum_array
+            
+            
         
-        # Combine into one dataset
-        clim_dataset['clim_var'] = clim_var
-        
-        return clim_dataset
     
     def to_netcdf_in_slices():
         return

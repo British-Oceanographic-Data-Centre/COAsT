@@ -9,6 +9,112 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
+def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, 
+        radius: float, mask=None
+    ):
+    """
+    Returns the indices of points that lie within a specified radius (km) of
+    central latitude and longitudes. This makes use of BallTree.query_radius.
+    
+    Parameters
+    ----------
+    longitude   : (numpy.ndarray) longitudes in degrees
+    latitude    : (numpy.ndarray) latitudes in degrees
+    centre_lon  : Central longitude. Can be single value or array of values
+    centre_lat  : Central latitude. Can be single value or array of values
+    radius      : (float) Radius in km within which to find indices
+    mask        : (numpy.ndarray) of same dimension as longitude and latitude.
+                  If specified, will mask out points from the routine.
+    Returns
+    -------
+        Returns an array of indices corresponding to points within radius.
+        If more than one central location is specified, this will be a list
+        of index arrays. Each element of which corresponds to one centre.
+    If longitude is 1D:
+        Returns one array of indices per central location
+    If longitude is 2D:
+        Returns arrays of x and y indices per central location.
+        ind_y corresponds to row indices of the original input arrays.
+        
+    DB: This is really slow at the moment. But the bottleneck seems to be right
+    at the start somewhere.. Best stick to subset_indices_by_distance for now.
+    """
+    # Calculate radius in radians
+    earth_radius = 6371
+    r_rad = radius/earth_radius
+    # For reshaping indices at the end
+    original_shape = longitude.shape
+    # Check if radius centres are numpy arrays. If not, make them into ndarrays
+    if not isinstance(centre_lon, (np.ndarray)):
+        centre_lat = np.array(centre_lat)
+        centre_lon = np.array(centre_lon)
+    # Determine number of centres provided
+    n_pts = 1 if centre_lat.shape==() else len(centre_lat)
+    # If a mask is supplied, remove indices from arrays. Flatten input ready
+    # for BallTree
+    if mask is None:
+        longitude = longitude.flatten()
+        latitude = latitude.flatten()
+    else:
+        longitude[mask] = np.nan
+        latitude[mask] = np.nan
+        longitude = longitude.flatten()
+        latitude = latitude.flatten()
+    # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
+    locs = np.vstack((latitude, longitude)).transpose()
+    locs = np.radians(locs)
+    # Construct central input to BallTree.query_radius
+    if n_pts==1:
+        centre = np.array([[centre_lat, centre_lon]])
+    else:
+        centre = np.vstack((centre_lat, centre_lon)).transpose()
+    centre = np.radians(centre)
+    # Do nearest neighbour interpolation using BallTree (gets indices)
+    tree = nb.BallTree(locs, leaf_size=2, metric='haversine')
+    ind_1d = tree.query_radius(centre, r = r_rad)
+    if len(original_shape) == 1:
+        return ind_1d
+    else:
+        # Get 2D indices from 1D index output from BallTree
+        ind_y = []
+        ind_x = []
+        for ii in np.arange(0,n_pts):
+            x_tmp, y_tmp = np.unravel_index(ind_1d[ii], original_shape)
+            ind_x.append(x_tmp.squeeze())
+            ind_y.append(y_tmp.squeeze())
+        if n_pts==1:
+            return ind_x[0], ind_y[0]
+        else:
+            return ind_x, ind_y
+
+def subset_indices_by_distance(
+        longitude, latitude, centre_lon: float, centre_lat: float, 
+        radius: float
+    ):
+    """
+    This method returns a `tuple` of indices within the `radius` of the 
+    lon/lat point given by the user.
+    Scikit-learn BallTree is used to obtain indices.
+    :param centre_lon: The longitude of the users central point
+    :param centre_lat: The latitude of the users central point
+    :param radius: The haversine distance (in km) from the central point
+    :return: All indices in a `tuple` with the haversine distance of the 
+            central point
+    """
+
+    # Calculate the distances between every model point and the specified
+    # centre. Calls another routine dist_haversine.
+
+    dist = calculate_haversine_distance(centre_lon, centre_lat, 
+                                        longitude, latitude)
+    indices_bool = dist < radius
+    indices = np.where(indices_bool)
+
+    if len(longitude.shape) == 1:
+        return xr.DataArray(indices[0])
+    else:
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
+
 def compare_angles(a1,a2,degrees=True):
     '''
     # Compares the difference between two angles. e.g. it is 2 degrees between
@@ -152,10 +258,11 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
     else:
-        mod_lon[mask] = 1e6
-        mod_lat[mask] = 1e6
+        mod_lon[mask] = np.nan
+        mod_lat[mask] = np.nan
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
+    
 
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     mod_loc = np.vstack((mod_lat, mod_lon)).transpose()

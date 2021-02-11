@@ -61,19 +61,20 @@ class PROFILE(COAsT):
                 
         
         rename_vars = {'LATITUDE':'latitude', 'LONGITUDE' : 'longitude',
-                       'DEPH_CORRECTED' : 'depth', 'N_PROF':'profile',
-                       'N_PARAM':'parameter', 'N_LEVELS':'level',
-                       'JULD':'time','POTM_CORRECTED':'potential_temperature',
+                       'DEPH_CORRECTED' : 'depth', 'JULD':'time',
+                       'POTM_CORRECTED':'potential_temperature',
                        'TEMP':'temperature', 'PSAL_CORRECTED':'practical_salinity',
                        'POTM_CORRECTED_QC':'qc_potential_temperature',
                        'PSAL_CORRECTED_QC':'qc_practical_salinity',
                        'DEPH_CORRECTED_QC':'qc_depth',
                        'JULD_QC':'qc_time'}
+        rename_dims = {'N_PROF':'profile', 'N_PARAM':'parameter', 
+                       'N_LEVELS':'z_dim',}
         vars_to_keep = list(rename_vars.keys())
         coords = ['LATITUDE','LONGITUDE','JULD']
         self.dataset = self.dataset.set_coords(coords)
-        self.dataset = self.dataset[vars_to_keep].rename(rename_vars)
-        self.dataset = self.dataset.drop_vars(['profile','parameter','level'])
+        self.dataset = self.dataset.rename(rename_dims)
+        self.dataset = self.dataset[vars_to_keep].rename_vars(rename_vars)
         return
         
 ##############################################################################
