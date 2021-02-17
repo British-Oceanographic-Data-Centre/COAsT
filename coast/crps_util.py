@@ -37,6 +37,10 @@ def crps_empirical(sample, obs):
         xa = float(obs)
         crps_integral = 0
         sample = np.array(sample)
+        
+        if all(np.isnan(sample)) or np.isnan(obs):
+            return np.nan
+        
         sample = sample[~np.isnan(sample)]
         sample = np.sort(sample)
         sample_size = len(sample)

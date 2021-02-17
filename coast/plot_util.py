@@ -10,10 +10,14 @@ from warnings import warn
 from .logging_util import get_slug, debug, info, warn, error
 import numpy as np
 
-def ts_diagram(temperature, salinity, depth):
+
+def ts_diagram(temperature, salinity, depth, fig=None, ax=None):
     
-    fig = plt.figure(figsize = (10,7))
-    ax = plt.scatter(salinity, temperature, c=depth)
+    if fig is None:
+        fig = plt.figure(figsize = (10,7))
+    if ax is None:
+        ax = plt.subplot(111)
+    plt.scatter(salinity, temperature, c=depth)
     cbar = plt.colorbar()
     cbar.set_label('Depth (m)')
     plt.title('T-S Diagram')
@@ -22,7 +26,7 @@ def ts_diagram(temperature, salinity, depth):
     
     return fig, ax
             
-def geo_scatter(longitude, latitude, c=None, s = None, 
+def geo_scatter(longitude, latitude, c=None, s = None, fig = None, ax = None,
                 scatter_kwargs=None, coastline_kwargs=None,
                 gridline_kwargs=None, figure_kwargs={},
                 title="", figsize=None):
@@ -56,9 +60,13 @@ def geo_scatter(longitude, latitude, c=None, s = None,
                             "scale":"50m"}
     if scatter_kwargs is None:
         scatter_kwargs = {}
-    fig = plt.figure(**figure_kwargs)
-
-    ax = plt.subplot(111, projection=ccrs.PlateCarree())
+        
+    # If no figure or ax is provided, create a new one
+    if fig is None:
+        fig = plt.figure(**figure_kwargs)
+    if ax is None:
+        ax = plt.subplot(111, projection=ccrs.PlateCarree())
+        
     sca = ax.scatter(longitude, y=latitude, c=c, s=s, zorder = 100,
                      **scatter_kwargs)
     coast = NaturalEarthFeature(category='physical', **coastline_kwargs)
@@ -72,6 +80,7 @@ def geo_scatter(longitude, latitude, c=None, s = None,
     gl.left_labels = True
     plt.title(title)
     
+    # Automatically determine if the colorbar needs to be extended.
     if c is not None and 'vmax' in scatter_kwargs.keys() and 'vmin' in scatter_kwargs.keys():
         extend_max = np.nanmax(c) > scatter_kwargs['vmax']
         extend_min = np.nanmin(c) < scatter_kwargs['vmin']

@@ -39,6 +39,11 @@ def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat,
     DB: This is really slow at the moment. But the bottleneck seems to be right
     at the start somewhere.. Best stick to subset_indices_by_distance for now.
     """
+    # change inputs to numpy
+    longitude = np.array(longitude)
+    latitude = np.array(latitude)
+    centre_lon = np.array(centre_lon)
+    centre_lat = np.array(centre_lat)
     # Calculate radius in radians
     earth_radius = 6371
     r_rad = radius/earth_radius
@@ -222,7 +227,8 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     '''
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
-    and its BallTree haversine method.
+    and its BallTree haversine method. Ensure there are no NaNs in 
+    input longitude/latitude arrays (or mask them using "mask"")
 
     Example Useage
     ----------
@@ -258,10 +264,14 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
     else:
-        mod_lon[mask] = np.nan
-        mod_lat[mask] = np.nan
-        mod_lon = mod_lon.flatten()
-        mod_lat = mod_lat.flatten()
+        mod_lon = remove_indices_by_mask(mod_lon, mask)
+        mod_lat = remove_indices_by_mask(mod_lat, mask)
+        # If we are masking, we want to preserve the original indices so that
+        # we can get them back at the end (since masked points are removed).
+        cc, rr = np.meshgrid( np.arange(0,original_shape[1]), 
+                             np.arange(0,original_shape[0]))
+        cc = remove_indices_by_mask(cc, mask)
+        rr = remove_indices_by_mask(rr, mask)
     
 
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
@@ -275,11 +285,17 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(mod_loc, leaf_size=5, metric='haversine')
     _, ind_1d = tree.query(new_loc, k=1)
-
-    # Get 2D indices from 1D index output from BallTree
-    ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
+    
+    if mask is None:
+        # Get 2D indices from 1D index output from BallTree
+        ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
+    else:
+        ind_y = rr[ind_1d]
+        ind_x = cc[ind_1d]
+        
     ind_x = xr.DataArray(ind_x.squeeze())
     ind_y = xr.DataArray(ind_y.squeeze())
+        
     return ind_x, ind_y
 
 def dataarray_time_slice(data_array, date0, date1):
