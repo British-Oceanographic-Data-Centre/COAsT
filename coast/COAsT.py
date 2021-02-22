@@ -71,8 +71,7 @@ class COAsT:
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset =  xr.open_mfdataset(directory_to_files, 
                                  chunks=chunks, data_vars="minimal", 
-                                 coords="minimal", compat="override", 
-                                 parallel=True)
+                                 coords="minimal", compat="override")
 
     def load_dataset(self, dataset):
         """        
