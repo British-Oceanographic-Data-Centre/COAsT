@@ -69,8 +69,7 @@ class COAsT:
     def load_multiple(self, directory_to_files, chunks: dict = {}):
         """ Loads multiple files from directory into dataset variable. """
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
-        with dask.config.set(**{'array.slicing.split_large_chunks': True}):
-            self.dataset =  xr.open_mfdataset(directory_to_files, 
+        self.dataset =  xr.open_mfdataset(directory_to_files, 
                                  chunks=chunks, data_vars="minimal", 
                                  coords="minimal", compat="override", 
                                  parallel=True)
