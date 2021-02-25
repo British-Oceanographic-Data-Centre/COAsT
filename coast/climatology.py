@@ -1,6 +1,7 @@
 from .COAsT import COAsT
 import numpy as np
 from dask.diagnostics import ProgressBar
+import os
 
 class CLIMATOLOGY(COAsT):
     def __init__(self):
@@ -44,7 +45,7 @@ class CLIMATOLOGY(COAsT):
             grouped = ds['clim_mean_ones_tmp'].groupby(frequency_str)
         
         weights = grouped / grouped.sum()
-        ds_mean = (ds*weights).groupby(frequency_str).sum(dim=time_dim_name)
+        ds_mean = (ds*weights).groupby(frequency_str).sum(dim=time_dim_name) 
         
         if not monthly_weights:
             ds = ds.drop_vars('clim_mean_ones_tmp')
@@ -52,6 +53,8 @@ class CLIMATOLOGY(COAsT):
         if fn_out is not None:
             print('Saving to file. May take some time..')
             with ProgressBar():
+                if os.path.exists(fn_out):
+                    os.remove(fn_out)
                 ds_mean.to_netcdf(fn_out)
         
         return ds_mean

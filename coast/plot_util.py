@@ -96,3 +96,20 @@ def geo_scatter(longitude, latitude, c=None, s = None, fig = None, ax = None,
 
     plt.show()
     return fig, ax
+
+def determine_colorbar_extension(color_data, vmin, vmax):
+    # Automatically determine if the colorbar needs to be extended.
+    extend_max = np.nanmax(color_data) > vmax
+    extend_min = np.nanmin(color_data) < vmin
+    
+    if extend_max and extend_min: return "both"
+    elif extend_max and not extend_min: return 'max'
+    elif not extend_max and extend_min: return 'min'
+    else: return 'neither'
+
+def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
+    color_data_mean = np.nanmean(color_data)
+    color_data_std = np.nanstd(color_data)
+    vmin = color_data_mean - n_std_dev*color_data_std
+    vmax = color_data_mean + n_std_dev*color_data_std
+    return vmin, vmax
