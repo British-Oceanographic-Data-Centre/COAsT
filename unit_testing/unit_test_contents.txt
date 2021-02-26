@@ -50,17 +50,19 @@
 
 7. TIDEGAUGE Methods
     a. Load GESLA data
-    b. TIDEGAUGE obs operator
-    c. Tidegauge CRPS
-    d. Tiudegauge basic stats
-    e. Resample TIDEGAUGE
-    f. Apply Doodson XO Filter to data
-    g. Loading multiple tidegauges
-    h. Plotting a single tidegauge location
-    i. Plotting multiple tidegauge locations
-    j. Tidegauge time series plot
-    k. TIDEGAUGE method for tabulated data
-    l. TIDEGAUGE method for finding peaks and troughs
+    b. Load BODC data
+    c. Load EA data via API
+    d. TIDEGAUGE obs operator
+    e. Tidegauge CRPS
+    f. Tiudegauge basic stats
+    g. Resample TIDEGAUGE
+    h. Apply Doodson XO Filter to data
+    i. Loading multiple tidegauges
+    j. Plotting a single tidegauge location
+    k. Plotting multiple tidegauge locations
+    l. Tidegauge time series plot
+    m. TIDEGAUGE method for tabulated data
+    n. TIDEGAUGE method for finding peaks and troughs
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points
@@ -72,7 +74,7 @@
 9. EOF methods
     a. Compute EOFs, projections and variance
     b. Compute HEOFs, projections and variance
-    
+
 10. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
@@ -81,4 +83,3 @@
     e. tutorial on SEAsia data
     f. tutorial on WCSSP-India data
     g. tutorial on internal tides
-    

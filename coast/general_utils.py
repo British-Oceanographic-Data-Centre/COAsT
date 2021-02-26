@@ -9,6 +9,53 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
+def compare_angles(a1,a2,degrees=True):
+    '''
+    # Compares the difference between two angles. e.g. it is 2 degrees between
+    # 359 and 1 degree. If degrees = False then will treat angles as radians.
+    '''
+
+    if not degrees:
+        a1 = np.degrees(a1)
+        a2 = np.degrees(a2)
+
+    diff = 180 - np.abs(np.abs(a1-a2)-180)
+
+    if not degrees:
+        a1 = np.radians(a1)
+        a2 = np.radians(a2)
+
+    return diff
+
+def cart2polar(x, y, degrees = True):
+    '''
+    # Conversion of cartesian to polar coordinate system
+    # Output theta is in radians
+    '''
+    r     = np.sqrt(x**2 + y**2)
+    theta = np.arctan2(y, x)
+    if degrees:
+        theta = np.rad2deg(theta)
+    return(r, theta)
+
+def polar2cart(r, theta, degrees=True):
+    '''
+    # Conversion of polar to cartesian coordinate system
+    # Input theta must be in radians
+    '''
+    if degrees:
+        theta = np.deg2rad(theta)
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    return(x, y)
+
+def subset_indices_lonlat_box(array_lon, array_lat, lonmin, lonmax, 
+                              latmin, latmax):
+    ind_lon = np.logical_and(array_lon <= lonmax, array_lon >= lonmin)
+    ind_lat = np.logical_and(array_lat <= latmax, array_lat >= latmin)
+    ind = np.where( np.logical_and(ind_lon, ind_lat) )
+    return ind
+
 def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     '''
     # Estimation of geographical distance using the Haversine function.
@@ -105,8 +152,8 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
     else:
-        mod_lon[mask] = np.nan
-        mod_lat[mask] = np.nan
+        mod_lon[mask] = 1e6
+        mod_lat[mask] = 1e6
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
 
