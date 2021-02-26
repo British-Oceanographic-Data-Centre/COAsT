@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
     
 dir_nam = "/projectsa/anchor/NEMO/AMM60/"
 fil_nam = "AMM60_1h_20100818_20100822_NorthSea.nc"
-dom_nam = "/projectsa/anchor/NEMO/AMM60/mesh_mask.nc"
-        
+dom_nam = "/projectsa/FASTNEt/jelt/AMM60/mesh_mask.nc"
+
 dir_nam = '/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/'
 fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 

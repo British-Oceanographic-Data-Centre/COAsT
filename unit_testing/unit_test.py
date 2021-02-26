@@ -274,10 +274,9 @@ except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
 
-subsec = subsec+1
 
 #-----------------------------------------------------------------------------#
-# ( 1j ) Load and combine harmonics                                           #
+#%% ( 1i ) Load and combine harmonics                                         #
 #                                                                             #
 
 subsec = subsec+1
@@ -302,7 +301,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 #-----------------------------------------------------------------------------#
-# ( 1k ) Convert harmonics to a/g and back                                    #
+#%% ( 1j ) Convert harmonics to a/g and back                                  #
 #                                                                             #
 
 subsec = subsec+1
