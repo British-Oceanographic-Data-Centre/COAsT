@@ -7,12 +7,13 @@ outlined in TIDEGAUGE.py.
 # Begin by importing coast and other packages
 import coast
 import datetime
+import numpy as np
 
 # And by defining some file paths
-fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc' 
+fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc'
 fn_nemo_dom  = './example_files/COAsT_example_NEMO_domain.nc'
 fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
-fn_tidegauge_mult = './example_files/tide_gauges/l*' 
+fn_tidegauge_mult = './example_files/tide_gauges/l*'
 
 # We need to load in a NEMO object for doing NEMO things.
 nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
@@ -27,7 +28,7 @@ date1 = datetime.datetime(2007,1,16)
 tidegauge = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
 
 # Before comparing our observations to the model, we will interpolate a model
-# variable to the same time and geographical space as the tidegauge. This is 
+# variable to the same time and geographical space as the tidegauge. This is
 # done using the obs_operator() method:
 tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 
@@ -37,20 +38,20 @@ tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 #
 # Next we will compare this interpolated variable to an observed variable
 # using some basic metrics. The basic_stats() routine can be used for this,
-# which calculates some simple metrics including differences, RMSE and 
+# which calculates some simple metrics including differences, RMSE and
 # correlations. NOTE: This may not be a wise choice of variables.
 stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
 
 # Take a look inside stats.dataset to see all of the new variables. When using
 # basic stats, the returned object is also an TIDEGAUGE object, so all of the
-# same methods can be applied. Alternatively, if you want to save the new 
+# same methods can be applied. Alternatively, if you want to save the new
 # metrics to the original altimetry object, set create_new_object = False.
 #
 # Now we will do a more complex comparison using the Continuous Ranked
 # Probability Score (CRPS). For this, we need to hand over the model object,
 # a model variable and an observed variable. We also give it a neighbourhood
 # radius in km (nh_radius). This may take a minute to run.
-crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level', 
+crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
                       nh_radius = 20)
 
 # Again, take a look inside crps.dataset to see some new variables. Similarly
@@ -80,7 +81,7 @@ tidegauge.resample_mean('sea_level', '1H')
 # Here we have resampled the 'sea_level' object. Now, in tidegauge.dataset
 # there is a new variable sea_level_1H, along a new dimension time_1H. 1H
 # can be subsitituted for other strings (e.g. 1D = 1 day) or using timedelta
-# object. 
+# object.
 #
 # Now, we can apply the doodson x0 filter to the new variable:
 tidegauge.apply_doodson_x0_filter('sea_level_1H')
@@ -111,7 +112,48 @@ fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list)
 for tg in tidegauge_list:
     tg.obs_operator(nemo, 'ssh')
     tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
-    
+
 # And now some of these new values can be plotted on a map, again using
 # plot_on_map_multiple:
 fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
+
+
+#%%  Additionally, alternative data streams can be read in and similarly
+# processed. For example the BODC processed data from the UK Tidegauge network.
+# Data name: UK Tide Gauge Network, processed data.
+# Source: https://www.bodc.ac.uk/
+
+# Load and plot BODC processed data
+fn_bodc = 'example_files/LIV2010.txt'
+
+# Set the start and end dates
+date_start = np.datetime64('2020-10-12 23:59')
+date_end = np.datetime64('2020-10-14 00:01')
+
+# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+# type object
+tg = coast.TIDEGAUGE()
+# specify the data read as a High Low Water dataset
+tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
+tg.plot_timeseries()
+
+
+#%% Alternatively load in data obtained using the Environment Agency (England)
+#  API. These are only accessible for the last 28 days. This does not require
+# an API key.
+#  Details of available tidal stations are recovered with:
+#  https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+# Recover the "stationReference" for the gauge of interest and pass as
+# stationId:str. The default gauge is Liverpool: stationId="E70124"
+ # Construct a recent 10 days period and extract these data
+date_start = np.datetime64('now')-np.timedelta64(20,'D')
+date_end = np.datetime64('now')-np.timedelta64(10,'D')
+eg = coast.TIDEGAUGE()
+# Extract the data between explicit dates
+eg.dataset = eg.read_EA_API_to_xarray(date_start=date_start, date_end=date_end )
+eg.plot_timeseries()
+
+# Alternatively extract the data for the last ndays, here for a specific
+# (the default) station.
+eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
+eg.plot_timeseries()

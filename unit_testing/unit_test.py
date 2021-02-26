@@ -92,6 +92,10 @@ fn_nemo_dat_subset = 'COAsT_example_NEMO_subset_data.nc'
 fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
 fn_altimetry = 'COAsT_example_altimetry_data.nc'
 fn_tidegauge = dn_files + 'tide_gauges/lowestoft-p024-uk-bodc'
+fn_tidegauge2 = dn_files + 'tide_gauges/LIV2010.txt'
+fn_EN4 = dn_files + 'EN4_example.nc'
+fn_nemo_harmonics = "coast_nemo_harmonics.nc"
+fn_nemo_harmonics_dom    = "coast_nemo_harmonics_dom.nc"
 
 sec = 1
 subsec = 96 # Code for '`' (1 below 'a')
@@ -270,7 +274,56 @@ except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
 
+
+#-----------------------------------------------------------------------------#
+#%% ( 1i ) Load and combine harmonics                                         #
+#                                                                             #
+
 subsec = subsec+1
+# Load in a NEMO data file containing harmonics and combine them into a new
+# NEMO obejct and dataset.
+
+try:
+    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics, 
+                           dn_files + fn_nemo_harmonics_dom)
+    constituents = ['K1','M2','S2','K2']
+    harmonics_combined = harmonics.harmonics_combine(constituents)
+
+    #TEST: Check values in arrays and constituents
+    check1 = list(harmonics_combined.dataset.constituent.values) == constituents
+    check2 = harmonics_combined.dataset.harmonic_x[1].values == harmonics.dataset.M2x.values
+    if check1 and check2.all():
+        print(str(sec) + chr(subsec) + " OK - Harmonics loaded and combined")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem combining harmonics")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+#%% ( 1j ) Convert harmonics to a/g and back                                  #
+#                                                                             #
+
+subsec = subsec+1
+# Convert the harmonics loaded in 1i to amplitude and phase
+
+try:
+    harmonics_combined.harmonics_convert(direction='cart2polar')
+    harmonics_combined.harmonics_convert(direction='polar2cart',
+                                         x_var='x_test', y_var='y_test')
+
+    #TEST: Check variables and differences
+    check1 = 'x_test' in harmonics_combined.dataset.keys()
+    diff = harmonics_combined.dataset.harmonic_x[0].values - harmonics_combined.dataset.x_test[0].values
+    check2 = np.max(np.abs(diff)) < 1e-6
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Harmonics converted")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem converting harmonics")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 '''
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
@@ -871,7 +924,7 @@ sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-g
 
 
 #-----------------------------------------------------------------------------#
-#%% ( 7a ) Load in GESLA tide gauge files from directory                        #
+#%% ( 7a ) Load in GESLA tide gauge files from directory                      #
 #                                                                             #
 
 subsec = subsec+1
@@ -907,9 +960,86 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+#-----------------------------------------------------------------------------#
+#%% ( 7b ) Load in BODC tide gauge data                                       #
+#                                                                             #
+
+subsec = subsec+1
+
+
+# Load and plot BODC processed data
+try:
+    # Set the start and end dates
+    date_start = np.datetime64('2020-10-12 23:59')
+    date_end = np.datetime64('2020-10-14 00:01')
+
+    # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+    # type object
+    tg = coast.TIDEGAUGE()
+    # specify the data read as a High Low Water dataset
+    tg.dataset = tg.read_bodc_to_xarray(fn_tidegauge2, date_start, date_end)
+    #tg.plot_timeseries()
+
+    # TEST: Define Attribute dictionary for comparison
+    test_attrs = {'port': 'p234',
+                 'site': 'liverpool,_gladstone_dock',
+                 'start_date': '01oct2020-00.00.00',
+                 'end_date': '31oct2020-23.45.00',
+                 'contributor': 'national_oceanography_centre,_liverpool',
+                 'datum_information': 'the_data_refer_to_admiralty_chart_datum_(acd)',
+                 'parameter_code': 'aslvbg02_=_surface_elevation_(unspecified_datum)_of_the_water_body_by_bubbler_tide_gauge_(second_sensor)',
+                 'site_name': 'liverpool,_gladstone_dock'}
+
+    #TEST: Check attribute dictionary and length of sea_level.
+    check1 = len(tg.dataset.sea_level) == 97
+    check2 = tg.dataset.attrs == test_attrs
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - BODC tide gauge loaded")
+    else:
+        print(str(sec) + chr(subsec) + " X - Failed to load BODC tide gauge")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7b ) TIDEGAUGE obs_operator                                               #
+#%% ( 7c ) Load in Environment Agency river gauge data from API               #
+#                                                                             #
+
+subsec = subsec+1
+
+# Load in data obtained using the Environment Agency (England)
+#  API. These are only accessible for the last 28 days. This does not require
+# an API key.
+#  Details of available tidal stations are recovered with:
+#  https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+# Recover the "stationReference" for the gauge of interest and pass as
+# stationId:str. The default gauge is Liverpool: stationId="E70124"
+# Construct a recent 10 days period and extract these data
+
+try:
+    date_start = np.datetime64('now')-np.timedelta64(20,'D')
+    date_end = np.datetime64('now')-np.timedelta64(10,'D')
+    eg = coast.TIDEGAUGE()
+    # Extract the data between explicit dates
+    eg.dataset = eg.read_EA_API_to_xarray(date_start=date_start, date_end=date_end )
+    check1 = eg.dataset.site_name == 'Liverpool'
+    check2 = len(eg.dataset.sea_level) > 0
+    #eg.plot_timeseries()
+
+    # Alternatively extract the data for the last ndays, here for a specific
+    # (the default) station.
+    eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
+    check3 = eg.dataset.site_name == 'Liverpool'
+    #eg.plot_timeseries()
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK - EA Tide gauge loaded")
+    else:
+        print(str(sec) + chr(subsec) + " X - Failed to load EA tide gauge")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+#%% ( 7d ) TIDEGAUGE obs_operator                                             #
 #                                                                             #
 
 subsec = subsec+1
@@ -937,7 +1067,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7c ) TIDEGAUGE CRPS                                                       #
+#%% ( 7e) TIDEGAUGE CRPS                                                      #
 #                                                                             #
 subsec = subsec+1
 # Compare modelled SSH to observed sea level using CRPS. This can be done
@@ -959,7 +1089,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7d ) TIDEGAUGE Stats methods                                              #
+#%% ( 7f ) TIDEGAUGE Stats methods                                            #
 #                                                                             #
 subsec = subsec+1
 # We can batch return the basic stats methods from TIDEGAUGE using basic_stats().
@@ -982,7 +1112,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7e ) TIDEGAUGE Resample to hourly                                       #
+#%% ( 7g ) TIDEGAUGE Resample to hourly                                       #
 #                                                                             #
 subsec = subsec+1
 # Lets resample the tide gauge data to be hourly.
@@ -1004,7 +1134,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7f ) Apply Doodson XO filter to hourly data                             #
+#%% ( 7h ) Apply Doodson XO filter to hourly data                             #
 #                                                                             #
 subsec = subsec+1
 # Lets resample the tide gauge data to be hourly.
@@ -1025,7 +1155,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7g ) TIDEGAUGE Loading multiple TIDEGAUGES                                #
+#%% ( 7i ) TIDEGAUGE Loading multiple TIDEGAUGES                              #
 #                                                                             #
 subsec = subsec+1
 # We can load multiple tide gauges into a list of TIDEGAUGE objects using the
@@ -1049,7 +1179,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7h ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7j ) TIDEGAUGE map plot (single)                                        #
 #                                                                             #
 subsec = subsec+1
 
@@ -1064,7 +1194,7 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7i ) TIDEGAUGE map plot (single)                                          #
+#%% ( 7k ) TIDEGAUGE map plot (single)                                        #
 #                                                                             #
 subsec = subsec+1
 
@@ -1079,7 +1209,7 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7j ) TIDEGAUGE Time series plot                                           #
+#%% ( 7l ) TIDEGAUGE Time series plot                                         #
 #                                                                             #
 subsec = subsec+1
 
@@ -1095,7 +1225,7 @@ except:
 plt.close('all')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7k ) TIDEGAUGE method for tabulated data                                #
+#%% ( 7m ) TIDEGAUGE method for tabulated data                                #
 #                                                                             #
 subsec = subsec+1
 
@@ -1121,9 +1251,9 @@ try:
         print(str(sec) + chr(subsec) + " X - Tide table processing")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 #-----------------------------------------------------------------------------#
-#%% ( 7l ) TIDEGAUGE method for finding extrema and troughs                     #
+#%% ( 7n ) TIDEGAUGE method for finding extrema and troughs                   #
 #                                                                             #
 subsec = subsec+1
 
@@ -1133,16 +1263,16 @@ try:
     date1 = datetime.datetime(2007,1,20)
     lowestoft2 = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
                                 date_end = date1)
-    
+
     extrema = lowestoft2.find_high_and_low_water('sea_level', distance=40)
-    
+
     # Check actual maximum/minimum is in output dataset
     check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_highs
     check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_lows
     # Check new time dimensions have correct length (hardcoded here)
     check3 = len(extrema.dataset.time_highs) == 19
     check4 = len(extrema.dataset.time_lows) == 18
-    
+
     # Attempt a plot
     f = plt.figure()
     plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
@@ -1254,19 +1384,19 @@ subsec = 96
 
 #%%---------------------------------------------------------------------------#
 # ( 9a ) Compute regular EOFs, temporal projections and variance explained   #
-# 
+#
 subsec = subsec+1
 try:
     nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
     eofs = coast.eofs( nemo_t.dataset.ssh )
-    
+
     ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim='mode'). \
                         sum(dim=['x_dim','y_dim'])
     ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
                         sum(dim=['x_dim','y_dim'])
-                        
-    # Check ssh anomaly is reconstructed at each time point 
+
+    # Check ssh anomaly is reconstructed at each time point
     if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
         var_cksum = eofs.variance.sum(dim='mode').item()
         if np.isclose(var_cksum, 100):
@@ -1280,21 +1410,21 @@ except:
 
 #%%---------------------------------------------------------------------------#
 # ( 9b ) Compute  HEOFs, temporal projections and variance explained   #
-# 
+#
 subsec = subsec+1
 try:
     nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                     fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
     heofs = coast.hilbert_eofs( nemo_t.dataset.ssh )
-                        
+
     ssh_reconstruction = (heofs.EOF_amp * heofs.temporal_amp * \
         uf.exp( 1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase ) ) ) \
         .sum(dim='mode').real.sum(dim=['x_dim','y_dim'])
-        
+
     ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim='t_dim')). \
                         sum(dim=['x_dim','y_dim'])
-                        
-    # Check ssh anomaly is reconstructed at each time point                   
+
+    # Check ssh anomaly is reconstructed at each time point
     if np.allclose( ssh_reconstruction, ssh_anom, rtol=0.0001 ):
         var_cksum = heofs.variance.sum(dim='mode').item()
         if np.isclose(var_cksum, 100):
@@ -1303,7 +1433,7 @@ try:
             print(str(sec) + chr(subsec) + " X - Variance explained does not sum to 100 %")
     else:
         print(str(sec) + chr(subsec) + " X - Original signal not reconstructed from HEOFs")
-        
+
 
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
@@ -1332,6 +1462,8 @@ try:
     from example_scripts import altimetry_tutorial # This runs on example_files
     from example_scripts import tidegauge_tutorial # This runs on example_files
     from example_scripts import tidetable_tutorial # This runs on example_files
+    from example_scripts import export_to_netcdf_tutorial # This runs on example_files
+
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec+1
 
@@ -1366,7 +1498,78 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+'''
+#################################################
+## ( 11 ) PROFILE Methods                     ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
 
+#-----------------------------------------------------------------------------#
+# ( 11a ) Load EN4 data                                                       #
+#                                                                             #
+
+subsec = subsec+1
+# Create PROFILE object and read EN4 example data file
+
+try:
+    profiles = coast.PROFILE()
+    profiles.read_EN4(fn_EN4)
+
+    #TEST: Check some data
+    check1 = profiles.dataset.dims['N_LEVELS'] == 400
+    check2 = profiles.dataset.longitude[11].values == 9.89777
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+
+#-----------------------------------------------------------------------------#
+# ( 11b ) Plot locations on map                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot profile locations on a map
+
+try:
+    f,a = profiles.plot_map()
+    f.savefig(dn_fig + 'profiles_map.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11c ) Plot ts diagram                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_ts_diagram(10)
+    f.savefig(dn_fig + 'profile_ts_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11d ) Plot temperature profile                                            #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
+    f.savefig(dn_fig + 'profile_temperature_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #%% Close log file
 #################################################
