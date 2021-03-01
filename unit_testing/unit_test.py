@@ -325,6 +325,29 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+#-----------------------------------------------------------------------------#
+# ( 1l ) Compute e3 from the SSH field                                        #
+#
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
+    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
+    
+    e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t, True,True,True,True,True)
+    # these refereces are based on the examples files ssh field
+    reference = np.array([1.43224542e+09, 1.4288962e+09, 1.43503145e+09, \
+                 1.42000599e+09, 1.42835079e+09])
+    if np.allclose(np.array([e3t,e3u,e3v,e3f,e3w]), reference):
+        print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] as expected")
+    else:
+        print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] not as expected")        
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
 '''
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##

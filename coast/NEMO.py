@@ -56,13 +56,13 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """ Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid':
-            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
+            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0',] #What about e3vw
         elif self.grid_ref == 'v-grid':
             self.grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
         elif self.grid_ref == 't-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask', 'bottom_level']
         elif self.grid_ref == 'w-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0', 'bottom_level']
         elif self.grid_ref == 'f-grid':
             self.grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
 
@@ -108,7 +108,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                                    'depthf_0':'depth_0',
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
                                    'depthw_0':'depth_0', 'deptht_0':'depth_0',
-                                   'ln_sco':'ln_sco'}
+                                   'ln_sco':'ln_sco', 'bottom_level':'bottom_level'}
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
@@ -701,7 +701,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         # mask out correction at layers below bottom level
         e3t_new = e3t_new.where(e3t_new.z_dim<ds_dom.bottom_level,e3t_0.data)
         # preserve any other t mask
-        e3t_new = e3t_new.where(~xr.ufuncs.isnan(ssh))
+        e3t_new = e3t_new.where(~np.isnan(ssh))
         if e3t:
             e3_return.append(e3t_new)
         
