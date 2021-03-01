@@ -1245,6 +1245,7 @@ class TIDEGAUGE():
                                 **kwargs):
         '''
         Finds high and low water for a given variable.
+        Intended for use on 2-pt oscillating tide table data.
         Returns in a new TIDEGAUGE object with similar data format to
         a TIDETABLE.
 

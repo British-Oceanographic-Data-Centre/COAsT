@@ -157,3 +157,26 @@ eg.plot_timeseries()
 # (the default) station.
 eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
 eg.plot_timeseries()
+
+#%% Tide table extrema can be extracted from the timeseries
+#        Finds high and low water for a given variable.
+#        Returns in a new TIDEGAUGE object with similar data format to
+#        a TIDETABLE.
+"""
+problem: existing find_high_and_low_water() method='comp' assumed tidetable input
+With method="cubic" it processes the complete timeseries to find the EXTREMA and 
+not the max
+"""
+
+# Data might need sorting by time
+eg.dataset =  eg.dataset.sortby(eg.dataset.time)
+
+HLW = eg.find_high_and_low_water('sea_level',method='cubic')
+
+import matplotlib.pyplot as plt
+plt.plot( eg.dataset.time, eg.dataset['sea_level'],'r.-', label='data')
+plt.plot( HLW.dataset.time_highs, HLW.dataset['sea_level_highs'],'k+', label='cubic spline extrema')
+plt.legend()
+plt.show()
+
+
