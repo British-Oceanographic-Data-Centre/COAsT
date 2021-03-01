@@ -693,7 +693,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         e3t_0 = ds_dom.e3t_0
     
         # Water column thickness, i.e. depth of bottom w-level on horizontal t-grid
-        H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level-1)
+        H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level.astype("int")-1)
         # Add correction to e3t_0 due to change in ssh
         e3t_new = e3t_0 * ( 1 + ssh / H )
         # preserve dimension ordering

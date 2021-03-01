@@ -338,13 +338,15 @@ try:
                         fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
     
     e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t, True,True,True,True,True)
-    # these refereces are based on the examples files ssh field
-    reference = np.array([1.43224542e+09, 1.4288962e+09, 1.43503145e+09, \
-                 1.42000599e+09, 1.42835079e+09])
-    if np.allclose(np.array([e3t,e3u,e3v,e3f,e3w]), reference):
+    cksum = np.array([e3t.sum(),e3u.sum(),e3v.sum(),
+                      e3f.sum(),e3w.sum()])
+    # these references are based on the example file's ssh field
+    reference = np.array([8.337016e+08, 8.333972e+08, 8.344886e+08,
+                          8.330722e+08, 8.265948e+08])
+    if np.allclose(cksum, reference):
         print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] as expected")
     else:
-        print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] not as expected")        
+        print(str(sec) + chr(subsec) + " X - computed e3[t,u,v,f,w] not as expected")        
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 
