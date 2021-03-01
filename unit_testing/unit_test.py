@@ -274,10 +274,9 @@ except:
     print(str(sec) + chr(subsec) +' FAILED. Test data in: {} on {}.'\
           .format(dn_files, file_names_amm7) )
 
-subsec = subsec+1
 
 #-----------------------------------------------------------------------------#
-# ( 1j ) Load and combine harmonics                                           #
+#%% ( 1i ) Load and combine harmonics                                         #
 #                                                                             #
 
 subsec = subsec+1
@@ -302,7 +301,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 #-----------------------------------------------------------------------------#
-# ( 1k ) Convert harmonics to a/g and back                                    #
+#%% ( 1j ) Convert harmonics to a/g and back                                  #
 #                                                                             #
 
 subsec = subsec+1
@@ -326,18 +325,14 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-# ( 1l ) Compute e3 from the SSH field                                        #
+#%% ( 1k ) Compute e3 from SSH field                                      #
 #
 subsec = subsec+1
 try:
     nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
                         fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
-    nemo_u = coast.NEMO( fn_data=dn_files+fn_nemo_grid_u_dat,
-                        fn_domain=dn_files+fn_nemo_dom, grid_ref='u-grid' )
-    nemo_v = coast.NEMO( fn_data=dn_files+fn_nemo_grid_v_dat,
-                        fn_domain=dn_files+fn_nemo_dom, grid_ref='v-grid' )
     
-    e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t, True,True,True,True,True)
+    e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t,True,True,True,True,True)
     cksum = np.array([e3t.sum(),e3u.sum(),e3v.sum(),
                       e3f.sum(),e3w.sum()])
     # these references are based on the example file's ssh field
