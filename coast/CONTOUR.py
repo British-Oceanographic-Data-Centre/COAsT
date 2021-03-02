@@ -11,6 +11,7 @@ from scipy import interpolate
 from scipy.integrate import cumtrapz
 from sklearn.neighbors import BallTree
 from skimage import measure
+from .logging_util import get_slug, debug, info, warn, error
 
 # =============================================================================
 # The contour module is a place for code related to contours only
@@ -308,14 +309,38 @@ class Contour_f(Contour):
         -------
         None.
 
-        '''
-                
+        '''      
+        # compute transports flag; set to false if suitable e3 not found
+        compute_transports = True
+        
         # subset the u and v datasets 
         da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
         da_x_ind = xr.DataArray( self.x_ind, dims=['r_dim'] )
         u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
         v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-        
+                
+        # use time varying if e3 is present, if not default to e3_0
+        if 'e3' not in u_ds.data_vars:
+            if 'e3_0' not in u_ds.data_vars:
+                warn("e3 not found, transports will not be calculated")
+                compute_transports = False
+            else:
+                u_ds['e3'] = u_ds.e3_0.broadcast_like(u_ds.u_velocity) 
+        if 'e3' not in v_ds.data_vars:
+            if 'e3_0' not in v_ds.data_vars:
+                warn("e3 not found, transports will not be calculated")
+                compute_transports = False
+            else:
+                v_ds['e3'] = v_ds.e3_0.broadcast_like(v_ds.v_velocity)  
+           
+        # If time dimension is missing it can throw off the indexing so expand dims        
+        if 't_dim' not in u_ds.dims:
+            u_ds['u_velocity'] = u_ds.u_velocity.expand_dims('t_dim', axis=0)
+            u_ds['e3'] = u_ds.e3.expand_dims('t_dim', axis=0)
+        if 't_dim' not in v_ds.dims:
+            v_ds['v_velocity'] = v_ds.v_velocity.expand_dims('t_dim', axis=0)
+            v_ds['e3'] = v_ds.e3.expand_dims('t_dim', axis=0)
+                    
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,u_ds.r_dim.size-1), np.nan )
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
         dr_s = np.where(np.diff(self.y_ind)<0, np.arange(0,u_ds.r_dim.size-1), np.nan )
@@ -337,13 +362,13 @@ class Contour_f(Contour):
              
         self.data_cross_flow['normal_transport'] = xr.full_like(u_ds.u_velocity, np.nan)  
         self.data_cross_flow['normal_transport'][:,:,dr_n] = ( u_ds.u_velocity.data[:,:,dr_n+1] * 
-                                u_ds.e2.data[dr_n+1] * u_ds.e3_0.data[:,dr_n+1] )
+                                u_ds.e2.data[dr_n+1] * u_ds.e3.data[:,:,dr_n+1] )
         self.data_cross_flow['normal_transport'][:,:,dr_s] = ( -u_ds.u_velocity.data[:,:,dr_s] * 
-                                u_ds.e2.data[dr_s] * u_ds.e3_0.data[:,dr_s] )
+                                u_ds.e2.data[dr_s] * u_ds.e3.data[:,:,dr_s] )
         self.data_cross_flow['normal_transport'][:,:,dr_e] = ( -v_ds.v_velocity.data[:,:,dr_e+1] *
-                                v_ds.e1.data[dr_e+1] * v_ds.e3_0.data[:,dr_e+1] )
+                                v_ds.e1.data[dr_e+1] * v_ds.e3.data[:,:,dr_e+1] )
         self.data_cross_flow['normal_transport'][:,:,dr_w] = ( v_ds.v_velocity.data[:,:,dr_w] *
-                                v_ds.e1.data[dr_w] * v_ds.e3_0.data[:,dr_w] )
+                                v_ds.e1.data[dr_w] * v_ds.e3.data[:,:,dr_w] )
         self.data_cross_flow['normal_transport'].attrs = {'units':'m^3/s', \
                 'standard_name':'contour-normal volume transport'}
         
@@ -359,8 +384,8 @@ class Contour_f(Contour):
         self.__update_cross_flow_vars('e1',u_ds.e1,v_ds.e1,dr_n,dr_s,dr_e,dr_w,0)
         self.data_cross_flow['e2'] = xr.full_like(self.data_contour.e2, np.nan)
         self.__update_cross_flow_vars('e2',u_ds.e2,v_ds.e2,dr_n,dr_s,dr_e,dr_w,0)
-        self.data_cross_flow['e3_0'] = xr.full_like(self.data_contour.e3_0, np.nan)
-        self.__update_cross_flow_vars('e3_0',u_ds.e3_0,v_ds.e3_0,dr_n,dr_s,dr_e,dr_w,1)
+        self.data_cross_flow['e3'] = xr.full_like(self.data_cross_flow.normal_velocities, np.nan)
+        self.__update_cross_flow_vars('e3',u_ds.e3,v_ds.e3,dr_n,dr_s,dr_e,dr_w,2)
         
         self.data_cross_flow['depth_0'].attrs = {'standard_name':'Depth at time zero \
                 on the contour-normal velocity grid points'}
@@ -368,6 +393,7 @@ class Contour_f(Contour):
                 the contour-normal velocity grid points'}
         self.data_cross_flow['longitude'].attrs = {'standard_name':'Longitude at \
                 the contour-normal velocity grid points'}
+        self.data_cross_flow = self.data_cross_flow.squeeze()
 
     
     def __update_cross_flow_vars(self, var, u_var,v_var, dr_n, dr_s, dr_e, dr_w, pos ):

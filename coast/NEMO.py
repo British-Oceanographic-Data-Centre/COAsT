@@ -85,6 +85,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                             'toce' : 'temperature',
                             'so' : 'salinity',
                             'vosaline' : 'salinity',
+                            'soce' : 'salinity',
                             'voce' : 'v_velocity',
                             'vomecrty' : 'v_velocity',
                             'uoce' : 'u_velocity',
