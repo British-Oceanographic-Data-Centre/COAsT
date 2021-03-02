@@ -147,7 +147,7 @@ class Contour:
         '''
         Class defining a Contour type, which is a 3d dataset of points between a point A and 
         a point B defining an isobath contour. The dataset has a time, depth and contour dimension. 
-        The cotnour dimension defines the points along the contour.
+        The contour dimension defines the points along the contour.
         The supplied model Data is subsetted in its entirety along these dimensions and
         calculations can be performed on this dataset.
         
@@ -297,6 +297,10 @@ class Contour_f(Contour):
         (time, depth, position along contour) in m/s
         Contour_f.depth_integrated_normal_transport are the depth integrated 
         volume transports across the contour (time, position along contour) in Sv
+        
+        If the time dependent cell thicknesses (e3) on the u and v grids are 
+        present in the nemo_u and nemo_v datasets they will be used, if they 
+        are not then the initial cell thicknesses (e3_0) will be used.
 
         Parameters
         ----------
