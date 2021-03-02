@@ -67,7 +67,7 @@ def geo_scatter(longitude, latitude, c=None, s = None, fig = None, ax = None,
     if ax is None:
         ax = plt.subplot(111, projection=ccrs.PlateCarree())
         
-    sca = ax.scatter(longitude, y=latitude, c=c, s=s, zorder = 100,
+    sca = ax.scatter(longitude, y=latitude, c=c, s=s,
                      **scatter_kwargs)
     coast = NaturalEarthFeature(category='physical', **coastline_kwargs)
     ax.add_feature(coast, edgecolor='gray')
