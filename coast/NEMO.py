@@ -56,13 +56,13 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """ Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
         if self.grid_ref == 'u-grid':
-            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0'] #What about e3vw
+            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0',] #What about e3vw
         elif self.grid_ref == 'v-grid':
             self.grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
         elif self.grid_ref == 't-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask']
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask', 'bottom_level']
         elif self.grid_ref == 'w-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0']
+            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0', 'bottom_level']
         elif self.grid_ref == 'f-grid':
             self.grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
 
@@ -70,7 +70,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
     def set_dimension_mapping(self):  # TODO Add a docstring
         self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
                             'depthu':'z_dim', 'depthv':'z_dim',
-                            'y':'y_dim', 'x':'x_dim'}
+                            'y':'y_dim', 'x':'x_dim',
+                            'x_grid_T':'x_dim', 'y_grid_T':'y_dim'}
         debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
         self.dim_mapping_domain = {'t':'t_dim0', 'x':'x_dim', 'y':'y_dim',
                                    'z':'z_dim'}
@@ -111,7 +112,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                                    'depthf_0':'depth_0',
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
                                    'depthw_0':'depth_0', 'deptht_0':'depth_0',
-                                   'ln_sco':'ln_sco'}
+                                   'ln_sco':'ln_sco', 'bottom_level':'bottom_level'}
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
@@ -696,7 +697,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         e3t_0 = ds_dom.e3t_0
     
         # Water column thickness, i.e. depth of bottom w-level on horizontal t-grid
-        H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level-1)
+        H = e3t_0.cumsum(dim='z_dim').isel(z_dim=ds_dom.bottom_level.astype("int")-1)
         # Add correction to e3t_0 due to change in ssh
         e3t_new = e3t_0 * ( 1 + ssh / H )
         # preserve dimension ordering
@@ -704,7 +705,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         # mask out correction at layers below bottom level
         e3t_new = e3t_new.where(e3t_new.z_dim<ds_dom.bottom_level,e3t_0.data)
         # preserve any other t mask
-        e3t_new = e3t_new.where(~xr.ufuncs.isnan(ssh))
+        e3t_new = e3t_new.where(~np.isnan(ssh))
         if e3t:
             e3_return.append(e3t_new)
         
@@ -781,7 +782,114 @@ class NEMO(COAsT):  # TODO Complete this docstring
             
         return tuple(e3_return)
             
-            
+    
+    def harmonics_combine(self, constituents, components = ['x','y']):
+        '''
+        Contains a new NEMO object containing combined harmonic information
+        from the original object. 
+        
+        NEMO saves harmonics to individual variables such as M2x, M2y... etc. 
+        This routine will combine these variables (depending on constituents)
+        into a single data array. This new array will have the new dimension
+        'constituent' and a new data coordinate 'constituent_name'.
+        
+        Parameters
+        ----------
+        constituents : List of strings containing constituent names to combine.
+                       The case of these strings should match that used in 
+                       NEMO output. If a constituent is not found, no problem,
+                       it just won't be in the combined dataset.
+        components   : List of strings containing harmonic components to look
+                       for. By default, this looks for the complex components
+                       'x' and 'y'. E.g. if constituents = ['M2'] and
+                       components is left as default, then the routine looks
+                       for ['M2x', and 'M2y']. 
+
+        Returns
+        -------
+        NEMO() object, containing combined harmonic variables in a new dataset.
+        '''
+        
+        # Select only the specified constituents. NEMO model harmonics names are
+        # things like "M2x" and "M2y". Ignore current harmonics. Start by constructing
+        # the possible variable names
+        names_x = np.array([cc + components[0] for cc in constituents])
+        names_y = np.array([cc + components[1] for cc in constituents])
+        constituents = np.array(constituents, dtype='str')
+        
+        # Compare against names in file
+        var_keys = np.array(list(self.dataset.keys()))
+        indices = [np.where( names_x == ss) for ss in names_x if ss in var_keys]
+        indices = np.array(indices).T.squeeze()
+        
+        # Index the possible names to match file names
+        print(indices)
+        names_x = names_x[indices]
+        names_y = names_y[indices]
+        constituents = constituents[indices]
+        
+        # Concatenate x and y variables into one array
+        x_arrays = [self.dataset[ss] for ss in names_x]
+        harmonic_x = 'harmonic_'+components[0]
+        x_data = xr.concat(x_arrays, dim = 'constituent').rename(harmonic_x)
+        y_arrays = [self.dataset[ss] for ss in names_y]
+        harmonic_y = 'harmonic_'+components[1]
+        y_data = xr.concat(y_arrays, dim = 'constituent').rename(harmonic_y)
+        
+        nemo_harmonics = NEMO()
+        nemo_harmonics.dataset = xr.merge([x_data, y_data])
+        nemo_harmonics.dataset['constituent'] = constituents
+        
+        return nemo_harmonics
+        
+    def harmonics_convert(self, direction='cart2polar',
+                          x_var='harmonic_x', y_var='harmonic_y',
+                          a_var='harmonic_a', g_var='harmonic_g',
+                          degrees=True):
+        '''
+        Converts NEMO harmonics from cartesian to polar or vice versa.
+        Make sure this NEMO object contains combined harmonic variables
+        obtained using harmonics_combine().
+        
+        *Note:
+        
+        Parameters
+        ----------
+        direction (str) : Choose 'cart2polar' or 'polar2cart'. If 'cart2polar'
+                          Then will look for variables x_var and y_var. If 
+                          polar2cart, will look for a_var (amplitude) and 
+                          g_var (phase).
+        x_var (str)     : Harmonic x variable name in dataset (or output)
+                          default = 'harmonic_x'.
+        y_var (str)     : Harmonic y variable name in dataset (or output)
+                          default = 'harmonic_y'.
+        a_var (str)     : Harmonic amplitude variable name in dataset (or output)
+                          default = 'harmonic_a'.
+        g_var (str)     : Harmonic phase variable name in dataset (or output)
+                          default = 'harmonic_g'.
+        degrees (bool)  : Whether input/output phase are/will be in degrees.
+                          Default is True.
+
+        Returns
+        -------
+        Modifies NEMO() dataset in place. New variables added.
+        '''
+        if direction == 'cart2polar':
+            a,g = general_utils.cart2polar(self.dataset[x_var], 
+                                           self.dataset[y_var], 
+                                           degrees=degrees)
+            self.dataset[a_var] = a
+            self.dataset[g_var] = g
+        elif direction == 'polar2cart':
+            x,y = general_utils.polar2cart(self.dataset[a_var], 
+                                           self.dataset[g_var],
+                                           degrees=degrees)
+            self.dataset[x_var] = x
+            self.dataset[y_var] = y
+        else:
+            print('Unknown direction setting. Choose cart2polar or polar2cart')
+        
+        return
 
         
         

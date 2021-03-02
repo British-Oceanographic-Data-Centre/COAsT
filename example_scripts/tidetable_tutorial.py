@@ -71,3 +71,14 @@ print('HT:', HLW[ HLW.argmax() ].values, 'm at', HLW[ HLW.argmax() ].time.values
 # Or use the the nearest High Tide method to get High Tide
 HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' )
 print('HT:', HT.values, 'm at', HT.time.values )
+
+# The get_tidetabletimes() method can take extra paremeters such as a window
+# size, an integer number of hours to seek either side of the guess.
+HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'),
+                            winsize=2,
+                            method='nearest_1' )
+
+
+HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'),
+                            winsize=1,
+                            method='nearest_1' )

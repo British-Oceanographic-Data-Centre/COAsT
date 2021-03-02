@@ -9,6 +9,164 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
+def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, 
+        radius: float, mask=None
+    ):
+    """
+    Returns the indices of points that lie within a specified radius (km) of
+    central latitude and longitudes. This makes use of BallTree.query_radius.
+    
+    Parameters
+    ----------
+    longitude   : (numpy.ndarray) longitudes in degrees
+    latitude    : (numpy.ndarray) latitudes in degrees
+    centre_lon  : Central longitude. Can be single value or array of values
+    centre_lat  : Central latitude. Can be single value or array of values
+    radius      : (float) Radius in km within which to find indices
+    mask        : (numpy.ndarray) of same dimension as longitude and latitude.
+                  If specified, will mask out points from the routine.
+    Returns
+    -------
+        Returns an array of indices corresponding to points within radius.
+        If more than one central location is specified, this will be a list
+        of index arrays. Each element of which corresponds to one centre.
+    If longitude is 1D:
+        Returns one array of indices per central location
+    If longitude is 2D:
+        Returns arrays of x and y indices per central location.
+        ind_y corresponds to row indices of the original input arrays.
+        
+    DB: This is really slow at the moment. But the bottleneck seems to be right
+    at the start somewhere.. Best stick to subset_indices_by_distance for now.
+    """
+    # change inputs to numpy
+    longitude = np.array(longitude)
+    latitude = np.array(latitude)
+    centre_lon = np.array(centre_lon)
+    centre_lat = np.array(centre_lat)
+    # Calculate radius in radians
+    earth_radius = 6371
+    r_rad = radius/earth_radius
+    # For reshaping indices at the end
+    original_shape = longitude.shape
+    # Check if radius centres are numpy arrays. If not, make them into ndarrays
+    if not isinstance(centre_lon, (np.ndarray)):
+        centre_lat = np.array(centre_lat)
+        centre_lon = np.array(centre_lon)
+    # Determine number of centres provided
+    n_pts = 1 if centre_lat.shape==() else len(centre_lat)
+    # If a mask is supplied, remove indices from arrays. Flatten input ready
+    # for BallTree
+    if mask is None:
+        longitude = longitude.flatten()
+        latitude = latitude.flatten()
+    else:
+        longitude[mask] = np.nan
+        latitude[mask] = np.nan
+        longitude = longitude.flatten()
+        latitude = latitude.flatten()
+    # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
+    locs = np.vstack((latitude, longitude)).transpose()
+    locs = np.radians(locs)
+    # Construct central input to BallTree.query_radius
+    if n_pts==1:
+        centre = np.array([[centre_lat, centre_lon]])
+    else:
+        centre = np.vstack((centre_lat, centre_lon)).transpose()
+    centre = np.radians(centre)
+    # Do nearest neighbour interpolation using BallTree (gets indices)
+    tree = nb.BallTree(locs, leaf_size=2, metric='haversine')
+    ind_1d = tree.query_radius(centre, r = r_rad)
+    if len(original_shape) == 1:
+        return ind_1d
+    else:
+        # Get 2D indices from 1D index output from BallTree
+        ind_y = []
+        ind_x = []
+        for ii in np.arange(0,n_pts):
+            x_tmp, y_tmp = np.unravel_index(ind_1d[ii], original_shape)
+            ind_x.append(x_tmp.squeeze())
+            ind_y.append(y_tmp.squeeze())
+        if n_pts==1:
+            return ind_x[0], ind_y[0]
+        else:
+            return ind_x, ind_y
+
+def subset_indices_by_distance(
+        longitude, latitude, centre_lon: float, centre_lat: float, 
+        radius: float
+    ):
+    """
+    This method returns a `tuple` of indices within the `radius` of the 
+    lon/lat point given by the user.
+    Scikit-learn BallTree is used to obtain indices.
+    :param centre_lon: The longitude of the users central point
+    :param centre_lat: The latitude of the users central point
+    :param radius: The haversine distance (in km) from the central point
+    :return: All indices in a `tuple` with the haversine distance of the 
+            central point
+    """
+
+    # Calculate the distances between every model point and the specified
+    # centre. Calls another routine dist_haversine.
+
+    dist = calculate_haversine_distance(centre_lon, centre_lat, 
+                                        longitude, latitude)
+    indices_bool = dist < radius
+    indices = np.where(indices_bool)
+
+    if len(longitude.shape) == 1:
+        return xr.DataArray(indices[0])
+    else:
+        return xr.DataArray(indices[0]), xr.DataArray(indices[1])
+
+def compare_angles(a1,a2,degrees=True):
+    '''
+    # Compares the difference between two angles. e.g. it is 2 degrees between
+    # 359 and 1 degree. If degrees = False then will treat angles as radians.
+    '''
+
+    if not degrees:
+        a1 = np.degrees(a1)
+        a2 = np.degrees(a2)
+
+    diff = 180 - np.abs(np.abs(a1-a2)-180)
+
+    if not degrees:
+        a1 = np.radians(a1)
+        a2 = np.radians(a2)
+
+    return diff
+
+def cart2polar(x, y, degrees = True):
+    '''
+    # Conversion of cartesian to polar coordinate system
+    # Output theta is in radians
+    '''
+    r     = np.sqrt(x**2 + y**2)
+    theta = np.arctan2(y, x)
+    if degrees:
+        theta = np.rad2deg(theta)
+    return(r, theta)
+
+def polar2cart(r, theta, degrees=True):
+    '''
+    # Conversion of polar to cartesian coordinate system
+    # Input theta must be in radians
+    '''
+    if degrees:
+        theta = np.deg2rad(theta)
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    return(x, y)
+
+def subset_indices_lonlat_box(array_lon, array_lat, lonmin, lonmax, 
+                              latmin, latmax):
+    ind_lon = np.logical_and(array_lon <= lonmax, array_lon >= lonmin)
+    ind_lat = np.logical_and(array_lat <= latmax, array_lat >= latmin)
+    ind = np.where( np.logical_and(ind_lon, ind_lat) )
+    return ind
+
 def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     '''
     # Estimation of geographical distance using the Haversine function.
@@ -69,7 +227,8 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     '''
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
-    and its BallTree haversine method.
+    and its BallTree haversine method. Ensure there are no NaNs in 
+    input longitude/latitude arrays (or mask them using "mask"")
 
     Example Useage
     ----------
@@ -105,10 +264,15 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
         mod_lon = mod_lon.flatten()
         mod_lat = mod_lat.flatten()
     else:
-        mod_lon[mask] = np.nan
-        mod_lat[mask] = np.nan
-        mod_lon = mod_lon.flatten()
-        mod_lat = mod_lat.flatten()
+        mod_lon = remove_indices_by_mask(mod_lon, mask)
+        mod_lat = remove_indices_by_mask(mod_lat, mask)
+        # If we are masking, we want to preserve the original indices so that
+        # we can get them back at the end (since masked points are removed).
+        cc, rr = np.meshgrid( np.arange(0,original_shape[1]), 
+                             np.arange(0,original_shape[0]))
+        cc = remove_indices_by_mask(cc, mask)
+        rr = remove_indices_by_mask(rr, mask)
+    
 
     # Put lons and lats into 2D location arrays for BallTree: [lat, lon]
     mod_loc = np.vstack((mod_lat, mod_lon)).transpose()
@@ -121,11 +285,17 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat,
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(mod_loc, leaf_size=5, metric='haversine')
     _, ind_1d = tree.query(new_loc, k=1)
-
-    # Get 2D indices from 1D index output from BallTree
-    ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
+    
+    if mask is None:
+        # Get 2D indices from 1D index output from BallTree
+        ind_y, ind_x = np.unravel_index(ind_1d, original_shape)
+    else:
+        ind_y = rr[ind_1d]
+        ind_x = cc[ind_1d]
+        
     ind_x = xr.DataArray(ind_x.squeeze())
     ind_y = xr.DataArray(ind_y.squeeze())
+        
     return ind_x, ind_y
 
 def dataarray_time_slice(data_array, date0, date1):
