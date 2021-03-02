@@ -8,6 +8,7 @@ from .CDF import CDF
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
+from .CLIMATOLOGY import CLIMATOLOGY
 from . import logging_util
 from . import general_utils
 from . import plot_util
