@@ -687,7 +687,7 @@ class Contour_f(Contour):
         self.data_cross_flow['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
         self.data_cross_flow['transport_across_AB_hpg'] = ( self.data_cross_flow
-                .normal_velocity_hpg.fillna(0).integrate(coord='depth_z_levels') ) * e_horiz / 1000000   
+                .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * e_horiz / 1000000   
         self.data_cross_flow.transport_across_AB_hpg.attrs = {'units': 'Sv', 
                 'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}        
         self.data_cross_flow['transport_across_AB_spg'] = self.data_cross_flow.normal_velocity_spg * H * e_horiz / 1000000
