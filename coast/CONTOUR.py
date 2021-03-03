@@ -340,10 +340,12 @@ class Contour_f(Contour):
         # If time dimension is missing it can throw off the indexing so expand dims        
         if 't_dim' not in u_ds.dims:
             u_ds['u_velocity'] = u_ds.u_velocity.expand_dims('t_dim', axis=0)
-            u_ds['e3'] = u_ds.e3.expand_dims('t_dim', axis=0)
+            if compute_transports:
+                u_ds['e3'] = u_ds.e3.expand_dims('t_dim', axis=0)
         if 't_dim' not in v_ds.dims:
             v_ds['v_velocity'] = v_ds.v_velocity.expand_dims('t_dim', axis=0)
-            v_ds['e3'] = v_ds.e3.expand_dims('t_dim', axis=0)
+            if compute_transports:
+                v_ds['e3'] = v_ds.e3.expand_dims('t_dim', axis=0)
                     
         dr_n = np.where(np.diff(self.y_ind)>0, np.arange(0,u_ds.r_dim.size-1), np.nan )
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
@@ -363,23 +365,24 @@ class Contour_f(Contour):
         self.data_cross_flow['normal_velocities'][:,:,dr_w] = v_ds.v_velocity.data[:,:,dr_w]
         self.data_cross_flow['normal_velocities'].attrs = {'units':'m/s', \
                 'standard_name':'contour-normal velocities'}
-             
-        self.data_cross_flow['normal_transport'] = xr.full_like(u_ds.u_velocity, np.nan)  
-        self.data_cross_flow['normal_transport'][:,:,dr_n] = ( u_ds.u_velocity.data[:,:,dr_n+1] * 
-                                u_ds.e2.data[dr_n+1] * u_ds.e3.data[:,:,dr_n+1] )
-        self.data_cross_flow['normal_transport'][:,:,dr_s] = ( -u_ds.u_velocity.data[:,:,dr_s] * 
-                                u_ds.e2.data[dr_s] * u_ds.e3.data[:,:,dr_s] )
-        self.data_cross_flow['normal_transport'][:,:,dr_e] = ( -v_ds.v_velocity.data[:,:,dr_e+1] *
-                                v_ds.e1.data[dr_e+1] * v_ds.e3.data[:,:,dr_e+1] )
-        self.data_cross_flow['normal_transport'][:,:,dr_w] = ( v_ds.v_velocity.data[:,:,dr_w] *
-                                v_ds.e1.data[dr_w] * v_ds.e3.data[:,:,dr_w] )
-        self.data_cross_flow['normal_transport'].attrs = {'units':'m^3/s', \
-                'standard_name':'contour-normal volume transport'}
         
-        self.data_cross_flow['depth_integrated_normal_transport'] = (self.data_cross_flow
-                                .normal_transport.sum(dim='z_dim') / 1000000.)
-        self.data_cross_flow['depth_integrated_normal_transport'].attrs ={'units':'Sv', \
-                'standard_name':'contour-normal depth integrated volume transport'}
+        if compute_transports:    
+            self.data_cross_flow['normal_transport'] = xr.full_like(u_ds.u_velocity, np.nan)  
+            self.data_cross_flow['normal_transport'][:,:,dr_n] = ( u_ds.u_velocity.data[:,:,dr_n+1] * 
+                                    u_ds.e2.data[dr_n+1] * u_ds.e3.data[:,:,dr_n+1] )
+            self.data_cross_flow['normal_transport'][:,:,dr_s] = ( -u_ds.u_velocity.data[:,:,dr_s] * 
+                                    u_ds.e2.data[dr_s] * u_ds.e3.data[:,:,dr_s] )
+            self.data_cross_flow['normal_transport'][:,:,dr_e] = ( -v_ds.v_velocity.data[:,:,dr_e+1] *
+                                    v_ds.e1.data[dr_e+1] * v_ds.e3.data[:,:,dr_e+1] )
+            self.data_cross_flow['normal_transport'][:,:,dr_w] = ( v_ds.v_velocity.data[:,:,dr_w] *
+                                    v_ds.e1.data[dr_w] * v_ds.e3.data[:,:,dr_w] )
+            self.data_cross_flow['normal_transport'].attrs = {'units':'m^3/s', \
+                    'standard_name':'contour-normal volume transport'}
+            
+            self.data_cross_flow['depth_integrated_normal_transport'] = (self.data_cross_flow
+                                    .normal_transport.sum(dim='z_dim') / 1000000.)
+            self.data_cross_flow['depth_integrated_normal_transport'].attrs ={'units':'Sv', \
+                    'standard_name':'contour-normal depth integrated volume transport'}
                                 
         self.__update_cross_flow_vars('depth_0',u_ds.depth_0,v_ds.depth_0,dr_n,dr_s,dr_e,dr_w,1)
         self.__update_cross_flow_vars('longitude',u_ds.longitude,v_ds.longitude,dr_n,dr_s,dr_e,dr_w,0)
@@ -389,7 +392,8 @@ class Contour_f(Contour):
         self.data_cross_flow['e2'] = xr.full_like(self.data_contour.e2, np.nan)
         self.__update_cross_flow_vars('e2',u_ds.e2,v_ds.e2,dr_n,dr_s,dr_e,dr_w,0)
         self.data_cross_flow['e3'] = xr.full_like(self.data_cross_flow.normal_velocities, np.nan)
-        self.__update_cross_flow_vars('e3',u_ds.e3,v_ds.e3,dr_n,dr_s,dr_e,dr_w,2)
+        if compute_transports:
+            self.__update_cross_flow_vars('e3',u_ds.e3,v_ds.e3,dr_n,dr_s,dr_e,dr_w,2)
         
         self.data_cross_flow['depth_0'].attrs = {'standard_name':'Depth at time zero \
                 on the contour-normal velocity grid points'}
@@ -683,7 +687,7 @@ class Contour_f(Contour):
         self.data_cross_flow['normal_velocity_spg'] = xr.DataArray( np.squeeze(normal_velocity_spg),
                 coords=coords_spg, dims=dims_spg, attrs=attributes_spg)
         self.data_cross_flow['transport_across_AB_hpg'] = ( self.data_cross_flow
-                .normal_velocity_hpg.fillna(0).integrate(dim='depth_z_levels') ) * e_horiz / 1000000   
+                .normal_velocity_hpg.fillna(0).integrate(coord='depth_z_levels') ) * e_horiz / 1000000   
         self.data_cross_flow.transport_across_AB_hpg.attrs = {'units': 'Sv', 
                 'standard_name': 'volume transport across transect due to the hydrostatic pressure gradient'}        
         self.data_cross_flow['transport_across_AB_spg'] = self.data_cross_flow.normal_velocity_spg * H * e_horiz / 1000000

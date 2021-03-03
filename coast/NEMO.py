@@ -683,6 +683,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
         except AttributeError:
             print('The nemo_t dataset must contain the ssh variable.')
             return
+        if 't_dim' not in ssh.dims:
+            ssh = ssh.expand_dims('t_dim', axis=0)
 
         # Load domain_cfg
         if dom_fn is None:
@@ -707,7 +709,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         # preserve any other t mask
         e3t_new = e3t_new.where(~np.isnan(ssh))
         if e3t:
-            e3_return.append(e3t_new)
+            e3_return.append(e3t_new.squeeze())
         
         if np.any([e3u,e3v,e3f]):
             e1e2t = ds_dom.e1t * ds_dom.e2t
@@ -733,7 +735,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             e3u_new['longitude'] = ds_dom.glamu
             e3u_new['latitude'] = ds_dom.gphiu
             if e3u:
-                e3_return.append(e3u_new)
+                e3_return.append(e3u_new.squeeze())
         
         # area averaged interpolation onto the u-grid to get e3v 
         if e3v:
@@ -749,7 +751,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             e3v_new[:,:,-1,:] = ds_dom.e3v_0[:,-1,:]
             e3v_new['longitude'] = ds_dom.glamv
             e3v_new['latitude'] = ds_dom.gphiv
-            e3_return.append(e3v_new)
+            e3_return.append(e3v_new.squeeze())
         
         # area averaged interpolation onto the u-grid to get e3f
         if e3f:
@@ -766,7 +768,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             e3f_new[:,:,-1,:] = ds_dom.e3f_0[:,-1,:]
             e3f_new['longitude'] = ds_dom.glamf
             e3f_new['latitude'] = ds_dom.gphif
-            e3_return.append(e3f_new)
+            e3_return.append(e3f_new.squeeze())
            
         # simple vertical interpolation for e3w. Special treatment of top and bottom levels   
         if e3w:
@@ -778,7 +780,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                                     + ds_dom.e3w_0[1:,:,:] )
             # bottom and below levels
             e3w_new = e3w_new.where(e3w_new.z_dim<ds_dom.bottom_level, e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
-            e3_return.append(e3w_new)
+            e3_return.append(e3w_new.squeeze())
             
         return tuple(e3_return)
             
