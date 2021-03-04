@@ -162,20 +162,21 @@ eg.plot_timeseries()
 #        Finds high and low water for a given variable.
 #        Returns in a new TIDEGAUGE object with similar data format to
 #        a TIDETABLE.
-"""
-problem: existing find_high_and_low_water() method='comp' assumed tidetable input
-With method="cubic" it processes the complete timeseries to find the EXTREMA and 
-not the max
-"""
 
 # Data might need sorting by time
 eg.dataset =  eg.dataset.sortby(eg.dataset.time)
 
-HLW = eg.find_high_and_low_water('sea_level',method='cubic')
+# The extrema can be found as the by comparison of neighbouring time steps, 
+#  or by fitting cubic splines and finding the analytic extrema
+HLW_com = eg.find_high_and_low_water('sea_level',method='comp') # 'comp' is the default method
+HLW_cub = eg.find_high_and_low_water('sea_level',method='cubic') # 'comp' is the default method
 
 import matplotlib.pyplot as plt
 plt.plot( eg.dataset.time, eg.dataset['sea_level'],'r.-', label='data')
-plt.plot( HLW.dataset.time_highs, HLW.dataset['sea_level_highs'],'k+', label='cubic spline extrema')
+plt.plot( HLW_com.dataset.time_highs, HLW_com.dataset['sea_level_highs'],'k+', label='record extrema')
+plt.plot( HLW_com.dataset.time_lows, HLW_com.dataset['sea_level_lows'],'k+')
+plt.plot( HLW_cub.dataset.time_highs, HLW_cub.dataset['sea_level_highs'],'ko', label='cubic spline extrema')
+plt.plot( HLW_cub.dataset.time_lows, HLW_cub.dataset['sea_level_lows'],'ko')
 plt.legend()
 plt.show()
 

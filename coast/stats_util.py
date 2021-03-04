@@ -95,13 +95,17 @@ def find_maxima(x, y, method='comp', **kwargs):
 
         # Do the interpolation
         f = scipy.interpolate.InterpolatedUnivariateSpline(x_float, y, k=3)
-        cr_pts = quadratic_spline_roots(f.derivative())
-        cr_vals = f(cr_pts)
-
+        # Find the extrema as roots
+        extr_x_vals = quadratic_spline_roots(f.derivative()) # x values of extrema
+        # Find the maxima roots
+        extr_x_vals = np.hstack( [x_float[0], extr_x_vals, x_float[-1]]) # add buffer points to ensure extrema are within
+        ind = scipy.signal.argrelmax( f(extr_x_vals) )[0] # index that gives max(f) over extrema x locations
+        max_vals = f(extr_x_vals[ind])
+        # Convert back to datetime64 if appropriate
         if flag_dt64:
-            return cr_pts.astype('datetime64'), cr_vals
+            return extr_x_vals[ind].astype('datetime64'), max_vals
         else:
-            return cr_pts, cr_vals
+            return extr_x_vals[ind], max_vals
 
 def doodson_x0_filter(elevation, ax=0):
     '''
