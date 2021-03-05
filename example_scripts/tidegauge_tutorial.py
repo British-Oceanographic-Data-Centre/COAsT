@@ -133,7 +133,6 @@ date_end = np.datetime64('2020-10-14 00:01')
 # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
 # type object
 tg = coast.TIDEGAUGE()
-# specify the data read as a High Low Water dataset
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
 tg.plot_timeseries()
 
@@ -162,22 +161,32 @@ eg.plot_timeseries()
 #        Finds high and low water for a given variable.
 #        Returns in a new TIDEGAUGE object with similar data format to
 #        a TIDETABLE.
+# There are two methods for extracting extrema. A neightbour comparison method, 
+# (method="comp") and a cubic spline fitting method (method="cubic")
 
-# Data might need sorting by time
-eg.dataset =  eg.dataset.sortby(eg.dataset.time)
+date_start = np.datetime64('2020-10-13 20:00')
+date_end = np.datetime64('2020-10-13 21:01')
 
-# The extrema can be found as the by comparison of neighbouring time steps, 
-#  or by fitting cubic splines and finding the analytic extrema
-HLW_com = eg.find_high_and_low_water('sea_level',method='comp') # 'comp' is the default method
-HLW_cub = eg.find_high_and_low_water('sea_level',method='cubic') # 'comp' is the default method
+# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+# type object
+tg = coast.TIDEGAUGE()
+tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
 
-import matplotlib.pyplot as plt
-plt.plot( eg.dataset.time, eg.dataset['sea_level'],'r.-', label='data')
-plt.plot( HLW_com.dataset.time_highs, HLW_com.dataset['sea_level_highs'],'k+', label='record extrema')
-plt.plot( HLW_com.dataset.time_lows, HLW_com.dataset['sea_level_lows'],'k+')
-plt.plot( HLW_cub.dataset.time_highs, HLW_cub.dataset['sea_level_highs'],'ko', label='cubic spline extrema')
-plt.plot( HLW_cub.dataset.time_lows, HLW_cub.dataset['sea_level_lows'],'ko')
-plt.legend()
-plt.show()
+# Use comparison of neighbourhood method (method="comp" is assumed)
+extrema_comp = tg.find_high_and_low_water('sea_level', method="comp")
+
+# Use cubic spline fitting method
+extrema_cubc = tg.find_high_and_low_water('sea_level', method="cubic")
+
+
+# Attempt a plot
+f = plt.figure()
+plt.plot(tg.dataset.time, tg.dataset.sea_level, 'k')
+plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker='o', c='g')
+plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker='+', c='g')
+
+plt.legend(['Time Series','Maxima by comparison','Maxima by cubic spline'])
+plt.title('Tide Gauge Optima at Gladstone')
+
 
 

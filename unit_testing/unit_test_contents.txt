@@ -13,9 +13,9 @@
     f. Calculate depth_0 for t,u,v,w,f grids
     g. Load a subregion dataset with a full domain (AMM7)
     h. Load and combine multiple files.
-    i. Load and combine harmonics 
-    j. Convert harmonics to a/g and back 
-    
+    i. Load and combine harmonics
+    j. Convert harmonics to a/g and back
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
@@ -64,7 +64,8 @@
     k. Plotting multiple tidegauge locations
     l. Tidegauge time series plot
     m. TIDEGAUGE method for tabulated data
-    n. TIDEGAUGE method for finding peaks and troughs
+    n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
+    o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points
