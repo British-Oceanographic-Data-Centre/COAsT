@@ -917,7 +917,7 @@ class TIDEGAUGE():
             fig, ax =  plot_util.geo_scatter(X, Y, title=title)
         else:
             fig, ax =  plot_util.geo_scatter(X, Y, title=title, c = C)
-            
+
         ax.set_xlim((min(X)-10, max(X)+10))
         ax.set_ylim((min(Y)-10, max(Y)+10))
         return fig, ax
@@ -1245,7 +1245,6 @@ class TIDEGAUGE():
                                 **kwargs):
         '''
         Finds high and low water for a given variable.
-        Intended for use on 2-pt oscillating tide table data.
         Returns in a new TIDEGAUGE object with similar data format to
         a TIDETABLE.
 
@@ -1253,8 +1252,11 @@ class TIDEGAUGE():
         'comp' :: Find maxima by comparison with neighbouring values.
                   Uses scipy.signal.find_peaks. **kwargs passed to this routine
                   will be passed to scipy.signal.find_peaks.
-        DB NOTE: Currently only the 'comp' method is implemented. Future
-                 methods include linear interpolation and cublic splines.
+        'cubic':: Find the maxima using the roots of cubic spline.
+                  Uses scipy.interpolate.InterpolatedUnivariateSpline
+                  and scipy.signal.argrelmax. **kwargs are not activated.
+        NOTE: Currently only the 'comp' and 'cubic' methods implemented. Future
+                  methods include linear interpolation or refinements.
         '''
 
         x = self.dataset.time
