@@ -8,6 +8,7 @@ outlined in TIDEGAUGE.py.
 import coast
 import datetime
 import numpy as np
+import matplotlib.pyplot as plt
 
 # And by defining some file paths
 fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc'
@@ -187,6 +188,6 @@ plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_lev
 
 plt.legend(['Time Series','Maxima by comparison','Maxima by cubic spline'])
 plt.title('Tide Gauge Optima at Gladstone')
-
+plt.show()
 
 
