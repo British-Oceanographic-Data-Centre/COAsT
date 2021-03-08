@@ -1571,6 +1571,43 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+#%%
+'''
+#################################################
+## ( 13 ) CLIMATOLOGY Methods                  ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+ds = sci.dataset[['temperature','ssh']].isel(z_dim=0)
+
+
+#-----------------------------------------------------------------------------#
+# ( ## ) Monthly and Seasonal Climatology                                     #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    
+    clim = coast.CLIMATOLOGY()
+    fn_out = os.path.join(dn_files, 'test_climatology.nc')
+    monthly = clim.make_climatology(ds, 'month').load()
+    seasonal = clim.make_climatology(ds, 'season', fn_out=fn_out)
+    
+    mn = mn = np.nanmean(ds.temperature, axis=0)
+    check1 = np.nanmax(np.abs(mn - monthly.temperature[0])) < 1e-6
+    check2 = os.path.isfile(fn_out)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Monthly and seasonal climatology made and written to file")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with monthly and seasonal climatology ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 #%% Close log file
 #################################################
 log_file.close()

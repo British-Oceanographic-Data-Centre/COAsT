@@ -54,7 +54,7 @@ class CLIMATOLOGY(COAsT):
         
         if not monthly_weights:
             ds = ds.drop_vars('clim_mean_ones_tmp')
-             
+
         if fn_out is not None:
             print('Saving to file. May take some time..')
             with ProgressBar():
