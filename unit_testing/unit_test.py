@@ -1571,6 +1571,79 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+#%%
+'''
+#################################################
+## ( 12 ) MASK_MAKER                           ##
+#################################################
+'''
+
+sec = sec+1
+subsec = 96
+
+# Preparation: Create two arrays to put mask onto, one of zeros and one of ones
+# This allows us to test the additive feature.
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+mask00 = np.zeros((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+mask01 = np.ones((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+
+#-----------------------------------------------------------------------------#
+# ( 12a ) Create mask by indices                                              #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_r = [50, 150, 150, 50]
+    vertices_c = [50, 50, 150, 150]
+    filled0 = mm.fill_polygon_by_index(mask00, vertices_r, vertices_c)
+    filled1 = mm.fill_polygon_by_index(mask01, vertices_r, vertices_c, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[49,49] == 0 and filled0[51,51] == 1
+    check2 = filled1[49,49] == 1 and filled1[51,51] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by index")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by index")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 12b ) Create mask by lonlat                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_lon = [-5, -5, 5, 5]
+    vertices_lat = [40, 60, 60, 40]
+    filled0 = mm.fill_polygon_by_lonlat(mask00, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat)
+    filled1 = mm.fill_polygon_by_lonlat(mask01, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[50,50] == 0 and filled0[50,150] == 1
+    check2 = filled1[50,50] == 1 and filled1[50,150] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by index")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by index")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+
 #%% Close log file
 #################################################
 log_file.close()
