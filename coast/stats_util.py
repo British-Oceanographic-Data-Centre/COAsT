@@ -17,6 +17,9 @@ def quadratic_spline_roots(spl):
     A custom function for the roots of a quadratic spline. Cleverness found at
     https://stackoverflow.com/questions/50371298/find-maximum-minimum-of-a-1d-interpolated-function
     Used in find_maxima().
+
+    Example usage:
+    see example_scripts/tidegauge_tutorial.py
     """
     roots = []
     knots = spl.get_knots()
@@ -46,6 +49,9 @@ def find_maxima(x, y, method='comp', **kwargs):
             i) has ineligent fix for NaNs,
             ii) first converts x,y into np.floats64 for calc
             iii) probably assumes x,y are xr.DataArrays
+
+    Example usage:
+    see example_scripts/tidegauge_tutorial.py
     '''
     if method == 'comp':
         peaks, props = scipy.signal.find_peaks(y, **kwargs)
