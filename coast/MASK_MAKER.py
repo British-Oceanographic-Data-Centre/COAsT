@@ -83,14 +83,15 @@ class MASK_MAKER():
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         '''
-        vertices_lon = [-5.34, -0.7, 7.5, 7.5, 9, 9, 
-                        6.3, 6.3, 5, 5, 4.126, 4.126, -1.071]
-        vertices_lat = [56.93, 54.09, 54.09, 55.5, 55.5, 57.859, 57.859, 
-                        58.121, 58.121, 58.59, 58.59, 60.5, 60.5]
+        vertices_lon = [-5.34,  -0.7,   7.5,    7.5,   9,     9, 
+                        6.3,    6.3,    5,      5,     4.126, 4.126, -1.071]
+        vertices_lat = [56.93,  54.09,  54.09,  56,    56,    57.859, 
+                        57.859, 58.121, 58.121, 58.59, 58.59, 60.5,  60.5]
+
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
                                       longitude, latitude,
                                       vertices_lon, vertices_lat)
-        mask = mask * (bath<200)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
         return mask
 
     @classmethod
@@ -100,14 +101,14 @@ class MASK_MAKER():
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         '''
-        vertices_lon = [-3.57, -10.4, -1, 3.171, 3.171, -3.76, -3.76, -11.47, 
-                        -11.47, -22, -22]
-        vertices_lat = [47.95, 52.71, 60.5, 60.45, 63.3, 63.3, 60.45, 60.45, 
-                        55.28, 55.3, 47.95]
+        vertices_lon = [-4,    -9.5,  -1,   3.171, 3.171, -3.76, -3.76, -12, 
+                        -12,   -12,   -4]
+        vertices_lat = [50.5,  52.71, 60.5, 60.45, 63.3,  63.3,  60.45, 60.45, 
+                        55.28, 48,    48]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
                                       longitude, latitude,
                                       vertices_lon, vertices_lat)
-        mask = mask * (bath<200)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
         return mask
 
     @classmethod
@@ -117,12 +118,12 @@ class MASK_MAKER():
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         '''
-        vertices_lon = [10.65, 1.12, 1.12, 10.65]
-        vertices_lat = [61.83, 61.83, 48, 48]
+        vertices_lon = [10.65, 1.12,  1.12, 10.65]
+        vertices_lat = [61.83, 61.83, 48,   48]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
                                       longitude, latitude,
                                       vertices_lon, vertices_lat)
-        mask = mask * (bath>200)
+        mask = mask * (bath>200) * (bath>0) * (~xr.ufuncs.isnan(bath))
         return mask
 
     @classmethod    
@@ -132,10 +133,10 @@ class MASK_MAKER():
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         '''
-        vertices_lon = [7.57, 7.57, -.67, -2, -2, -4.8, -4.8, -3.5, 12, 14]
-        vertices_lat = [55, 54, 54, 55, 50.5, 50.5, 48.8, 48, 48, 55]
+        vertices_lon = [7.57, 7.57,  -0.67,  -2,   -3.99, -3.99, -3.5, 12, 14]
+        vertices_lat = [56,   54.08, 54.08,  50.7, 50.7,  48.8,  48,   48, 56]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
                                       longitude, latitude,
                                       vertices_lon, vertices_lat)
-        mask = mask * (bath<200)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
         return mask

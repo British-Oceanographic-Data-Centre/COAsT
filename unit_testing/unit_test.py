@@ -1636,9 +1636,9 @@ try:
     check1 = filled0[50,50] == 0 and filled0[50,150] == 1
     check2 = filled1[50,50] == 1 and filled1[50,150] == 2
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - MASKS created by index")
+        print(str(sec) + chr(subsec) + " OK - MASKS created by lonlat")
     else:
-        print(str(sec) + chr(subsec) + " X - Problem mask creation by index")
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by lonlat")
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
