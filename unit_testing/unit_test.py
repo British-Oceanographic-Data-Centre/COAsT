@@ -284,7 +284,7 @@ subsec = subsec+1
 # NEMO obejct and dataset.
 
 try:
-    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics, 
+    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics,
                            dn_files + fn_nemo_harmonics_dom)
     constituents = ['K1','M2','S2','K2']
     harmonics_combined = harmonics.harmonics_combine(constituents)
@@ -299,7 +299,7 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 #-----------------------------------------------------------------------------#
 #%% ( 1j ) Convert harmonics to a/g and back                                  #
 #                                                                             #
@@ -1274,7 +1274,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7n ) TIDEGAUGE method for finding extrema and troughs                   #
+#%% ( 7n ) TIDEGAUGE method for finding extrema and troughs, compare neighbours#
 #                                                                             #
 subsec = subsec+1
 
@@ -1285,30 +1285,74 @@ try:
     lowestoft2 = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
                                 date_end = date1)
 
-    extrema = lowestoft2.find_high_and_low_water('sea_level', distance=40)
-
+    # Use comparison of neighbourhood method (method="comp" is assumed)
+    extrema_comp = lowestoft2.find_high_and_low_water('sea_level', distance=40)
     # Check actual maximum/minimum is in output dataset
-    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_highs
-    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_lows
+    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_highs
+    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_lows
     # Check new time dimensions have correct length (hardcoded here)
-    check3 = len(extrema.dataset.time_highs) == 19
-    check4 = len(extrema.dataset.time_lows) == 18
+    check3 = len(extrema_comp.dataset.time_highs) == 19
+    check4 = len(extrema_comp.dataset.time_lows) == 18
 
     # Attempt a plot
     f = plt.figure()
     plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
-    plt.scatter(extrema.dataset.time_highs, extrema.dataset.sea_level_highs, c='g')
-    plt.scatter(extrema.dataset.time_lows, extrema.dataset.sea_level_lows, c='r')
+    plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker='o', c='g')
+    plt.scatter(extrema_comp.dataset.time_lows.values,  extrema_comp.dataset.sea_level_lows, marker='o', c='r')
+
     plt.legend(['Time Series','Maxima','Minima'])
     plt.title('Tide Gauge Optima at Lowestoft')
     f.savefig(dn_fig + 'tidegauge_optima.png')
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - Tidegauge extrema found")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge local extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge extrema")
+        print(str(sec) + chr(subsec) + " X - Tidegauge local extrema")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+
+
+#-----------------------------------------------------------------------------#
+#%% ( 7o ) TIDEGAUGE method for finding extrema and troughs, fit cubic spline #
+#                                                                             #
+subsec = subsec+1
+
+# Load and process BODC processed data
+try:
+    # Set the start and end dates
+    date_start = np.datetime64('2020-10-12 23:59')
+    date_end = np.datetime64('2020-10-14 00:01')
+
+    # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+    # type object
+    tg = coast.TIDEGAUGE()
+    # specify the data read as a High Low Water dataset
+    tg.dataset = tg.read_bodc_to_xarray(fn_tidegauge2, date_start, date_end)
+
+    # Use cubic spline fitting method
+    extrema_cubc = tg.find_high_and_low_water('sea_level', method="cubic")
+
+    # Check actual maximum/minimum is in output dataset
+    check1 = np.isclose( extrema_cubc.dataset.sea_level_highs,[7.77432795, 7.91244559])
+    check2 = np.isclose( extrema_cubc.dataset.sea_level_lows,[2.63479458, 2.54599355])
+                                
+    # Attempt a plot
+    f = plt.figure()
+    plt.plot(tg.dataset.time, tg.dataset.sea_level)
+    plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker='o', c='g')
+    plt.scatter(extrema_cubc.dataset.time_lows.values,  extrema_cubc.dataset.sea_level_lows, marker='o', c='r')
+
+    plt.legend(['Time Series','Maxima','Minima'])
+    plt.title('Tide Gauge Optima at Gladstone, fitted cubic spline')
+    f.savefig(dn_fig + 'tidegauge_optima.png')
+
+    if check1.all() and check2.all():
+        print(str(sec) + chr(subsec) + " OK - Tidegauge cubic extrema found")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tidegauge cubic extrema")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 
 '''
 ###############################################################################
@@ -1548,7 +1592,7 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 
 #-----------------------------------------------------------------------------#
 # ( 11b ) Plot locations on map                                               #
@@ -1563,7 +1607,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 #-----------------------------------------------------------------------------#
 # ( 11c ) Plot ts diagram                                                     #
 #                                                                             #
@@ -1577,7 +1621,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 #-----------------------------------------------------------------------------#
 # ( 11d ) Plot temperature profile                                            #
 #                                                                             #
