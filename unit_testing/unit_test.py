@@ -324,6 +324,27 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
+#-----------------------------------------------------------------------------#
+#%% ( 1k ) Compute e3 from SSH field                                      #
+#
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    
+    e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t,True,True,True,True,True)
+    cksum = np.array([e3t.sum(),e3u.sum(),e3v.sum(),
+                      e3f.sum(),e3w.sum()])
+    # these references are based on the example file's ssh field
+    reference = np.array([8.337016e+08, 8.333972e+08, 8.344886e+08,
+                          8.330722e+08, 8.265948e+08])
+    if np.allclose(cksum, reference):
+        print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] as expected")
+    else:
+        print(str(sec) + chr(subsec) + " X - computed e3[t,u,v,f,w] not as expected")        
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+
 '''
 #################################################
 ## ( 2 ) Test general utility methods in COAsT ##
@@ -1614,6 +1635,79 @@ try:
     print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+
+#%%
+'''
+#################################################
+## ( 12 ) MASK_MAKER                           ##
+#################################################
+'''
+
+sec = sec+1
+subsec = 96
+
+# Preparation: Create two arrays to put mask onto, one of zeros and one of ones
+# This allows us to test the additive feature.
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+mask00 = np.zeros((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+mask01 = np.ones((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+
+#-----------------------------------------------------------------------------#
+# ( 12a ) Create mask by indices                                              #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_r = [50, 150, 150, 50]
+    vertices_c = [50, 50, 150, 150]
+    filled0 = mm.fill_polygon_by_index(mask00, vertices_r, vertices_c)
+    filled1 = mm.fill_polygon_by_index(mask01, vertices_r, vertices_c, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[49,49] == 0 and filled0[51,51] == 1
+    check2 = filled1[49,49] == 1 and filled1[51,51] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by index")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by index")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 12b ) Create mask by lonlat                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_lon = [-5, -5, 5, 5]
+    vertices_lat = [40, 60, 60, 40]
+    filled0 = mm.fill_polygon_by_lonlat(mask00, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat)
+    filled1 = mm.fill_polygon_by_lonlat(mask01, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[50,50] == 0 and filled0[50,150] == 1
+    check2 = filled1[50,50] == 1 and filled1[50,150] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by lonlat")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by lonlat")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
 
 #%% Close log file
 #################################################
