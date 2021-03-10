@@ -10,6 +10,96 @@ from warnings import warn
 from .logging_util import get_slug, debug, info, warn, error
 import numpy as np
 
+def r2_lin(x, y, fit):
+    '''For calculating r-squared of a linear fit. Fit should be a python polyfit
+    object'''
+
+    fity = fit(x)
+    diff = (y - fity)**2
+    ybar = np.nanmean(y)
+    ymybar = (y - ybar)**2
+
+    SStot = np.nansum(ymybar)
+    SSres = np.nansum(diff)
+
+    R2 = 1 - SSres/SStot
+
+    return R2
+
+def scatter_with_fit(x,y,s=10,c='k',yex=True, dofit=True):
+    ''' Does a scatter plot with a linear fit. Will also draw y=x for
+    comparison.
+    
+    Parameters
+    ----------
+    x     : (array) Values for the x-axis
+    y     : (array) Values for the y-axis
+    s     : (float or array) Marker size(s)
+    c     : (float or array) Marker colour(s)
+    yex   : (bool) True to plot y=x
+    dofit : (bool) True to calculate and plot linear fit
+    
+    Returns
+    -------
+    Figure and axis objects for further customisation
+    
+    Example Useage
+    -------
+    x = np.arange(0,50)
+    y = np.arange(0,50)/1.5
+    f,a = scatter_with_fit(x,y)
+    a.set_title('Example scatter with fit')
+    a.set_xlabel('Example x axis')
+    a.set_ylabel('Example y axis')
+    '''
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    x = np.ma.masked_invalid(x)
+    y = np.ma.masked_invalid(y)
+    combined_mask = np.ma.mask_or(x.mask,y.mask)
+    x.mask = combined_mask
+    y.mask = combined_mask
+    
+    xmax = np.ma.max(x)
+    xmin = np.ma.min(x)
+    ymax = np.ma.max(y)
+    ymin = np.ma.min(y)
+    axmax0 = np.max([xmax, ymax])
+    axmin0 = np.min([xmin, ymin])
+    axmin = axmin0 - 0.1*np.abs(axmax0-axmin0)
+    axmax = axmax0 + 0.1*np.abs(axmax0-axmin0)
+    
+    if yex:
+        lineX = [axmin,axmax]
+        fityx = np.poly1d([1,0])
+        ax.plot(lineX, fityx(lineX),c=[0.5,0.5,0.5],linewidth=1)
+    
+    sca = ax.scatter(x,y, c=c, s=s)
+    
+    if dofit:
+        lineX = [axmin,axmax]
+         #Calculate data fit and cast to poly1d object
+        fit_tmp = np.ma.polyfit(x, y, 1)
+        fit = np.poly1d( fit_tmp )
+        ax.plot(lineX, fit(lineX),c=[1,128/255,0],linewidth=1.5)
+        r2 = r2_lin(x, y, fit)
+    
+    ax.set_xlim(axmin, axmax)
+    ax.set_ylim(axmin, axmax)
+    ax.set_aspect('equal', adjustable='box')
+    ax.grid()
+    
+    if dofit:
+        ax.text(0.4,0.125,'{} {:03.2f} {} {:03.2f}'.format('y =',
+                            fit_tmp[0],'x +',fit_tmp[1]),
+                            transform=ax.transAxes)
+        ax.text(0.4,0.05,'{} {:03.2f} '.format('$R^2$ =',
+                    r2),transform=ax.transAxes)
+    
+    return fig, ax
+
 def create_geo_axes(lonbounds, latbounds):
     '''
     A routine for creating an axis for any geographical plot. Within the
