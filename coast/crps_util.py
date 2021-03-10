@@ -241,13 +241,13 @@ def crps_sonf_moving( mod_array, obs_lon, obs_lat, obs_var, obs_time,
             crps_list[ii] = np.nan
         else:
             # Subset model data in time and space: model -> obs
-            mod_subset = mod_array.isel(y_dim = xr.DataArray(subset_ind[0]),
-                                        x_dim = xr.DataArray(subset_ind[1]))
+            mod_subset = mod_array.isel(y_dim = subset_ind[0],
+                                        x_dim = subset_ind[1])
             mod_subset = mod_subset.swap_dims({'t_dim':'time'})
             mod_subset = mod_subset.interp(
-                             time = obs_time[ii], method = time_interp)
-                             #kwargs={'fill_value':'extrapolate'})
-            
+                             time = obs_time[ii], method = time_interp,
+                             kwargs={'fill_value':'extrapolate'})
+
             #Check if neighbourhood contains a land value (TODO:mask)
             if any(np.isnan(mod_subset)):
                 contains_land[ii] = True
