@@ -55,6 +55,7 @@ import datetime
 import os.path as path
 import logging
 import coast.general_utils as general_utils
+import coast.plot_util as plot_util
 from socket import gethostname# to get hostname
 import traceback
 import xarray.ufuncs as uf
@@ -1568,6 +1569,111 @@ try:
     f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
     f.savefig(dn_fig + 'profile_temperature_diagram.png')
     print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+#%%
+'''
+#################################################
+## ( 14 ) PLOTTING UTILITY Methods             ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( ## ) Scatter with fit                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Plot an idealised dataset
+    x = np.arange(0,50)
+    y = np.arange(0,50)/1.5
+    f,a = plot_util.scatter_with_fit(x,y)
+    a.set_title('Test: Scatter_with_fit()')
+
+    f.savefig(os.path.join(dn_fig, "scatter_with_fit_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. Scatter_with_fit()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( ## ) Geo axes                                                             #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Plot two scatters on a map
+    lonbounds = [-20,20]
+    latbounds = [30,60]
+    f,a = plot_util.create_geo_axes(lonbounds, latbounds)
+    a.set_title('Test: create_geo_axes()')
+    a.scatter([0,-10],[50,50])
+
+    f.savefig(os.path.join(dn_fig, "create_geo_axes_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. create_geo_axes()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( ## ) Determine colorbar extension                                         #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Test on some pretend dataset
+    pretend_data = np.arange(0,50)
+    test1 = plot_util.determine_colorbar_extension(pretend_data, -50, 100)
+    test2 = plot_util.determine_colorbar_extension(pretend_data, 1, 100)
+    test3 = plot_util.determine_colorbar_extension(pretend_data, -50, 48)
+    test4 = plot_util.determine_colorbar_extension(pretend_data, 1, 48)
+
+    #TEST: <description here>
+    check1 = test1 == 'neither'
+    check2 = test2 == 'min'
+    check3 = test3 == 'max'
+    check4 = test4 == 'both'
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_colorbar_extension()")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( ## ) Determine clim by st.dev                                             #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Data with mean = 50.51 and std = 32.2
+    # Determine clims to exclude outlier at 200
+    pretend_data = np.arange(0,100)
+    pretend_data[-1] = 200
+    clim = plot_util.determine_clim_by_standard_deviation(pretend_data, 
+                                                          n_std_dev=2)
+
+    #TEST: <description here>
+    check1 = clim[0] == -13.808889915793792
+    check2 = clim[1] == 114.82888991579378
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_clim_by_std_dev")
+    else:
+        print(str(sec) + chr(subsec) + " X - determine_clim_by_std_dev")
+
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 

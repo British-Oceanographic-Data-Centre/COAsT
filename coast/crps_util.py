@@ -164,8 +164,8 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
     subset_ind = general_utils.subset_indices_by_distance(
                      mod_array.longitude.values, mod_array.latitude.values, 
                      obs_lon, obs_lat, nh_radius)
-    mod_subset = mod_array.isel(  y_dim = xr.DataArray(subset_ind[0]),
-                                  x_dim = xr.DataArray(subset_ind[1]))
+    mod_subset = mod_array.isel(  y_dim = subset_ind[0],
+                                  x_dim = subset_ind[1])
     mod_subset = mod_subset.swap_dims({'t_dim':'time'})
     
     # Check that the model neighbourhood contains points
@@ -185,8 +185,9 @@ def crps_sonf_fixed( mod_array, obs_lon, obs_lat, obs_var, obs_time,
                 # Check that neighbourhood contains a value
                 if all(np.isnan(mod_subset_time)):
                     pass
+                else:
                     # Calculate CRPS and put into output array
-                    crps_list[ii] = crps_empirical(mod_subset_time, 
+                    crps_list[ii] = crps_empirical(mod_subset_time.values, 
                                                    obs_var[ii])
                     n_model_pts[ii] = int(mod_subset.shape[0])
 

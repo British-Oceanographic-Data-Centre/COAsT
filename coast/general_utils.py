@@ -106,7 +106,6 @@ def subset_indices_by_distance(
 
     # Calculate the distances between every model point and the specified
     # centre. Calls another routine dist_haversine.
-
     dist = calculate_haversine_distance(centre_lon, centre_lat, 
                                         longitude, latitude)
     indices_bool = dist < radius
