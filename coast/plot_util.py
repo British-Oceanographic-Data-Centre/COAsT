@@ -10,6 +10,54 @@ from warnings import warn
 from .logging_util import get_slug, debug, info, warn, error
 import numpy as np
 
+def create_geo_axes(lonbounds, latbounds):
+    '''
+    A routine for creating an axis for any geographical plot. Within the
+    specified longitude and latitude bounds, a map will be drawn up using
+    cartopy. Any type of matplotlib plot can then be added to this figure.
+    For example:
+        
+    Example Useage
+    #############
+    
+        f,a = create_geo_axes(lonbounds, latbounds)
+        sca = a.scatter(stats.longitude, stats.latitude, c=stats.corr, 
+                        vmin=.75, vmax=1,
+                        edgecolors='k', linewidths=.5, zorder=100)
+        f.colorbar(sca)
+        a.set_title('SSH correlations \n Monthly PSMSL tide gauge vs CO9_AMM15p0', 
+                    fontsize=9)
+        
+    * Note: For scatter plots, it is useful to set zorder = 100 (or similar
+            positive number)
+    '''
+
+    import cartopy.crs as ccrs  # mapping plots
+    from cartopy.feature import NaturalEarthFeature
+        
+    # If no figure or ax is provided, create a new one
+    fig = plt.figure(1)
+    fig.clf()
+    ax = fig.add_subplot(1,1,1, projection=ccrs.PlateCarree())
+        
+    coast = NaturalEarthFeature(category='physical', facecolor=[0.9,0.9,0.9], name='coastline',
+                            scale='50m')
+    ax.add_feature(coast, edgecolor='gray')
+    #ax.coastlines(facecolor=[0.8,0.8,0.8])
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                      linewidth=0.5, color='gray', linestyle='-')
+    gl.top_labels = False
+    gl.bottom_labels = True
+    gl.right_labels = False
+    gl.left_labels = True
+    
+    ax.set_xlim(lonbounds[0], lonbounds[1])
+    ax.set_ylim(latbounds[0], latbounds[1])
+    ax.set_aspect('auto')
+
+    plt.show()
+    return fig, ax
+
 def ts_diagram(temperature, salinity, depth):
     
     fig = plt.figure(figsize = (10,7))
@@ -87,3 +135,31 @@ def geo_scatter(longitude, latitude, c=None, s = None,
 
     plt.show()
     return fig, ax
+
+def determine_colorbar_extension(color_data, vmin, vmax):
+    ''' Can be used to automatically determine settings for colorbar 
+    extension arrows. Color_data is the data used for the colormap, vmin
+    and vmax are the colorbar limits. Will output a string: "both", "max",
+    "min" or "neither", which can be inserted straight into a call to
+    matplotlib.pyplot.colorbar().
+    '''
+    extend_max = np.nanmax(color_data) > vmax
+    extend_min = np.nanmin(color_data) < vmin
+
+    if extend_max and extend_min: return "both"
+    elif extend_max and not extend_min: return 'max'
+    elif not extend_max and extend_min: return 'min'
+    else: return 'neither'
+
+def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
+    ''' Automatically determine color limits based on number of standard
+    deviations from the mean of the color data (color_data). Useful if there
+    are outliers in the data causing difficulties in distinguishing most of 
+    the data. Outputs vmin and vmax which can be passed to plotting routine
+    or plt.clim().
+    '''
+    color_data_mean = np.nanmean(color_data)
+    color_data_std = np.nanstd(color_data)
+    vmin = color_data_mean - n_std_dev*color_data_std
+    vmax = color_data_mean + n_std_dev*color_data_std
+    return vmin, vmax 

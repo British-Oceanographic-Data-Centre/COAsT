@@ -4,7 +4,7 @@ from .NEMO import NEMO
 from .TRANSECT import Transect, Transect_f, Transect_t
 from .ALTIMETRY import ALTIMETRY
 from .OBSERVATION import OBSERVATION
-from .CDF import CDF
+from .DISTRIBUTION import DISTRIBUTION
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
