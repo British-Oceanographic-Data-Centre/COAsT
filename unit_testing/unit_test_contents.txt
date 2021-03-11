@@ -15,7 +15,8 @@
     h. Load and combine multiple files.
     i. Load and combine harmonics 
     j. Convert harmonics to a/g and back 
-    
+    k. Compute e3[t,u,v,f,w] from SSH 
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
@@ -64,7 +65,8 @@
     k. Plotting multiple tidegauge locations
     l. Tidegauge time series plot
     m. TIDEGAUGE method for tabulated data
-    n. TIDEGAUGE method for finding peaks and troughs
+    n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
+    o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points
