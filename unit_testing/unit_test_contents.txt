@@ -1,4 +1,3 @@
-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 |    Unit Testing Contents                                                    |
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
@@ -91,6 +90,13 @@
     c. determine_colorbar_extension()
     d. determine_clim_by_standard_deviation()
     
+12. MASK_MASKER
+    a. Create mask by indices
+    b. Create mask by lonlat
+
+13. CLIMATOLOGY
+    a. Create monthly and seasonal climatology, write to file
+
 N. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data

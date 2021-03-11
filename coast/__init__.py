@@ -8,6 +8,7 @@ from .DISTRIBUTION import DISTRIBUTION
 from .INTERNALTIDE import INTERNALTIDE
 from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
+from .CLIMATOLOGY import CLIMATOLOGY
 from .MASK_MAKER import MASK_MAKER
 from . import logging_util
 from . import general_utils

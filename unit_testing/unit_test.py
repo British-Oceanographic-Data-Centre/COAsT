@@ -1,38 +1,28 @@
 ##
 """
 Script to do unit testing
-
 Written as procedural code that plods through the code snippets and tests the
 outputs or expected metadata.
-
 ***SECTIONS***
 This script is separated into Sections and Subsections, for which there are two
 counters to keep track: sec and subsec respectively.  At the beginning of each
 section, the sec counter should be incremented by 1 and the subsec counter
 should be reset to 96 (code for one below 'a'). At the beginning of each
 subsection, subsec should be incremented by one.
-
 ***OTHER FILES***
 There are two accompaniment files to this unit testing script:
     - unit_test_contents: A list of sections and subsections.
     - unit_test_guidelines: Further guidelines to creating unit tests.
-
 Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
-
 Unit template:
-
-
 #-----------------------------------------------------------------------------#
 # ( ## ) Subsection title                                                     #
 #                                                                             #
-
 subsec = subsec+1
 # <Introduction>
-
 try:
     # Do a thing
-
     #TEST: <description here>
     check1 = #<Boolean>
     check2 = #<Boolean>
@@ -40,10 +30,8 @@ try:
         print(str(sec) + chr(subsec) + " OK - ")
     else:
         print(str(sec) + chr(subsec) + " X - ")
-
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
 """
 
 import coast
@@ -1684,66 +1672,6 @@ except:
 
 #%%
 '''
-###############################################################################
-## ( N ) Example script testing                                              ##
-###############################################################################
-'''
-sec = 'N'
-subsec = 96
-
-print(str(sec) + ". Example script testing")
-print("++++++++++++++++++++++++")
-#
-#-----------------------------------------------------------------------------#
-#%% ( Na ) Example script testing                                               #
-#                                                                             #
-subsec = subsec+1
-# Test machine name (to check for file access) in order to test additional scripts.
-example_script_flag = True if 'livljobs' in gethostname().lower() else False
-
-try:
-    # Do a thing
-    from example_scripts import altimetry_tutorial # This runs on example_files
-    from example_scripts import tidegauge_tutorial # This runs on example_files
-    from example_scripts import tidetable_tutorial # This runs on example_files
-    from example_scripts import export_to_netcdf_tutorial # This runs on example_files
-
-    print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
-    subsec = subsec+1
-
-    if example_script_flag:
-        from example_scripts import AMM15_example_plot
-        print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
-        subsec = subsec+1
-        from example_scripts import ANChor_plots_of_NSea_wvel
-        print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
-        subsec = subsec+1
-        from example_scripts import BLZ_example_plot
-        print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
-        subsec = subsec+1
-        from example_scripts import SEAsia_R12_example_plot
-        print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
-        subsec = subsec+1
-        from example_scripts import WCSSP_India_example_plot
-        print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        subsec = subsec+1
-        from example_scripts import internal_tide_pycnocline_diagnostics
-        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
-    else:
-        print("Don't forget to test on a LIVLJOBS machine")
-
-    #TEST: <description here>
-    check1 = example_script_flag
-    if check1:
-        print(str(sec) + " OK - example_scripts ran on",gethostname())
-    else:
-        print(str(sec) + " X - example_scripts failed on",gethostname())
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-
-#%%
-'''
 #################################################
 ## ( 12 ) MASK_MAKER                           ##
 #################################################
@@ -1814,6 +1742,102 @@ try:
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
+#%%
+'''
+#################################################
+## ( 13 ) CLIMATOLOGY Methods                  ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+ds = sci.dataset[['temperature','ssh']].isel(z_dim=0)
+
+
+#-----------------------------------------------------------------------------#
+# ( 13a ) Monthly and Seasonal Climatology                                     #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    
+    clim = coast.CLIMATOLOGY()
+    fn_out = os.path.join(dn_files, 'test_climatology.nc')
+    monthly = clim.make_climatology(ds, 'month').load()
+    seasonal = clim.make_climatology(ds, 'season', fn_out=fn_out)
+    
+    mn = mn = np.nanmean(ds.temperature, axis=0)
+    check1 = np.nanmax(np.abs(mn - monthly.temperature[0])) < 1e-6
+    check2 = os.path.isfile(fn_out)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Monthly and seasonal climatology made and written to file")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with monthly and seasonal climatology ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#%%
+'''
+###############################################################################
+## ( N ) Example script testing                                              ##
+###############################################################################
+'''
+sec = 'N'
+subsec = 96
+
+print(str(sec) + ". Example script testing")
+print("++++++++++++++++++++++++")
+#
+#-----------------------------------------------------------------------------#
+#%% ( Na ) Example script testing                                               #
+#                                                                             #
+subsec = subsec+1
+# Test machine name (to check for file access) in order to test additional scripts.
+example_script_flag = True if 'livljobs' in gethostname().lower() else False
+
+try:
+    # Do a thing
+    from example_scripts import altimetry_tutorial # This runs on example_files
+    from example_scripts import tidegauge_tutorial # This runs on example_files
+    from example_scripts import tidetable_tutorial # This runs on example_files
+    from example_scripts import export_to_netcdf_tutorial # This runs on example_files
+
+    print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
+    subsec = subsec+1
+
+    if example_script_flag:
+        from example_scripts import AMM15_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
+        subsec = subsec+1
+        from example_scripts import ANChor_plots_of_NSea_wvel
+        print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
+        subsec = subsec+1
+        from example_scripts import BLZ_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
+        subsec = subsec+1
+        from example_scripts import SEAsia_R12_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
+        subsec = subsec+1
+        from example_scripts import WCSSP_India_example_plot
+        print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
+        subsec = subsec+1
+        from example_scripts import internal_tide_pycnocline_diagnostics
+        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+    else:
+        print("Don't forget to test on a LIVLJOBS machine")
+
+    #TEST: <description here>
+    check1 = example_script_flag
+    if check1:
+        print(str(sec) + " OK - example_scripts ran on",gethostname())
+    else:
+        print(str(sec) + " X - example_scripts failed on",gethostname())
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #%% Close log file
 #################################################
