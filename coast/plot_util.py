@@ -10,6 +10,144 @@ from warnings import warn
 from .logging_util import get_slug, debug, info, warn, error
 import numpy as np
 
+def r2_lin(x, y, fit):
+    '''For calculating r-squared of a linear fit. Fit should be a python polyfit
+    object'''
+
+    fity = fit(x)
+    diff = (y - fity)**2
+    ybar = np.nanmean(y)
+    ymybar = (y - ybar)**2
+
+    SStot = np.nansum(ymybar)
+    SSres = np.nansum(diff)
+
+    R2 = 1 - SSres/SStot
+
+    return R2
+
+def scatter_with_fit(x,y,s=10,c='k',yex=True, dofit=True):
+    ''' Does a scatter plot with a linear fit. Will also draw y=x for
+    comparison.
+    
+    Parameters
+    ----------
+    x     : (array) Values for the x-axis
+    y     : (array) Values for the y-axis
+    s     : (float or array) Marker size(s)
+    c     : (float or array) Marker colour(s)
+    yex   : (bool) True to plot y=x
+    dofit : (bool) True to calculate and plot linear fit
+    
+    Returns
+    -------
+    Figure and axis objects for further customisation
+    
+    Example Useage
+    -------
+    x = np.arange(0,50)
+    y = np.arange(0,50)/1.5
+    f,a = scatter_with_fit(x,y)
+    a.set_title('Example scatter with fit')
+    a.set_xlabel('Example x axis')
+    a.set_ylabel('Example y axis')
+    '''
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    x = np.ma.masked_invalid(x)
+    y = np.ma.masked_invalid(y)
+    combined_mask = np.ma.mask_or(x.mask,y.mask)
+    x.mask = combined_mask
+    y.mask = combined_mask
+    
+    xmax = np.ma.max(x)
+    xmin = np.ma.min(x)
+    ymax = np.ma.max(y)
+    ymin = np.ma.min(y)
+    axmax0 = np.max([xmax, ymax])
+    axmin0 = np.min([xmin, ymin])
+    axmin = axmin0 - 0.1*np.abs(axmax0-axmin0)
+    axmax = axmax0 + 0.1*np.abs(axmax0-axmin0)
+    
+    if yex:
+        lineX = [axmin,axmax]
+        fityx = np.poly1d([1,0])
+        ax.plot(lineX, fityx(lineX),c=[0.5,0.5,0.5],linewidth=1)
+    
+    sca = ax.scatter(x,y, c=c, s=s)
+    
+    if dofit:
+        lineX = [axmin,axmax]
+         #Calculate data fit and cast to poly1d object
+        fit_tmp = np.ma.polyfit(x, y, 1)
+        fit = np.poly1d( fit_tmp )
+        ax.plot(lineX, fit(lineX),c=[1,128/255,0],linewidth=1.5)
+        r2 = r2_lin(x, y, fit)
+    
+    ax.set_xlim(axmin, axmax)
+    ax.set_ylim(axmin, axmax)
+    ax.set_aspect('equal', adjustable='box')
+    ax.grid()
+    
+    if dofit:
+        ax.text(0.4,0.125,'{} {:03.2f} {} {:03.2f}'.format('y =',
+                            fit_tmp[0],'x +',fit_tmp[1]),
+                            transform=ax.transAxes)
+        ax.text(0.4,0.05,'{} {:03.2f} '.format('$R^2$ =',
+                    r2),transform=ax.transAxes)
+    
+    return fig, ax
+
+def create_geo_axes(lonbounds, latbounds):
+    '''
+    A routine for creating an axis for any geographical plot. Within the
+    specified longitude and latitude bounds, a map will be drawn up using
+    cartopy. Any type of matplotlib plot can then be added to this figure.
+    For example:
+        
+    Example Useage
+    #############
+    
+        f,a = create_geo_axes(lonbounds, latbounds)
+        sca = a.scatter(stats.longitude, stats.latitude, c=stats.corr, 
+                        vmin=.75, vmax=1,
+                        edgecolors='k', linewidths=.5, zorder=100)
+        f.colorbar(sca)
+        a.set_title('SSH correlations \n Monthly PSMSL tide gauge vs CO9_AMM15p0', 
+                    fontsize=9)
+        
+    * Note: For scatter plots, it is useful to set zorder = 100 (or similar
+            positive number)
+    '''
+
+    import cartopy.crs as ccrs  # mapping plots
+    from cartopy.feature import NaturalEarthFeature
+        
+    # If no figure or ax is provided, create a new one
+    fig = plt.figure(1)
+    fig.clf()
+    ax = fig.add_subplot(1,1,1, projection=ccrs.PlateCarree())
+        
+    coast = NaturalEarthFeature(category='physical', facecolor=[0.9,0.9,0.9], name='coastline',
+                            scale='50m')
+    ax.add_feature(coast, edgecolor='gray')
+    #ax.coastlines(facecolor=[0.8,0.8,0.8])
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                      linewidth=0.5, color='gray', linestyle='-')
+    gl.top_labels = False
+    gl.bottom_labels = True
+    gl.right_labels = False
+    gl.left_labels = True
+    
+    ax.set_xlim(lonbounds[0], lonbounds[1])
+    ax.set_ylim(latbounds[0], latbounds[1])
+    ax.set_aspect('auto')
+
+    plt.show()
+    return fig, ax
+
 def ts_diagram(temperature, salinity, depth):
     
     fig = plt.figure(figsize = (10,7))
@@ -87,3 +225,31 @@ def geo_scatter(longitude, latitude, c=None, s = None,
 
     plt.show()
     return fig, ax
+
+def determine_colorbar_extension(color_data, vmin, vmax):
+    ''' Can be used to automatically determine settings for colorbar 
+    extension arrows. Color_data is the data used for the colormap, vmin
+    and vmax are the colorbar limits. Will output a string: "both", "max",
+    "min" or "neither", which can be inserted straight into a call to
+    matplotlib.pyplot.colorbar().
+    '''
+    extend_max = np.nanmax(color_data) > vmax
+    extend_min = np.nanmin(color_data) < vmin
+
+    if extend_max and extend_min: return "both"
+    elif extend_max and not extend_min: return 'max'
+    elif not extend_max and extend_min: return 'min'
+    else: return 'neither'
+
+def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
+    ''' Automatically determine color limits based on number of standard
+    deviations from the mean of the color data (color_data). Useful if there
+    are outliers in the data causing difficulties in distinguishing most of 
+    the data. Outputs vmin and vmax which can be passed to plotting routine
+    or plt.clim().
+    '''
+    color_data_mean = np.nanmean(color_data)
+    color_data_std = np.nanstd(color_data)
+    vmin = color_data_mean - n_std_dev*color_data_std
+    vmax = color_data_mean + n_std_dev*color_data_std
+    return vmin, vmax 

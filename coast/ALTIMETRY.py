@@ -193,8 +193,8 @@ class ALTIMETRY(COAsT):
         self.dataset[new_var_name] = interpolated
     
     def crps(self, model_object, model_var_name, obs_var_name, 
-             nh_radius: float = 20, cdf_type:str='empirical', 
-             time_interp:str='linear', create_new_object = True):
+             nh_radius: float = 20, time_interp:str='linear', 
+             create_new_object = True):
         
         '''
         Comparison of observed variable to modelled using the Continuous
@@ -207,10 +207,7 @@ class ALTIMETRY(COAsT):
         model_object (model) : Model object (NEMO) containing model data
         model_var_name (str) : Name of model variable to compare.
         obs_var_name (str)   : Name of observed variable to compare.
-        nh_radius (float)    : Neighbourhood rad
-        cdf_type (str)       : Type of cumulative distribution to use for the
-                               model data ('empirical' or 'theoretical').
-                               Observations always use empirical.
+        nh_radius (float)    : Neighbourhood radius (km)
         time_interp (str)    : Type of time interpolation to use (s)
         create_new_obj (bool): If True, save output to new ALTIMETRY obj.
                                Otherwise, save to this obj.
@@ -234,7 +231,7 @@ class ALTIMETRY(COAsT):
                                obs_var.latitude.values, 
                                obs_var.values, 
                                obs_var.time.values, 
-                               nh_radius, cdf_type, time_interp )
+                               nh_radius, time_interp )
         if create_new_object:
             new_object = ALTIMETRY()
             new_dataset = self.dataset[['longitude','latitude','time']]

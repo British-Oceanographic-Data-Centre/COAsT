@@ -35,9 +35,6 @@ def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat,
     If longitude is 2D:
         Returns arrays of x and y indices per central location.
         ind_y corresponds to row indices of the original input arrays.
-        
-    DB: This is really slow at the moment. But the bottleneck seems to be right
-    at the start somewhere.. Best stick to subset_indices_by_distance for now.
     """
     # change inputs to numpy
     longitude = np.array(longitude)
@@ -109,7 +106,6 @@ def subset_indices_by_distance(
 
     # Calculate the distances between every model point and the specified
     # centre. Calls another routine dist_haversine.
-
     dist = calculate_haversine_distance(centre_lon, centre_lat, 
                                         longitude, latitude)
     indices_bool = dist < radius
