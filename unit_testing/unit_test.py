@@ -1630,7 +1630,7 @@ print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( 10a ) Example script testing                                               #
+#%% ( Xa ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.
