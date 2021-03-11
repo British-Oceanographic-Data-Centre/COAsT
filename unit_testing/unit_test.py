@@ -1438,14 +1438,192 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+    
+'''
+#################################################
+## ( 10 ) PROFILE Methods                     ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 10a ) Load EN4 data                                                       #
+#                                                                             #
+
+subsec = subsec+1
+# Create PROFILE object and read EN4 example data file
+
+try:
+    profiles = coast.PROFILE()
+    profiles.read_EN4(fn_EN4)
+
+    #TEST: Check some data
+    check1 = profiles.dataset.dims['z_dim'] == 400
+    check2 = profiles.dataset.longitude[11].values == 9.89777
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+
+#-----------------------------------------------------------------------------#
+# ( 10b ) Plot locations on map                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot profile locations on a map
+
+try:
+    f,a = profiles.plot_map()
+    f.savefig(dn_fig + 'profiles_map.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 10c ) Plot ts diagram                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_ts_diagram(10)
+    f.savefig(dn_fig + 'profile_ts_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 10d ) Plot temperature profile                                            #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_profile(var='potential_temperature',profile_indices=[10])
+    f.savefig(dn_fig + 'profile_temperature_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+#%%
+'''
+#################################################
+## ( 11 ) PLOTTING UTILITY Methods             ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 11a ) Scatter with fit                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Plot an idealised dataset
+    x = np.arange(0,50)
+    y = np.arange(0,50)/1.5
+    f,a = plot_util.scatter_with_fit(x,y)
+    a.set_title('Test: Scatter_with_fit()')
+
+    f.savefig(os.path.join(dn_fig, "scatter_with_fit_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. Scatter_with_fit()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11b ) Geo axes                                                             #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Plot two scatters on a map
+    lonbounds = [-20,20]
+    latbounds = [30,60]
+    f,a = plot_util.create_geo_axes(lonbounds, latbounds)
+    a.set_title('Test: create_geo_axes()')
+    a.scatter([0,-10],[50,50])
+
+    f.savefig(os.path.join(dn_fig, "create_geo_axes_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. create_geo_axes()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11c ) Determine colorbar extension                                         #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Test on some pretend dataset
+    pretend_data = np.arange(0,50)
+    test1 = plot_util.determine_colorbar_extension(pretend_data, -50, 100)
+    test2 = plot_util.determine_colorbar_extension(pretend_data, 1, 100)
+    test3 = plot_util.determine_colorbar_extension(pretend_data, -50, 48)
+    test4 = plot_util.determine_colorbar_extension(pretend_data, 1, 48)
+
+    #TEST: <description here>
+    check1 = test1 == 'neither'
+    check2 = test2 == 'min'
+    check3 = test3 == 'max'
+    check4 = test4 == 'both'
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_colorbar_extension()")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 11d ) Determine clim by st.dev                                             #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Data with mean = 50.51 and std = 32.2
+    # Determine clims to exclude outlier at 200
+    pretend_data = np.arange(0,100)
+    pretend_data[-1] = 200
+    clim = plot_util.determine_clim_by_standard_deviation(pretend_data, 
+                                                          n_std_dev=2)
+
+    #TEST: <description here>
+    check1 = clim[0] == -13.808889915793792
+    check2 = clim[1] == 114.82888991579378
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_clim_by_std_dev")
+    else:
+        print(str(sec) + chr(subsec) + " X - determine_clim_by_std_dev")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #%%
 '''
 ###############################################################################
-## ( 10 ) Example script testing                                              ##
+## ( X ) Example script testing                                              ##
 ###############################################################################
 '''
-sec = sec+1
+sec = 'X'
 subsec = 96
 
 print(str(sec) + ". Example script testing")
@@ -1495,184 +1673,6 @@ try:
         print(str(sec) + " OK - example_scripts ran on",gethostname())
     else:
         print(str(sec) + " X - example_scripts failed on",gethostname())
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-
-'''
-#################################################
-## ( 11 ) PROFILE Methods                     ##
-#################################################
-'''
-sec = sec+1
-subsec = 96
-
-#-----------------------------------------------------------------------------#
-# ( 11a ) Load EN4 data                                                       #
-#                                                                             #
-
-subsec = subsec+1
-# Create PROFILE object and read EN4 example data file
-
-try:
-    profiles = coast.PROFILE()
-    profiles.read_EN4(fn_EN4)
-
-    #TEST: Check some data
-    check1 = profiles.dataset.dims['N_LEVELS'] == 400
-    check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
-    else:
-        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-
-#-----------------------------------------------------------------------------#
-# ( 11b ) Plot locations on map                                               #
-#                                                                             #
-
-subsec = subsec+1
-# Plot profile locations on a map
-
-try:
-    f,a = profiles.plot_map()
-    f.savefig(dn_fig + 'profiles_map.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( 11c ) Plot ts diagram                                                     #
-#                                                                             #
-
-subsec = subsec+1
-# Plot ts diagram
-
-try:
-    f,a = profiles.plot_ts_diagram(10)
-    f.savefig(dn_fig + 'profile_ts_diagram.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( 11d ) Plot temperature profile                                            #
-#                                                                             #
-
-subsec = subsec+1
-# Plot ts diagram
-
-try:
-    f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
-    f.savefig(dn_fig + 'profile_temperature_diagram.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-#%%
-'''
-#################################################
-## ( 14 ) PLOTTING UTILITY Methods             ##
-#################################################
-'''
-sec = sec+1
-subsec = 96
-
-#-----------------------------------------------------------------------------#
-# ( ## ) Scatter with fit                                                     #
-#                                                                             #
-
-subsec = subsec+1
-# <Introduction>
-
-try:
-    # Plot an idealised dataset
-    x = np.arange(0,50)
-    y = np.arange(0,50)/1.5
-    f,a = plot_util.scatter_with_fit(x,y)
-    a.set_title('Test: Scatter_with_fit()')
-
-    f.savefig(os.path.join(dn_fig, "scatter_with_fit_test.png"))
-    plt.close()
-    
-    print(str(sec) + chr(subsec) +' OK. Scatter_with_fit()')
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( ## ) Geo axes                                                             #
-#                                                                             #
-
-subsec = subsec+1
-
-try:
-    # Plot two scatters on a map
-    lonbounds = [-20,20]
-    latbounds = [30,60]
-    f,a = plot_util.create_geo_axes(lonbounds, latbounds)
-    a.set_title('Test: create_geo_axes()')
-    a.scatter([0,-10],[50,50])
-
-    f.savefig(os.path.join(dn_fig, "create_geo_axes_test.png"))
-    plt.close()
-    
-    print(str(sec) + chr(subsec) +' OK. create_geo_axes()')
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( ## ) Determine colorbar extension                                         #
-#                                                                             #
-
-subsec = subsec+1
-
-try:
-    # Test on some pretend dataset
-    pretend_data = np.arange(0,50)
-    test1 = plot_util.determine_colorbar_extension(pretend_data, -50, 100)
-    test2 = plot_util.determine_colorbar_extension(pretend_data, 1, 100)
-    test3 = plot_util.determine_colorbar_extension(pretend_data, -50, 48)
-    test4 = plot_util.determine_colorbar_extension(pretend_data, 1, 48)
-
-    #TEST: <description here>
-    check1 = test1 == 'neither'
-    check2 = test2 == 'min'
-    check3 = test3 == 'max'
-    check4 = test4 == 'both'
-    if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - determine_colorbar_extension()")
-    else:
-        print(str(sec) + chr(subsec) + " X - ")
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-
-#-----------------------------------------------------------------------------#
-# ( ## ) Determine clim by st.dev                                             #
-#                                                                             #
-
-subsec = subsec+1
-# <Introduction>
-
-try:
-    # Data with mean = 50.51 and std = 32.2
-    # Determine clims to exclude outlier at 200
-    pretend_data = np.arange(0,100)
-    pretend_data[-1] = 200
-    clim = plot_util.determine_clim_by_standard_deviation(pretend_data, 
-                                                          n_std_dev=2)
-
-    #TEST: <description here>
-    check1 = clim[0] == -13.808889915793792
-    check2 = clim[1] == 114.82888991579378
-    if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - determine_clim_by_std_dev")
-    else:
-        print(str(sec) + chr(subsec) + " X - determine_clim_by_std_dev")
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')

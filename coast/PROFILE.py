@@ -110,8 +110,8 @@ class PROFILE(COAsT):
             pass
 
         for ii in profile_indices:
-            prof_var = self.dataset[var].isel(N_PROF=ii)
-            prof_depth = self.dataset.depth.isel(N_PROF=ii)
+            prof_var = self.dataset[var].isel(profile=ii)
+            prof_depth = self.dataset.depth.isel(profile=ii)
             ax = plt.plot(prof_var, prof_depth)
             
         plt.gca().invert_yaxis()
@@ -142,7 +142,7 @@ class PROFILE(COAsT):
     def plot_ts_diagram(self, profile_index, var_t='potential_temperature', 
                         var_s='practical_salinity'):
         
-        profile = self.dataset.isel(N_PROF=profile_index)
+        profile = self.dataset.isel(profile=profile_index)
         temperature = profile[var_t].values
         salinity = profile[var_s].values
         depth = profile.depth.values
