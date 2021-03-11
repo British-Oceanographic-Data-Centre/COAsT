@@ -1620,17 +1620,17 @@ except:
 #%%
 '''
 ###############################################################################
-## ( X ) Example script testing                                              ##
+## ( N ) Example script testing                                              ##
 ###############################################################################
 '''
-sec = 'X'
+sec = 'N'
 subsec = 96
 
 print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( Xa ) Example script testing                                               #
+#%% ( Na ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.

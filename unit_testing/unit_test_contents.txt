@@ -89,7 +89,7 @@
     c. determine_colorbar_extension()
     d. determine_clim_by_standard_deviation()
     
-X. Example script testing
+N. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
     c. tutorial on AMM60 data
