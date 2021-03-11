@@ -195,7 +195,7 @@ def _compute(signal, full_matrices, active_ind, number_points):
     '''
     P, D, Q = linalg.svd(signal, full_matrices=full_matrices)   
     mode_count = P.shape[-1]     
-    EOFs = np.zeros( (number_points, mode_count), dtype=P.dtype)
+    EOFs = np.full( (number_points, mode_count), np.nan, dtype=P.dtype)
     EOFs[active_ind,:] = P 
     
     # Calculate variance explained

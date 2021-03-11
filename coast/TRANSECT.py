@@ -9,6 +9,7 @@ from scipy.integrate import cumtrapz
 from .logging_util import get_slug, debug, error
 import warnings
 import traceback
+from .logging_util import get_slug, debug, info, warn, error
 
 # =============================================================================
 # The TRANSECT module is a place for code related to transects only
@@ -286,7 +287,9 @@ class Transect_f(Transect):
         super().__init__(nemo_f, point_A, point_B, y_indices, x_indices)
         
         
-    def calc_flow_across_transect(self, nemo_u: COAsT, nemo_v: COAsT):
+    def calc_flow_across_transect(self, nemo_u: COAsT, nemo_v: COAsT): 
+        #TODO the code here has become a little messy, could do with being 
+        # rewritten as in similar function in CONTOUR
         """
     
         Computes the flow through the transect at each segment and creates a new 
@@ -299,6 +302,10 @@ class Transect_f(Transect):
         The latitude, longitude and the horizontal and vertical scale factors
         on the normal velocity points are also stored in the dataset.
         
+        If the time dependent cell thicknesses (e3) on the u and v grids are 
+        present in the nemo_u and nemo_v datasets they will be used, if they 
+        are not then the initial cell thicknesses (e3_0) will be used.
+        
         parameters
         ----------
         nemo_u : Nemo object on the u-grid containing the i-component velocities
@@ -306,6 +313,9 @@ class Transect_f(Transect):
         
         """
         debug(f"Computing flow across the transect for {get_slug(self)}")
+        
+        # compute transports flag; set to false if suitable e3 not found
+        compute_transports = True
                 
         # subset the u and v datasets 
         da_y_ind = xr.DataArray( self.y_ind, dims=['r_dim'] )
@@ -313,12 +323,32 @@ class Transect_f(Transect):
         u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
         v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
         
+        # use time varying if e3 is present, if not default to e3_0
+        if 'e3' not in u_ds.data_vars:
+            if 'e3_0' not in u_ds.data_vars:
+                warn("e3 not found, transports will not be calculated")
+                compute_transports = False
+            else:
+                u_ds['e3'] = u_ds.e3_0.broadcast_like(u_ds.u_velocity) 
+        if 'e3' not in v_ds.data_vars:
+            if 'e3_0' not in v_ds.data_vars:
+                warn("e3 not found, transports will not be calculated")
+                compute_transports = False
+            else:
+                v_ds['e3'] = v_ds.e3_0.broadcast_like(v_ds.v_velocity) 
+        
         # If there is no time dimension, add one. This is so
         # indexing can assume a time dimension exists
+        droptime=False
         if 't_dim' not in u_ds.dims:
-            u_ds = u_ds.expand_dims(dim={'t_dim':1},axis=0)
+            u_ds["u_velocity"] = u_ds.u_velocity.expand_dims(dim={'t_dim':1},axis=0)
+            if compute_transports:
+                u_ds["e3"] = u_ds.e3.expand_dims(dim={'t_dim':1},axis=0)
+            droptime=True
         if 't_dim' not in v_ds.dims:
-            v_ds = v_ds.expand_dims(dim={'t_dim':1},axis=0)
+            v_ds["v_velocity"] = v_ds.v_velocity.expand_dims(dim={'t_dim':1},axis=0)
+            if compute_transports:
+                v_ds["e3"] = v_ds.e3.expand_dims(dim={'t_dim':1},axis=0)
         
         velocity = np.ma.zeros( (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size-1) )
         vol_transport = np.ma.zeros( (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size-1) )
@@ -327,7 +357,7 @@ class Transect_f(Transect):
         longitude = np.ma.zeros( (u_ds.r_dim.size-1) )
         e1 = np.ma.zeros( (u_ds.r_dim.size-1) )
         e2 = np.ma.zeros( (u_ds.r_dim.size-1) )
-        e3_0 = np.ma.zeros( (u_ds.z_dim.size, u_ds.r_dim.size-1) )
+        e3 = np.ma.zeros( (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size-1) )
         
         # Find the indices where the derivative of the transect in the north, south, east and west
         # directions are positive.
@@ -339,62 +369,79 @@ class Transect_f(Transect):
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
         
         # u flux (+ in)
-        velocity[:,:,dr_n] = u_ds.vozocrtx.to_masked_array()[:,:,dr_n+1]
-        vol_transport[:,:,dr_n] = ( velocity[:,:,dr_n] * u_ds.e2.to_masked_array()[dr_n+1] *
-                                          u_ds.e3_0.to_masked_array()[:,dr_n+1] )
+        velocity[:,:,dr_n] = u_ds.u_velocity.to_masked_array()[:,:,dr_n+1]
+        if compute_transports:
+            vol_transport[:,:,dr_n] = ( velocity[:,:,dr_n] * u_ds.e2.to_masked_array()[dr_n+1] *
+                                          u_ds.e3.to_masked_array()[:,:,dr_n+1] )
+            e3[:,:,dr_n] = u_ds.e3.values[:,:,dr_n+1]
         depth_0[:,dr_n] = u_ds.depth_0.to_masked_array()[:,dr_n+1]
         latitude[dr_n] = u_ds.latitude.values[dr_n+1]
         longitude[dr_n] = u_ds.longitude.values[dr_n+1]
         e1[dr_n] = u_ds.e1.values[dr_n+1]
         e2[dr_n] = u_ds.e2.values[dr_n+1]
-        e3_0[:,dr_n] = u_ds.e3_0.values[:,dr_n+1]
-        
+               
         # v flux (- in) 
-        velocity[:,:,dr_e] = - v_ds.vomecrty.to_masked_array()[:,:,dr_e+1]
-        vol_transport[:,:,dr_e] = ( velocity[:,:,dr_e] * v_ds.e1.to_masked_array()[dr_e+1] *
-                                  v_ds.e3_0.to_masked_array()[:,dr_e+1] )
+        velocity[:,:,dr_e] = - v_ds.v_velocity.to_masked_array()[:,:,dr_e+1]
+        if compute_transports:
+            vol_transport[:,:,dr_e] = ( velocity[:,:,dr_e] * v_ds.e1.to_masked_array()[dr_e+1] *
+                                  v_ds.e3.to_masked_array()[:,:,dr_e+1] )
+            e3[:,:,dr_e] = v_ds.e3.values[:,:,dr_e+1]
         depth_0[:,dr_e] = v_ds.depth_0.to_masked_array()[:,dr_e+1]
         latitude[dr_e] = v_ds.latitude.values[dr_e+1]
         longitude[dr_e] = v_ds.longitude.values[dr_e+1]
         e1[dr_e] = v_ds.e1.values[dr_e+1]
         e2[dr_e] = v_ds.e2.values[dr_e+1]
-        e3_0[:,dr_e] = v_ds.e3_0.values[:,dr_e+1]
-        
+               
         # v flux (+ in)
-        velocity[:,:,dr_w] = v_ds.vomecrty.to_masked_array()[:,:,dr_w]
-        vol_transport[:,:,dr_w] = ( velocity[:,:,dr_w] * v_ds.e1.to_masked_array()[dr_w] *
-                                  v_ds.e3_0.to_masked_array()[:,dr_w] )
+        velocity[:,:,dr_w] = v_ds.v_velocity.to_masked_array()[:,:,dr_w]
+        if compute_transports:
+            vol_transport[:,:,dr_w] = ( velocity[:,:,dr_w] * v_ds.e1.to_masked_array()[dr_w] *
+                                  v_ds.e3.to_masked_array()[:,:,dr_w] )
+            e3[:,:,dr_w] = v_ds.e3.values[:,:,dr_w]
         depth_0[:,dr_w] = v_ds.depth_0.to_masked_array()[:,dr_w]
         latitude[dr_w] = v_ds.latitude.values[dr_w]
         longitude[dr_w] = v_ds.longitude.values[dr_w]
         e1[dr_w] = v_ds.e1.values[dr_w]
         e2[dr_w] = v_ds.e2.values[dr_w]
-        e3_0[:,dr_w] = v_ds.e3_0.values[:,dr_w]
-           
-        # Add DataArrays to dataset           
-        self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( np.squeeze(velocity), 
-                    coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), depth_0)
+                   
+        # Add DataArrays to dataset 
+        if droptime:
+            self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( velocity.squeeze(), 
+                    coords={'depth_0': (('z_dim','r_dim'), depth_0) 
                             ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude) },
-                    dims=['t_dim', 'z_dim', 'r_dim'] )            
-        self.data_cross_tran_flow['normal_transports'] \
-                    = xr.DataArray( np.squeeze(np.sum(vol_transport, axis=1)) / 1000000.,
-                    coords={'time': (('t_dim'), u_ds.time.values)
-                            ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},
-                    dims=['t_dim', 'r_dim'] )          
+                    dims=['z_dim', 'r_dim'] ) 
+            if compute_transports:
+                self.data_cross_tran_flow['normal_transports'] \
+                    = xr.DataArray( np.sum(vol_transport.squeeze(), axis=0) / 1000000., \
+                    coords={'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},\
+                    dims=['r_dim'] ).squeeze() 
+        else:
+            self.data_cross_tran_flow['normal_velocities'] = xr.DataArray( velocity, 
+                        coords={'time': (('t_dim'), u_ds.time.values),'depth_0': (('z_dim','r_dim'), depth_0)
+                                ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude) },
+                        dims=['t_dim', 'z_dim', 'r_dim'] )   
+            if compute_transports:
+                self.data_cross_tran_flow['normal_transports'] \
+                        = xr.DataArray( np.sum(vol_transport, axis=1) / 1000000.,
+                        coords={'time': (('t_dim'), u_ds.time.values)
+                                ,'latitude': (('r_dim'), latitude), 'longitude': (('r_dim'), longitude)},
+                        dims=['t_dim', 'r_dim'] ).squeeze()          
         self.data_cross_tran_flow['e1'] = xr.DataArray( e1, dims=['r_dim'] ) 
         self.data_cross_tran_flow['e2'] = xr.DataArray( e2, dims=['r_dim'] ) 
-        self.data_cross_tran_flow['e3_0'] = xr.DataArray( e3_0, dims=['z_dim','r_dim'] ) 
+        if compute_transports:
+            self.data_cross_tran_flow['e3'] = xr.DataArray( e3, dims=['t_dim','z_dim','r_dim'] ) 
         # DataArray attributes   
         self.data_cross_tran_flow.normal_velocities.attrs['units'] = 'm/s'
         self.data_cross_tran_flow.normal_velocities.attrs['standard_name'] = 'velocity across the transect'
-        self.data_cross_tran_flow.normal_velocities.attrs['long_name'] = 'velocity across the transect defined on the normal velocity grid points'    
-        self.data_cross_tran_flow.normal_transports.attrs['units'] = 'Sv'
-        self.data_cross_tran_flow.normal_transports.attrs['standard_name'] = 'depth integrated volume transport across transect'
-        self.data_cross_tran_flow.normal_transports.attrs['long_name'] = 'depth integrated volume transport across the transect defined on the normal velocity grid points' 
+        self.data_cross_tran_flow.normal_velocities.attrs['long_name'] = 'velocity across the transect defined on the normal velocity grid points'  
+        if compute_transports:
+            self.data_cross_tran_flow.normal_transports.attrs['units'] = 'Sv'
+            self.data_cross_tran_flow.normal_transports.attrs['standard_name'] = 'depth integrated volume transport across transect'
+            self.data_cross_tran_flow.normal_transports.attrs['long_name'] = 'depth integrated volume transport across the transect defined on the normal velocity grid points' 
         self.data_cross_tran_flow.depth_0.attrs['units'] = 'm'
         self.data_cross_tran_flow.depth_0.attrs['standard_name'] = 'depth'
         self.data_cross_tran_flow.depth_0.attrs['long_name'] = 'Initial depth at time zero defined at the normal velocity grid points'
-                        
+        self.data_cross_tran_flow = self.data_cross_tran_flow.squeeze()
   
     def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, r_ind, velocity_component):
         """

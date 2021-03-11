@@ -96,7 +96,7 @@
 
 13. CLIMATOLOGY
     a. Create monthly and seasonal climatology, write to file
-    
+
 N. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
