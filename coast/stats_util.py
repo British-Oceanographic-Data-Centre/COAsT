@@ -89,13 +89,15 @@ def find_maxima(x, y, method='comp', **kwargs):
         x = x.sortby(x)
 
         # Convert x to float64 (assuming y is/similar to np.float64)
-        if type(x.values[0]) == np.datetime64:
-            x_float = x.values.astype('d')
-            y_float = y.values.astype('d')
+        if type(x.values[0]) == np.datetime64: # convert to decimal sec since 1970
+            x_float = ((x.values - np.datetime64('1970-01-01T00:00:00'))
+                           / np.timedelta64(1, 's')).astype('float64')
+            #x_float = x.values.astype('float64')
+            y_float = y.values.astype('float64')
             flag_dt64 = True
         else:
-            x_float = x.values.astype('d')
-            y_float = y.values.astype('d')
+            x_float = x.values.astype('float64')
+            y_float = y.values.astype('float64')
             flag_dt64 = False
 
         if type(y.values[0]) != np.float64:
@@ -110,11 +112,25 @@ def find_maxima(x, y, method='comp', **kwargs):
         extr_x_vals = np.hstack( [x_float[0], extr_x_vals, x_float[-1]]) # add buffer points to ensure extrema are within
         ind = scipy.signal.argrelmax( f(extr_x_vals) )[0] # index that gives max(f) over extrema x locations
         max_vals = f(extr_x_vals[ind])
+
         # Convert back to datetime64 if appropriate
+        y_out = max_vals
         if flag_dt64:
-            return extr_x_vals[ind].astype('datetime64'), max_vals
+            N = len(extr_x_vals[ind])
+            x_out = [np.datetime64('1970-01-01T00:00:00')
+             + np.timedelta64(int(extr_x_vals[ind[i]]), 's') for i in range(N)]
+            #return pd.to_datetime(extr_x_vals[ind]),  max_vals
         else:
-            return extr_x_vals[ind], max_vals
+            x_out = extr_x_vals[ind]
+
+        # restore xarray structure
+        new_x = xr.DataArray( x_out, coords=[x_out], dims=x.dims)
+        new_x.name = x.name
+        new_y = xr.DataArray( y_out, coords=[x_out], dims=y.dims)
+        new_y.name = y.name
+
+        return new_x, new_y
+
 
 def doodson_x0_filter(elevation, ax=0):
     '''
