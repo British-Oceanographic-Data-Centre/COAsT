@@ -90,11 +90,14 @@
     c. determine_colorbar_extension()
     d. determine_clim_by_standard_deviation()
     
-12. MASK_MASKER
+12. Stats Utility
+    a. find_maxima()
+    
+13. MASK_MASKER
     a. Create mask by indices
     b. Create mask by lonlat
 
-13. CLIMATOLOGY
+14. CLIMATOLOGY
     a. Create monthly and seasonal climatology, write to file
 
 N. Example script testing
