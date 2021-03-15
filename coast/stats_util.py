@@ -52,6 +52,14 @@ def find_maxima(x, y, method='comp', **kwargs):
     Example usage:
     see example_scripts/tidegauge_tutorial.py
     '''
+    
+    if method == 'cubic':
+        if (type(x) != xr.DataArray) or (type(y) != xr.DataArray):
+            msg = 'With method {} require input to be type: xr.DataArray' \
+                + ' not {} and {}\n Reset method as comp'
+            print(msg.format( method, type(x), type(y) ))
+            method = 'comp'
+
     if method == 'comp':
         peaks, props = scipy.signal.find_peaks(y, **kwargs)
         return x[peaks], y[peaks]
@@ -75,8 +83,6 @@ def find_maxima(x, y, method='comp', **kwargs):
         plt.plot(cr_pts, cr_vals, 'o') # The extrema
 
         """
-        if (type(x) != xr.DataArray) or (type(y) != xr.DataArray):
-            print(f'Was expecting input to be type: xr.DataArray not {type(x)}, {type(y)}')
         # Remove NaNs
         I = np.isnan(y)
         if sum(I) > 0:
