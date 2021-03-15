@@ -28,7 +28,7 @@ def quadratic_spline_roots(spl):
         t = np.roots([u+w-2*v, w-u, 2*v])
         t = t[np.isreal(t) & (np.abs(t) <= 1)]
         roots.extend(t*(b-a)/2 + (b+a)/2)
-    return np.array(roots)
+    return np.sort(roots)
 
 def find_maxima(x, y, method='comp', **kwargs):
     '''
