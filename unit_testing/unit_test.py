@@ -1703,7 +1703,7 @@ try:
 
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - find_maxima worked for comparison and cublic spline methods")
+        print(str(sec) + chr(subsec) + " OK - find_maxima() worked for comparison and cublic spline methods")
     else:
         print(str(sec) + chr(subsec) + " X - Problem with stats_util.find_maxima()")
 

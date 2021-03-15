@@ -125,7 +125,6 @@ def find_maxima(x, y, method='comp', **kwargs):
             N = len(extr_x_vals[ind])
             x_out = [np.datetime64('1970-01-01T00:00:00')
              + np.timedelta64(int(extr_x_vals[ind[i]]), 's') for i in range(N)]
-            #return pd.to_datetime(extr_x_vals[ind]),  max_vals
         else:
             x_out = extr_x_vals[ind]
 
