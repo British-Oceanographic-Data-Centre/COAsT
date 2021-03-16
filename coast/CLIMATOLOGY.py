@@ -1,6 +1,9 @@
 from .COAsT import COAsT
 import numpy as np
+import xarray as xr
+import xarray.ufuncs as uf
 from dask.diagnostics import ProgressBar
+
 
 class CLIMATOLOGY(COAsT):
     '''
@@ -42,18 +45,20 @@ class CLIMATOLOGY(COAsT):
         frequency_str = time_var_name + '.' + output_frequency
         print('Calculating climatological mean')
         
+        
         if monthly_weights:
             month_length = ds[time_var_name].dt.days_in_month
             grouped = month_length.groupby(frequency_str)
+            
+            weights = grouped / grouped.sum()
+            ds_mean = (ds*weights).groupby(frequency_str).sum(dim=time_dim_name)
         else:
-            ds['clim_mean_ones_tmp'] = (time_dim_name, np.ones(ds.time.shape[0]))
-            grouped = ds['clim_mean_ones_tmp'].groupby(frequency_str)
-        
-        weights = grouped / grouped.sum()
-        ds_mean = (ds*weights).groupby(frequency_str).sum(dim=time_dim_name)
-        
-        if not monthly_weights:
-            ds = ds.drop_vars('clim_mean_ones_tmp')
+            ds_mean=xr.Dataset()
+            for varname, da in ds.data_vars.items():       
+                mask = xr.where(uf.isnan(da), 0, 1 )
+                data = (mask * da).groupby(frequency_str).sum(dim=time_dim_name) 
+                N = mask.groupby(frequency_str).sum(dim=time_dim_name)
+                ds_mean[varname+'_mean'] = data / N
 
         if fn_out is not None:
             print('Saving to file. May take some time..')
