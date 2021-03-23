@@ -152,7 +152,7 @@ eg.plot_timeseries()
 # (method="comp") and a cubic spline fitting method (method="cubic")
 
 # Load and plot BODC processed data
-fn_bodc = 'example_files/LIV2010.txt'
+fn_bodc = 'example_files/tide_gauges/LIV2010.txt'
 
 # Set the start and end dates
 date_start = np.datetime64('2020-10-13 20:00')
