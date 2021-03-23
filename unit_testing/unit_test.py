@@ -44,6 +44,7 @@ import os.path as path
 import logging
 import coast.general_utils as general_utils
 import coast.plot_util as plot_util
+import coast.stats_util as stats_util
 from socket import gethostname# to get hostname
 import traceback
 import xarray.ufuncs as uf
@@ -1673,7 +1674,46 @@ except:
 #%%
 '''
 #################################################
-## ( 12 ) MASK_MAKER                           ##
+## ( 12 ) Stats Utility                        ##
+#################################################
+'''
+
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 12a ) find_maxima(). Test comparison and cublic spline methods            #
+#                                                                             #
+
+subsec = subsec+1
+
+
+try:
+    date0 = datetime.datetime(2007,1,15)
+    date1 = datetime.datetime(2007,1,16)
+    tg = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
+
+    tt,hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method='comp')
+    check1 = np.isclose( (tt.values[0]- np.datetime64('2007-01-15T00:15:00'))/ np.timedelta64(1,'s'), 0)
+    check2 = np.isclose(hh.values[0], 1.027)
+    
+    tt,hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method='cubic')
+    check3 = np.isclose( (tt[0] - np.datetime64('2007-01-15T00:07:49'))/ np.timedelta64(1,'s'), 0 )
+    check4 = np.isclose( hh[0], 1.0347638302097757 )
+
+
+    if check1 and check2 and check3 and check4:
+        print(str(sec) + chr(subsec) + " OK - find_maxima() worked for comparison and cublic spline methods")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with stats_util.find_maxima()")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#%%
+'''
+#################################################
+## ( 13 ) MASK_MAKER                           ##
 #################################################
 '''
 
@@ -1687,7 +1727,7 @@ mask00 = np.zeros((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
 mask01 = np.ones((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
 
 #-----------------------------------------------------------------------------#
-# ( 12a ) Create mask by indices                                              #
+# ( 13a ) Create mask by indices                                              #
 #                                                                             #
 
 subsec = subsec+1
@@ -1713,7 +1753,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
     
 #-----------------------------------------------------------------------------#
-# ( 12b ) Create mask by lonlat                                               #
+# ( 13b ) Create mask by lonlat                                               #
 #                                                                             #
 
 subsec = subsec+1
@@ -1745,7 +1785,7 @@ except:
 #%%
 '''
 #################################################
-## ( 13 ) CLIMATOLOGY Methods                  ##
+## ( 14 ) CLIMATOLOGY Methods                  ##
 #################################################
 '''
 sec = sec+1
@@ -1756,7 +1796,7 @@ ds = sci.dataset[['temperature','ssh']].isel(z_dim=0)
 
 
 #-----------------------------------------------------------------------------#
-# ( 13a ) Monthly and Seasonal Climatology                                     #
+# ( 14a ) Monthly and Seasonal Climatology                                     #
 #                                                                             #
 
 subsec = subsec+1
