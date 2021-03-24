@@ -54,7 +54,7 @@ class CLIMATOLOGY(COAsT):
                 mask = xr.where(uf.isnan(da), 0, 1 )
                 data = da.groupby(frequency_str).sum(dim=time_dim_name) 
                 N = mask.groupby(frequency_str).sum(dim=time_dim_name)
-                ds_mean[varname+'_mean'] = data / N
+                ds_mean[varname] = data / N
         else:
             if monthly_weights:
                 month_length = ds[time_var_name].dt.days_in_month
