@@ -28,7 +28,7 @@ def quadratic_spline_roots(spl):
         t = np.roots([u+w-2*v, w-u, 2*v])
         t = t[np.isreal(t) & (np.abs(t) <= 1)]
         roots.extend(t*(b-a)/2 + (b+a)/2)
-    return np.array(roots)
+    return np.sort(roots)
 
 def find_maxima(x, y, method='comp', **kwargs):
     '''
@@ -42,17 +42,24 @@ def find_maxima(x, y, method='comp', **kwargs):
                   will be passed to scipy.signal.find_peaks.
         'cubic' :: Find the maxima and minima by fitting a cubic spline and
                     finding the roots of its derivative.
+                    Expect input as xr.DataArrays
         DB NOTE: Currently only the 'comp' and 'cubic' method are implemented.
                 Future methods include linear interpolation.
 
         JP NOTE: Cubic method:
             i) has ineligent fix for NaNs,
-            ii) first converts x,y into np.floats64 for calc
-            iii) probably assumes x,y are xr.DataArrays
 
     Example usage:
     see example_scripts/tidegauge_tutorial.py
     '''
+    
+    if method == 'cubic':
+        if (type(x) != xr.DataArray) or (type(y) != xr.DataArray):
+            msg = 'With method {} require input to be type: xr.DataArray' \
+                + ' not {} and {}\n Reset method as comp'
+            print(msg.format( method, type(x), type(y) ))
+            method = 'comp'
+
     if method == 'comp':
         peaks, props = scipy.signal.find_peaks(y, **kwargs)
         return x[peaks], y[peaks]
@@ -64,14 +71,16 @@ def find_maxima(x, y, method='comp', **kwargs):
 
         Find the extrema on a cubic spline fitted to 1d array. E.g:
         # Some data
-        x_axis = np.array([ 2.14414414,  2.15270826,  2.16127238,  2.1698365 ,  2.17840062, 2.18696474,  2.19552886,  2.20409298,  2.2126571 ,  2.22122122])
-        y_axis = np.array([ 0.67958442,  0.89628424,  0.78904004,  3.93404167,  6.46422317, 6.40459954,  3.80216674,  0.69641825,  0.89675386,  0.64274198])
+        x_axis = xr.DataArray([ 2.14414414,  2.15270826,  2.16127238,  2.1698365 ,  2.17840062, 2.18696474,  2.19552886,  2.20409298,  2.2126571 ,  2.22122122])
+        y_axis = xr.DataArray([ 0.67958442,  0.89628424,  0.78904004,  3.93404167,  6.46422317, 6.40459954,  3.80216674,  0.69641825,  0.89675386,  0.64274198])
         # Fit cubic spline
-        f = interp1d(x_axis, y_axis, kind = 'cubic')
+        f = scipy.interpolate.interp1d(x_axis, y_axis, kind = 'cubic')
         x_new = np.linspace(x_axis[0], x_axis[-1],100)
+        cr_pts, cr_vals = stats_utils.find_maxima(x_axis, y_axis, method='cubic')
         fig = plt.subplots()
+        plt.plot(x_axis, y_axis, 'r+') # The fitted spline
         plt.plot(x_new, f(x_new)) # The fitted spline
-        plt.plot(cr_pts, cr_vals, '+') # The extrema
+        plt.plot(cr_pts, cr_vals, 'o') # The extrema
 
         """
         # Remove NaNs
@@ -86,13 +95,15 @@ def find_maxima(x, y, method='comp', **kwargs):
         x = x.sortby(x)
 
         # Convert x to float64 (assuming y is/similar to np.float64)
-        if type(x.values[0]) == np.datetime64:
-            x_float = x.values.astype('d')
-            y_float = y.values.astype('d')
+        if type(x.values[0]) == np.datetime64: # convert to decimal sec since 1970
+            x_float = ((x.values - np.datetime64('1970-01-01T00:00:00'))
+                           / np.timedelta64(1, 's')).astype('float64')
+            #x_float = x.values.astype('float64')
+            y_float = y.values.astype('float64')
             flag_dt64 = True
         else:
-            x_float = x.values.astype('d')
-            y_float = y.values.astype('d')
+            x_float = x.values.astype('float64')
+            y_float = y.values.astype('float64')
             flag_dt64 = False
 
         if type(y.values[0]) != np.float64:
@@ -107,11 +118,24 @@ def find_maxima(x, y, method='comp', **kwargs):
         extr_x_vals = np.hstack( [x_float[0], extr_x_vals, x_float[-1]]) # add buffer points to ensure extrema are within
         ind = scipy.signal.argrelmax( f(extr_x_vals) )[0] # index that gives max(f) over extrema x locations
         max_vals = f(extr_x_vals[ind])
+
         # Convert back to datetime64 if appropriate
+        y_out = max_vals
         if flag_dt64:
-            return extr_x_vals[ind].astype('datetime64'), max_vals
+            N = len(extr_x_vals[ind])
+            x_out = [np.datetime64('1970-01-01T00:00:00')
+             + np.timedelta64(int(extr_x_vals[ind[i]]), 's') for i in range(N)]
         else:
-            return extr_x_vals[ind], max_vals
+            x_out = extr_x_vals[ind]
+
+        # restore xarray structure
+        new_x = xr.DataArray( x_out, coords=[x_out], dims=x.dims)
+        new_x.name = x.name
+        new_y = xr.DataArray( y_out, coords=[x_out], dims=y.dims)
+        new_y.name = y.name
+
+        return new_x, new_y
+
 
 def doodson_x0_filter(elevation, ax=0):
     '''
