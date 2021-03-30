@@ -1808,6 +1808,15 @@ try:
     monthly = clim.make_climatology(ds, 'month').load()
     seasonal = clim.make_climatology(ds, 'season', fn_out=fn_out)
     
+    # create dataset with missing values
+    ds2 = ds.copy(deep=True)
+    ds2['temperature'][::2, :100,:100] = np.nan
+    ds2['ssh'][::2, :100,:100] = np.nan
+    seaC = clim.make_climatology(ds2, 'season', missing_values=True)
+    seaX = ds2.groupby("time.season").mean('t_dim')
+    # throws error is not close
+    xr.testing.assert_allclose(seaC,seaX)
+       
     mn = mn = np.nanmean(ds.temperature, axis=0)
     check1 = np.nanmax(np.abs(mn - monthly.temperature[0])) < 1e-6
     check2 = os.path.isfile(fn_out)
@@ -1816,6 +1825,8 @@ try:
     else:
         print(str(sec) + chr(subsec) + " X - Problem with monthly and seasonal climatology ")
 
+except AssertionError:
+    print(str(sec) + chr(subsec) + " X - Problem with computing climatology when dataset has missing values")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
