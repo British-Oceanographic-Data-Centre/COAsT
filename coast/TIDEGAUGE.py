@@ -917,7 +917,7 @@ class TIDEGAUGE():
             fig, ax =  plot_util.geo_scatter(X, Y, title=title)
         else:
             fig, ax =  plot_util.geo_scatter(X, Y, title=title, c = C)
-            
+
         ax.set_xlim((min(X)-10, max(X)+10))
         ax.set_ylim((min(Y)-10, max(Y)+10))
         return fig, ax
@@ -1029,8 +1029,8 @@ class TIDEGAUGE():
         return
 
     def crps(self, model_object, model_var_name, obs_var_name:str='sea_level',
-         nh_radius: float = 20, cdf_type:str='empirical',
-         time_interp:str='linear', create_new_obj = True):
+             nh_radius: float = 20, time_interp:str='linear', 
+             create_new_obj = True):
         '''
         Comparison of observed variable to modelled using the Continuous
         Ranked Probability Score. This is done using this TIDEGAUGE object.
@@ -1065,11 +1065,11 @@ class TIDEGAUGE():
 
         crps_list, n_model_pts, contains_land = crps_util.crps_sonf_fixed(
                                mod_var,
-                               self.dataset.longitude,
-                               self.dataset.latitude,
+                               self.dataset.longitude.values,
+                               self.dataset.latitude.values,
                                obs_var.values,
                                obs_var.time.values,
-                               nh_radius, cdf_type, time_interp )
+                               nh_radius, time_interp )
         if create_new_obj:
             new_object = TIDEGAUGE()
             new_dataset = self.dataset[['longitude','latitude','time']]
@@ -1252,8 +1252,11 @@ class TIDEGAUGE():
         'comp' :: Find maxima by comparison with neighbouring values.
                   Uses scipy.signal.find_peaks. **kwargs passed to this routine
                   will be passed to scipy.signal.find_peaks.
-        DB NOTE: Currently only the 'comp' method is implemented. Future
-                 methods include linear interpolation and cublic splines.
+        'cubic':: Find the maxima using the roots of cubic spline.
+                  Uses scipy.interpolate.InterpolatedUnivariateSpline
+                  and scipy.signal.argrelmax. **kwargs are not activated.
+        NOTE: Currently only the 'comp' and 'cubic' methods implemented. Future
+                  methods include linear interpolation or refinements.
         '''
 
         x = self.dataset.time

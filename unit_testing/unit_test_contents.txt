@@ -1,4 +1,3 @@
-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 |    Unit Testing Contents                                                    |
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
@@ -15,7 +14,8 @@
     h. Load and combine multiple files.
     i. Load and combine harmonics 
     j. Convert harmonics to a/g and back 
-    
+    k. Compute e3[t,u,v,f,w] from SSH 
+
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
     b. COAsT __getitem__ returns variable
@@ -64,7 +64,8 @@
     k. Plotting multiple tidegauge locations
     l. Tidegauge time series plot
     m. TIDEGAUGE method for tabulated data
-    n. TIDEGAUGE method for finding peaks and troughs
+    n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
+    o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
 
 8. Isobath Contour Methods
     a. Extract isbath contour between two points
@@ -76,8 +77,30 @@
 9. EOF methods
     a. Compute EOFs, projections and variance
     b. Compute HEOFs, projections and variance
+    
+10. Profile Methods
+    a. Load EN4 data
+    b. Plot locations on map
+    c. Plot TS diagram
+    d. Plot temperature profile
 
-10. Example script testing
+11. Plotting Utility
+    a. scatter_with_fit()
+    b. create_geo_axes()
+    c. determine_colorbar_extension()
+    d. determine_clim_by_standard_deviation()
+    
+12. Stats Utility
+    a. find_maxima()
+    
+13. MASK_MASKER
+    a. Create mask by indices
+    b. Create mask by lonlat
+
+14. CLIMATOLOGY
+    a. Create monthly and seasonal climatology, write to file
+
+N. Example script testing
     a. tutorials using example_files (altimetry and tidegauges)
     b. tutorial on AMM15 data
     c. tutorial on AMM60 data

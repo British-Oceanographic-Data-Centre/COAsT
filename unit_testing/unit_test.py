@@ -1,38 +1,28 @@
 ##
 """
 Script to do unit testing
-
 Written as procedural code that plods through the code snippets and tests the
 outputs or expected metadata.
-
 ***SECTIONS***
 This script is separated into Sections and Subsections, for which there are two
 counters to keep track: sec and subsec respectively.  At the beginning of each
 section, the sec counter should be incremented by 1 and the subsec counter
 should be reset to 96 (code for one below 'a'). At the beginning of each
 subsection, subsec should be incremented by one.
-
 ***OTHER FILES***
 There are two accompaniment files to this unit testing script:
     - unit_test_contents: A list of sections and subsections.
     - unit_test_guidelines: Further guidelines to creating unit tests.
-
 Run:
 ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
-
 Unit template:
-
-
 #-----------------------------------------------------------------------------#
 # ( ## ) Subsection title                                                     #
 #                                                                             #
-
 subsec = subsec+1
 # <Introduction>
-
 try:
     # Do a thing
-
     #TEST: <description here>
     check1 = #<Boolean>
     check2 = #<Boolean>
@@ -40,10 +30,8 @@ try:
         print(str(sec) + chr(subsec) + " OK - ")
     else:
         print(str(sec) + chr(subsec) + " X - ")
-
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-
 """
 
 import coast
@@ -55,6 +43,8 @@ import datetime
 import os.path as path
 import logging
 import coast.general_utils as general_utils
+import coast.plot_util as plot_util
+import coast.stats_util as stats_util
 from socket import gethostname# to get hostname
 import traceback
 import xarray.ufuncs as uf
@@ -284,7 +274,7 @@ subsec = subsec+1
 # NEMO obejct and dataset.
 
 try:
-    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics, 
+    harmonics = coast.NEMO(dn_files + fn_nemo_harmonics,
                            dn_files + fn_nemo_harmonics_dom)
     constituents = ['K1','M2','S2','K2']
     harmonics_combined = harmonics.harmonics_combine(constituents)
@@ -299,7 +289,7 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
-    
+
 #-----------------------------------------------------------------------------#
 #%% ( 1j ) Convert harmonics to a/g and back                                  #
 #                                                                             #
@@ -323,6 +313,27 @@ try:
 
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+#%% ( 1k ) Compute e3 from SSH field                                      #
+#
+subsec = subsec+1
+try:
+    nemo_t = coast.NEMO( fn_data=dn_files+fn_nemo_grid_t_dat,
+                        fn_domain=dn_files+fn_nemo_dom, grid_ref='t-grid' )
+    
+    e3t,e3u,e3v,e3f,e3w = coast.NEMO.get_e3_from_ssh(nemo_t,True,True,True,True,True)
+    cksum = np.array([e3t.sum(),e3u.sum(),e3v.sum(),
+                      e3f.sum(),e3w.sum()])
+    # these references are based on the example file's ssh field
+    reference = np.array([8.337016e+08, 8.333972e+08, 8.344886e+08,
+                          8.330722e+08, 8.265948e+08])
+    if np.allclose(cksum, reference):
+        print(str(sec) + chr(subsec) + " OK - computed e3[t,u,v,f,w] as expected")
+    else:
+        print(str(sec) + chr(subsec) + " X - computed e3[t,u,v,f,w] not as expected")        
+except:
+    print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
 
 '''
 #################################################
@@ -1253,7 +1264,7 @@ except:
     print(str(sec) + chr(subsec) +' FAILED.')
 
 #-----------------------------------------------------------------------------#
-#%% ( 7n ) TIDEGAUGE method for finding extrema and troughs                   #
+#%% ( 7n ) TIDEGAUGE method for finding extrema and troughs, compare neighbours#
 #                                                                             #
 subsec = subsec+1
 
@@ -1264,30 +1275,74 @@ try:
     lowestoft2 = coast.TIDEGAUGE(fn_tidegauge, date_start = date0,
                                 date_end = date1)
 
-    extrema = lowestoft2.find_high_and_low_water('sea_level', distance=40)
-
+    # Use comparison of neighbourhood method (method="comp" is assumed)
+    extrema_comp = lowestoft2.find_high_and_low_water('sea_level', distance=40)
     # Check actual maximum/minimum is in output dataset
-    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_highs
-    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema.dataset.sea_level_lows
+    check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_highs
+    check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_lows
     # Check new time dimensions have correct length (hardcoded here)
-    check3 = len(extrema.dataset.time_highs) == 19
-    check4 = len(extrema.dataset.time_lows) == 18
+    check3 = len(extrema_comp.dataset.time_highs) == 19
+    check4 = len(extrema_comp.dataset.time_lows) == 18
 
     # Attempt a plot
     f = plt.figure()
     plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
-    plt.scatter(extrema.dataset.time_highs, extrema.dataset.sea_level_highs, c='g')
-    plt.scatter(extrema.dataset.time_lows, extrema.dataset.sea_level_lows, c='r')
+    plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker='o', c='g')
+    plt.scatter(extrema_comp.dataset.time_lows.values,  extrema_comp.dataset.sea_level_lows, marker='o', c='r')
+
     plt.legend(['Time Series','Maxima','Minima'])
     plt.title('Tide Gauge Optima at Lowestoft')
     f.savefig(dn_fig + 'tidegauge_optima.png')
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - Tidegauge extrema found")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge local extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge extrema")
+        print(str(sec) + chr(subsec) + " X - Tidegauge local extrema")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
+
+
+#-----------------------------------------------------------------------------#
+#%% ( 7o ) TIDEGAUGE method for finding extrema and troughs, fit cubic spline #
+#                                                                             #
+subsec = subsec+1
+
+# Load and process BODC processed data
+try:
+    # Set the start and end dates
+    date_start = np.datetime64('2020-10-12 23:59')
+    date_end = np.datetime64('2020-10-14 00:01')
+
+    # Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+    # type object
+    tg = coast.TIDEGAUGE()
+    # specify the data read as a High Low Water dataset
+    tg.dataset = tg.read_bodc_to_xarray(fn_tidegauge2, date_start, date_end)
+
+    # Use cubic spline fitting method
+    extrema_cubc = tg.find_high_and_low_water('sea_level', method="cubic")
+
+    # Check actual maximum/minimum is in output dataset
+    check1 = np.isclose( extrema_cubc.dataset.sea_level_highs,[7.77432795, 7.91244559])
+    check2 = np.isclose( extrema_cubc.dataset.sea_level_lows,[2.63479458, 2.54599355])
+                                
+    # Attempt a plot
+    f = plt.figure()
+    plt.plot(tg.dataset.time, tg.dataset.sea_level)
+    plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker='o', c='g')
+    plt.scatter(extrema_cubc.dataset.time_lows.values,  extrema_cubc.dataset.sea_level_lows, marker='o', c='r')
+
+    plt.legend(['Time Series','Maxima','Minima'])
+    plt.title('Tide Gauge Optima at Gladstone, fitted cubic spline')
+    f.savefig(dn_fig + 'tidegauge_optima.png')
+
+    if check1.all() and check2.all():
+        print(str(sec) + chr(subsec) + " OK - Tidegauge cubic extrema found")
+    else:
+        print(str(sec) + chr(subsec) + " X - Tidegauge cubic extrema")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
 
 '''
 ###############################################################################
@@ -1437,21 +1492,358 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + ' FAILED.\n' + traceback.format_exc())
+    
+'''
+#################################################
+## ( 10 ) PROFILE Methods                     ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 10a ) Load EN4 data                                                       #
+#                                                                             #
+
+subsec = subsec+1
+# Create PROFILE object and read EN4 example data file
+
+try:
+    profiles = coast.PROFILE()
+    profiles.read_EN4(fn_EN4)
+
+    #TEST: Check some data
+    check1 = profiles.dataset.dims['z_dim'] == 400
+    check2 = profiles.dataset.longitude[11].values == 9.89777
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+
+#-----------------------------------------------------------------------------#
+# ( 10b ) Plot locations on map                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot profile locations on a map
+
+try:
+    f,a = profiles.plot_map()
+    f.savefig(dn_fig + 'profiles_map.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 10c ) Plot ts diagram                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_ts_diagram(10)
+    f.savefig(dn_fig + 'profile_ts_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 10d ) Plot temperature profile                                            #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    f,a = profiles.plot_profile(var='potential_temperature',profile_indices=[10])
+    f.savefig(dn_fig + 'profile_temperature_diagram.png')
+    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+#%%
+'''
+#################################################
+## ( 11 ) PLOTTING UTILITY Methods             ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 11a ) Scatter with fit                                                     #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Plot an idealised dataset
+    x = np.arange(0,50)
+    y = np.arange(0,50)/1.5
+    f,a = plot_util.scatter_with_fit(x,y)
+    a.set_title('Test: Scatter_with_fit()')
+
+    f.savefig(os.path.join(dn_fig, "scatter_with_fit_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. Scatter_with_fit()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11b ) Geo axes                                                             #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Plot two scatters on a map
+    lonbounds = [-20,20]
+    latbounds = [30,60]
+    f,a = plot_util.create_geo_axes(lonbounds, latbounds)
+    a.set_title('Test: create_geo_axes()')
+    a.scatter([0,-10],[50,50])
+
+    f.savefig(os.path.join(dn_fig, "create_geo_axes_test.png"))
+    plt.close()
+    
+    print(str(sec) + chr(subsec) +' OK. create_geo_axes()')
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 11c ) Determine colorbar extension                                         #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    # Test on some pretend dataset
+    pretend_data = np.arange(0,50)
+    test1 = plot_util.determine_colorbar_extension(pretend_data, -50, 100)
+    test2 = plot_util.determine_colorbar_extension(pretend_data, 1, 100)
+    test3 = plot_util.determine_colorbar_extension(pretend_data, -50, 48)
+    test4 = plot_util.determine_colorbar_extension(pretend_data, 1, 48)
+
+    #TEST: <description here>
+    check1 = test1 == 'neither'
+    check2 = test2 == 'min'
+    check3 = test3 == 'max'
+    check4 = test4 == 'both'
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_colorbar_extension()")
+    else:
+        print(str(sec) + chr(subsec) + " X - ")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#-----------------------------------------------------------------------------#
+# ( 11d ) Determine clim by st.dev                                             #
+#                                                                             #
+
+subsec = subsec+1
+# <Introduction>
+
+try:
+    # Data with mean = 50.51 and std = 32.2
+    # Determine clims to exclude outlier at 200
+    pretend_data = np.arange(0,100)
+    pretend_data[-1] = 200
+    clim = plot_util.determine_clim_by_standard_deviation(pretend_data, 
+                                                          n_std_dev=2)
+
+    #TEST: <description here>
+    check1 = clim[0] == -13.808889915793792
+    check2 = clim[1] == 114.82888991579378
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - determine_clim_by_std_dev")
+    else:
+        print(str(sec) + chr(subsec) + " X - determine_clim_by_std_dev")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#%%
+'''
+#################################################
+## ( 12 ) Stats Utility                        ##
+#################################################
+'''
+
+sec = sec+1
+subsec = 96
+
+#-----------------------------------------------------------------------------#
+# ( 12a ) find_maxima(). Test comparison and cublic spline methods            #
+#                                                                             #
+
+subsec = subsec+1
+
+
+try:
+    date0 = datetime.datetime(2007,1,15)
+    date1 = datetime.datetime(2007,1,16)
+    tg = coast.TIDEGAUGE(fn_tidegauge, date_start = date0, date_end = date1)
+
+    tt,hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method='comp')
+    check1 = np.isclose( (tt.values[0]- np.datetime64('2007-01-15T00:15:00'))/ np.timedelta64(1,'s'), 0)
+    check2 = np.isclose(hh.values[0], 1.027)
+    
+    tt,hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method='cubic')
+    check3 = np.isclose( (tt[0] - np.datetime64('2007-01-15T00:07:49'))/ np.timedelta64(1,'s'), 0 )
+    check4 = np.isclose( hh[0], 1.0347638302097757 )
+
+
+    if check1 and check2 and check3 and check4:
+        print(str(sec) + chr(subsec) + " OK - find_maxima() worked for comparison and cublic spline methods")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with stats_util.find_maxima()")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+
+#%%
+'''
+#################################################
+## ( 13 ) MASK_MAKER                           ##
+#################################################
+'''
+
+sec = sec+1
+subsec = 96
+
+# Preparation: Create two arrays to put mask onto, one of zeros and one of ones
+# This allows us to test the additive feature.
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+mask00 = np.zeros((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+mask01 = np.ones((sci.dataset.dims['y_dim'], sci.dataset.dims['x_dim']))
+
+#-----------------------------------------------------------------------------#
+# ( 13a ) Create mask by indices                                              #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_r = [50, 150, 150, 50]
+    vertices_c = [50, 50, 150, 150]
+    filled0 = mm.fill_polygon_by_index(mask00, vertices_r, vertices_c)
+    filled1 = mm.fill_polygon_by_index(mask01, vertices_r, vertices_c, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[49,49] == 0 and filled0[51,51] == 1
+    check2 = filled1[49,49] == 1 and filled1[51,51] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by index")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by index")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#-----------------------------------------------------------------------------#
+# ( 13b ) Create mask by lonlat                                               #
+#                                                                             #
+
+subsec = subsec+1
+# Plot ts diagram
+
+try:
+    mm = coast.MASK_MAKER()
+    # Draw and fill a square
+    vertices_lon = [-5, -5, 5, 5]
+    vertices_lat = [40, 60, 60, 40]
+    filled0 = mm.fill_polygon_by_lonlat(mask00, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat)
+    filled1 = mm.fill_polygon_by_lonlat(mask01, sci.dataset.longitude, 
+                                        sci.dataset.latitude, vertices_lon, 
+                                        vertices_lat, additive=True)
+
+    #TEST: Check some data
+    check1 = filled0[50,50] == 0 and filled0[50,150] == 1
+    check2 = filled1[50,50] == 1 and filled1[50,150] == 2
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - MASKS created by lonlat")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem mask creation by lonlat")
+
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
+    
+#%%
+'''
+#################################################
+## ( 14 ) CLIMATOLOGY Methods                  ##
+#################################################
+'''
+sec = sec+1
+subsec = 96
+
+sci = coast.NEMO(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref = 't-grid')
+ds = sci.dataset[['temperature','ssh']].isel(z_dim=0)
+
+
+#-----------------------------------------------------------------------------#
+# ( 14a ) Monthly and Seasonal Climatology                                     #
+#                                                                             #
+
+subsec = subsec+1
+
+try:
+    
+    clim = coast.CLIMATOLOGY()
+    fn_out = os.path.join(dn_files, 'test_climatology.nc')
+    monthly = clim.make_climatology(ds, 'month').load()
+    seasonal = clim.make_climatology(ds, 'season', fn_out=fn_out)
+    
+    # create dataset with missing values
+    ds2 = ds.copy(deep=True)
+    ds2['temperature'][::2, :100,:100] = np.nan
+    ds2['ssh'][::2, :100,:100] = np.nan
+    seaC = clim.make_climatology(ds2, 'season', missing_values=True)
+    seaX = ds2.groupby("time.season").mean('t_dim')
+    # throws error is not close
+    xr.testing.assert_allclose(seaC,seaX)
+       
+    mn = mn = np.nanmean(ds.temperature, axis=0)
+    check1 = np.nanmax(np.abs(mn - monthly.temperature[0])) < 1e-6
+    check2 = os.path.isfile(fn_out)
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - Monthly and seasonal climatology made and written to file")
+    else:
+        print(str(sec) + chr(subsec) + " X - Problem with monthly and seasonal climatology ")
+
+except AssertionError:
+    print(str(sec) + chr(subsec) + " X - Problem with computing climatology when dataset has missing values")
+except:
+    print(str(sec) + chr(subsec) +' FAILED.')
 
 #%%
 '''
 ###############################################################################
-## ( 10 ) Example script testing                                              ##
+## ( N ) Example script testing                                              ##
 ###############################################################################
 '''
-sec = sec+1
+sec = 'N'
 subsec = 96
 
 print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 #-----------------------------------------------------------------------------#
-#%% ( 10a ) Example script testing                                               #
+#%% ( Na ) Example script testing                                               #
 #                                                                             #
 subsec = subsec+1
 # Test machine name (to check for file access) in order to test additional scripts.
@@ -1495,79 +1887,6 @@ try:
     else:
         print(str(sec) + " X - example_scripts failed on",gethostname())
 
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-
-'''
-#################################################
-## ( 11 ) PROFILE Methods                     ##
-#################################################
-'''
-sec = sec+1
-subsec = 96
-
-#-----------------------------------------------------------------------------#
-# ( 11a ) Load EN4 data                                                       #
-#                                                                             #
-
-subsec = subsec+1
-# Create PROFILE object and read EN4 example data file
-
-try:
-    profiles = coast.PROFILE()
-    profiles.read_EN4(fn_EN4)
-
-    #TEST: Check some data
-    check1 = profiles.dataset.dims['N_LEVELS'] == 400
-    check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - EN4 Data read, PROFILE created")
-    else:
-        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
-
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-
-#-----------------------------------------------------------------------------#
-# ( 11b ) Plot locations on map                                               #
-#                                                                             #
-
-subsec = subsec+1
-# Plot profile locations on a map
-
-try:
-    f,a = profiles.plot_map()
-    f.savefig(dn_fig + 'profiles_map.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( 11c ) Plot ts diagram                                                     #
-#                                                                             #
-
-subsec = subsec+1
-# Plot ts diagram
-
-try:
-    f,a = profiles.plot_ts_diagram(10)
-    f.savefig(dn_fig + 'profile_ts_diagram.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
-except:
-    print(str(sec) + chr(subsec) +' FAILED.')
-    
-#-----------------------------------------------------------------------------#
-# ( 11d ) Plot temperature profile                                            #
-#                                                                             #
-
-subsec = subsec+1
-# Plot ts diagram
-
-try:
-    f,a = profiles.plot_profile(var='POTM_CORRECTED',profile_indices=[10])
-    f.savefig(dn_fig + 'profile_temperature_diagram.png')
-    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
 except:
     print(str(sec) + chr(subsec) +' FAILED.')
 

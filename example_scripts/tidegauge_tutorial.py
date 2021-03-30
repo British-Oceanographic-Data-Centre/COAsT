@@ -8,6 +8,7 @@ outlined in TIDEGAUGE.py.
 import coast
 import datetime
 import numpy as np
+import matplotlib.pyplot as plt
 
 # And by defining some file paths
 fn_nemo_dat  = './example_files/COAsT_example_NEMO_data.nc'
@@ -118,26 +119,6 @@ for tg in tidegauge_list:
 fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
 
 
-#%%  Additionally, alternative data streams can be read in and similarly
-# processed. For example the BODC processed data from the UK Tidegauge network.
-# Data name: UK Tide Gauge Network, processed data.
-# Source: https://www.bodc.ac.uk/
-
-# Load and plot BODC processed data
-fn_bodc = 'example_files/LIV2010.txt'
-
-# Set the start and end dates
-date_start = np.datetime64('2020-10-12 23:59')
-date_end = np.datetime64('2020-10-14 00:01')
-
-# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
-# type object
-tg = coast.TIDEGAUGE()
-# specify the data read as a High Low Water dataset
-tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
-tg.plot_timeseries()
-
-
 #%% Alternatively load in data obtained using the Environment Agency (England)
 #  API. These are only accessible for the last 28 days. This does not require
 # an API key.
@@ -157,3 +138,47 @@ eg.plot_timeseries()
 # (the default) station.
 eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
 eg.plot_timeseries()
+
+#%%  Additionally, alternative data streams can be read in and similarly
+# processed. For example the BODC processed data from the UK Tidegauge network.
+# Data name: UK Tide Gauge Network, processed data.
+# Source: https://www.bodc.ac.uk/
+
+#%% Tide table extrema can be extracted from the timeseries
+#        Finds high and low water for a given variable.
+#        Returns in a new TIDEGAUGE object with similar data format to
+#        a TIDETABLE.
+# There are two methods for extracting extrema. A neightbour comparison method, 
+# (method="comp") and a cubic spline fitting method (method="cubic")
+
+# Load and plot BODC processed data
+fn_bodc = 'example_files/tide_gauges/LIV2010.txt'
+
+# Set the start and end dates
+date_start = np.datetime64('2020-10-13 20:00')
+date_end = np.datetime64('2020-10-13 21:00')
+
+# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA
+# type object
+del tg
+tg = coast.TIDEGAUGE()
+tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
+
+# Use comparison of neighbourhood method (method="comp" is assumed)
+extrema_comp = tg.find_high_and_low_water('sea_level', method="comp")
+
+# Use cubic spline fitting method
+extrema_cubc = tg.find_high_and_low_water('sea_level', method="cubic")
+
+# Plot to show the difference between maxima find methods for high tide example.
+plt.figure()
+plt.plot(tg.dataset.time, tg.dataset.sea_level, 'k')
+plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker='o', c='g')
+plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker='+', c='g')
+plt.xlim([date_start, date_end])
+plt.ylim([7.75, 8.0])
+plt.legend(['Time Series','Maxima by comparison','Maxima by cubic spline'])
+plt.title('Tide Gauge Optima at Gladstone')
+plt.show()
+
+
