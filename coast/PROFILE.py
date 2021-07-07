@@ -67,7 +67,9 @@ class PROFILE(COAsT):
                        'POTM_CORRECTED_QC':'qc_potential_temperature',
                        'PSAL_CORRECTED_QC':'qc_practical_salinity',
                        'DEPH_CORRECTED_QC':'qc_depth',
-                       'JULD_QC':'qc_time'}
+                       'JULD_QC':'qc_time',
+                       'QC_FLAGS_PROFILES':'qc_flags_profiles',
+                       'QC_FLAGS_LEVELS':'qc_flags_levels'}
         rename_dims = {'N_PROF':'profile', 'N_PARAM':'parameter', 
                        'N_LEVELS':'z_dim',}
         vars_to_keep = list(rename_vars.keys())
