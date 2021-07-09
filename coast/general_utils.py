@@ -8,6 +8,15 @@ import copy
 import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
+import os.path
+
+def write_ds_to_file(ds, fn, **kwargs):
+    ''' 
+    Simple netcdf writing routine which checks if file already exists first .
+    '''
+    if os.path.exists(fn):
+        os.remove(fn)
+    ds.to_netcdf(fn, **kwargs)
 
 def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, 
         radius: float, mask=None
