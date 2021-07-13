@@ -9,6 +9,22 @@ import scipy as sp
 from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 import os.path
+import pandas as pd
+
+def get_season_index(dt):
+    ''' return array of season indices for a given list of datetimes 
+        Indices match those used by xarray.groupby, so:
+            DJF:0
+            JJA:1
+            MAM:2
+            SON:3
+    '''
+    month_season_dict = {1:0, 2:0, 3:2, 4:2, 5:2, 6:1,
+    7:1, 8:1, 9:3, 10:3, 11:3, 12:0}
+    dt = pd.to_datetime(dt)
+    month_index = dt.month
+    season_index = [month_season_dict[mm] for mm in month_index]
+    return season_index
 
 def write_ds_to_file(ds, fn, **kwargs):
     ''' 

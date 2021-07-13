@@ -175,8 +175,8 @@ class PROFILE(COAsT):
 ###                ~        Model Comparison         ~                     ###
 ##############################################################################
 
-    def extract_daily_profiles(self, nemo, fn_out=None, run_name = 'Undefined', 
-                            z_interp = 'linear',
+    def extract_profiles(self, nemo, fn_out=None, run_name = 'Undefined', 
+                            z_interp = 'linear', nemo_frequency = 'daily',
                             en4_sal_name = 'practical_salinity',
                             en4_tem_name = 'potential_temperature',
                             v3p6 = False, fn_mesh_mask = None, 
@@ -194,15 +194,7 @@ class PROFILE(COAsT):
         This routine can be used in a loop to loop over all files containing
         daily or 25hourm data. Output files can be concatenated using a tools such
         as ncks or the concatenate_output_files() routine in this module.
-        
-        This will apply EN4 QC Flags to the observation data as follows:
-            1. Completely rejected profiles (both temp and sal) are removed
-               entirely and will not appear in the output dataset.
-            2. Where a complete tem/sal profile is rejected but the other isnt,
-               all depths are set to nan for that variable.
-            3. For remaining profiles, the level-by-level QC flags are applied.
-               Where data at a level is rejected, it is set to NaN.
-        The output dataset will not contain rejected values, only NaNs.
+        This is the recommended useage.
         
         INPUTS:
          nemo                 : NEMO object created on t-grid
@@ -212,6 +204,9 @@ class PROFILE(COAsT):
                                 Will be saved to output
          z_interp (str)       : Type of scipy interpolation to use for depth interpolation
                                 [default = 'linear']
+         nemo_frequency (str) : Time frequency of NEMO daily. String inputs can
+                                be 'hourly', 'daily' or 'monthly'. Alternatively,
+                                provide an integer number of hours.
          en4_sal_name (str)   : Name of EN4 (COAST) variable to use for salinity
                                 [default = 'practical_salinity']
          en4_tem_name (str)   : Name of EN4 (COAST) variable to use for temperature
@@ -219,7 +214,8 @@ class PROFILE(COAsT):
          fn_mesh_mask (str)   : Full path to mesh_mask.nc if data is NEMO v3.6
                                 
         OUTPUTS:
-         Returns an uncomputed dataset and can write to file (recommended):
+         Returns a new PROFILE object containing an uncomputed dataset and 
+         can write to file (recommended):
          Writes extracted data to file. Extracted dataset has the dimensions:
              ex_level : Model level for directly extracted data
              level    : Observation level for interpolated model and EN4 data
@@ -268,8 +264,16 @@ class PROFILE(COAsT):
         
         # 4) Use only observations that are within model time window.
         en4_time = en4.time.values
-        time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=12)
-        time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=12)
+        if nemo_frequency == 'hourly':
+            nemo_frequency = 1
+        elif nemo_frequency == 'daily':
+            nemo_frequency = 24
+        elif nemo_frequency == 'monthly':
+            nemo_frequency = 30
+
+        time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=nemo_frequency/2)
+        time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=nemo_frequency/2)
+            
         ind = np.logical_and( en4_time >= time_min, en4_time <= time_max )
         en4 = en4.isel(profile=ind)
         print('EN4 subsetted to model time period:', flush=True)
@@ -278,9 +282,6 @@ class PROFILE(COAsT):
         
         # LOAD all remaining EN4 data
         en4.load()
-    
-        # Get model indices (space and time) corresponding to observations
-        # Does a basic nearest neighbour analysis in time and space.
         
         # SPATIAL indices
         ind2D = general_utils.nearest_indices_2D(nemo['longitude'], nemo['latitude'],
@@ -302,7 +303,6 @@ class PROFILE(COAsT):
         mod_profiles['longitude'] = mod_profiles['longitude'].astype('float32')
         mod_profiles['latitude'] = mod_profiles['latitude'].astype('float32')
         mod_profiles['bathymetry'] = mod_profiles['bathymetry'].astype('float32')
-        print(mod_profiles)
         print('Indexing model data. May take a while..')
         mod_profiles.load()
         print('Model indexed and loaded', flush=True)
@@ -313,7 +313,7 @@ class PROFILE(COAsT):
         n_prof = en4.dims['profile']
         data = xr.Dataset(coords = dict(
                               longitude=     (["profile"], en4.longitude.values.astype('float32')),
-                              latitude=      (["profile"], en4.latitude.values).astype('float32'),
+                              latitude=      (["profile"], en4.latitude.values.astype('float32')),
                               time=          (["profile"], en4.time.values),
                               level=         (['z_dim'], np.arange(0,n_obs_levels)),
                               ex_longitude = (["profile"], mod_profiles.longitude.values),
@@ -425,9 +425,12 @@ class PROFILE(COAsT):
             general_utils.write_ds_to_file(data, fn_out, mode='w', unlimited_dims='profile')
             
             print(' >>>>>>>  File Written.', flush=True)
-        return data
+            
+        return_prof = PROFILE()
+        return_prof.dataset = data
+        return return_prof
         
-    def analyse_daily_profiles(self, ref_depth, fn_out=None,
+    def analyse_profiles(self, ref_depth, fn_out=None,
                         ref_depth_method = 'interp',
                         regional_masks=[], region_names=[],
                         start_date = None, end_date = None, 
@@ -688,10 +691,14 @@ class PROFILE(COAsT):
             print('Writing to file..')
             general_utils.write_ds_to_file(ds_interp, fn_out)
             print(' >>>>>>>  File Written: ' + fn_out, flush=True)
-        return ds_interp
+        ds_interp = ds_interp.drop(['ex_longitude', 'ex_latitude', 'ex_time'])
+        return_prof = PROFILE()
+        return_prof.dataset = ds_interp
+        return return_prof
     
-    def extract_and_analyse_hourly_ts(self, nemo, fn_out, 
+    def extract_top_and_bottom(self, nemo, fn_out=None, 
                  surface_def=2, bottom_def=10, crps_radii = [2,4,6],
+                 nemo_frequency = 'hourly',
                  start_date = None, end_date = None,
                  en4_tem_name = 'potential_temperature',
                  en4_sal_name = 'practical_salinity',
@@ -699,7 +706,7 @@ class PROFILE(COAsT):
                  bathy_name = 'hbatt'):
                  
         ''' 
-        Extraction and analysis of hourly model temperature and salinity 
+        Extraction and analysis of model temperature and salinity 
         output with EN4 profiles. This routine should be called using a 
         preprocessed PROFILE object.
         
@@ -709,17 +716,28 @@ class PROFILE(COAsT):
         SBS and SBT. 
         
         Errors and mean absolute errors will be taken. At the surface, CRPS
-        values will be calculated at 2, 4 and 6 grid point distances.
+        values will be calculated at provided radii.
         
         INPUT
-         fn_nemo_data (str)   : Absolute path to output files containing hourly data
-         fn_nemo_domain (str) : Absolute path to nemo domain file
-         fn_en4 (str)         : Absolute path to EN4 profile files
-         fn_out (str)         : Absolute path to desired output file (1 file)
+         nemo (coast.NEMO)    : NEMO object containing t-grid data
+         fn_out (str)         : Full path to output file. 
+                                If None [default], then no file is saved
          surface_def (float)  : Definition of the 'surface' in metres - for averaging
          bottom_def (float)   : Definition of the 'bottom' in metres - for averaging
-         bathymetry (2Darray) : Bathymetry data to use for bottom definition.
-                                If not supplied, only surface will be analysed
+         crps_radii (array)   : Array/list of CRPS radii in number of grid cells
+         nemo_frequency (str) : Frequency of NEMO data. Can be string ('daily',
+                                'hourly', 'monthly') or a integer number of hours.
+         start_date (datetime): Start date for analysis.
+         end_date (datetime)  : End date for analysis.
+         en4_tem_name (str)   : Name of EN4 (COAsT name) to use for temperature
+         en4_sal_name (str)   : Name of EN4 (COAsT name) to use for salinity
+         v3p6 (bool)          : Set True is data is NEMO v3.6
+         fn_mesh_mask (str)   : If v3p6 == True, provide a full path to mesh_mask.nc
+         bathy_name (str)     : If v3p6 == True, provide name of bathymetry in mesh_mask.nc
+             
+        OUTPUT
+         New PROFILE() object containing a dataset of extracted data and
+         averaged surface/bottom observations. This contains:
         '''
         
         ds = nemo.dataset
@@ -733,7 +751,7 @@ class PROFILE(COAsT):
             dom.close()
             
         ds = ds.rename({'t_dim':'time'})
-        ds = ds[['votemper_top','vosaline_top','votemper_bot','vosaline_bot',
+        ds = ds[['temperature_top','salinity_top','temperature_bot','salinity_bot',
                  'bathymetry']]
         
         # Restrict time if required or define start and end dates
@@ -753,17 +771,28 @@ class PROFILE(COAsT):
             end_date = min(ds.time)
             
         # Cut out obs inside model time window
+        if nemo_frequency == 'hourly':
+            nemo_frequency = 1
+        elif nemo_frequency == 'daily':
+            nemo_frequency = 24
+        elif nemo_frequency == 'monthly':
+            nemo_frequency = 30*24
+        
         en4 = self.dataset
         n_nemo_time = ds.dims['time']
         en4_time = en4.time.values
         mod_time = pd.to_datetime(ds.time.values)
-        time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=1)
-        time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=1)
+        time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=nemo_frequency/2)
+        time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=nemo_frequency/2)
         ind = np.logical_and( en4_time >= time_min, en4_time <= time_max )
         en4 = en4.isel(profile=ind)
         print('EN4 subsetted to model time period:', flush=True)
         print('    >>> {0} -> {1}'.format(str(time_min), str(time_max)), flush=True)
         print('  ', flush=True)
+        
+        # Save dimensions of dataset
+        n_c = ds.dims['x_dim']
+        n_r = ds.dims['y_dim']
         
         # Get nearest model indices to observations
         en4_time = pd.to_datetime(en4.time.values)
@@ -819,6 +848,12 @@ class PROFILE(COAsT):
                 data_vars = dict(
                     obs_sst = ('profile', sst_en4.values),
                     obs_sss = ('profile', sss_en4.values),
+                    obs_sbt = ("profile", sbt_en4.values),
+                    obs_sbs = ("profile", sbs_en4.values),
+                    mod_sst = ("profile", np.zeros(n_prof)*np.nan),
+                    mod_sss = ("profile", np.zeros(n_prof)*np.nan),
+                    mod_sbt = ("profile", np.zeros(n_prof)*np.nan),
+                    mod_sbs = ("profile", np.zeros(n_prof)*np.nan),
                     sst_err = ("profile", np.zeros(n_prof)*np.nan),
                     sss_err = ("profile", np.zeros(n_prof)*np.nan),
                     sbt_err = ("profile", np.zeros(n_prof)*np.nan),
@@ -827,7 +862,9 @@ class PROFILE(COAsT):
                     sss_crps = (["profile","crps_radius"], np.zeros((n_prof, n_crps))*np.nan),
                     nn_ind_x = ("profile", ind2D[0]),
                     nn_ind_y = ("profile", ind2D[1]),
-                    interp_dist = ("profile", interp_dist)))
+                    interp_dist = ("profile", interp_dist),
+                    original_dim_x = n_c,
+                    original_dim_y = n_r))
         
         print('Starting analysis')
         
@@ -836,8 +873,8 @@ class PROFILE(COAsT):
         print('Looping over model time snapshots', flush=True)
         for tii in range(0, n_nemo_time):
             
-            time_diff = np.abs( mod_time[tii] - en4_time ).astype('timedelta64[m]')
-            use_ind = np.where( time_diff.astype(int) < 30 )[0]
+            time_diff = np.abs( mod_time[tii] - en4_time ).astype('timedelta64[h]')
+            use_ind = np.where( time_diff.astype(int) < nemo_frequency )[0]
             n_use = len(use_ind)
             
             if n_use>0:
@@ -869,14 +906,18 @@ class PROFILE(COAsT):
                 tmp_pts = tmp.isel(x_dim = x_tmp, y_dim = y_tmp)
                 sst_en4_tmp = sst_en4.values[use_ind]
                 sss_en4_tmp = sss_en4.values[use_ind]
-                analysis['sst_err'][use_ind] = tmp_pts.votemper_top.values - sst_en4_tmp
-                analysis['sss_err'][use_ind] = tmp_pts.vosaline_top.values - sss_en4_tmp
+                analysis['sst_err'][use_ind] = tmp_pts.temperature_top.values - sst_en4_tmp
+                analysis['sss_err'][use_ind] = tmp_pts.salinity_top.values - sss_en4_tmp
+                analysis['mod_sst'][use_ind] = tmp_pts.temperature_top.values
+                analysis['mod_sss'][use_ind] = tmp_pts.salinity_top.values
                 
                 # Bottom errors
                 sbt_en4_tmp = sbt_en4.values[use_ind]
                 sbs_en4_tmp = sbs_en4.values[use_ind]
-                analysis['sbt_err'][use_ind] = tmp_pts.votemper_bot.values - sbt_en4_tmp
-                analysis['sbs_err'][use_ind] = tmp_pts.vosaline_bot.values - sbs_en4_tmp
+                analysis['sbt_err'][use_ind] = tmp_pts.temperature_bot.values - sbt_en4_tmp
+                analysis['sbs_err'][use_ind] = tmp_pts.salinity_bot.values - sbs_en4_tmp
+                analysis['mod_sbt'][use_ind] = tmp_pts.temperature_bot.values
+                analysis['mod_sbs'][use_ind] = tmp_pts.salinity_bot.values
                 
                 # CRPS
                 for cc in range(n_crps):
@@ -884,8 +925,8 @@ class PROFILE(COAsT):
                     nh_x = [np.arange( x_tmp[ii]-cr, x_tmp[ii]+(cr+1) ) for ii in range(0,n_use)] 
                     nh_y = [np.arange( y_tmp[ii]-cr, y_tmp[ii]+(cr+1) ) for ii in range(0,n_use)]   
                     nh = [tmp.isel(x_dim = nh_x[ii], y_dim = nh_y[ii]) for ii in range(0,n_use)] 
-                    crps_tem_tmp = [ cu.crps_empirical(nh[ii].votemper_top.values.flatten(), sst_en4_tmp[ii]) for ii in range(0,n_use)]
-                    crps_sal_tmp = [ cu.crps_empirical(nh[ii].vosaline_top.values.flatten(), sss_en4_tmp[ii]) for ii in range(0,n_use)]
+                    crps_tem_tmp = [ cu.crps_empirical(nh[ii].temperature_top.values.flatten(), sst_en4_tmp[ii]) for ii in range(0,n_use)]
+                    crps_sal_tmp = [ cu.crps_empirical(nh[ii].salinity_top.values.flatten(), sss_en4_tmp[ii]) for ii in range(0,n_use)]
                     analysis['sst_crps'][use_ind, cc] = crps_tem_tmp
                     analysis['sss_crps'][use_ind, cc] = crps_sal_tmp
                     
@@ -904,10 +945,13 @@ class PROFILE(COAsT):
         if fn_out is not None:
             print('Writing File: {0}'.format(fn_out), flush=True)
             general_utils.write_ds_to_file(analysis, fn_out)
-        return analysis
+            
+        return_prof = PROFILE()
+        return_prof.dataset = analysis
+        return return_prof
     
     
-    def analyse_regional(self, fn_nemo_domain, fn_out, 
+    def analyse_top_and_bottom(self, fn_out=None, 
                        regional_masks=[], region_names=[],
                        start_date = None, end_date = None,
                        dist_omit = 5):
@@ -917,22 +961,22 @@ class PROFILE(COAsT):
         The resulting output dataset will have dimension (region, season)
         
         INPUTS
-         fn_stats (str)        : Absolute path to analysis output from analyse_ts_hourly_en4()
-         fn_nemo_domain (str)  : Absolute path to NEMO domain_cfg.nc
          fn_out (str)          : Absolute path to desired output file
          regional_masks (list) : List of 2D boolean arrays. Where true, this is the region
                                  used for averaging. The whole domain will be added to the 
                                  list, or will be the only domain if left to be default.
          region_names (list)   : List of strings, the names used for each region.
+         start_date (datetime) : Start date for analysis 
+         end_date (datetime)   : End data for analysis
+         dist_omit (float)     : Nearest neighbour distance at which to reject
+                                 datapoint from analysis.
         '''
-    
-        ds_stats = self.dataset
-    
-        # Open stats file and domain files
-        dom = xr.open_dataset(fn_nemo_domain)
-    
-    	# Load stats file
-        ds_stats.load()
+        
+        ds_stats = self.dataset[['sst_err', 'sss_err', 'sbt_err', 'sbs_err',
+                             'sst_crps', 'sss_crps', 'nn_ind_x', 'nn_ind_y',
+                             'sst_abs_err', 'sss_abs_err', 'sbt_abs_err',
+                             'sbs_abs_err', 'original_dim_x',
+                             'original_dim_y', 'interp_dist']].load()
         
         # Restrict time if required or define start and end dates
         if start_date is not None:
@@ -947,12 +991,14 @@ class PROFILE(COAsT):
         else:
             end_date = min(ds_stats.time)
             
-        # Make a copy of region lists to avoid infinitely growing lists..
+        # Make a copy of regional masks to avoid any memory leaking type loops
         regional_masks = regional_masks.copy()
         region_names = region_names.copy()
         
-        # Add whole domain to regions
-        regional_masks.append(np.ones(dom.glamt.values.squeeze().shape))
+        # Append whole domain mask
+        print('Defining Whole Domain region..')
+        regional_masks.append(np.ones((int( ds_stats.original_dim_y.values ),
+                                      int( ds_stats.original_dim_x.values ))))
         region_names.append('whole_domain')
         n_regions = len(regional_masks)
         
@@ -962,6 +1008,7 @@ class PROFILE(COAsT):
         
         # 5 Seasons, define array
         reg_array = np.zeros((n_regions, 5))*np.nan
+        n_crps = ds_stats.dims['crps_radius']
         
         # Define array to contain averaged data
         ds_mean = xr.Dataset(coords = dict(
@@ -982,8 +1029,8 @@ class PROFILE(COAsT):
                             sbs_estd = (['region','season'], reg_array.copy()),
                             sbt_mae = (['region','season'], reg_array.copy()),
                             sbs_mae = (['region','season'], reg_array.copy()), 
-                            sst_crps_mean = (["region", "season"], reg_array.copy()),
-                            sss_crps_mean = (["region", "season"], reg_array.copy())))
+                            sst_crps_mean = (["region", "season", "crps_radius"], np.zeros((n_regions, 5, n_crps))*np.nan),
+                            sss_crps_mean = (["region", "season", "crps_radius"], np.zeros((n_regions, 5, n_crps))*np.nan)))
         
         season_indices = {'DJF':0, 'JJA':1, 'MAM':2, 'SON':3}
      
@@ -1009,18 +1056,13 @@ class PROFILE(COAsT):
             
             s_in_mean = ds_reg_mean.season.values
             s_ind = np.array([season_indices[ss] for ss in s_in_mean], dtype=int)
-    
-            print(s_ind)    
+       
             ds_mean['sst_me'][reg, s_ind]  = ds_reg_mean.sst_err.values
             ds_mean['sss_me'][reg, s_ind]  = ds_reg_mean.sss_err.values
             ds_mean['sst_mae'][reg, s_ind] = ds_reg_mean.sst_abs_err.values
             ds_mean['sss_mae'][reg, s_ind] = ds_reg_mean.sss_abs_err.values
-            ds_mean['sst_crps2_mean'][reg, s_ind] = ds_reg_mean.sst_crps2.values
-            ds_mean['sss_crps2_mean'][reg, s_ind] = ds_reg_mean.sss_crps2.values
-            ds_mean['sst_crps4_mean'][reg, s_ind] = ds_reg_mean.sst_crps4.values
-            ds_mean['sss_crps4_mean'][reg, s_ind] = ds_reg_mean.sss_crps4.values
-            ds_mean['sst_crps6_mean'][reg, s_ind] = ds_reg_mean.sst_crps6.values
-            ds_mean['sss_crps6_mean'][reg, s_ind] = ds_reg_mean.sss_crps6.values
+            ds_mean['sst_crps_mean'][reg, s_ind] = ds_reg_mean.sst_crps.values
+            ds_mean['sss_crps_mean'][reg, s_ind] = ds_reg_mean.sss_crps.values
             
             ds_mean['sbt_me'][reg, s_ind]  = ds_reg_mean.sbt_err.values
             ds_mean['sbs_me'][reg, s_ind]  = ds_reg_mean.sbs_err.values
@@ -1032,12 +1074,8 @@ class PROFILE(COAsT):
             ds_mean['sss_me'][reg, 4]  = ds_reg_mean.sss_err.values
             ds_mean['sst_mae'][reg, 4] = ds_reg_mean.sst_abs_err.values
             ds_mean['sss_mae'][reg, 4] = ds_reg_mean.sss_abs_err.values
-            ds_mean['sst_crps2_mean'][reg, 4] = ds_reg_mean.sst_crps2.values
-            ds_mean['sss_crps2_mean'][reg, 4] = ds_reg_mean.sss_crps2.values
-            ds_mean['sst_crps4_mean'][reg, 4] = ds_reg_mean.sst_crps4.values
-            ds_mean['sss_crps4_mean'][reg, 4] = ds_reg_mean.sss_crps4.values
-            ds_mean['sst_crps6_mean'][reg, 4] = ds_reg_mean.sst_crps6.values
-            ds_mean['sss_crps6_mean'][reg, 4] = ds_reg_mean.sss_crps6.values
+            ds_mean['sst_crps_mean'][reg, 4] = ds_reg_mean.sst_crps.values
+            ds_mean['sss_crps_mean'][reg, 4] = ds_reg_mean.sss_crps.values
             
             ds_mean['sbt_me'][reg, 4]  = ds_reg_mean.sbt_err.values
             ds_mean['sbs_me'][reg, 4]  = ds_reg_mean.sbs_err.values
@@ -1066,7 +1104,6 @@ class PROFILE(COAsT):
         ds_mean['start_date'] = start_date
         ds_mean['end_date'] = end_date
         ds_mean['is_in_region'] = (['region', 'profile'], is_in_region)
-        ds_mean['bad_flag'] = (['profile'], ds_stats.bad_flag.values)
         
         # Write to file    
         if fn_out is not None:
@@ -1075,9 +1112,13 @@ class PROFILE(COAsT):
                                            unlimited_dims='profile')
             
             print(' >>>>>>>  File Written. ', flush=True)
+            
+        return_prof = PROFILE()
+        return_prof.dataset = ds_mean
+        return return_prof
     
         
-    def preprocess_en4(self, fn_out=None, lonbounds=None, latbounds=None):
+    def process_en4(self, fn_out=None, lonbounds=None, latbounds=None):
         '''
         VERSION 1.4 (05/07/2021)
         
@@ -1183,7 +1224,9 @@ class PROFILE(COAsT):
             
             print(' >>>>>>>  File Written. ', flush=True)
         
-        return ds
+        return_prof = PROFILE()
+        return_prof.dataset = ds
+        return return_prof
         
     def calculate_all_en4_qc_flags(self):
         '''
