@@ -10,6 +10,7 @@ from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
 from .CLIMATOLOGY import CLIMATOLOGY
 from .MASK_MAKER import MASK_MAKER
+from .TIDEGAUGE_MULTIPLE import TIDEGAUGE_MULTIPLE
 from . import logging_util
 from . import general_utils
 from . import plot_util
