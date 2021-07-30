@@ -62,7 +62,7 @@ class TIDEGAUGE_MULTIPLE():
                     constit_to_save = ['M2','S2','K2','N2','K1','O1','P1','Q1'], 
                     semidiurnal_constit = ['M2','S2','K2','N2'],
                     diurnal_constit = ['K1','O1','P1','Q1'],
-                    apply_ntr_filter = True, dist_omit=100 ):
+                    apply_ntr_filter = True):
         '''
         Routine for analysis and comparison of model and observed SSH
         This routine calculates:
@@ -351,7 +351,7 @@ class TIDEGAUGE_MULTIPLE():
         tg_out.dataset = ds_stats
         return tg_out
         
-    def extract_ssh(self, nemo, fn_out=None):
+    def extract_ssh(self, nemo, fn_out=None, time_interp = 'linear'):
                          
         '''
         Routine for extraction of model ssh at obs locations.
@@ -416,7 +416,7 @@ class TIDEGAUGE_MULTIPLE():
         
         # Align timings
         print('Aligning timings of obs and model', flush=True)
-        obs = obs.interp(time = nemo_extracted.time_instant.values, method = 'linear')
+        obs = obs.interp(time = nemo_extracted.time_instant.values, method = time_interp)
         print('     >>> Done.', flush=True)
         
         # Apply shared mask

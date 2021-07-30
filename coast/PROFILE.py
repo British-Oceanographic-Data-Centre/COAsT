@@ -697,7 +697,8 @@ class PROFILE(COAsT):
         return return_prof
     
     def extract_top_and_bottom(self, nemo, fn_out=None, 
-                 surface_def=2, bottom_def=10, crps_radii = [2,4,6],
+                 surface_def=2, bottom_def=10, 
+                 do_crps = True, crps_radii = [2,4,6],
                  nemo_frequency = 'hourly',
                  start_date = None, end_date = None,
                  en4_tem_name = 'potential_temperature',
@@ -920,15 +921,16 @@ class PROFILE(COAsT):
                 analysis['mod_sbs'][use_ind] = tmp_pts.salinity_bot.values
                 
                 # CRPS
-                for cc in range(n_crps):
-                    cr = crps_radii[cc]
-                    nh_x = [np.arange( x_tmp[ii]-cr, x_tmp[ii]+(cr+1) ) for ii in range(0,n_use)] 
-                    nh_y = [np.arange( y_tmp[ii]-cr, y_tmp[ii]+(cr+1) ) for ii in range(0,n_use)]   
-                    nh = [tmp.isel(x_dim = nh_x[ii], y_dim = nh_y[ii]) for ii in range(0,n_use)] 
-                    crps_tem_tmp = [ cu.crps_empirical(nh[ii].temperature_top.values.flatten(), sst_en4_tmp[ii]) for ii in range(0,n_use)]
-                    crps_sal_tmp = [ cu.crps_empirical(nh[ii].salinity_top.values.flatten(), sss_en4_tmp[ii]) for ii in range(0,n_use)]
-                    analysis['sst_crps'][use_ind, cc] = crps_tem_tmp
-                    analysis['sss_crps'][use_ind, cc] = crps_sal_tmp
+                if do_crps:
+                    for cc in range(n_crps):
+                        cr = crps_radii[cc]
+                        nh_x = [np.arange( x_tmp[ii]-cr, x_tmp[ii]+(cr+1) ) for ii in range(0,n_use)] 
+                        nh_y = [np.arange( y_tmp[ii]-cr, y_tmp[ii]+(cr+1) ) for ii in range(0,n_use)]   
+                        nh = [tmp.isel(x_dim = nh_x[ii], y_dim = nh_y[ii]) for ii in range(0,n_use)] 
+                        crps_tem_tmp = [ cu.crps_empirical(nh[ii].temperature_top.values.flatten(), sst_en4_tmp[ii]) for ii in range(0,n_use)]
+                        crps_sal_tmp = [ cu.crps_empirical(nh[ii].salinity_top.values.flatten(), sss_en4_tmp[ii]) for ii in range(0,n_use)]
+                        analysis['sst_crps'][use_ind, cc] = crps_tem_tmp
+                        analysis['sss_crps'][use_ind, cc] = crps_sal_tmp
                     
         print('Profile analysis done', flush=True)
         

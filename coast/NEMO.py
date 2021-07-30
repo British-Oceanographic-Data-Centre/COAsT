@@ -7,7 +7,7 @@ import numpy as np
 import gsw
 import warnings
 from .logging_util import get_slug, debug, info, warn, error
-
+import pandas as pd
 
 
 class NEMO(COAsT):  # TODO Complete this docstring
@@ -897,7 +897,216 @@ class NEMO(COAsT):  # TODO Complete this docstring
         
         return
 
+    def time_averaged_differences(self, other_nemo,
+                              fn_out = None, fn_out_seasonal = None, variables = None, 
+                              start_date = None, end_date = None):
+        '''
+        Calculates and writes time-averaged differences between two provided 
+        datasets. Differences will be calculated as dataset2 - dataset1.
         
+        *NOTE: Ensure that both model configurations use the same grid (and
+        NEMO domain file). Additionally, they should also lie over the same time
+        period and frequency. No interpolation or regridding will be done by this
+        routine. If model runs have the same time frequency and domain, but
+        differing time periods, start_date and end_date can be specified over common
+        time periods.
+        
+        INPUTS:
+            other_nemo (str)        : Other NEMO object with which to difference
+            fn_out (str)            : Full path to output file for all-period averaging
+            fn_out_seasonal (str)   : Full path to output file for seasonal averaging
+            variables (list of str) : List or array of COAsT variable names to include
+                                      If unspecified, all time dependent variables
+                                      will be included.
+            start_date (datetime)   : Start date for analysis
+            end_date (datetime)     : End date for analysis
+            
+        OUTPUTS:
+                Two output files will be written by this routine. The first will contain
+                differences averaged over the entire model runs (fn_out). The second wil
+                contain climatological (seasonal) means.
+                
+                Routine returns two new NEMO objects, each containing an xarray
+                dataset corresponding to the two above output files.
+        '''
+        
+        nemo1 = self.dataset
+        nemo2 = other_nemo.dataset
+        
+        nemo1 = nemo1[variables]
+        nemo2 = nemo2[variables]
+        
+        print('Subsetting time', flush=True)
+        if (start_date is not None) and (end_date is not None):
+            nemo1_time = pd.to_datetime(nemo1.time.values)
+            t_ind = np.logical_and(nemo1_time>=start_date, nemo1_time<=end_date)
+            nemo1 = nemo1.isel(t_dim=t_ind)
+            
+            nemo2_time = pd.to_datetime(nemo2.time.values)
+            t_ind = np.logical_and(nemo2_time>=start_date, nemo2_time<=end_date)
+            nemo2 = nemo2.isel(t_dim=t_ind)
+        
+        print('Calculating Differences', flush=True)
+        diff = nemo2 - nemo1
+        diff['time'] = nemo1.time
+        diff = diff.set_coords(['time'])
+        abs_diff = abs(diff)
+        diff_neg = -diff
+        
+        # Annual Differences
+        mean_diff = diff.mean(dim='t_dim', skipna = True)
+        std_diff = diff.std(dim='t_dim', skipna = True)
+        mean_abs_diff = abs_diff.mean(dim='t_dim', skipna = True)
+        max_pos_diff = diff.max(dim='t_dim', skipna = True)
+        min_neg_diff = diff_neg.max(dim='t_dim', skipna = True)
+        
+        # Seasonal Differences
+        diff_season = diff.groupby('time.season')
+        abs_diff_season = abs_diff.groupby('time.season')
+        diff_neg_season = diff_neg.groupby('time.season')
+        
+        mean_diff_season = diff_season.mean(dim='t_dim', skipna = True )
+        std_diff_season = diff_season.std(dim='t_dim', skipna = True)
+        mean_abs_diff_season = abs_diff_season.mean(dim='t_dim', skipna = True)
+        max_pos_diff_season = diff_season.max(dim='t_dim', skipna = True)
+        min_neg_diff_season = diff_neg_season.max(dim='t_dim', skipna = True)
+        
+        ds_out = xr.Dataset(coords = dict(
+                                longitude = (['y_dim', 'x_dim'], nemo1.longitude),
+                                latitude = (['y_dim', 'x_dim'], nemo1.latitude),
+                                depth_0 = (['z_dim','y_dim', 'x_dim'], nemo1.depth_0)))
+        
+        ds_out_season = xr.Dataset(coords = dict(
+                                longitude = (['y_dim', 'x_dim'], nemo1.longitude),
+                                latitude = (['y_dim', 'x_dim'], nemo1.latitude),
+                                season = (['season'], mean_diff_season.season),
+                                depth_0 = (['z_dim','y_dim', 'x_dim'], nemo1.depth_0)))
+        
+        print('Populating Output Dataset', flush = True)
+        for vv in variables:
+            ds_out[vv+'_mean_diff'] = mean_diff[vv]
+            ds_out[vv+'_mean_abs_diff'] = mean_abs_diff[vv]
+            ds_out[vv+'_max_pos_diff'] = max_pos_diff[vv]
+            ds_out[vv+'_min_neg_diff'] = min_neg_diff[vv]
+            ds_out[vv+'_std_diff'] = std_diff[vv]
+            
+            ds_out_season[vv+'_mean_diff'] = mean_diff_season[vv]
+            ds_out_season[vv+'_mean_abs_diff'] = mean_abs_diff_season[vv]
+            ds_out_season[vv+'_max_pos_diff'] = max_pos_diff_season[vv]
+            ds_out_season[vv+'_min_neg_diff'] = min_neg_diff_season[vv]
+            ds_out_season[vv+'_std_diff'] = std_diff_season[vv]
+            
+        ds_out['start_date'] = start_date
+        ds_out['end_date'] = end_date
+        ds_out_season['start_date'] = start_date
+        ds_out_season['end_date'] = end_date
+            
+        if fn_out is not None:
+            print('Writing to annual file: {0}'.format(fn_out), flush = True)
+            general_utils.write_ds_to_file(ds_out, fn_out)
+            
+        if fn_out_seasonal is not None:
+            print('Writing to seasonal file: {0}.format(fn_out_seasonal)', flush = True)
+            general_utils.write_ds_to_file(ds_out_season, fn_out_seasonal)
+            
+        return_nemo = NEMO()
+        return_nemo.dataset = ds_out
+        return_nemo_season = NEMO()
+        return_nemo_season.dataset = ds_out_season
+            
+        return return_nemo, return_nemo_season
+        
+    @staticmethod
+    def depth_averaged_difference_means(depth_bins, nemo_diff=None, nemo_diff_season=None, 
+                                        fn_out = None, fn_out_season = None):
+        '''
+        Takes output NEMO objects from NEMO.time_averaged_differences and 
+        averages into depth bins.
+        
+        INPUTS
+         depth_bins (array)          : Array of depth bin boundaries
+         nemo_diff (nemo obj)        : NEMO object containing differenced data.
+                                       (Output from NEMO.time_averaged_differences())
+         nemo_diff_season (nemo obj) : NEMO object containing seasonal 
+                                       differenced data. (Output from 
+                                       NEMO.time_averaged_differences())
+         fn_out (str)                : Optional output file for Annual data
+         fn_out_season (str)         : Optional output file for seasonal data
+        
+        OUTPUTS
+        '''
+        
+        if nemo_diff is None and nemo_diff_season is None:
+            print('You must provide at least one of nemo_diff and nemo_diff_season')
+            return
+        
+        ds = nemo_diff.dataset
+        ds_season = nemo_diff_season.dataset
+        
+        ny = ds.dims['y_dim']
+        nx = ds.dims['x_dim']
+        nz = len(depth_bins)
+        nbins = nz-1
+        
+        bin_widths = [depth_bins[ii+1] - depth_bins[ii] for ii in np.arange(0,nbins)]
+        bin_mids = [depth_bins[ii] + .5*bin_widths[ii] for ii in np.arange(0,nbins)]
+        
+        D = ds.depth_0.values
+        ds_out = None
+        ds_out_season = None
+        
+        # Average none seasonal data
+        if nemo_diff is not None:
+            variables = list(ds.keys())
+            ds_out = xr.Dataset(coords = dict(
+                                    longitude = (['y_dim', 'x_dim'], ds.longitude),
+                                    latitude = (['y_dim', 'x_dim'], ds.latitude),
+                                    bin_mids = (['depth_bin'], bin_mids),
+                                    bin_widths = (['depth_bin'], bin_widths)))
+            for vv in variables:
+                ds_out[vv] = (['depth_bin', 'y_dim', 'x_dim'], np.zeros((nbins, ny, nx)) * np.nan)
+                
+            for dd in np.arange(1,nbins):
+                print(dd)
+                D_tmp = np.logical_and(D<depth_bins[dd], D>=depth_bins[dd+1])
+                
+                for vv in variables:
+                    v_tmp = ds[vv].values
+                    if len(v_tmp.shape)==3:
+                       v_tmp[D_tmp] = np.nan
+                       ds_out[vv][dd-1] = np.nanmean(v_tmp, axis=0)
+            
+            if fn_out is not None:
+                general_utils.write_ds_to_file(ds_out, fn_out)
+                
+        # Average seasonal data
+        if nemo_diff_season is not None:
+            variables = list(ds_season.keys())
+            n_season = ds_season.dims['season']
+            ds_out_season = xr.Dataset(coords = dict(
+                                    longitude = (['y_dim', 'x_dim'], ds_season.longitude),
+                                    latitude = (['y_dim', 'x_dim'], ds_season.latitude),
+                                    bin_mids = (['depth_bin'], bin_mids),
+                                    bin_widths = (['depth_bin'], bin_widths),
+                                    season = (['season'], ds_season.season)))
+            for vv in variables:
+                ds_out_season[vv] = (['season', 'depth_bin', 'y_dim', 'x_dim'], np.zeros((n_season, nbins, ny, nx)) * np.nan)
+                
+            for dd in np.arange(1,nbins):
+                print(dd)
+                D_tmp = np.logical_and(D<depth_bins[dd], D>=depth_bins[dd+1])
+                
+                for vv in variables:
+                    v_tmp = ds_season[vv].values
+                    if len(v_tmp.shape)==4:
+                        v_tmp[:,D_tmp] = np.nan
+                        ds_out_season[vv][:,dd-1] = np.nanmean(v_tmp, axis=1)
+                        
+            if fn_out is not None:
+                general_utils.write_ds_to_file(ds_out_season, fn_out_seasonal)
+        
+        return ds_out, ds_out_season
+
         
         
         
