@@ -1103,7 +1103,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                         ds_out_season[vv][:,dd-1] = np.nanmean(v_tmp, axis=1)
                         
             if fn_out is not None:
-                general_utils.write_ds_to_file(ds_out_season, fn_out_seasonal)
+                general_utils.write_ds_to_file(ds_out_season, fn_out_season)
         
         return ds_out, ds_out_season
 
