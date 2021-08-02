@@ -81,7 +81,7 @@ region_names = ['north_sea','outer_shelf','eng_channel','nor_trench', 'kattegat'
 # The new 'extracted' instance, is a new PROFILE() object.
 extracted = en4.extract_top_and_bottom(nemo, fn_extracted, surface_def=2, 
                                        bottom_def=10, do_crps=True, 
-                                       crps_raddi = [2,4,6])
+                                       crps_radii = [2,4,6])
 										
 # REGIONALLY AVERAGE errors using extracted data
 extracted.analyse_top_and_bottom(fn_regional, regional_masks, region_names,
