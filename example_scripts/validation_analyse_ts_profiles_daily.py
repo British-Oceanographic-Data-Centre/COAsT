@@ -71,6 +71,6 @@ region_names = ['north_sea','outer_shelf','eng_channel','nor_trench', 'kattegat'
 # EXTRACT and PROCESS model data at EN4 locations
 # If you provide fn_extracted, the data will be saved to a new file
 # The new 'extracted' instance, is a new PROFILE() object.
-extracted = en4.analyse_profiles(ref_depth, fn_out, regional_masks = regional_masks,
+extracted = extracted.analyse_profiles(ref_depth, fn_regional, regional_masks = regional_masks,
                                        region_names = region_names, dist_omit=5, lat_omit=12)
 									
