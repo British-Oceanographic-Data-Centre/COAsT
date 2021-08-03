@@ -1226,6 +1226,8 @@ class PROFILE(COAsT):
             
             print(' >>>>>>>  File Written. ', flush=True)
         
+        ds['profile'] = (['profile'], np.arange(ds.dims['profile']))
+        
         return_prof = PROFILE()
         return_prof.dataset = ds
         return return_prof
