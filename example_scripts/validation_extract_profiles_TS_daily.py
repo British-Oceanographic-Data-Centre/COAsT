@@ -51,7 +51,7 @@ end_date = datetime(2014,12,1)
 # NEMO data directory and domain file
 dn_nemo_data = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/outputs/daily/p0/"
 fn_nemo_domain = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/inputs/CO7_EXACT_CFG_FILE.nc"
-dn_en4 = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/obs/en4/"
+fn_en4 = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/obs/en4/en4_processed_amm15.nc"
 dn_out = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/analysis/tmp"
 run_name = 'CO9p0 AMM15'
 

@@ -20,7 +20,7 @@ more information.
 
 import sys
 # IF USING A DEVELOPMENT BRANCH OF COAST, ADD THE REPOSITORY TO PATH:
-sys.path.append('/Users/dbyrne/code/COAsT')
+sys.path.append('/home/users/dbyrne/code/COAsT')
 import coast
 import xarray as xr
 import numpy as np
@@ -29,12 +29,11 @@ import numpy as np
 run_name='co7'
 
 # File paths
-fn_nemo_t = "/work/n01/n01/dbyrne/CO9_AMM15/outputs/co7/concatenated/*.nc"
-fn_nemo_domain = "/work/n01/n01/dbyrne/CO9_AMM15/inputs/co7/CO7_EXACT_CFG_FILE.nc"
-fn_en4 = "/work/n01/n01/dbyrne/CO9_AMM15/obs/en4/*.nc"
-fn_en4_processed = ""
-fn_extracted = "/work/n01/n01/dbyrne/CO9_AMM15/analysis/ts_hourly_{0}_2.nc".format(run_name)
-fn_regional = "/work/n01/n01/dbyrne/CO9_AMM15/analysis/ts_hourly_{0}_2.nc".format(run_name)
+fn_nemo_t = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/outputs/hourly/{0}/*.nc".format(run_name)
+fn_nemo_domain = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/inputs/CO7_EXACT_CFG_FILE.nc"
+fn_en4 = "/gws/nopw/j04/jmmp_collab/CO9_AMM15/obs/en4/*.nc"
+fn_extracted = "".format(run_name)
+fn_regional = "".format(run_name)
 
 # CREATE NEMO OBJECT
 nemo = coast.NEMO(fn_nemo_t, fn_nemo_domain, multiple=True, 
