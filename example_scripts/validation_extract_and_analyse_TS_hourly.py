@@ -49,10 +49,10 @@ en4.read_EN4(fn_en4)
 # a new file. Read this new file into a new PROFILE object with chunking
 lonbounds = [np.nanmin(lon), np.nanmax(lon)]
 latbounds = [np.nanmin(lat), np.nanmax(lat)]
-_ = en4.process_en4(fn_en4_processed, lonbounds, latbounds)
+_ = en4.process_en4(fn_en4, lonbounds, latbounds)
 
 # Read processed data into profile object
-en4.dataset = xr.open_dataset(fn_en4_processed, chunks={'profile':10000})
+en4.dataset = xr.open_dataset(fn_en4, chunks={'profile':10000})
 
 # Use COAsT to make predefined REGIONAL MASKS.
 # Alternatively, define your own in your own way, or read from file.
