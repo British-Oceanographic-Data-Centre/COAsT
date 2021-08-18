@@ -324,6 +324,7 @@ class PROFILE(COAsT):
         n_obs_levels = en4.dims['z_dim']
         n_prof = en4.dims['profile']
         data = xr.Dataset(coords = dict(
+                              profile =      (["profile"], en4.profile.values.astype('int32')),
                               longitude=     (["profile"], en4.longitude.values.astype('float32')),
                               latitude=      (["profile"], en4.latitude.values.astype('float32')),
                               time=          (["profile"], en4.time.values),
