@@ -279,12 +279,12 @@ class PROFILE(COAsT):
         if end_date is None:
             time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=nemo_frequency/2)
         else:
-            time_max = end_date
+            time_max = pd.to_datetime( end_date )
         
         if start_date is None:
             time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=nemo_frequency/2)
         else:
-            time_min = start_date
+            time_min = pd.to_datetime( start_date )
             
         ind = np.logical_and( en4_time >= time_min, en4_time < time_max )
         en4 = en4.isel(profile=ind)
