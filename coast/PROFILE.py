@@ -180,7 +180,8 @@ class PROFILE(COAsT):
                             en4_sal_name = 'practical_salinity',
                             en4_tem_name = 'potential_temperature',
                             v3p6 = False, fn_mesh_mask = None, 
-                            bathy_name = 'hbatt'):
+                            bathy_name = 'hbatt',
+                            start_date=None, end_date=None):
         '''
         VERSION 1.4 (05/07/2021)
         
@@ -212,6 +213,10 @@ class PROFILE(COAsT):
          en4_tem_name (str)   : Name of EN4 (COAST) variable to use for temperature
                                 [default = 'potential_temperature']
          fn_mesh_mask (str)   : Full path to mesh_mask.nc if data is NEMO v3.6
+         start_date (datetime): Start date for EN4 data. If not provided, script
+                                will make a guess based on nemo_frequency.
+         end_date (datetime)  : End date for EN4 data. If not provided, script
+                                will make a guess based on nemo_frequency.
                                 
         OUTPUTS:
          Returns a new PROFILE object containing an uncomputed dataset and 
@@ -271,10 +276,17 @@ class PROFILE(COAsT):
         elif nemo_frequency == 'monthly':
             nemo_frequency = 30
 
-        time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=nemo_frequency/2)
-        time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=nemo_frequency/2)
+        if end_date is None:
+            time_max = pd.to_datetime( max(mod_time) ) + relativedelta(hours=nemo_frequency/2)
+        else:
+            time_max = end_date
+        
+        if start_date is None:
+            time_min = pd.to_datetime( min(mod_time) ) - relativedelta(hours=nemo_frequency/2)
+        else:
+            time_min = start_date
             
-        ind = np.logical_and( en4_time >= time_min, en4_time <= time_max )
+        ind = np.logical_and( en4_time >= time_min, en4_time < time_max )
         en4 = en4.isel(profile=ind)
         print('EN4 subsetted to model time period:', flush=True)
         print('    >>> {0} -> {1}'.format(str(time_min), str(time_max)), flush=True)
