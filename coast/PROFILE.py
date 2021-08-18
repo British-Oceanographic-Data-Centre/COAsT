@@ -1229,6 +1229,7 @@ class PROFILE(COAsT):
         ds['temperature'] = xr.where(~reject_tem_lev, ds['temperature'], np.nan)
         ds['potential_temperature'] = xr.where(~reject_tem_lev, ds['temperature'], np.nan)
         ds['practical_salinity'] = xr.where(~reject_tem_lev, ds['practical_salinity'], np.nan)
+        ds['profile'] = (['profile'], np.arange(ds.dims['profile'])) 
         
         print('Processed data',flush=True)
         if fn_out is not None:
