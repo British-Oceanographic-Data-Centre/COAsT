@@ -170,3 +170,13 @@ class MASK_MAKER():
                                       vertices_lon, vertices_lat)
         mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
         return mask
+    
+    @classmethod
+    def region_def_kattegat(cls, longitude, latitude, bath):
+        vertices_lon = [9, 9, 13, 13]
+        vertices_lat = [60, 52.5, 52.5, 60]
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
+                                      longitude, latitude,
+                                      vertices_lon, vertices_lat)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
+        return mask
