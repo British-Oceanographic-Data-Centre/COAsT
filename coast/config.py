@@ -71,7 +71,7 @@ class ConfigParser():
         """
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
-        dataset = ConfigParser._get_dataset_object(json_content[ConfigKeys.DATASET])
+        dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
         return IndexedConfig(
             dimensionality=dimensionality ,dataset=dataset, processing_flags=proc_flags
             )
