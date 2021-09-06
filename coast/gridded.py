@@ -1,11 +1,15 @@
-from .COAsT import COAsT
-from . import general_utils, stats_util
-import xarray as xr
-import numpy as np
+import os.path as path_lib
+import warnings
+
 # from dask import delayed, compute, visualize
 # import graphviz
 import gsw
-import warnings
+import numpy as np
+import xarray as xr
+
+from . import general_utils, stats_util
+from .COAsT import COAsT
+from .config import ConfigParser
 from .logging_util import get_slug, debug, info, warn, error
 
 
@@ -16,15 +20,22 @@ class Gridded(COAsT):  # TODO Complete this docstring
     kwargs -- define addition keyworded arguemts for domain file. E.g. ln_sco=1
     if using s-scoord in an old domain file that does not carry this flag.
     """
-    def __init__(self, fn_data=None, fn_domain=None, grid_ref='t-grid',  # TODO Super init not called + add a docstring
+    def __init__(self, fn_data=None, fn_domain=None,   # TODO Super init not called + add a docstring
                  chunks: dict=None, multiple=False, config=None,
                  workers=2, threads=2, memory_limit_per_worker='2GB', **kwargs):
         debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
-        self.grid_ref = grid_ref.lower()  # TODO access from config
+        self.grid_ref = None
         self.domain_loaded = False
         self.fn_data = fn_data
         self.fn_domain = fn_domain
+        self.grid_vars = None
+
+        if path_lib.isfile(config):
+            self.config = ConfigParser(config).config
+        else:
+            error(f"Missing required json config :- {config} is not a file!")
+
         self._setup_grid_obj(chunks, multiple, **kwargs)
 
     def _setup_grid_obj(self, chunks, multiple, **kwargs):
@@ -61,20 +72,12 @@ class Gridded(COAsT):  # TODO Complete this docstring
         """ Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
         #
-        # self.grid_vars = self.config.grid_ref
-        #
-        if self.grid_ref == 'u-grid':
-            self.grid_vars = ['glamu', 'gphiu', 'e1u', 'e2u', 'e3u_0', 'depthu_0',] #What about e3vw
-        elif self.grid_ref == 'v-grid':
-            self.grid_vars = ['glamv', 'gphiv', 'e1v', 'e2v', 'e3v_0', 'depthv_0']
-        elif self.grid_ref == 't-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3t_0', 'deptht_0', 'tmask', 'bottom_level']
-        elif self.grid_ref == 'w-grid':
-            self.grid_vars = ['glamt', 'gphit', 'e1t', 'e2t', 'e3w_0', 'depthw_0', 'bottom_level']
-        elif self.grid_ref == 'f-grid':
-            self.grid_vars = ['glamf', 'gphif', 'e1f', 'e2f', 'e3f_0', 'depthf_0']
+        for key, value in self.config.grid_ref.items():
+            self.grid_ref = key
+            self.grid_vars = value
 
 
+    """
     def set_dimension_mapping(self):  # TODO I think this can be dropped and replaced with self.config
         self.dim_mapping = {'time_counter':'t_dim', 'deptht':'z_dim',
                             'depthu':'z_dim', 'depthv':'z_dim',
@@ -121,6 +124,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
                                    'depthu_0':'depth_0', 'depthv_0':'depth_0',
                                    'depthw_0':'depth_0', 'deptht_0':'depth_0',
                                    'ln_sco':'ln_sco', 'bottom_level':'bottom_level'}
+    """
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
@@ -590,7 +594,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
                 # If out_obj exists check grid_ref, else create out_obj.
                 if (out_obj is None) or (out_obj.grid_ref != out_grid):
                     try:
-                        out_obj = NEMO( fn_domain=self.filename_domain, grid_ref=out_grid )
+                        out_obj = Gridded(fn_domain=self.filename_domain, grid_ref=out_grid)
                     except:  # TODO Catch specific exception(s)
                         warn('Failed to create target NEMO obj. Perhaps self.',
                              'filename_domain={} is empty?'
