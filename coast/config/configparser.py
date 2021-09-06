@@ -1,29 +1,14 @@
-"""Classes related to data file Configuration"""
-
-from dataclasses import dataclass
-from enum import Enum, unique
+"""Config parser."""
 import json
 
-
-@unique
-class ConfigTypes(Enum):
-    """Enum class containing the valid types for config files."""
-    GRIDDED = "gridded"
-    INDEXED = "indexed"
-
-
-class ConfigKeys():
-    """Class of constants representing valid keys within configuriation json."""
-    TYPE="type"
-    DIMENSIONALITY="dimensionality"
-    GRIDREF="grid_ref"
-    PROC_FLAGS="processing_flags"
-    DATASET="dataset"
-    DOMAIN="domain"
-    DIM_MAP="dimension_map"
-    VAR_MAP="variable_map"
-    CHUNKS="chunks"
-
+from .config import (
+    ConfigTypes,
+    ConfigKeys,
+    GriddedConfig,
+    IndexedConfig,
+    Dataset,
+    Domain
+)
 
 class ConfigParser():
     """Class for parsing gridded and indexed configuration files."""
@@ -94,73 +79,3 @@ class ConfigParser():
             return Dataset(variable_map= dataset_var, dimension_map=dataset_dim, chunks=chunks)
         elif data_file_type is ConfigKeys.DOMAIN:
             return Domain(variable_map=dataset_var, dimension_map=dataset_dim)
-
-
-@dataclass(frozen=True)
-class DataFile():
-    """General parent dataclass for holding common config attributes of datafiles.
-    
-    Args:
-        variable_map (dict): dict containing mapping for variable names.
-        dimension_map (dict): dict containing mapping for dimension names.
-    """
-    variable_map: dict
-    dimension_map: dict
-
-
-@dataclass(frozen=True)
-class Dataset(DataFile):
-    """
-    Dataclass holding config attributes for Dataset datafiles. Extends DataFile.
-
-    Args:
-        chunks (tuple): Tuple for dask chunking config. (i.e. (1000,1000,1000)).
-    """
-    chunks: tuple
-
-
-@dataclass(frozen=True)
-class Domain(DataFile):
-    """
-    Dataclass holding config attributes for Domain datafiles. Extends DataFile.
-    """
-    pass
-
-
-@dataclass(frozen=True)
-class Config():
-    """General dataclass for holding common config file attributes.
-    
-    Args:
-        dataset (Dataset): Dataset object representing 'dataset' config.
-        processing_flags (list): List of processing flags.
-        type (ConfigTypes): Type of config. Must be a valid ConfigType.
-    """
-    dimensionality: int
-    dataset: Dataset
-    processing_flags: list
-    type: ConfigTypes
-
-
-@dataclass(frozen=True)
-class GriddedConfig(Config):
-    """Dataclass for holding gridded-config specific attributes. Extends Config.
-    
-    Args:
-        type (ConfigTypes): Type of config. Set to ConfigTypes.GRIDDED.
-        grid_ref (dict): dict containing key:value of grid_ref:[list of grid variables].
-        domain (Domain): Domain object representing 'domain' config.
-    """
-    type: ConfigTypes = ConfigTypes.GRIDDED
-    grid_ref: dict = None
-    domain: Domain = None
-
-
-@dataclass(frozen=True)
-class IndexedConfig(Config):
-    """Dataclass for holding indexed-config specific attributes. Extends Config.
-    
-    Args:
-        type (ConfigTypes): Type of config. Set to ConfigTypes.INDEXED.
-    """
-    type: ConfigTypes = ConfigTypes.INDEXED
