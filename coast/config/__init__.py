@@ -1,1 +1,1 @@
-from .configparser import ConfigParser as ConfigParser
+from .config_parser import ConfigParser

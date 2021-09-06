@@ -1,7 +1,7 @@
 """Config parser."""
 import json
 
-from .config import (
+from .config_structure import (
     ConfigTypes,
     ConfigKeys,
     GriddedConfig,
