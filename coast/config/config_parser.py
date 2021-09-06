@@ -37,13 +37,14 @@ class ConfigParser():
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
         grid_ref = json_content[ConfigKeys.GRIDREF]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
+        chunks = tuple(json_content[ConfigKeys.CHUNKS])
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
         try:
             domain = ConfigParser._get_datafile_object(json_content, ConfigKeys.DOMAIN)
         except KeyError:
             domain = None
         return GriddedConfig(
-            dimensionality=dimensionality, grid_ref=grid_ref, dataset=dataset, domain=domain, processing_flags=proc_flags
+            dimensionality=dimensionality, grid_ref=grid_ref, chunks=chunks, dataset=dataset, domain=domain, processing_flags=proc_flags
             )
 
 
@@ -56,9 +57,10 @@ class ConfigParser():
         """
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
+        chunks = tuple(json_content[ConfigKeys.CHUNKS])
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
         return IndexedConfig(
-            dimensionality=dimensionality ,dataset=dataset, processing_flags=proc_flags
+            dimensionality=dimensionality, chunks=chunks ,dataset=dataset, processing_flags=proc_flags
             )
 
 
@@ -75,7 +77,6 @@ class ConfigParser():
         dataset_dim = dataset_json[ConfigKeys.DIM_MAP]
 
         if data_file_type is ConfigKeys.DATASET:
-            chunks = tuple(dataset_json[ConfigKeys.CHUNKS])
-            return Dataset(variable_map= dataset_var, dimension_map=dataset_dim, chunks=chunks)
+            return Dataset(variable_map= dataset_var, dimension_map=dataset_dim)
         elif data_file_type is ConfigKeys.DOMAIN:
             return Domain(variable_map=dataset_var, dimension_map=dataset_dim)
