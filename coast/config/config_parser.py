@@ -1,5 +1,7 @@
 """Config parser."""
 import json
+from pathlib import Path
+from typing import Union
 
 from .config_structure import (
     ConfigTypes,
@@ -12,11 +14,11 @@ from .config_structure import (
 
 class ConfigParser():
     """Class for parsing gridded and indexed configuration files."""
-    def __init__(self, json_path):
+    def __init__(self, json_path: Union[Path, str]):
         """Config parser constructor.
         
         Args:
-            json_path (str): path to json config file.
+            json_path (Union[Path, str]): path to json config file.
         """
         with open(json_path, 'r') as j:
             json_content = json.loads(j.read())
@@ -28,7 +30,7 @@ class ConfigParser():
 
 
     @staticmethod
-    def _parse_gridded(json_content):
+    def _parse_gridded(json_content: dict) -> GriddedConfig:
         """Static method to parse Gridded config files.
         
         Args:
@@ -49,7 +51,7 @@ class ConfigParser():
 
 
     @staticmethod
-    def _parse_indexed(json_content):
+    def _parse_indexed(json_content: dict) -> IndexedConfig:
         """Static method to parse Indexed config files.
         
         Args:
@@ -65,7 +67,7 @@ class ConfigParser():
 
 
     @staticmethod
-    def _get_datafile_object(json_content, data_file_type):
+    def _get_datafile_object(json_content: dict, data_file_type: str) -> Union[Dataset, Domain]:
         """Static method to convert dataset and domain configs into objects.
         
             Args:
