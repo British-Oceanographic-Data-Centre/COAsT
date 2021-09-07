@@ -1,6 +1,11 @@
 {
 	"type": "gridded",
 	"dimensionality": 3,
+	"chunks": [
+		1000,
+		1000,
+		1000
+	],
 	"grid_ref": {
 		"t-grid": [
 			"glamt",
@@ -39,12 +44,7 @@
 			"ex12": "vozocrtx",
 			"ex13": "sossheig",
 			"ex14": "zos"
-		},
-		"chunks": [
-			1000,
-			1000,
-			1000
-		]
+		}
 	},
 	"domain": {
 		"dimension_map": {

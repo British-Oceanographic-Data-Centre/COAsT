@@ -1,6 +1,11 @@
 {
 	"type": "indexed",
 	"dimensionality": 3,
+	"chunks": [
+		1000,
+		1000,
+		1000
+	],
 	"dataset": {
 		"filepath": "path_to_file",
 		"dimension_map": {
@@ -28,12 +33,7 @@
 			"ex12": "vozocrtx",
 			"ex13": "sossheig",
 			"ex14": "zos"
-		},
-		"chunks": [
-			1000,
-			1000,
-			1000
-		]
+		}
 	},
 	"processing_flags": [
 		"example_flag"

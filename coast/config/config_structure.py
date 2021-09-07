@@ -39,11 +39,8 @@ class DataFile():
 class Dataset(DataFile):
     """
     Dataclass holding config attributes for Dataset datafiles. Extends DataFile.
-
-    Args:
-        chunks (tuple): Tuple for dask chunking config. (i.e. (1000,1000,1000)).
     """
-    chunks: tuple
+    pass
 
 
 @dataclass(frozen=True)
@@ -62,11 +59,13 @@ class Config():
     Args:
         dataset (Dataset): Dataset object representing 'dataset' config.
         processing_flags (list): List of processing flags.
+        chunks (tuple): Tuple for dask chunking config. (i.e. (1000,1000,1000)).
         type (ConfigTypes): Type of config. Must be a valid ConfigType.
     """
     dimensionality: int
     dataset: Dataset
     processing_flags: list
+    chunks: tuple
     type: ConfigTypes
 
 
