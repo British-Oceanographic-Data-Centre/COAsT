@@ -110,7 +110,7 @@ class PROFILE(INDEXED):
         return self.dataset[name]
 
     """======================= Manipulate ======================="""
-
+    
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
         Keyword arguments:
