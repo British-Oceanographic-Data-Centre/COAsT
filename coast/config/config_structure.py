@@ -18,9 +18,13 @@ class ConfigKeys():
     PROC_FLAGS="processing_flags"
     DATASET="dataset"
     DOMAIN="domain"
+    CODEPROCESSING="static_variables"
     DIM_MAP="dimension_map"
     VAR_MAP="variable_map"
     CHUNKS="chunks"
+    NO_GR_VAR = "not_grid_vars"
+    COO_VAR="coord_vars"
+    DEL_VAR="delete_vars"
 
 
 @dataclass(frozen=True)
@@ -33,6 +37,16 @@ class DataFile():
     """
     variable_map: dict
     dimension_map: dict
+
+
+@dataclass(frozen=True)
+class CodeProcessing:
+    """
+    Dataclass holding config attributes for static variables that might not need changing between model runs
+    """
+    not_grid_variables: list
+    coord_variables: list
+    delete_variables: list
 
 
 @dataclass(frozen=True)
@@ -81,6 +95,7 @@ class GriddedConfig(Config):
     type: ConfigTypes = ConfigTypes.GRIDDED
     grid_ref: dict = None
     domain: Domain = None
+    code_processing: CodeProcessing = None
 
 
 @dataclass(frozen=True)

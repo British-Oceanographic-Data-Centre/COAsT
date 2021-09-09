@@ -9,7 +9,8 @@ from .config_structure import (
     GriddedConfig,
     IndexedConfig,
     Dataset,
-    Domain
+    Domain,
+    CodeProcessing
 )
 
 class ConfigParser():
@@ -39,14 +40,17 @@ class ConfigParser():
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
         grid_ref = json_content[ConfigKeys.GRIDREF]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
-        chunks = tuple(json_content[ConfigKeys.CHUNKS])
+        chunks = json_content[ConfigKeys.CHUNKS]
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
+        static_variables = ConfigParser._get_code_processing_object(json_content)
         try:
             domain = ConfigParser._get_datafile_object(json_content, ConfigKeys.DOMAIN)
         except KeyError:
             domain = None
         return GriddedConfig(
-            dimensionality=dimensionality, grid_ref=grid_ref, chunks=chunks, dataset=dataset, domain=domain, processing_flags=proc_flags
+            dimensionality=dimensionality, grid_ref=grid_ref, chunks=chunks, dataset=dataset, domain=domain,
+            processing_flags=proc_flags,
+            code_processing=static_variables
             )
 
 
@@ -65,6 +69,17 @@ class ConfigParser():
             dimensionality=dimensionality, chunks=chunks ,dataset=dataset, processing_flags=proc_flags
             )
 
+    @staticmethod
+    def _get_code_processing_object(json_content: dict) -> CodeProcessing:
+        """Static method to convert static_variables configs into objects.
+
+            Args:
+                json_content (dict): Config file json.
+        """
+        dataset_json = json_content[ConfigKeys.CODEPROCESSING]
+        return CodeProcessing(coord_variables=dataset_json[ConfigKeys.COO_VAR],
+                              delete_variables=dataset_json[ConfigKeys.DEL_VAR],
+                              not_grid_variables=dataset_json[ConfigKeys.NO_GR_VAR])
 
     @staticmethod
     def _get_datafile_object(json_content: dict, data_file_type: str) -> Union[Dataset, Domain]:
