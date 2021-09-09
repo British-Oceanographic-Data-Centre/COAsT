@@ -79,7 +79,7 @@ class Config():
     dimensionality: int
     dataset: Dataset
     processing_flags: list
-    chunks: tuple
+    chunks: dict
     type: ConfigTypes
 
 
