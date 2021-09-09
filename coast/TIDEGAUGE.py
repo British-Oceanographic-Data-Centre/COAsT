@@ -316,9 +316,7 @@ class TIDEGAUGE(INDEXED):
                                                       date_end)
                 new_object = TIDEGAUGE()
                 new_object.dataset = dataset
-
-
-
+                new_object.apply_var_and_dim_mappings_to_dataset()
                 tidegauge_list.append(new_object)
             except:
                 # Problem with reading file: file TODO: add debug message here

@@ -21,7 +21,4 @@ class INDEXED:
     def __init__(
             self
     ):
-        print(f"INDEX Creating a new {get_slug(self)}")
-
-    def subset_placeholder(self):
-        print(f"INDEXED subset{self}")
+        debug(f"INDEX Creating a new {get_slug(self)}")

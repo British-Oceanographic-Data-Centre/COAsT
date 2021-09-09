@@ -1,8 +1,9 @@
 from .COAsT import COAsT
 from .COAsT import setup_dask_client
+from .INDEX import INDEXED
 from .NEMO import NEMO
 from .TRANSECT import Transect, Transect_f, Transect_t
-from .ALTIMETRY import ALTIMETRY
+from .TRACK import TRACK
 from .OBSERVATION import OBSERVATION
 from .DISTRIBUTION import DISTRIBUTION
 from .INTERNALTIDE import INTERNALTIDE
@@ -10,6 +11,7 @@ from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
 from .CLIMATOLOGY import CLIMATOLOGY
 from .MASK_MAKER import MASK_MAKER
+from .config import config_parser, config_structure
 from . import logging_util
 from . import general_utils
 from . import plot_util

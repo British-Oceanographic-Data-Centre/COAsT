@@ -1,15 +1,19 @@
 from .INDEX import INDEXED
+from .config import config_parser, config_structure
 import numpy as np
 import xarray as xr
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, info, warn, warning
+from typing import Union
+from pathlib import Path
+from ast import literal_eval
 
 
-class ALTIMETRY(INDEXED):
+class TRACK(INDEXED):
     """
-    An object for reading, storing and manipulating altimetry data.
-    Currently the object contains functionality for reading altimetry netCDF
+    An object for reading, storing and manipulating altimetry, raw glider (T) and ferry box data.
+    Currently the object contains functionality for reading altimetry, raw glider (T) and ferry box netCDF
     data from the CMEMS database. This is the default for initialisation.
 
     Data should be stored in an xarray.Dataset, in the form:
@@ -49,12 +53,25 @@ class ALTIMETRY(INDEXED):
 
     """
 
-    def __init__(self, file=None, chunks: dict = None, multiple=False):
+    # def __init__(self, file=None, chunks: dict = None, multiple=False):
+    def __init__(self, file=None, multiple=False, config: Union[Path, str] = None):
+
         """ Initialization and file reading."""
 
-        print(f"ALTIMETRY Creating a new {get_slug(self)}")
+        print(f"TRACK Creating a new {get_slug(self)}")
+
+        print(config)
+        print("-----------------------")
+        self.json_config = config_parser.ConfigParser(config)
+
+        print(self.json_config.config.chunks)
+        print("-----------------------")
+        chunks = literal_eval(self.json_config.config.chunks[0])
+        print(chunks)
+        print("########################")
 
         self.dataset = None
+
         self.set_dimension_mapping()
         self.set_variable_mapping()
 
@@ -67,14 +84,12 @@ class ALTIMETRY(INDEXED):
         else:
             self.read_cmems(file, chunks, multiple)
 
-        self.subset_placeholder()
         print(f"{get_slug(self)} initialised")
 
     def read_cmems(self, file, chunks, multiple):
         """Read file."""
         self.load(file, chunks, multiple)
         self.apply_var_and_dim_mappings_to_dataset()
-        #self.dataset = self.dataset.rename_dims(self.dim_mapping)
         # self.dataset.attrs = {}
 
     def apply_var_and_dim_mappings_to_dataset(self):
@@ -89,7 +104,7 @@ class ALTIMETRY(INDEXED):
 
     def load(self, file_or_dir, chunks: dict = None, multiple=False):
         """
-        Loads a file into a COAsT object's dataset variable using xarray
+        Loads a file into a object's dataset variable using xarray
 
         Args:
             file_or_dir (str) : file name or directory to multiple files.
@@ -98,7 +113,7 @@ class ALTIMETRY(INDEXED):
                                 If false load a single file [default False]
         """
 
-        print("ALTIMETRY load")
+        print("TRACK load")
 
         if multiple:
             self.load_multiple(file_or_dir, chunks)
@@ -109,7 +124,7 @@ class ALTIMETRY(INDEXED):
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into COAsT object's dataset variable. """
+        """ Loads a single file into object's dataset variable. """
         print(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
@@ -161,7 +176,7 @@ class ALTIMETRY(INDEXED):
             title = color_var_str
         else:
             color_var = None
-            title = 'Altimetry observation locations'
+            title = 'Track observation locations'
         info("Drawing a quick plot...")
         fig, ax = plot_util.geo_scatter(self.dataset.longitude,
                                         self.dataset.latitude,
@@ -264,7 +279,7 @@ class ALTIMETRY(INDEXED):
         -------
         xarray.Dataset containing times, sealevel and quality control flags
 
-        Example Useage
+        Example Usage
         -------
         # Compare modelled 'sossheig' with 'sla_filtered' using CRPS
         crps = altimetry.crps(nemo, 'sossheig', 'sla_filtered')
@@ -281,7 +296,7 @@ class ALTIMETRY(INDEXED):
             obs_var.time.values,
             nh_radius, time_interp)
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = TRACK()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['crps'] = (('t_dim'), crps_list)
             new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
@@ -393,7 +408,7 @@ class ALTIMETRY(INDEXED):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = TRACK()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['absolute_error'] = ae
             new_dataset['error'] = diff
@@ -410,3 +425,30 @@ class ALTIMETRY(INDEXED):
             self.dataset['rmse'] = rmse
             self.dataset['corr'] = corr
             self.dataset['cov'] = cov
+
+# class ALTIMETRY(TRACK):
+#    def __init__(self, file=None, chunks: dict = None, multiple=False):
+#        super().__init__(file, chunks, multiple)
+
+
+# class GLIDER_RAW(TRACK):
+#    def __init__(self, file=None, chunks: dict = None, multiple=False):
+#        super().__init__(file, chunks, multiple)
+
+
+# class FERRY_BOX(TRACK):
+#    def __init__(self, file=None, chunks: dict = None, multiple=False):
+#        super().__init__(file, chunks, multiple)
+
+
+# since loading of altimeter, raw_glider and ferrybox can be handled under the TRACK class
+
+
+# altimetry = coast.TRACK("json_config_file")
+# glider_raw = coast.TRACK("json_config_file")
+# ferry_box = coast.TRACK("json_config_file")
+
+
+# altimetry = coast.ALTIMETRY("json_config_file")
+# glider_raw = coast.GLIDER_RAW("json_config_file")
+# ferry_box = coast.FERRY_BOX("json_config_file")
