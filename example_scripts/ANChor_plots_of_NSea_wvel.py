@@ -28,8 +28,7 @@ fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 config = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
 
 chunks = {"x_dim":10, "y_dim":10, "t_dim":10}
-sci_w = coast.Gridded(dir_nam + fil_nam, 
-                 dom_nam, config=config, multiple=True)
+sci_w = coast.Gridded(dir_nam + fil_nam, dom_nam, config=config)
 sci_w.dataset.chunk(chunks)
 
 #% NEMO output is not standard with u,v fields included with w-pts. Tidy to avoid confusion
