@@ -1400,7 +1400,7 @@ nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file
 nemo_u = coast.Gridded(fn_data=dn_files + fn_nemo_grid_u_dat,
                     fn_domain=dn_files + fn_nemo_dom, config=json_config_file_u_grid)
 nemo_v = coast.Gridded(fn_data=dn_files + fn_nemo_grid_v_dat,
-                    fn_domain=dn_files + fn_nemo_dom, gconfig=json_config_file_u_grid)
+                    fn_domain=dn_files + fn_nemo_dom, config=json_config_file_v_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0],
                                                           [50, -10], [60, 3])
