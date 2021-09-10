@@ -25,17 +25,23 @@ dom_nam = "/projectsa/FASTNEt/jelt/AMM60/mesh_mask.nc"
 dir_nam = '/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/'
 fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 
-chunks = {"x":10, "y":10, "time_counter":10}
-sci_w = coast.NEMO(dir_nam + fil_nam, 
-                 dom_nam, grid_ref='w-grid', multiple=True, chunks=chunks)
+config = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
 
+chunks = {"x_dim":10, "y_dim":10, "t_dim":10}
+sci_w = coast.Gridded(dir_nam + fil_nam, 
+                 dom_nam, config=config, multiple=True)
+sci_w.dataset.chunk(chunks)
+
+#% NEMO output is not standard with u,v fields included with w-pts. Tidy to avoid confusion
+sci_w.dataset = sci_w.dataset.drop(['uo','vo','depthv'])
 sci_w.dataset = sci_w.dataset.swap_dims({'depthw':'z_dim'})
+
 #################################################
 #%% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
 ind_sci = sci_w.subset_indices([51,-4], [60,15])
-sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1]) #nwes = northwest europe shelf
+sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1]) #nswes = northwest europe shelf
 
 #%% Compute a diffusion from w-vel
 Kz = (sci_nwes_w.dataset.wo * sci_nwes_w.dataset.e3_0).sum(dim='z_dim').mean(dim='t_dim')
