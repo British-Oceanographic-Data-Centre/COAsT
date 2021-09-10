@@ -1,4 +1,5 @@
 from .INDEX import INDEXED
+from .TIMESERIES import TIMESERIES
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -8,10 +9,14 @@ import re
 import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
+from .config import config_parser
 from .logging_util import get_slug, debug, error, info
+from typing import Union
+from pathlib import Path
+from ast import literal_eval
 
 
-class TIDEGAUGE(INDEXED):
+class TIDEGAUGE(TIMESERIES):
     """
     An object for reading, storing and manipulating tide gauge data.
     Functionality available for reading and organisation of GESLA files.
@@ -76,7 +81,7 @@ class TIDEGAUGE(INDEXED):
     ###                ~ Initialisation and File Reading ~                     ###
     ##############################################################################
 
-    def __init__(self, file_path=None, date_start=None, date_end=None):
+    def __init__(self, file_path=None, date_start=None, date_end=None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
         reading GESLA data from a directory between two datetime objects.
@@ -96,15 +101,20 @@ class TIDEGAUGE(INDEXED):
         file_path (list of str) : Filename to read from directory.
         date_start (datetime) : Start date for data read. Optional
         date_end (datetime) : end date for data read. Optional
+        config (Path or str) : configuration file
 
         Returns
         -------
         Self
         """
+        super().__init__(file_path, date_start, date_end)
         print(f"Creating a new ..... {get_slug(self)}")
 
-        self.set_dimension_mapping()
-        self.set_variable_mapping()
+        self.json_config = None
+        self.chunks = None
+        self.var_mapping = None
+        self.dim_mapping = None
+        self.set_config(config)
 
         # If file list is supplied, read files from directory
         if file_path is None:
@@ -116,6 +126,18 @@ class TIDEGAUGE(INDEXED):
 
         print(f"{get_slug(self)} initialised")
         return
+
+    def set_config(self, config):
+        if config:
+            self.json_config = config_parser.ConfigParser(config)
+            if self.json_config.config.chunks:
+                self.chunks = literal_eval(self.json_config.config.chunks[0])
+
+            if self.json_config.config.dataset.dimension_map:
+                self.dim_mapping = self.json_config.config.dataset.dimension_map
+
+            if self.json_config.config.dataset.variable_map:
+                self.var_mapping = self.json_config.config.dataset.variable_map
 
     ############ tide gauge methods ##############################################
     @classmethod
@@ -278,7 +300,7 @@ class TIDEGAUGE(INDEXED):
 
     @classmethod
     def create_multiple_tidegauge(cls, file_list, date_start=None,
-                                  date_end=None):
+                                  date_end=None, config: Union[Path, str] = None):
         """
         Reads multiple GESLA tide gauge files from file_list (can include
         wildcards) and return them in a list. date_start and date_end should
@@ -316,6 +338,7 @@ class TIDEGAUGE(INDEXED):
                                                       date_end)
                 new_object = TIDEGAUGE()
                 new_object.dataset = dataset
+                new_object.set_config(config)
                 new_object.apply_var_and_dim_mappings_to_dataset()
                 tidegauge_list.append(new_object)
             except:
@@ -323,24 +346,13 @@ class TIDEGAUGE(INDEXED):
                 pass
         return tidegauge_list
 
-    def set_dimension_mapping(self):
-        self.dim_mapping = None
-        print(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
-
-    def set_variable_mapping(self):
-        self.var_mapping = None
-        print(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
-
     def apply_var_and_dim_mappings_to_dataset(self):
-        # rename dimensions and variables (keeps only those variables that are in the mappings)
-
         if self.dim_mapping is not None:
             self.dataset = self.dataset.rename(self.dim_mapping)
 
         if self.var_mapping is not None:
             vars_to_keep = list(self.var_mapping.keys())
             self.dataset = self.dataset[vars_to_keep].rename_vars(self.var_mapping)
-
 
     ############ tide table methods (HLW) #########################################
     @classmethod

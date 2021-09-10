@@ -1,4 +1,5 @@
 from .INDEX import INDEXED
+from .config import config_parser, config_structure
 import numpy as np
 import xarray as xr
 from . import general_utils, plot_util, crps_util, COAsT
@@ -6,6 +7,9 @@ import matplotlib.pyplot as plt
 import glob
 import datetime
 from .logging_util import get_slug, debug, info, warn, warning
+from typing import Union
+from pathlib import Path
+from ast import literal_eval
 
 
 class PROFILE(INDEXED):
@@ -21,11 +25,26 @@ class PROFILE(INDEXED):
                      files.
     """
 
-    def __init__(self, file=None, chunks={}, multiple=False):
+    def __init__(self, file=None, multiple=False, config: Union[Path, str] = None):
         """ Initialization and file reading."""
+
+        print(f"PROFILE Creating a new {get_slug(self)}")
+
         self.dataset = None
-        self.set_dimension_mapping()
-        self.set_variable_mapping()
+        self.chunks = None
+        self.var_mapping = None
+        self.dim_mapping = None
+
+        if config:
+            self.json_config = config_parser.ConfigParser(config)
+            if self.json_config.config.chunks:
+                self.chunks = literal_eval(self.json_config.config.chunks[0])
+
+            if self.json_config.config.dataset.dimension_map:
+                self.dim_mapping = self.json_config.config.dataset.dimension_map
+
+            if self.json_config.config.dataset.variable_map:
+                self.var_mapping = self.json_config.config.dataset.variable_map
 
         if file is None:
             warn(
@@ -34,7 +53,7 @@ class PROFILE(INDEXED):
                 UserWarning
             )
         else:
-            self.read_EN4(file, chunks, multiple)
+            self.read_EN4(file, self.chunks, multiple)
             self.apply_var_and_dim_mappings_to_dataset()
 
         print(f"{get_slug(self)} initialised")
@@ -74,7 +93,7 @@ class PROFILE(INDEXED):
                     self.dataset = xr.concat((self.dataset, data_tmp), dim='N_PROF')
 
     def apply_var_and_dim_mappings_to_dataset(self):
-        # rename dimensions and variables (keeps only those variables that are in the mappings)
+
         self.dataset = self.dataset.set_coords(['LATITUDE', 'LONGITUDE', 'JULD'])
 
         if self.dim_mapping is not None:
@@ -84,33 +103,11 @@ class PROFILE(INDEXED):
             vars_to_keep = list(self.var_mapping.keys())
             self.dataset = self.dataset[vars_to_keep].rename_vars(self.var_mapping)
 
-    def set_dimension_mapping(self):
-        self.dim_mapping = {'N_PROF': 'profile',
-                            'N_PARAM': 'parameter',
-                            'N_LEVELS': 'z_dim'
-                            }
-        print(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
-
-    def set_variable_mapping(self):
-        self.var_mapping = {'LATITUDE': 'latitude',
-                            'LONGITUDE': 'longitude',
-                            'DEPH_CORRECTED': 'depth',
-                            'JULD': 'time',
-                            'POTM_CORRECTED': 'potential_temperature',
-                            'TEMP': 'temperature',
-                            'PSAL_CORRECTED': 'practical_salinity',
-                            'POTM_CORRECTED_QC': 'qc_potential_temperature',
-                            'PSAL_CORRECTED_QC': 'qc_practical_salinity',
-                            'DEPH_CORRECTED_QC': 'qc_depth',
-                            'JULD_QC': 'qc_time'
-                            }
-        print(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
-
     def __getitem__(self, name: str):
         return self.dataset[name]
 
     """======================= Manipulate ======================="""
-    
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
         Keyword arguments:

@@ -16,9 +16,6 @@ def setup_dask_client(
 
 
 class INDEXED:
-    """Contains common sub-setting methods used by the PROFILE, TIDEGAUGE and ALTIMETRY sub classes."""
+    def __init__(self):
+        pass
 
-    def __init__(
-            self
-    ):
-        debug(f"INDEX Creating a new {get_slug(self)}")
