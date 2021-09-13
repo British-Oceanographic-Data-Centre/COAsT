@@ -179,6 +179,10 @@ class CLIMATOLOGY(COAsT):
 
 
 class Season:
+    """Class with attributes defining month ranges for the four seasons.
+
+        Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.
+    """
     SPRING = (3, 5)
     SUMMER = (6, 9)
     AUTUMN = (10, 11)
