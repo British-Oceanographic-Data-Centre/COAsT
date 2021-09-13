@@ -25,7 +25,8 @@ config = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
         
 sci_t = coast.Gridded(dir_nam + fil_nam, 
         dom_nam, config=config  ) #, chunks=chunks)
-chunks = {"x_dim":10, "y_dim":10, "t_dim":10}
+chunks = {"x_dim":10, "y_dim":10, "t_dim":10} # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
+
 sci_t.dataset.chunk(chunks)
 
 # create an empty w-grid object, to store stratification
