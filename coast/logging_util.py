@@ -9,20 +9,13 @@ import traceback
 DEFAULT_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
 
-def get_logger(
-        name: str = None,
-        level: int = logging.DEBUG
-):
+def get_logger(name: str = None, level: int = logging.DEBUG):
     logger = logging.getLogger(name=name)
     logger.setLevel(level)
     return logger
 
 
-def create_handler(
-        logger: logging.Logger,
-        stream: io.TextIOWrapper = sys.stdout,
-        format_string: str = DEFAULT_FORMAT
-):
+def create_handler(logger: logging.Logger, stream: io.TextIOWrapper = sys.stdout, format_string: str = DEFAULT_FORMAT):
     handler = logging.StreamHandler(stream)
     handler.setLevel(logger.level)
     formatter = logging.Formatter(format_string)
@@ -31,10 +24,10 @@ def create_handler(
 
 
 def setup_logging(
-        name: str = None,
-        level: int = logging.DEBUG,
-        stream: io.TextIOWrapper = sys.stdout,
-        format_string: str = DEFAULT_FORMAT
+    name: str = None,
+    level: int = logging.DEBUG,
+    stream: io.TextIOWrapper = sys.stdout,
+    format_string: str = DEFAULT_FORMAT,
 ):
     logger = get_logger(name=name, level=level)
     handler = create_handler(logger, stream=stream, format_string=format_string)
@@ -43,9 +36,7 @@ def setup_logging(
     return logger, handler
 
 
-def get_slug(
-        obj: object
-):
+def get_slug(obj: object):
     name = obj.__class__.__name__
     ref = hex(id(object))
     return "{0} object at {1}".format(name, ref)
