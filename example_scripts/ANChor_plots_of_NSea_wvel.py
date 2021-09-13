@@ -27,7 +27,7 @@ fil_nam = 'AMM60_1h_20120204_20120208_NorthSea.nc'
 
 config = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
 
-chunks = {"x_dim":10, "y_dim":10, "t_dim":10}
+chunks = {"x_dim":10, "y_dim":10, "t_dim":10} # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
 sci_w = coast.Gridded(dir_nam + fil_nam, dom_nam, config=config)
 sci_w.dataset.chunk(chunks)
 
