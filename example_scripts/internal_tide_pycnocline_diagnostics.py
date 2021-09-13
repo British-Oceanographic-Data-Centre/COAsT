@@ -36,7 +36,7 @@ try:
     elif mon == 'Feb':
         fil_names_AMM60 = "AMM60_1d_201002*_grid_T.nc"
 
-    chunks = {"x_dim":10, "y_dim":10, "t_dim":10}
+    chunks = {"x_dim":10, "y_dim":10, "t_dim":10} # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
     sci_t = coast.Gridded(fn_data=dir_AMM60 + fil_names_AMM60,
                      fn_domain=dir_AMM60 + "mesh_mask.nc",
                      config=config_t,
