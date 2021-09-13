@@ -34,14 +34,17 @@ class Gridded(COAsT):  # TODO Complete this docstring
 
         if path_lib.isfile(config):
             self.config = ConfigParser(config).config
-        else:
-            error(f"Missing required json config :- {config} is not a file!")
-            raise FileNotFoundError
-
-        if self.config.chunks:
-            self._setup_grid_obj(self.config.chunks, multiple, **kwargs)
-        else:
-            self._setup_grid_obj(None, multiple, **kwargs)
+            if self.config.chunks:
+                self._setup_grid_obj(self.config.chunks, multiple, **kwargs)
+            else:
+                self._setup_grid_obj(None, multiple, **kwargs)
+        else:  # allow for usage without config file, this will be limted and dosen't bring the full COAST features
+            if self.fn_data is not None:
+                self.load(self.fn_data, None, multiple)
+            if self.fn_domain is not None:
+                self.filename_domain = self.fn_domain
+                dataset_domain = self.load_domain(self.fn_domain, None)
+                self.dataset["domain"] = dataset_domain
 
     def _setup_grid_obj(self, chunks, multiple, **kwargs):
         """This is a helper method to reduce the size of def __init__
