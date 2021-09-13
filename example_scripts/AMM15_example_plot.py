@@ -30,8 +30,8 @@ chunks = {"x_dim":10, "y_dim":10, "t_dim":10} # Chunks are prescribed in the con
 sci_t.dataset.chunk(chunks)
 
 # create an empty w-grid object, to store stratification
-sci_w = coast.Gridded( fn_domain = dom_nam, config=config.replace("t_nemo","w_nemo")) #, chunks=chunks)
-sci_w.dataset.chunk({"x_dim":10, "y_dim":10})
+sci_w = coast.Gridded( fn_domain = dom_nam, config=config.replace("t_nemo","w_nemo"))
+sci_w.dataset.chunk({"x_dim":10, "y_dim":10}) # TODO set in config json
 
 
 print('* Loaded ',config, ' data')
