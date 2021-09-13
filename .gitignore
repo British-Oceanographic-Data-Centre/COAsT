@@ -22,3 +22,6 @@ unit_testing/*log
 *.DS_Store
 
 .vscode
+sandbox.py
+
+config/nemo_tst_gridded.json
