@@ -85,13 +85,13 @@ class CLIMATOLOGY(COAsT):
         return ds_mean
 
     @staticmethod
-    def _get_date_ranges(years, period):
+    def _get_date_ranges(years, month_periods):
         """Calculates a list of datetime date ranges for a given list of years and a specified start/end month.
 
         Args:
             years (list): A list of years to calculate date ranges for.
-            period (tuple): period (tuple): A tuple containing a start and end month integer.
-            (i.e. (12, 2) is Dec -> Feb).
+            month_periods (list): A list containing tuples of start and end month integers.
+            (i.e. [(3,5),(12, 2)] is Mar -> May, Dec -> Feb). Must be in chronological order.
 
             Returns:
                 date_ranges (list): A list of tuples, each containing a start and end datetime.date object.
@@ -99,28 +99,29 @@ class CLIMATOLOGY(COAsT):
         date_ranges = []
         for y in set(years):
             y = int(y)
-            start = period[0]
-            end = period[1]
-
-            if start > end:
-                begin_date = date(y, start, 1)
-                end_day = calendar.monthrange(y + 1, end)[1]
-                end_date = date(y + 1, end, end_day)
-            else:
-                begin_date = date(y, start, 1)
-                end_day = calendar.monthrange(y, end)[1]
-                end_date = date(y, end, end_day)
-            date_ranges.append((begin_date, end_date))
+            for period in month_periods:
+                start = period[0]
+                end = period[1]
+                if start > end:
+                    begin_date = date(y, start, 1)
+                    end_day = calendar.monthrange(y + 1, end)[1]
+                    end_date = date(y + 1, end, end_day)
+                else:
+                    begin_date = date(y, start, 1)
+                    end_day = calendar.monthrange(y, end)[1]
+                    end_date = date(y, end, end_day)
+                date_ranges.append((begin_date, end_date))
         return date_ranges
 
     @staticmethod
-    def multiyear_averages(ds: xr.Dataset, period: tuple, time_var: str = "time", time_dim: str = "t_dim"):
+    def multiyear_averages(ds: xr.Dataset, month_periods: list, time_var: str = "time", time_dim: str = "t_dim"):
         """Calculate multiyear means for all Data variables in a dataset between a given start and end month.
 
         Args:
             ds (xr.Dataset): xarray dataset containing data.
-            period (tuple): A tuple containing a start and end month integer. (i.e. (12, 2) is Dec -> Feb).
-            The Season class can be used for convenience (e.g. Season.WINTER.)
+            month_periods (list): A list containing tuples of start and end month integers.
+            (i.e. [(3,5),(12, 2)] is Mar -> May, Dec -> Feb). Must be in chronological order.
+            The Season class can be used for convenience (e.g. Season.WINTER, Season.All etc. )
             time_var (str): String representing the time variable name within the dataset.
             time_dim (str): String representing the time dimension name within the dataset.
         returns:
@@ -145,33 +146,36 @@ class CLIMATOLOGY(COAsT):
         # Get years of data.
         data_years = new_ds[f'{time_dim}.year'].to_numpy()
 
-        # Generate date ranges from years and given month period.
-        date_ranges = CLIMATOLOGY._get_date_ranges(data_years, period)
+        # Generate date ranges from years and given month periods.
+        date_ranges = CLIMATOLOGY._get_date_ranges(data_years, month_periods)
 
-        # Extract data from dataset between these date ranges and index each range with a common index.
+        # Extract data from dataset between these date ranges and index each range with a common multi-index.
         datasets = []
-        index = []
+        year_index = []
+        month_index = []
         for date_range in date_ranges:
             sel_args = {f'{time_dim}': slice(date_range[0], date_range[1])}
             filtered = new_ds.sel(**sel_args)
             datasets.append(filtered)
-            index = index + ([date_range[0].year] * filtered.sizes[time_dim])
+            year_index = year_index + ([date_range[0].year] * filtered.sizes[time_dim])
+            month_label = f"{calendar.month_abbr[date_range[0].month]}-{calendar.month_abbr[date_range[1].month]}"
+            month_index = month_index + ([month_label] * filtered.sizes[time_dim])
 
         # New dataset built from extracted data between date ranges.
         filtered = xr.concat(datasets, dim=time_dim)
-        # Data from same date range use common year index so they can be grouped together.
-        period_idx = pd.Index(index)
-        filtered.coords['year'] = (f'{time_dim}', period_idx)
+        # Data from same date range use common year-period multi-index so they can be grouped together.
+        period_idx = pd.MultiIndex.from_arrays([year_index, month_index], names=('year', 'period'))
+        filtered.coords['year_period'] = (f'{time_dim}', period_idx)
 
-        # For each data variable, group on period index and find the mean.
+        # For each data variable, group on year-period multi-index and find the mean.
         # New dataset containing means across date ranges is returned.
         ds_mean = xr.Dataset()
         for var_name, da in filtered.data_vars.items():
             try:
                 # Ignore NaN values.
                 mask = xr.where(uf.isnan(da), 0, 1)
-                data = da.groupby('year').sum(dim=time_dim)
-                total_points = mask.groupby('year').sum(dim=time_dim)
+                data = da.groupby('year_period').sum(dim=time_dim)
+                total_points = mask.groupby('year_period').sum(dim=time_dim)
                 ds_mean[f"{var_name}"] = data / total_points
             except Exception as e:
                 warn(f"Skipped mean calculation for {var_name} due to error: {e}")
@@ -183,7 +187,8 @@ class Season:
 
         Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.
     """
-    SPRING = (3, 5)
-    SUMMER = (6, 9)
-    AUTUMN = (10, 11)
-    WINTER = (12, 2)
+    SPRING = [(3, 5)]
+    SUMMER = [(6, 9)]
+    AUTUMN = [(10, 11)]
+    WINTER = [(12, 2)]
+    ALL = [(3, 5), (6, 9), (10, 11), (12, 2)]
