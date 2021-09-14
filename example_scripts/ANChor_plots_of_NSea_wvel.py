@@ -28,7 +28,9 @@ dir_nam = "/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/"
 fil_nam = "AMM60_1h_20120204_20120208_NorthSea.nc"
 
 chunks = {"x": 10, "y": 10, "time_counter": 10}
-sci_w = coast.NEMO(dir_nam + fil_nam, dom_nam, grid_ref="w-grid", multiple=True, chunks=chunks)
+sci_w = coast.NEMO(
+    dir_nam + fil_nam, dom_nam, grid_ref="w-grid", multiple=True, chunks=chunks
+)
 
 sci_w.dataset = sci_w.dataset.swap_dims({"depthw": "z_dim"})
 #################################################
@@ -36,10 +38,14 @@ sci_w.dataset = sci_w.dataset.swap_dims({"depthw": "z_dim"})
 #################################################
 # Pick out a North Sea subdomain
 ind_sci = sci_w.subset_indices([51, -4], [60, 15])
-sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+sci_nwes_w = sci_w.isel(
+    y_dim=ind_sci[0], x_dim=ind_sci[1]
+)  # nwes = northwest europe shelf
 
 #%% Compute a diffusion from w-vel
-Kz = (sci_nwes_w.dataset.wo * sci_nwes_w.dataset.e3_0).sum(dim="z_dim").mean(dim="t_dim")
+Kz = (
+    (sci_nwes_w.dataset.wo * sci_nwes_w.dataset.e3_0).sum(dim="z_dim").mean(dim="t_dim")
+)
 
 # plot map
 lon = sci_nwes_w.dataset.longitude.squeeze()
@@ -86,7 +92,13 @@ for i in range(2):
 
         fig = plt.figure()
         plt.rcParams["figure.figsize"] = 8, 8
-        plt.pcolormesh(lon, lat, sci_nwes_w.dataset.wo[i, sig0, :, :] * 3600 * 24, shading="auto", cmap="seismic")
+        plt.pcolormesh(
+            lon,
+            lat,
+            sci_nwes_w.dataset.wo[i, sig0, :, :] * 3600 * 24,
+            shading="auto",
+            cmap="seismic",
+        )
         plt.plot(lon[JJ, II], lat[JJ, II], "r+")
         plt.title(f"t={str(i)}: w-vel (m/day) at level {sig0}")
         plt.clim([-5, 5])
@@ -113,7 +125,13 @@ for i in range(2):
 
     fig = plt.figure()
     plt.rcParams["figure.figsize"] = 8, 8
-    plt.pcolormesh(lat_sec, dep_sec, wo_sec.isel(t_dim=i) * 3600 * 24, shading="auto", cmap="seismic")
+    plt.pcolormesh(
+        lat_sec,
+        dep_sec,
+        wo_sec.isel(t_dim=i) * 3600 * 24,
+        shading="auto",
+        cmap="seismic",
+    )
     plt.colorbar()
     plt.title(f"t={str(i)}: w-vel section (m/day)")
     plt.xlim([51, 60])
@@ -133,7 +151,13 @@ plt.rcParams["figure.figsize"] = 8, 8
 
 plt.subplot(1, 1, 1)
 
-plt.pcolormesh(lat_sec, dep_sec, wo_sec.mean(dim="t_dim") * 3600 * 24, shading="auto", cmap="seismic")
+plt.pcolormesh(
+    lat_sec,
+    dep_sec,
+    wo_sec.mean(dim="t_dim") * 3600 * 24,
+    shading="auto",
+    cmap="seismic",
+)
 plt.title("w-vel t-mean section")
 plt.xlim([51, 60])
 plt.ylim([0, 150])

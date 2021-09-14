@@ -57,7 +57,10 @@ def find_maxima(x, y, method="comp", **kwargs):
 
     if method == "cubic":
         if (type(x) != xr.DataArray) or (type(y) != xr.DataArray):
-            msg = "With method {} require input to be type: xr.DataArray" + " not {} and {}\n Reset method as comp"
+            msg = (
+                "With method {} require input to be type: xr.DataArray"
+                + " not {} and {}\n Reset method as comp"
+            )
             print(msg.format(method, type(x), type(y)))
             method = "comp"
 
@@ -97,7 +100,10 @@ def find_maxima(x, y, method="comp", **kwargs):
 
         # Convert x to float64 (assuming y is/similar to np.float64)
         if type(x.values[0]) == np.datetime64:  # convert to decimal sec since 1970
-            x_float = ((x.values - np.datetime64("1970-01-01T00:00:00")) / np.timedelta64(1, "s")).astype("float64")
+            x_float = (
+                (x.values - np.datetime64("1970-01-01T00:00:00"))
+                / np.timedelta64(1, "s")
+            ).astype("float64")
             # x_float = x.values.astype('float64')
             y_float = y.values.astype("float64")
             flag_dt64 = True
@@ -118,7 +124,9 @@ def find_maxima(x, y, method="comp", **kwargs):
         extr_x_vals = np.hstack(
             [x_float[0], extr_x_vals, x_float[-1]]
         )  # add buffer points to ensure extrema are within
-        ind = scipy.signal.argrelmax(f(extr_x_vals))[0]  # index that gives max(f) over extrema x locations
+        ind = scipy.signal.argrelmax(f(extr_x_vals))[
+            0
+        ]  # index that gives max(f) over extrema x locations
         max_vals = f(extr_x_vals[ind])
 
         # Convert back to datetime64 if appropriate
@@ -126,7 +134,9 @@ def find_maxima(x, y, method="comp", **kwargs):
         if flag_dt64:
             N = len(extr_x_vals[ind])
             x_out = [
-                np.datetime64("1970-01-01T00:00:00") + np.timedelta64(int(extr_x_vals[ind[i]]), "s") for i in range(N)
+                np.datetime64("1970-01-01T00:00:00")
+                + np.timedelta64(int(extr_x_vals[ind[i]]), "s")
+                for i in range(N)
             ]
         else:
             x_out = extr_x_vals[ind]
@@ -217,7 +227,9 @@ def doodson_x0_filter(elevation, ax=0):
     kern = kern / 30
 
     # Convolve input array with weights along the specified axis.
-    filtered = np.apply_along_axis(lambda m: np.convolve(m, kern, mode=1), axis=ax, arr=elevation)
+    filtered = np.apply_along_axis(
+        lambda m: np.convolve(m, kern, mode=1), axis=ax, arr=elevation
+    )
 
     # Pad out boundary areas with NaNs for given (arbitrary) axis.
     # DB: Is this the best way to do this?? Can put_along_axis be used instead

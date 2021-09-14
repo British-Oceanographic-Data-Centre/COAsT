@@ -66,7 +66,10 @@ class CLIMATOLOGY(COAsT):
                 month_length = ds[time_var_name].dt.days_in_month
                 grouped = month_length.groupby(frequency_str)
             else:
-                ds["clim_mean_ones_tmp"] = (time_dim_name, np.ones(ds[time_var_name].shape[0]))
+                ds["clim_mean_ones_tmp"] = (
+                    time_dim_name,
+                    np.ones(ds[time_var_name].shape[0]),
+                )
                 grouped = ds["clim_mean_ones_tmp"].groupby(frequency_str)
 
             weights = grouped / grouped.sum()

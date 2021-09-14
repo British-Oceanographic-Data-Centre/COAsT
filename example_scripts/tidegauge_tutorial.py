@@ -52,7 +52,9 @@ stats = tidegauge.basic_stats("interp_ssh", "sea_level")
 # Probability Score (CRPS). For this, we need to hand over the model object,
 # a model variable and an observed variable. We also give it a neighbourhood
 # radius in km (nh_radius). This may take a minute to run.
-crps = tidegauge.crps(nemo, model_var_name="ssh", obs_var_name="sea_level", nh_radius=20)
+crps = tidegauge.crps(
+    nemo, model_var_name="ssh", obs_var_name="sea_level", nh_radius=20
+)
 
 # Again, take a look inside crps.dataset to see some new variables. Similarly
 # to basic_stats, create_new_object can be set to false to save output to
@@ -172,8 +174,18 @@ extrema_cubc = tg.find_high_and_low_water("sea_level", method="cubic")
 # Plot to show the difference between maxima find methods for high tide example.
 plt.figure()
 plt.plot(tg.dataset.time, tg.dataset.sea_level, "k")
-plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker="o", c="g")
-plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker="+", c="g")
+plt.scatter(
+    extrema_comp.dataset.time_highs.values,
+    extrema_comp.dataset.sea_level_highs,
+    marker="o",
+    c="g",
+)
+plt.scatter(
+    extrema_cubc.dataset.time_highs.values,
+    extrema_cubc.dataset.sea_level_highs,
+    marker="+",
+    c="g",
+)
 plt.xlim([date_start, date_end])
 plt.ylim([7.75, 8.0])
 plt.legend(["Time Series", "Maxima by comparison", "Maxima by cubic spline"])
