@@ -23,7 +23,9 @@ PACKAGE = SimpleNamespace(
             "Programming Language :: Python :: 3.7",
         ],
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
-        "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
+        "project_urls": {
+            "documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"
+        },
         "install_requires": [
             "numpy>=1.16",
             "dask>=2",
@@ -57,7 +59,10 @@ def generate_conda(directory="conda"):
             "source": {
                 "url": f"https://pypi.io/packages/source/{PACKAGE.name[0]}/{PACKAGE.name}/{PACKAGE.name}-{PACKAGE.version}.tar.gz"
             },
-            "build": {"number": 0, "script": "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "},
+            "build": {
+                "number": 0,
+                "script": "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv ",
+            },
             "requirements": {"host": requirements, "run": requirements},
             "test": {"imports": ["coast"]},
             "about": {

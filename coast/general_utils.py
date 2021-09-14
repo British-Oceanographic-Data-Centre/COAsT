@@ -10,7 +10,9 @@ from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
 
-def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, radius: float, mask=None):
+def subset_indices_by_distance_BT(
+    longitude, latitude, centre_lon, centre_lat, radius: float, mask=None
+):
     """
     Returns the indices of points that lie within a specified radius (km) of
     central latitude and longitudes. This makes use of BallTree.query_radius.
@@ -89,7 +91,9 @@ def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, r
             return ind_x, ind_y
 
 
-def subset_indices_by_distance(longitude, latitude, centre_lon: float, centre_lat: float, radius: float):
+def subset_indices_by_distance(
+    longitude, latitude, centre_lon: float, centre_lat: float, radius: float
+):
     """
     This method returns a `tuple` of indices within the `radius` of the
     lon/lat point given by the user.
@@ -186,7 +190,10 @@ def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     dlon = (lon2 - lon1) / 2
 
     # Haversine function.
-    distance = xr.ufuncs.sin(dlat) ** 2 + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
+    distance = (
+        xr.ufuncs.sin(dlat) ** 2
+        + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
+    )
     distance = 2 * 6371.007176 * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
 
     return distance
@@ -265,7 +272,9 @@ def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat, mask=None):
         mod_lat = remove_indices_by_mask(mod_lat, mask)
         # If we are masking, we want to preserve the original indices so that
         # we can get them back at the end (since masked points are removed).
-        cc, rr = np.meshgrid(np.arange(0, original_shape[1]), np.arange(0, original_shape[0]))
+        cc, rr = np.meshgrid(
+            np.arange(0, original_shape[1]), np.arange(0, original_shape[0])
+        )
         cc = remove_indices_by_mask(cc, mask)
         rr = remove_indices_by_mask(rr, mask)
 
@@ -314,7 +323,7 @@ def dataarray_time_slice(data_array, date0, date1):
 
 
 def dayoweek(date: np.datetime64 = None):
-    """ Return the day of the week (3 letter str)"""
+    """Return the day of the week (3 letter str)"""
     if date == None:
         date = np.datetime64("now")
 

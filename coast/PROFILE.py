@@ -103,7 +103,12 @@ class PROFILE(COAsT):
         return: Indices corresponding to datapoints inside specified box
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude,
+            self.dataset.latitude,
+            lonbounds[0],
+            lonbounds[1],
+            latbounds[0],
+            latbounds[1],
         )
         return ind
 
@@ -138,15 +143,21 @@ class PROFILE(COAsT):
         profiles = self.dataset.isel(profile=profile_indices)
 
         if var_str is None:
-            fig, ax = plot_util.geo_scatter(profiles.longitude.values, profiles.latitude.values, s=5)
+            fig, ax = plot_util.geo_scatter(
+                profiles.longitude.values, profiles.latitude.values, s=5
+            )
         else:
             print(profiles)
             c = profiles[var_str].isel(level=depth_index)
-            fig, ax = plot_util.geo_scatter(profiles.longitude.values, profiles.latitude.values, c=c, s=5)
+            fig, ax = plot_util.geo_scatter(
+                profiles.longitude.values, profiles.latitude.values, c=c, s=5
+            )
 
         return fig, ax
 
-    def plot_ts_diagram(self, profile_index, var_t="potential_temperature", var_s="practical_salinity"):
+    def plot_ts_diagram(
+        self, profile_index, var_t="potential_temperature", var_s="practical_salinity"
+    ):
 
         profile = self.dataset.isel(profile=profile_index)
         temperature = profile[var_t].values
