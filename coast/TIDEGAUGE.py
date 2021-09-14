@@ -1,4 +1,4 @@
-from .INDEX import INDEXED
+"""WIP: TIDE Gauge class"""
 from .TIMESERIES import TIMESERIES
 import numpy as np
 import xarray as xr
@@ -77,11 +77,7 @@ class TIDEGAUGE(TIMESERIES):
         -> find_high_and_low_water(): Find maxima and minima of time series
     """
 
-    ##############################################################################
-    ###                ~ Initialisation and File Reading ~                     ###
-    ##############################################################################
-
-    def __init__(self, file_path=None, date_start=None, date_end=None, config: Union[Path, str] = None):
+    def __init__(self, file_path: str = None, date_start=None, date_end=None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
         reading GESLA data from a directory between two datetime objects.
@@ -107,14 +103,8 @@ class TIDEGAUGE(TIMESERIES):
         -------
         Self
         """
-        super().__init__(file_path, date_start, date_end)
-        print(f"Creating a new ..... {get_slug(self)}")
-
-        self.json_config = None
-        self.chunks = None
-        self.var_mapping = None
-        self.dim_mapping = None
-        self.set_config(config)
+        debug(f"Creating a new ..... {get_slug(self)}")
+        super().__init__(config)
 
         # If file list is supplied, read files from directory
         if file_path is None:
@@ -122,22 +112,9 @@ class TIDEGAUGE(TIMESERIES):
         else:
             self.dataset = self.read_gesla_to_xarray_v3(file_path,
                                                         date_start, date_end)
-            self.apply_var_and_dim_mappings_to_dataset()
+            self.apply_config_mappings()
 
         print(f"{get_slug(self)} initialised")
-        return
-
-    def set_config(self, config):
-        if config:
-            self.json_config = config_parser.ConfigParser(config)
-            if self.json_config.config.chunks:
-                self.chunks = literal_eval(self.json_config.config.chunks[0])
-
-            if self.json_config.config.dataset.dimension_map:
-                self.dim_mapping = self.json_config.config.dataset.dimension_map
-
-            if self.json_config.config.dataset.variable_map:
-                self.var_mapping = self.json_config.config.dataset.variable_map
 
     ############ tide gauge methods ##############################################
     @classmethod
@@ -159,7 +136,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         xarray.Dataset object.
         """
-        print(f"Reading \"{fn_gesla}\" as a GESLA file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        debug(f"Reading \"{fn_gesla}\" as a GESLA file with {get_slug(cls)}")  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_gesla_header_v3(fn_gesla)
             dataset = cls.read_gesla_data_v3(fn_gesla, date_start, date_end)
@@ -188,7 +165,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         dictionary of attributes
         """
-        print(f"Reading GESLA header from \"{fn_gesla}\"")
+        debug(f"Reading GESLA header from \"{fn_gesla}\"")
         fid = open(fn_gesla)
 
         # Read lines one by one (hopefully formatting is consistent)
@@ -218,7 +195,7 @@ class TIDEGAUGE(TIMESERIES):
         precision = float(fid.readline().split()[2])
         null_value = float(fid.readline().split()[3])
 
-        print(f"Read done, close file \"{fn_gesla}\"")
+        debug(f"Read done, close file \"{fn_gesla}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name': site_name, 'country': country,
@@ -249,7 +226,7 @@ class TIDEGAUGE(TIMESERIES):
         xarray.Dataset containing times, sealevel and quality control flags
         """
         # Initialise empty dataset and lists
-        print(f"Reading GESLA data from \"{fn_gesla}\"")
+        debug(f"Reading GESLA data from \"{fn_gesla}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -267,7 +244,7 @@ class TIDEGAUGE(TIMESERIES):
                         qc_flags.append(int(working_line[3]))
 
                 line_count = line_count + 1
-            print(f"Read done, close file \"{fn_gesla}\"")
+            debug(f"Read done, close file \"{fn_gesla}\"")
 
         # Convert time list to datetimes using pandas
         time = np.array(pd.to_datetime(time))
@@ -334,25 +311,12 @@ class TIDEGAUGE(TIMESERIES):
         tidegauge_list = []
         for file in file_to_read:
             try:
-                dataset = cls.read_gesla_to_xarray_v3(file, date_start,
-                                                      date_end)
-                new_object = TIDEGAUGE()
-                new_object.dataset = dataset
-                new_object.set_config(config)
-                new_object.apply_var_and_dim_mappings_to_dataset()
+                new_object = TIDEGAUGE(file, date_start, date_end, config)
                 tidegauge_list.append(new_object)
-            except:
-                # Problem with reading file: file TODO: add debug message here
-                pass
+            except FileNotFoundError as fne:
+                Warning(str(fne))
+
         return tidegauge_list
-
-    def apply_var_and_dim_mappings_to_dataset(self):
-        if self.dim_mapping is not None:
-            self.dataset = self.dataset.rename(self.dim_mapping)
-
-        if self.var_mapping is not None:
-            vars_to_keep = list(self.var_mapping.keys())
-            self.dataset = self.dataset[vars_to_keep].rename_vars(self.var_mapping)
 
     ############ tide table methods (HLW) #########################################
     @classmethod
@@ -382,16 +346,16 @@ class TIDEGAUGE(TIMESERIES):
         -------
         xarray.Dataset object.
         '''
-        print(f"Reading \"{fn_hlw}\" as a HLW file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        debug(f"Reading \"{fn_hlw}\" as a HLW file with {get_slug(cls)}")  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_HLW_header(fn_hlw)
             dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
             if header_dict['field'] == 'TZ:UT(GMT)/BST':
-                print('Read in as BST, stored as UTC')
+                debug('Read in as BST, stored as UTC')
             elif header_dict['field'] == 'TZ:GMTonly':
-                print('Read and store as GMT/UTC')
+                debug('Read and store as GMT/UTC')
             else:
-                print("Not expecting that timezone")
+                debug("Not expecting that timezone")
 
         except:
             raise Exception('Problem reading HLW file: ' + fn_hlw)
@@ -420,7 +384,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         dictionary of attributes
         """
-        print(f"Reading HLW header from \"{filnam}\" ")
+        debug(f"Reading HLW header from \"{filnam}\" ")
         fid = open(filnam)
 
         # Read lines one by one (hopefully formatting is consistent)
@@ -437,7 +401,7 @@ class TIDEGAUGE(TIMESERIES):
         datum = header[3]
         datum = datum.replace(' ', '')
 
-        print(f"Read done, close file \"{filnam}\"")
+        debug(f"Read done, close file \"{filnam}\"")
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {'site_name': site_name, 'field': field,
@@ -463,7 +427,7 @@ class TIDEGAUGE(TIMESERIES):
         """
         import datetime
         # Initialise empty dataset and lists
-        print(f"Reading HLW data from \"{filnam}\"")
+        debug(f"Reading HLW data from \"{filnam}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -490,7 +454,7 @@ class TIDEGAUGE(TIMESERIES):
                             time.append(np.datetime64(datetime_obj))
                         sea_level.append(float(working_line[2]))
                 line_count = line_count + 1
-            print(f"Read done, close file \"{filnam}\"")
+            debug(f"Read done, close file \"{filnam}\"")
 
         # Return only values between stated dates
         start_index = 0
@@ -499,15 +463,15 @@ class TIDEGAUGE(TIMESERIES):
             # start_index = general_utils.nearest_datetime_ind(time, date_start)
             date_start = np.datetime64(date_start)
             start_index = np.argmax(time >= date_start)
-            print(f"date_start: {date_start}. start_index: {start_index}")
+            debug(f"date_start: {date_start}. start_index: {start_index}")
         if date_end is not None:
             # end_index = general_utils.nearest_datetime_ind(time, date_end)
             date_end = np.datetime64(date_end)
             end_index = np.argmax(time > date_end)
-            print(f"date_end: {date_end}. end_index: {end_index}")
+            debug(f"date_end: {date_end}. end_index: {end_index}")
         time = time[start_index:end_index]
         sea_level = sea_level[start_index:end_index]
-        print(f"sea_level: {sea_level}")
+        debug(f"sea_level: {sea_level}")
         # Assign arrays to Dataset
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
         dataset = dataset.assign_coords(time=('time', time))
@@ -519,17 +483,17 @@ class TIDEGAUGE(TIMESERIES):
         Print out the values in the xarray
         Displays with specified timezone
         """
-        # print(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
+        # debug(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
         if timezone == None:
             for i in range(len(self.dataset.sea_level)):
-                #               print('time:', self.dataset.time[i].values,
-                print('time (UTC):', general_utils.dayoweek(self.dataset.time[i].values),
+                #               debug('time:', self.dataset.time[i].values,
+                debug('time (UTC):', general_utils.dayoweek(self.dataset.time[i].values),
                       np.datetime_as_string(self.dataset.time[i], unit='m'),
                       'height:', self.dataset.sea_level[i].values, 'm')
         else:  # display timezone aware times
             for i in range(len(self.dataset.sea_level)):
-                #               print('time:', self.dataset.time[i].values,
-                print('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values),
+                #               debug('time:', self.dataset.time[i].values,
+                debug('time (' + timezone + '):', general_utils.dayoweek(self.dataset.time[i].values),
                       np.datetime_as_string(self.dataset.time[i], unit='m', timezone=pytz.timezone(timezone)),
                       'height:', self.dataset.sea_level[i].values, 'm')
 
@@ -561,11 +525,11 @@ class TIDEGAUGE(TIMESERIES):
         """
         # Ensure the date objects are datetime
         if type(time_guess) is not np.datetime64:
-            print('Convert date to np.datetime64')
+            debug('Convert date to np.datetime64')
             time_guess = np.datetime64(time_guess)
 
         if time_guess == None:
-            print("Use today's date")
+            debug("Use today's date")
             time_guess = np.datetime64('now')
 
         if method == 'window':
@@ -589,8 +553,8 @@ class TIDEGAUGE(TIMESERIES):
             index = np.argsort(dt).values
             if winsize is not None:  # if search window trucation exists
                 if np.timedelta64(dt[index[0]].values, 'm').astype('int') <= 60 * winsize:  # compare in minutes
-                    print(f"dt:{np.timedelta64(dt[index[0]].values, 'm').astype('int')}")
-                    print(f"winsize:{winsize}")
+                    debug(f"dt:{np.timedelta64(dt[index[0]].values, 'm').astype('int')}")
+                    debug(f"winsize:{winsize}")
                     return self.dataset[measure_var][index[0]]
                 else:
                     # return a NaN in an xr.Dataset
@@ -613,7 +577,7 @@ class TIDEGAUGE(TIMESERIES):
             return nearest_2[nearest_2.argmax()]
 
         else:
-            print('Not expecting that option / method')
+            debug('Not expecting that option / method')
 
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
@@ -657,7 +621,7 @@ class TIDEGAUGE(TIMESERIES):
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
         except ValueError:
-            print(f"Failed request for station {cls.stationId}")
+            debug(f"Failed request for station {cls.stationId}")
             return
 
         try:
@@ -670,7 +634,7 @@ class TIDEGAUGE(TIMESERIES):
             # Define url call with parameter from station info
             htmlcall_stationId = header_dict['items']['measures']['@id'] + '/readings?'
         except:
-            print(f"problem defining the parameter to read")
+            debug(f"problem defining the parameter to read")
 
         # %% Construct API request for data recovery
         info("load station data")
@@ -678,7 +642,7 @@ class TIDEGAUGE(TIMESERIES):
             info(f"GETting ndays= {cls.ndays} of data")
             url = htmlcall_stationId + 'since=' + \
                   (np.datetime64('now') - np.timedelta64(ndays, 'D')).item().strftime('%Y-%m-%dT%H:%M:%SZ')
-            print(f"url request: {url}")
+            debug(f"url request: {url}")
         else:
             # Check date_start and date_end are timetime objects
             if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
@@ -686,18 +650,18 @@ class TIDEGAUGE(TIMESERIES):
                 startdate = cls.date_start.item().strftime('%Y-%m-%d')
                 enddate = cls.date_end.item().strftime('%Y-%m-%d')
                 url = htmlcall_stationId + 'startdate=' + startdate + '&enddate=' + enddate
-                print(f"url request: {url}")
+                debug(f"url request: {url}")
 
             else:
-                print('Expecting date_start and date_end as datetime objects')
+                debug('Expecting date_start and date_end as datetime objects')
 
         # %% Get the data
         try:
             request_raw = requests.get(url)
             request = json.loads(request_raw.content)
-            print(f"EA API request: {request_raw.text}")
+            debug(f"EA API request: {request_raw.text}")
         except ValueError:
-            print(f"Failed request: {request_raw}")
+            debug(f"Failed request: {request_raw}")
             return
 
         # %% Process timeseries data
@@ -712,8 +676,8 @@ class TIDEGAUGE(TIMESERIES):
         dataset['sea_level'] = xr.DataArray(sea_level, dims=['time'])
         dataset = dataset.assign_coords(time=('time', time))
         dataset.attrs = header_dict
-        print(f"EA API request headers: {header_dict}")
-        # print(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
+        debug(f"EA API request headers: {header_dict}")
+        # debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
 
         # Assign local dataset to object-scope dataset
         return dataset
@@ -761,7 +725,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         xarray.Dataset object.
         """
-        print(f"Reading \"{fn_bodc}\" as a BODC file with {get_slug(cls)}")  # TODO Maybe include start/end dates
+        debug(f"Reading \"{fn_bodc}\" as a BODC file with {get_slug(cls)}")  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_bodc_header(fn_bodc)
             dataset = cls.read_bodc_data(fn_bodc, date_start, date_end)
@@ -790,7 +754,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         dictionary of attributes
         """
-        print(f"Reading BODC header from \"{fn_bodc}\"")
+        debug(f"Reading BODC header from \"{fn_bodc}\"")
         fid = open(fn_bodc)
 
         # Read lines one by one (hopefully formatting is consistent)
@@ -803,12 +767,12 @@ class TIDEGAUGE(TIMESERIES):
                 key = key.lower().strip().replace(' ', '_')
                 val = val.lower().strip().replace(' ', '_')
                 header_dict[key] = val
-                print(f"Header key: {key} and value: {val}")
+                debug(f"Header key: {key} and value: {val}")
             else:
-                # print('No colon')
+                # debug('No colon')
                 header = False
         header_dict['site_name'] = header_dict['site']  # duplicate as standard name
-        print(f"Read done, close file \"{fn_bodc}\"")
+        debug(f"Read done, close file \"{fn_bodc}\"")
         fid.close()
 
         header_dict['latitude'] = float(header_dict['latitude'])
@@ -834,7 +798,7 @@ class TIDEGAUGE(TIMESERIES):
         xarray.Dataset containing times, sealevel and quality control flags
         """
         # Initialise empty dataset and lists
-        print(f"Reading BODC data from \"{fn_bodc}\"")
+        debug(f"Reading BODC data from \"{fn_bodc}\"")
         dataset = xr.Dataset()
         time = []
         sea_level = []
@@ -862,16 +826,16 @@ class TIDEGAUGE(TIMESERIES):
                             residual_str = residual_str.replace(qc_flag_str, '')
                         else:
                             qc_flag_str = ''
-                        # print(line_count-header_length, residual_str, float(residual_str))
-                        # print(working_line, sea_level_str, qc_flag_str)
+                        # debug(line_count-header_length, residual_str, float(residual_str))
+                        # debug(working_line, sea_level_str, qc_flag_str)
                         time.append(time_str)
                         qc_flags.append(qc_flag_str)
                         sea_level.append(float(sea_level_str))
                         residual.append(float(residual_str))
                     except:
-                        print(f"{file} probably empty line at end. Breaks split()")
+                        debug(f"{file} probably empty line at end. Breaks split()")
                 line_count = line_count + 1
-            print(f"Read done, close file \"{fn_bodc}\"")
+            debug(f"Read done, close file \"{fn_bodc}\"")
 
         # Convert time list to datetimes using pandas
         time = np.array(pd.to_datetime(time))
@@ -917,7 +881,7 @@ class TIDEGAUGE(TIMESERIES):
 
         """
 
-        print(f"Plotting tide gauge locations for {get_slug(self)}")
+        debug(f"Plotting tide gauge locations for {get_slug(self)}")
 
         title = 'Location: ' + self.dataset.attrs['site_name']
         X = self.dataset.longitude
@@ -939,7 +903,7 @@ class TIDEGAUGE(TIMESERIES):
 
         """
 
-        print(f"Plotting tide gauge locations for {get_slug(cls)}")
+        debug(f"Plotting tide gauge locations for {get_slug(cls)}")
 
         X = []
         Y = []
@@ -976,7 +940,7 @@ class TIDEGAUGE(TIMESERIES):
         -------
         matplotlib figure and axes objects
         """
-        print(f"Plotting timeseries for {get_slug(self)}")
+        debug(f"Plotting timeseries for {get_slug(self)}")
         fig = plt.figure(figsize=(10, 10))
         # Check input is a list (even for one variable)
         if type(var_list) is str:

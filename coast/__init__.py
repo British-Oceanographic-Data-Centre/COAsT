@@ -4,9 +4,14 @@ from .INDEX import INDEXED
 from .NEMO import NEMO
 from .TRANSECT import Transect, Transect_f, Transect_t
 from .TRACK import TRACK
+from .LAGRANGIAN import LAGRANGIAN
+from .OCEANPARCELS import OCEANPARCELS
+from .GLIDER import GLIDER
+from .ALTIMETRY import ALTIMETRY
 from .OBSERVATION import OBSERVATION
 from .DISTRIBUTION import DISTRIBUTION
 from .INTERNALTIDE import INTERNALTIDE
+from .TIMESERIES import TIMESERIES
 from .TIDEGAUGE import TIDEGAUGE
 from .PROFILE import PROFILE
 from .CLIMATOLOGY import CLIMATOLOGY

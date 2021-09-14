@@ -1,5 +1,5 @@
+"""WIP: PROFILE class"""
 from .INDEX import INDEXED
-from .config import config_parser, config_structure
 import numpy as np
 import xarray as xr
 from . import general_utils, plot_util, crps_util, COAsT
@@ -9,7 +9,6 @@ import datetime
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
-from ast import literal_eval
 
 
 class PROFILE(INDEXED):
@@ -25,44 +24,37 @@ class PROFILE(INDEXED):
                      files.
     """
 
-    def __init__(self, file=None, multiple=False, config: Union[Path, str] = None):
-        """ Initialization and file reading."""
+    def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
+        """ Initialization and file reading.
 
-        print(f"PROFILE Creating a new {get_slug(self)}")
+            Args:
+                file_path (str): path to data file
+                multiple (boolean): True if reading multiple files otherwise False
+                config (Union[Path, str]): path to json config file.
+        """
+        debug(f"Creating a new {get_slug(self)}")
+        super().__init__(config)
 
-        self.dataset = None
-        self.chunks = None
-        self.var_mapping = None
-        self.dim_mapping = None
-
-        if config:
-            self.json_config = config_parser.ConfigParser(config)
-            if self.json_config.config.chunks:
-                self.chunks = literal_eval(self.json_config.config.chunks[0])
-
-            if self.json_config.config.dataset.dimension_map:
-                self.dim_mapping = self.json_config.config.dataset.dimension_map
-
-            if self.json_config.config.dataset.variable_map:
-                self.var_mapping = self.json_config.config.dataset.variable_map
-
-        if file is None:
+        if file_path is None:
             warn(
                 "Object created but no file or directory specified: \n"
                 "{0}".format(str(self)),
                 UserWarning
             )
         else:
-            self.read_EN4(file, self.chunks, multiple)
-            self.apply_var_and_dim_mappings_to_dataset()
+            self.read_EN4(file_path, self.chunks, multiple)
+            self.apply_config_mappings()
 
         print(f"{get_slug(self)} initialised")
 
-    def read_EN4(self, fn_en4, chunks={}, multiple=False):
-        """Reads a single or multiple EN4 netCDF files into the COAsT profile data structure."""
+    def read_EN4(self, fn_en4, chunks: dict = {}, multiple=False):
+        """ Reads a single or multiple EN4 netCDF files into the COAsT profile data structure.
 
-        print("PROFILE read_EN4")
-
+            Args:
+                fn_en4 (str): path to data file
+                chunks (dict): chunks
+                multiple (boolean): True if reading multiple files otherwise False
+        """
         if not multiple:
             self.dataset = xr.open_dataset(fn_en4, chunks=chunks)
         else:
@@ -91,20 +83,6 @@ class PROFILE(INDEXED):
                     self.dataset = data_tmp
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim='N_PROF')
-
-    def apply_var_and_dim_mappings_to_dataset(self):
-
-        self.dataset = self.dataset.set_coords(['LATITUDE', 'LONGITUDE', 'JULD'])
-
-        if self.dim_mapping is not None:
-            self.dataset = self.dataset.rename(self.dim_mapping)
-
-        if self.var_mapping is not None:
-            vars_to_keep = list(self.var_mapping.keys())
-            self.dataset = self.dataset[vars_to_keep].rename_vars(self.var_mapping)
-
-    def __getitem__(self, name: str):
-        return self.dataset[name]
 
     """======================= Manipulate ======================="""
 

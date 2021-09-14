@@ -1,5 +1,5 @@
-from .INDEX import INDEXED
-from .config import config_parser, config_structure
+"""WIP: ALTIMETRY class"""
+from .TRACK import TRACK
 import numpy as np
 import xarray as xr
 import sklearn.metrics as metrics
@@ -10,7 +10,7 @@ from pathlib import Path
 from ast import literal_eval
 
 
-class ALTIMETRY(INDEXED):
+class ALTIMETRY(TRACK):
     """
     An object for reading, storing and manipulating altimetry data.
     Currently the object contains functionality for reading altimetry netCDF
@@ -53,55 +53,38 @@ class ALTIMETRY(INDEXED):
 
     """
 
-    def __init__(self, file=None, multiple=False, config: Union[Path, str] = None):
+    def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
+        """ Initialization and file reading.
 
-        """ Initialization and file reading."""
+            Args:
+                file_path (str): path to data file
+                multiple (boolean): True if reading multiple files otherwise False
+                config (Union[Path, str]): path to json config file.
+            """
+        debug(f"Creating a new {get_slug(self)}")
+        super().__init__(config)
 
-        print(f"ALTIMETRY Creating a new {get_slug(self)}")
-
-        self.dataset = None
-        self.chunks = None
-        self.var_mapping = None
-        self.dim_mapping = None
-
-        if config:
-            self.json_config = config_parser.ConfigParser(config)
-            if self.json_config.config.chunks:
-                self.chunks = literal_eval(self.json_config.config.chunks[0])
-
-            if self.json_config.config.dataset.dimension_map:
-                self.dim_mapping = self.json_config.config.dataset.dimension_map
-
-            if self.json_config.config.dataset.variable_map:
-                self.var_mapping = self.json_config.config.dataset.variable_map
-
-        if file is None:
+        if file_path is None:
             warn(
                 "Object created but no file or directory specified: \n"
                 "{0}".format(str(self)),
                 UserWarning
             )
         else:
-            self.read_cmems(file, self.chunks, multiple)
-            self.apply_var_and_dim_mappings_to_dataset()
+            self.read_cmems(file_path, multiple)
+            self.apply_config_mappings()
 
         print(f"{get_slug(self)} initialised")
 
-    def read_cmems(self, file, chunks, multiple):
-        """Read file."""
-        self.load(file, chunks, multiple)
+    def read_cmems(self, file_path: str, multiple):
+        """Read file.
+
+            Args:
+                file_path (str): path to data file
+                multiple (boolean): True if reading multiple files otherwise False
+        """
+        self.load(file_path, self.chunks, multiple)
         # self.dataset.attrs = {}
-
-    def apply_var_and_dim_mappings_to_dataset(self):
-        # rename dimensions and variables (keeps only those variables that are in the mappings)
-
-        if self.dim_mapping is not None:
-            self.dataset = self.dataset.rename(self.dim_mapping)
-
-        if self.var_mapping is not None:
-            vars_to_keep = list(self.var_mapping.keys())
-            self.dataset = self.dataset[vars_to_keep].rename_vars(self.var_mapping)
-            #self.dataset = self.dataset.rename_vars(self.var_mapping)
 
     def load(self, file_or_dir, chunks: dict = None, multiple=False):
         """
@@ -113,9 +96,6 @@ class ALTIMETRY(INDEXED):
             multiple (bool)   : If true, load in multiple files from directory.
                                 If false load a single file [default False]
         """
-
-        print("ALTIMETRY load")
-
         if multiple:
             self.load_multiple(file_or_dir, chunks)
         else:
@@ -126,12 +106,10 @@ class ALTIMETRY(INDEXED):
 
     def load_single(self, file, chunks: dict = None):
         """ Loads a single file into object's dataset variable. """
-        print(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
         """ Loads multiple files from directory into dataset variable. """
-        print(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True,
             combine="by_coords")  # , compat='override')
