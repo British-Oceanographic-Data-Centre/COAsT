@@ -130,9 +130,7 @@ class TIDEGAUGE:
         -------
         xarray.Dataset object.
         """
-        debug(
-            f'Reading "{fn_gesla}" as a GESLA file with {get_slug(cls)}'
-        )  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_gesla_header_v3(fn_gesla)
             dataset = cls.read_gesla_data_v3(fn_gesla, date_start, date_end)
@@ -210,9 +208,7 @@ class TIDEGAUGE:
         return header_dict
 
     @staticmethod
-    def read_gesla_data_v3(
-        fn_gesla, date_start=None, date_end=None, header_length: int = 32
-    ):
+    def read_gesla_data_v3(fn_gesla, date_start=None, date_end=None, header_length: int = 32):
         """
         Reads observation data from a GESLA file (format version 3.0).
 
@@ -349,9 +345,7 @@ class TIDEGAUGE:
         -------
         xarray.Dataset object.
         """
-        debug(
-            f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}'
-        )  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_HLW_header(fn_hlw)
             dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
@@ -418,9 +412,7 @@ class TIDEGAUGE:
         return header_dict
 
     @staticmethod
-    def read_HLW_data(
-        filnam, header_dict, date_start=None, date_end=None, header_length: int = 1
-    ):
+    def read_HLW_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -458,9 +450,7 @@ class TIDEGAUGE:
                     if working_line[0] != "#":
                         time_str = working_line[0] + " " + working_line[1]
                         # Read time as datetime.datetime because it can handle local timezone easily AND the unusual date format
-                        datetime_obj = datetime.datetime.strptime(
-                            time_str, "%d/%m/%Y %H:%M"
-                        )
+                        datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
                         if localtime_flag == True:
                             time.append(np.datetime64(datetime_obj.astimezone()))
                         else:
@@ -514,9 +504,7 @@ class TIDEGAUGE:
                 print(
                     "time (" + timezone + "):",
                     general_utils.dayoweek(self.dataset.time[i].values),
-                    np.datetime_as_string(
-                        self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)
-                    ),
+                    np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
                     self.dataset.sea_level[i].values,
                     "m",
@@ -581,10 +569,7 @@ class TIDEGAUGE:
             dt = np.abs(self.dataset[time_var] - time_guess)
             index = np.argsort(dt).values
             if winsize is not None:  # if search window trucation exists
-                if (
-                    np.timedelta64(dt[index[0]].values, "m").astype("int")
-                    <= 60 * winsize
-                ):  # compare in minutes
+                if np.timedelta64(dt[index[0]].values, "m").astype("int") <= 60 * winsize:  # compare in minutes
                     debug(f"dt:{np.timedelta64(dt[index[0]].values,'m').astype('int')}")
                     debug(f"winsize:{winsize}")
                     return self.dataset[measure_var][index[0]]
@@ -593,25 +578,19 @@ class TIDEGAUGE:
                     # The rather odd trailing zero is to remove the array layer
                     # on both time and measurement, and to match the other
                     # alternative for a return object
-                    return xr.DataArray(
-                        [np.NaN], dims=(time_var), coords={time_var: [time_guess]}
-                    )[0]
+                    return xr.DataArray([np.NaN], dims=(time_var), coords={time_var: [time_guess]})[0]
             else:  # give the closest without window search truncation
                 return self.dataset[measure_var][index[0]]
 
         elif method == "nearest_2":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            nearest_2 = self.dataset[measure_var][
-                index[0 : 1 + 1]
-            ]  # , self.dataset.time[index[0:1+1]]
+            nearest_2 = self.dataset[measure_var][index[0 : 1 + 1]]  # , self.dataset.time[index[0:1+1]]
             return nearest_2
 
         elif method == "nearest_HW":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
             # return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
-            nearest_2 = self.dataset[measure_var][
-                index[0 : 1 + 1]
-            ]  # , self.dataset.time[index[0:1+1]]
+            nearest_2 = self.dataset[measure_var][index[0 : 1 + 1]]  # , self.dataset.time[index[0:1+1]]
             return nearest_2[nearest_2.argmax()]
 
         else:
@@ -656,11 +635,7 @@ class TIDEGAUGE:
 
         #%% Obtain and process header information
         info("load station info")
-        url = (
-            "https://environment.data.gov.uk/flood-monitoring/id/stations/"
-            + cls.stationId
-            + ".json"
-        )
+        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.stationId + ".json"
         try:
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
@@ -687,26 +662,16 @@ class TIDEGAUGE:
             url = (
                 htmlcall_stationId
                 + "since="
-                + (np.datetime64("now") - np.timedelta64(ndays, "D"))
-                .item()
-                .strftime("%Y-%m-%dT%H:%M:%SZ")
+                + (np.datetime64("now") - np.timedelta64(ndays, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
             )
             debug(f"url request: {url}")
         else:
             # Check date_start and date_end are timetime objects
-            if (type(cls.date_start) is np.datetime64) & (
-                type(cls.date_end) is np.datetime64
-            ):
+            if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime("%Y-%m-%d")
                 enddate = cls.date_end.item().strftime("%Y-%m-%d")
-                url = (
-                    htmlcall_stationId
-                    + "startdate="
-                    + startdate
-                    + "&enddate="
-                    + enddate
-                )
+                url = htmlcall_stationId + "startdate=" + startdate + "&enddate=" + enddate
                 debug(f"url request: {url}")
 
             else:
@@ -726,9 +691,7 @@ class TIDEGAUGE:
         time = []
         sea_level = []
         nvals = len(request["items"])
-        time = np.array(
-            [np.datetime64(request["items"][i]["dateTime"]) for i in range(nvals)]
-        )
+        time = np.array([np.datetime64(request["items"][i]["dateTime"]) for i in range(nvals)])
         sea_level = np.array([request["items"][i]["value"] for i in range(nvals)])
 
         #%% Assign arrays to Dataset
@@ -784,9 +747,7 @@ class TIDEGAUGE:
         -------
         xarray.Dataset object.
         """
-        debug(
-            f'Reading "{fn_bodc}" as a BODC file with {get_slug(cls)}'
-        )  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_bodc}" as a BODC file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
             header_dict = cls.read_bodc_header(fn_bodc)
             dataset = cls.read_bodc_data(fn_bodc, date_start, date_end)
@@ -842,9 +803,7 @@ class TIDEGAUGE:
         return header_dict
 
     @staticmethod
-    def read_bodc_data(
-        fn_bodc, date_start=None, date_end=None, header_length: int = 11
-    ):
+    def read_bodc_data(fn_bodc, date_start=None, date_end=None, header_length: int = 11):
         """
         Reads observation data from a BODC file.
 
@@ -874,9 +833,7 @@ class TIDEGAUGE:
                 if line_count > header_length:
                     try:
                         working_line = line.split()
-                        time_str = (
-                            working_line[1] + " " + working_line[2]
-                        )  # Empty lines cause trouble
+                        time_str = working_line[1] + " " + working_line[2]  # Empty lines cause trouble
                         sea_level_str = working_line[3]
                         residual_str = working_line[4]
                         if sea_level_str[-1].isalpha():
@@ -988,9 +945,7 @@ class TIDEGAUGE:
         ax.set_ylim((min(Y) - 10, max(Y) + 10))
         return fig, ax
 
-    def plot_timeseries(
-        self, var_list=["sea_level"], date_start=None, date_end=None, plot_line=False
-    ):
+    def plot_timeseries(self, var_list=["sea_level"], date_start=None, date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
@@ -1046,9 +1001,7 @@ class TIDEGAUGE:
     ###                ~        Model Comparison         ~                     ###
     ##############################################################################
 
-    def obs_operator(
-        self, model, mod_var_name: str, time_interp="nearest", model_mask=None
-    ):
+    def obs_operator(self, model, mod_var_name: str, time_interp="nearest", model_mask=None):
         """
         Interpolates a model array (specified using a model object and variable
         string) to TIDEGAUGE location and times. Takes the nearest model grid
@@ -1084,9 +1037,7 @@ class TIDEGAUGE:
         obs_lon = np.array([self.dataset.longitude])
         obs_lat = np.array([self.dataset.latitude])
 
-        interpolated = model.interpolate_in_space(
-            mod_var_array, obs_lon, obs_lat, mask=model_mask
-        )
+        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, obs_lat, mask=model_mask)
 
         interpolated = model.interpolate_in_time(interpolated, self.dataset.time)
 
@@ -1164,9 +1115,7 @@ class TIDEGAUGE:
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return xr.DataArray(
-            diff, dims="time", name="error", coords={"time": self.dataset.time}
-        )
+        return xr.DataArray(diff, dims="time", name="error", coords={"time": self.dataset.time})
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Absolute difference two variables defined by var_str0 and var_str1
@@ -1215,9 +1164,7 @@ class TIDEGAUGE:
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanstd(var)
 
-    def time_correlation(
-        self, var_str0, var_str1, date0=None, date1=None, method="pearson"
-    ):
+    def time_correlation(self, var_str0, var_str1, date0=None, date1=None, method="pearson"):
         """Time correlation between two variables defined by var_str0,
         var_str1 between dates date0 and date1. Uses Pandas corr()."""
         var0 = self.dataset[var_str0]
@@ -1245,9 +1192,7 @@ class TIDEGAUGE:
         cov = pdvar.cov()
         return cov.iloc[0, 1]
 
-    def basic_stats(
-        self, var_str0, var_str1, date0=None, date1=None, create_new_object=True
-    ):
+    def basic_stats(self, var_str0, var_str1, date0=None, date1=None, create_new_object=True):
         """Calculates a selection of statistics for two variables defined by
         var_str0 and var_str1, between dates date0 and date1. This will return
         their difference, absolute difference, mean absolute error, root mean

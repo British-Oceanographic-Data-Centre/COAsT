@@ -23,9 +23,7 @@ PACKAGE = SimpleNamespace(
             "Programming Language :: Python :: 3.7",
         ],
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
-        "project_urls": {
-            "documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"
-        },
+        "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
         "install_requires": [
             "numpy>=1.16",
             "dask>=2",

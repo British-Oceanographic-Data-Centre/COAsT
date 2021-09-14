@@ -36,9 +36,7 @@ class DISTRIBUTION:
     def set_x_bounds(self):
         """Calculate x bounds for CDF plotting"""
         # Is input a single value (st. dev == 0)
-        single_value = (
-            True if self.sigma == 0 else False
-        )  # TODO This could just be: single_value = self.sigma == 0
+        single_value = True if self.sigma == 0 else False  # TODO This could just be: single_value = self.sigma == 0
         if single_value:
             self.cdf_type = "empirical"
 
@@ -71,16 +69,12 @@ class DISTRIBUTION:
             y = stats_util.empirical_distribution(x, self.sample)
 
         else:
-            error(
-                f"CDF type for {get_slug(self)} is , which is not acceptable, raising exception!"
-            )
+            error(f"CDF type for {get_slug(self)} is , which is not acceptable, raising exception!")
 
         return x, y
 
     @staticmethod
-    def normal_distribution(
-        mu: float = 0, sigma: float = 1, x: np.ndarray = None, n_pts: int = 1000
-    ):
+    def normal_distribution(mu: float = 0, sigma: float = 1, x: np.ndarray = None, n_pts: int = 1000):
         """Generates a discrete normal distribution.
 
         Keyword arguments:

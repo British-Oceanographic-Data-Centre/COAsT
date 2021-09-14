@@ -93,9 +93,7 @@ class ALTIMETRY(COAsT):
         lat = self.dataset.latitude
         lon[lon > 180] = lon[lon > 180] - 360
         lon[lon < -180] = lon[lon < -180] + 360
-        ff1 = (lon > lonbounds[0]).astype(
-            int
-        )  # FIXME This should fail? We can just treat bools as ints here...
+        ff1 = (lon > lonbounds[0]).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
         ff2 = (lon < lonbounds[1]).astype(int)
         ff3 = (lat > latbounds[0]).astype(int)
         ff4 = (lat < latbounds[1]).astype(int)
@@ -116,9 +114,7 @@ class ALTIMETRY(COAsT):
             color_var = None
             title = "Altimetry observation locations"
         info("Drawing a quick plot...")
-        fig, ax = plot_util.geo_scatter(
-            self.dataset.longitude, self.dataset.latitude, c=color_var, title=title
-        )
+        fig, ax = plot_util.geo_scatter(self.dataset.longitude, self.dataset.latitude, c=color_var, title=title)
         info("Plot ready, displaying!")
         return fig, ax
 
@@ -126,9 +122,7 @@ class ALTIMETRY(COAsT):
     ###                ~        Model Comparison         ~                     ###
     ##############################################################################
 
-    def obs_operator(
-        self, model, mod_var_name: str, time_interp="nearest", model_mask=None
-    ):
+    def obs_operator(self, model, mod_var_name: str, time_interp="nearest", model_mask=None):
         """
         For interpolating a model dataarray onto altimetry locations and times.
 
@@ -158,9 +152,7 @@ class ALTIMETRY(COAsT):
         Adds a DataArray to self.dataset, containing interpolated values.
         """
 
-        debug(
-            f'Interpolating {get_slug(model)} "{mod_var_name}" with time_interp "{time_interp}"'
-        )
+        debug(f'Interpolating {get_slug(model)} "{mod_var_name}" with time_interp "{time_interp}"')
 
         # Determine mask
         if model_mask == "bathy":
@@ -184,9 +176,7 @@ class ALTIMETRY(COAsT):
 
         # Interpolate in time if t_dim exists in model array
         if "t_dim" in mod_var.dims:
-            interpolated = model.interpolate_in_time(
-                interpolated, self.dataset.time, interp_method=time_interp
-            )
+            interpolated = model.interpolate_in_time(interpolated, self.dataset.time, interp_method=time_interp)
             # Take diagonal from interpolated array (which contains too many points)
             diag_len = interpolated.shape[0]
             diag_ind = xr.DataArray(np.arange(0, diag_len))
@@ -266,9 +256,7 @@ class ALTIMETRY(COAsT):
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return xr.DataArray(
-            diff, dims="t_dim", name="error", coords={"time": self.dataset.time}
-        )
+        return xr.DataArray(diff, dims="t_dim", name="error", coords={"time": self.dataset.time})
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Absolute difference two variables defined by var_str0 and var_str1
@@ -317,9 +305,7 @@ class ALTIMETRY(COAsT):
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanstd(var)
 
-    def time_correlation(
-        self, var_str0, var_str1, date0=None, date1=None, method="pearson"
-    ):
+    def time_correlation(self, var_str0, var_str1, date0=None, date1=None, method="pearson"):
         """Time correlation between two variables defined by var_str0,
         var_str1 between dates date0 and date1. Uses Pandas corr()."""
         var0 = self.dataset[var_str0]
@@ -347,9 +333,7 @@ class ALTIMETRY(COAsT):
         cov = pdvar.cov()
         return cov.iloc[0, 1]
 
-    def basic_stats(
-        self, var_str0, var_str1, date0=None, date1=None, create_new_object=True
-    ):
+    def basic_stats(self, var_str0, var_str1, date0=None, date1=None, create_new_object=True):
         """Calculates a selection of statistics for two variables defined by
         var_str0 and var_str1, between dates date0 and date1. This will return
         their difference, absolute difference, mean absolute error, root mean

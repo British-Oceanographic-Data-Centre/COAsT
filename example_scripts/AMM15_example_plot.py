@@ -25,9 +25,7 @@ dom_nam = "/projectsa/NEMO/gmaya/AMM15_GRID/amm15.mesh_mask.cs3x.nc"
 
 chunks = {"x": 10, "y": 10, "time_counter": 10}
 
-sci_t = coast.NEMO(
-    dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks
-)
+sci_t = coast.NEMO(dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks)
 
 # create an empty w-grid object, to store stratification
 sci_w = coast.NEMO(fn_domain=dom_nam, grid_ref="w-grid", chunks=chunks)
@@ -41,13 +39,9 @@ print("* Loaded ", config, " data")
 # Pick out a North Sea subdomain
 print("* Extract North Sea subdomain")
 ind_sci = sci_t.subset_indices([51, -4], [62, 15])
-sci_nwes_t = sci_t.isel(
-    y_dim=ind_sci[0], x_dim=ind_sci[1]
-)  # nwes = northwest europe shelf
+sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
 ind_sci = sci_w.subset_indices([51, -4], [62, 15])
-sci_nwes_w = sci_w.isel(
-    y_dim=ind_sci[0], x_dim=ind_sci[1]
-)  # nwes = northwest europe shelf
+sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
 
 #%% Apply masks to temperature and salinity
 if config == "AMM15":
