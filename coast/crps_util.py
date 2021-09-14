@@ -172,7 +172,11 @@ def crps_sonf_fixed(
 
     # Get model neighbourhood subset using specified method
     subset_ind = general_utils.subset_indices_by_distance(
-        mod_array.longitude.values, mod_array.latitude.values, obs_lon, obs_lat, nh_radius
+        mod_array.longitude.values,
+        mod_array.latitude.values,
+        obs_lon,
+        obs_lat,
+        nh_radius,
     )
     mod_subset = mod_array.isel(y_dim=subset_ind[0], x_dim=subset_ind[1])
     mod_subset = mod_subset.swap_dims({"t_dim": "time"})
@@ -185,7 +189,9 @@ def crps_sonf_fixed(
         for ii in neighbourhood_indices:
 
             mod_subset_time = mod_subset.interp(
-                time=obs_time[ii], method=time_interp, kwargs={"fill_value": "extrapolate"}
+                time=obs_time[ii],
+                method=time_interp,
+                kwargs={"fill_value": "extrapolate"},
             )
 
             # Check if neighbourhood contains a land value (TODO:mask)
@@ -202,7 +208,16 @@ def crps_sonf_fixed(
     return crps_list, n_model_pts, contains_land
 
 
-def crps_sonf_moving(mod_array, obs_lon, obs_lat, obs_var, obs_time, nh_radius: float, time_interp: str, obs_batch=10):
+def crps_sonf_moving(
+    mod_array,
+    obs_lon,
+    obs_lat,
+    obs_var,
+    obs_time,
+    nh_radius: float,
+    time_interp: str,
+    obs_batch=10,
+):
     """
     Handles the calculation of single-observation neighbourhood forecast CRPS
     for a moving observation instrument. Differs from crps_sonf_fixed in that
@@ -250,7 +265,11 @@ def crps_sonf_moving(mod_array, obs_lon, obs_lat, obs_var, obs_time, nh_radius: 
             # Subset model data in time and space: model -> obs
             mod_subset = mod_array.isel(y_dim=subset_ind[0], x_dim=subset_ind[1])
             mod_subset = mod_subset.swap_dims({"t_dim": "time"})
-            mod_subset = mod_subset.interp(time=obs_time[ii], method=time_interp, kwargs={"fill_value": "extrapolate"})
+            mod_subset = mod_subset.interp(
+                time=obs_time[ii],
+                method=time_interp,
+                kwargs={"fill_value": "extrapolate"},
+            )
 
             # Check if neighbourhood contains a land value (TODO:mask)
             if any(np.isnan(mod_subset)):

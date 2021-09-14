@@ -103,7 +103,12 @@ class PROFILE(COAsT):
         return: Indices corresponding to datapoints inside specified box
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude,
+            self.dataset.latitude,
+            lonbounds[0],
+            lonbounds[1],
+            latbounds[0],
+            latbounds[1],
         )
         return ind
 

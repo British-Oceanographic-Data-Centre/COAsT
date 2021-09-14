@@ -36,7 +36,11 @@ try:
 
     chunks = {"x": 10, "y": 10, "time_counter": 10}
     sci_t = coast.NEMO(
-        dir_AMM60 + fil_names_AMM60, dir_AMM60 + "mesh_mask.nc", grid_ref="t-grid", multiple=True, chunks=chunks
+        dir_AMM60 + fil_names_AMM60,
+        dir_AMM60 + "mesh_mask.nc",
+        grid_ref="t-grid",
+        multiple=True,
+        chunks=chunks,
     )
 
     # create an empty w-grid object, to store stratification
@@ -57,7 +61,12 @@ except:
     fn_nemo_grid_t_dat = "nemo_data_T_grid_Aug2015.nc"
     fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
 
-    sci_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat, dn_files + fn_nemo_dom, grid_ref="t-grid", multiple=True)
+    sci_t = coast.NEMO(
+        dn_files + fn_nemo_grid_t_dat,
+        dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+        multiple=True,
+    )
 
     # create an empty w-grid object, to store stratification
     sci_w = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
@@ -213,7 +222,8 @@ print(" - we expect a RunTimeError here")
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     new_cmap = colors.LinearSegmentedColormap.from_list(
-        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n))
+        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)),
     )
     return new_cmap
 
@@ -237,7 +247,14 @@ fig = plt.figure()
 plt.rcParams["figure.figsize"] = (8.0, 8.0)
 
 ax = fig.add_subplot(111)
-cz = plt.contour(lon, lat, H, levels=[11, 50, 100, 200], colors=["k", "k", "k", "k"], linewidths=[1, 1, 1, 1])
+cz = plt.contour(
+    lon,
+    lat,
+    H,
+    levels=[11, 50, 100, 200],
+    colors=["k", "k", "k", "k"],
+    linewidths=[1, 1, 1, 1],
+)
 
 plt.contourf(lon, lat, zd, levels=np.arange(0, 40.0 + 10.0, 10.0), extend="both", cmap=new_cmap)
 ax.set_facecolor("#bbbbbb")  # Set 'underneath' to grey. contourf plots nothing for bad values

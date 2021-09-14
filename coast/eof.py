@@ -74,7 +74,9 @@ def eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_name: str
     dataset.temporal_proj.attrs["standard name"] = "temporal projection"
 
     dataset["variance"] = xr.DataArray(
-        variance_explained, coords={"mode": (("mode"), np.arange(1, mode_count + 1))}, dims=["mode"]
+        variance_explained,
+        coords={"mode": (("mode"), np.arange(1, mode_count + 1))},
+        dims=["mode"],
     )
     dataset.variance.attrs["standard name"] = "percentage of variance explained"
 
@@ -166,7 +168,9 @@ def hilbert_eofs(variable: xr.DataArray, full_matrices=False, time_dim_name: str
     dataset.temporal_phase.attrs["units"] = "degrees"
 
     dataset["variance"] = xr.DataArray(
-        variance_explained, coords={"mode": (("mode"), np.arange(1, mode_count + 1))}, dims=["mode"]
+        variance_explained,
+        coords={"mode": (("mode"), np.arange(1, mode_count + 1))},
+        dims=["mode"],
     )
     dataset.variance.attrs["standard name"] = "percentage of variance explained"
 

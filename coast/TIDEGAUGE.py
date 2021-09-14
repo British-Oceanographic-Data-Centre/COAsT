@@ -403,7 +403,12 @@ class TIDEGAUGE:
         debug(f'Read done, close file "{filnam}"')
         fid.close()
         # Put all header info into an attributes dictionary
-        header_dict = {"site_name": site_name, "field": field, "units": units, "datum": datum}
+        header_dict = {
+            "site_name": site_name,
+            "field": field,
+            "units": units,
+            "datum": datum,
+        }
         return header_dict
 
     @staticmethod
@@ -594,7 +599,11 @@ class TIDEGAUGE:
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
     def read_EA_API_to_xarray(
-        cls, ndays: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
+        cls,
+        ndays: int = 5,
+        date_start: np.datetime64 = None,
+        date_end: np.datetime64 = None,
+        stationId="E70124",
     ):
         """
         load gauge data via environment.data.gov.uk EA API
@@ -1116,7 +1125,12 @@ class TIDEGAUGE:
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
-        return xr.DataArray(adiff, dims="time", name="absolute_error", coords={"time": self.dataset.time})
+        return xr.DataArray(
+            adiff,
+            dims="time",
+            name="absolute_error",
+            coords={"time": self.dataset.time},
+        )
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Mean absolute difference two variables defined by var_str0 and
@@ -1139,13 +1153,13 @@ class TIDEGAUGE:
         return np.sqrt(rmse)
 
     def time_mean(self, var_str, date0=None, date1=None):
-        """ Time mean of variable var_str between dates date0, date1"""
+        """Time mean of variable var_str between dates date0, date1"""
         var = self.dataset[var_str]
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanmean(var)
 
     def time_std(self, var_str, date0=None, date1=None):
-        """ Time st. dev of variable var_str between dates date0 and date1"""
+        """Time st. dev of variable var_str between dates date0 and date1"""
         var = self.dataset[var_str]
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanstd(var)

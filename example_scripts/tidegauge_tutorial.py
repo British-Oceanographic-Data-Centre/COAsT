@@ -172,8 +172,18 @@ extrema_cubc = tg.find_high_and_low_water("sea_level", method="cubic")
 # Plot to show the difference between maxima find methods for high tide example.
 plt.figure()
 plt.plot(tg.dataset.time, tg.dataset.sea_level, "k")
-plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker="o", c="g")
-plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker="+", c="g")
+plt.scatter(
+    extrema_comp.dataset.time_highs.values,
+    extrema_comp.dataset.sea_level_highs,
+    marker="o",
+    c="g",
+)
+plt.scatter(
+    extrema_cubc.dataset.time_highs.values,
+    extrema_cubc.dataset.sea_level_highs,
+    marker="+",
+    c="g",
+)
 plt.xlim([date_start, date_end])
 plt.ylim([7.75, 8.0])
 plt.legend(["Time Series", "Maxima by comparison", "Maxima by cubic spline"])

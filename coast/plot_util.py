@@ -95,7 +95,10 @@ def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
 
     if dofit:
         ax.text(
-            0.4, 0.125, "{} {:03.2f} {} {:03.2f}".format("y =", fit_tmp[0], "x +", fit_tmp[1]), transform=ax.transAxes
+            0.4,
+            0.125,
+            "{} {:03.2f} {} {:03.2f}".format("y =", fit_tmp[0], "x +", fit_tmp[1]),
+            transform=ax.transAxes,
         )
         ax.text(0.4, 0.05, "{} {:03.2f} ".format("$R^2$ =", r2), transform=ax.transAxes)
 
@@ -135,7 +138,13 @@ def create_geo_axes(lonbounds, latbounds):
     coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="50m")
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.5,
+        color="gray",
+        linestyle="-",
+    )
     gl.top_labels = False
     gl.bottom_labels = True
     gl.right_labels = False
@@ -201,7 +210,11 @@ def geo_scatter(
         sys.exit(-1)
 
     if coastline_kwargs is None:
-        coastline_kwargs = {"facecolor": [0.9, 0.9, 0.9], "name": "coastline", "scale": "50m"}
+        coastline_kwargs = {
+            "facecolor": [0.9, 0.9, 0.9],
+            "name": "coastline",
+            "scale": "50m",
+        }
     if scatter_kwargs is None:
         scatter_kwargs = {}
     fig = plt.figure(**figure_kwargs)
@@ -211,7 +224,13 @@ def geo_scatter(
     coast = NaturalEarthFeature(category="physical", **coastline_kwargs)
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.5,
+        color="gray",
+        linestyle="-",
+    )
     gl.top_labels = False
     gl.bottom_labels = True
     gl.right_labels = False

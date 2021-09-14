@@ -86,7 +86,13 @@ for i in range(2):
 
         fig = plt.figure()
         plt.rcParams["figure.figsize"] = 8, 8
-        plt.pcolormesh(lon, lat, sci_nwes_w.dataset.wo[i, sig0, :, :] * 3600 * 24, shading="auto", cmap="seismic")
+        plt.pcolormesh(
+            lon,
+            lat,
+            sci_nwes_w.dataset.wo[i, sig0, :, :] * 3600 * 24,
+            shading="auto",
+            cmap="seismic",
+        )
         plt.plot(lon[JJ, II], lat[JJ, II], "r+")
         plt.title(f"t={str(i)}: w-vel (m/day) at level {sig0}")
         plt.clim([-5, 5])
@@ -113,7 +119,13 @@ for i in range(2):
 
     fig = plt.figure()
     plt.rcParams["figure.figsize"] = 8, 8
-    plt.pcolormesh(lat_sec, dep_sec, wo_sec.isel(t_dim=i) * 3600 * 24, shading="auto", cmap="seismic")
+    plt.pcolormesh(
+        lat_sec,
+        dep_sec,
+        wo_sec.isel(t_dim=i) * 3600 * 24,
+        shading="auto",
+        cmap="seismic",
+    )
     plt.colorbar()
     plt.title(f"t={str(i)}: w-vel section (m/day)")
     plt.xlim([51, 60])
@@ -133,7 +145,13 @@ plt.rcParams["figure.figsize"] = 8, 8
 
 plt.subplot(1, 1, 1)
 
-plt.pcolormesh(lat_sec, dep_sec, wo_sec.mean(dim="t_dim") * 3600 * 24, shading="auto", cmap="seismic")
+plt.pcolormesh(
+    lat_sec,
+    dep_sec,
+    wo_sec.mean(dim="t_dim") * 3600 * 24,
+    shading="auto",
+    cmap="seismic",
+)
 plt.title("w-vel t-mean section")
 plt.xlim([51, 60])
 plt.ylim([0, 150])

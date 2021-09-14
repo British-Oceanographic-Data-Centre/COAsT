@@ -15,7 +15,11 @@ def get_logger(name: str = None, level: int = logging.DEBUG):
     return logger
 
 
-def create_handler(logger: logging.Logger, stream: io.TextIOWrapper = sys.stdout, format_string: str = DEFAULT_FORMAT):
+def create_handler(
+    logger: logging.Logger,
+    stream: io.TextIOWrapper = sys.stdout,
+    format_string: str = DEFAULT_FORMAT,
+):
     handler = logging.StreamHandler(stream)
     handler.setLevel(logger.level)
     formatter = logging.Formatter(format_string)

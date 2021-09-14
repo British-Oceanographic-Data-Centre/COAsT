@@ -61,7 +61,11 @@ else:
 #%% Plots
 fig = plt.figure()
 
-plt.pcolormesh(sci_t.dataset.longitude, sci_t.dataset.latitude, sci_t.dataset.temperature.isel(z_dim=0).squeeze())
+plt.pcolormesh(
+    sci_t.dataset.longitude,
+    sci_t.dataset.latitude,
+    sci_t.dataset.temperature.isel(z_dim=0).squeeze(),
+)
 # plt.xlabel('longitude')
 # plt.ylabel('latitude')
 # plt.colorbar()

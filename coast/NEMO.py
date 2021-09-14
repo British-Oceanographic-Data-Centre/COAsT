@@ -64,7 +64,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             debug(f"Initialised {get_slug(self)}")
 
     def set_grid_vars(self):
-        """ Define the variables to map from the domain file to the NEMO obj"""
+        """Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
         if self.grid_ref == "u-grid":
             self.grid_vars = [
@@ -78,9 +78,26 @@ class NEMO(COAsT):  # TODO Complete this docstring
         elif self.grid_ref == "v-grid":
             self.grid_vars = ["glamv", "gphiv", "e1v", "e2v", "e3v_0", "depthv_0"]
         elif self.grid_ref == "t-grid":
-            self.grid_vars = ["glamt", "gphit", "e1t", "e2t", "e3t_0", "deptht_0", "tmask", "bottom_level"]
+            self.grid_vars = [
+                "glamt",
+                "gphit",
+                "e1t",
+                "e2t",
+                "e3t_0",
+                "deptht_0",
+                "tmask",
+                "bottom_level",
+            ]
         elif self.grid_ref == "w-grid":
-            self.grid_vars = ["glamt", "gphit", "e1t", "e2t", "e3w_0", "depthw_0", "bottom_level"]
+            self.grid_vars = [
+                "glamt",
+                "gphit",
+                "e1t",
+                "e2t",
+                "e3w_0",
+                "depthw_0",
+                "bottom_level",
+            ]
         elif self.grid_ref == "f-grid":
             self.grid_vars = ["glamf", "gphif", "e1f", "e2f", "e3f_0", "depthf_0"]
 
@@ -96,7 +113,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
             "y_grid_T": "y_dim",
         }
         debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
-        self.dim_mapping_domain = {"t": "t_dim0", "x": "x_dim", "y": "y_dim", "z": "z_dim"}
+        self.dim_mapping_domain = {
+            "t": "t_dim0",
+            "x": "x_dim",
+            "y": "y_dim",
+            "z": "z_dim",
+        }
         debug(f"{get_slug(self)} dim_mapping_domain set to {self.dim_mapping_domain}")
 
     def set_variable_mapping(self):  # TODO Add a docstring
@@ -156,7 +178,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
-        """ Loads domain file and renames dimensions with dim_mapping_domain"""
+        """Loads domain file and renames dimensions with dim_mapping_domain"""
         # Load xarray dataset
         info(f'Loading domain: "{fn_domain}"')
         dataset_domain = xr.open_dataset(fn_domain)
@@ -172,10 +194,19 @@ class NEMO(COAsT):  # TODO Complete this docstring
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
-        """ Merge domain dataset variables into self.dataset, using grid_ref"""
+        """Merge domain dataset variables into self.dataset, using grid_ref"""
         debug(f"Merging {get_slug(dataset_domain)} into {get_slug(self)}")
         # Define grid independent variables to pull across
-        not_grid_vars = ["jpiglo", "jpjglo", "jpkglo", "jperio", "ln_zco", "ln_zps", "ln_sco", "ln_isfcav"]
+        not_grid_vars = [
+            "jpiglo",
+            "jpjglo",
+            "jpkglo",
+            "jperio",
+            "ln_zco",
+            "ln_zps",
+            "ln_sco",
+            "ln_isfcav",
+        ]
 
         all_vars = (
             self.grid_vars + not_grid_vars
@@ -285,7 +316,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
             dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(
                 depth_0,
                 dims=["z_dim", "y_dim", "x_dim"],
-                attrs={"units": "m", "standard_name": "Depth at time zero on the {}".format(self.grid_ref)},
+                attrs={
+                    "units": "m",
+                    "standard_name": "Depth at time zero on the {}".format(self.grid_ref),
+                },
             )
             self.dataset["bathymetry"] = bathymetry
             self.dataset["bathymetry"].attrs = {
@@ -427,7 +461,9 @@ class NEMO(COAsT):  # TODO Complete this docstring
         interpolated = model_array.swap_dims({"t_dim": "time"})
         if extrapolate:
             interpolated = interpolated.interp(
-                time=new_times, method=interp_method, kwargs={"fill_value": "extrapolate"}
+                time=new_times,
+                method=interp_method,
+                kwargs={"fill_value": "extrapolate"},
             )
         else:
             interpolated = interpolated.interp(time=new_times, method=interp_method)
@@ -482,7 +518,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 sal = self.dataset.salinity.to_masked_array()
                 temp = self.dataset.temperature.to_masked_array()
             except AttributeError:
-                shape_ds = (1, self.dataset.z_dim.size, self.dataset.y_dim.size, self.dataset.x_dim.size)
+                shape_ds = (
+                    1,
+                    self.dataset.z_dim.size,
+                    self.dataset.y_dim.size,
+                    self.dataset.x_dim.size,
+                )
                 sal = self.dataset.salinity.to_masked_array()[np.newaxis, ...]
                 temp = self.dataset.temperature.to_masked_array()[np.newaxis, ...]
 
@@ -541,7 +582,11 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
             # Find the corners of the cut out domain.
             [j0, i0] = self.find_j_i_domain(self.dataset.nav_lat[0, 0], self.dataset.nav_lon[0, 0], dataset_domain)
-            [j1, i1] = self.find_j_i_domain(self.dataset.nav_lat[-1, -1], self.dataset.nav_lon[-1, -1], dataset_domain)
+            [j1, i1] = self.find_j_i_domain(
+                self.dataset.nav_lat[-1, -1],
+                self.dataset.nav_lon[-1, -1],
+                dataset_domain,
+            )
 
             dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1), x_dim=slice(i0, i1 + 1))
             return dataset_subdomain
@@ -657,7 +702,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 # Assign attributes
                 new_units = var.units + "/" + out_obj.dataset.depth_0.units
                 # Convert to a xr.DataArray and return
-                out_obj.dataset[out_varstr].attrs = {"units": new_units, "standard_name": out_varstr}
+                out_obj.dataset[out_varstr].attrs = {
+                    "units": new_units,
+                    "standard_name": out_varstr,
+                }
 
                 # Return in object.
                 return out_obj
@@ -825,7 +873,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
             )
             # bottom and below levels
-            e3w_new = e3w_new.where(e3w_new.z_dim < ds_dom.bottom_level, e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
+            e3w_new = e3w_new.where(
+                e3w_new.z_dim < ds_dom.bottom_level,
+                e3t_dt.shift(z_dim=1) + ds_dom.e3w_0,
+            )
             e3_return.append(e3w_new.squeeze())
 
         return tuple(e3_return)

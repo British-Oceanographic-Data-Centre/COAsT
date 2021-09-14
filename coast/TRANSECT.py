@@ -79,7 +79,14 @@ class Transect:
         z_levels = z_levels[z_levels <= max_depth]
         return z_levels
 
-    def __init__(self, nemo: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         """
         Class defining a generic transect type, which is a 3d dataset along
         a linear path between a point A and a point B, with a time dimension,
@@ -218,7 +225,10 @@ class Transect:
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.mpl.gridliner import (
+                LONGITUDE_FORMATTER,
+                LATITUDE_FORMATTER,
+            )  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
             import sys
@@ -236,12 +246,21 @@ class Transect:
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         coast = NaturalEarthFeature(
-            category="physical", scale="50m", facecolor=[0.8, 0.8, 0.8], name="coastline", alpha=0.5
+            category="physical",
+            scale="50m",
+            facecolor=[0.8, 0.8, 0.8],
+            name="coastline",
+            alpha=0.5,
         )
         ax.add_feature(coast, edgecolor="gray")
 
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
         )
 
         gl.top_labels = False
@@ -289,7 +308,14 @@ class Transect_f(Transect):
 
     """
 
-    def __init__(self, nemo_f: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo_f: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         super().__init__(nemo_f, point_A, point_B, y_indices, x_indices)
 
     def calc_flow_across_transect(self, nemo_u: COAsT, nemo_v: COAsT):
@@ -426,7 +452,10 @@ class Transect_f(Transect):
             if compute_transports:
                 self.data_cross_tran_flow["normal_transports"] = xr.DataArray(
                     np.sum(vol_transport.squeeze(), axis=0) / 1000000.0,
-                    coords={"latitude": (("r_dim"), latitude), "longitude": (("r_dim"), longitude)},
+                    coords={
+                        "latitude": (("r_dim"), latitude),
+                        "longitude": (("r_dim"), longitude),
+                    },
                     dims=["r_dim"],
                 ).squeeze()
         else:
@@ -636,7 +665,10 @@ class Transect_f(Transect):
                         ),
                         dim="concat_dim",
                     )
-                    .mean(dim=("concat_dim", "r_dim", "t_dim", "depth_z_levels"), skipna=True)
+                    .mean(
+                        dim=("concat_dim", "r_dim", "t_dim", "depth_z_levels"),
+                        skipna=True,
+                    )
                     .item()
                 )
 
@@ -695,10 +727,20 @@ class Transect_f(Transect):
             dr_list, velocity_component, flow_direction, e_horiz_vel, e_horiz_f, ds
         ):
             hpg, spg = self.__pressure_grad_fpoint(
-                tran_t.data, tran_t_j1.data, tran_t_i1.data, tran_t_j1i1.data, dr, vel_comp
+                tran_t.data,
+                tran_t_j1.data,
+                tran_t_i1.data,
+                tran_t_j1i1.data,
+                dr,
+                vel_comp,
             )
             hpg_r1, spg_r1 = self.__pressure_grad_fpoint(
-                tran_t.data, tran_t_j1.data, tran_t_i1.data, tran_t_j1i1.data, dr + 1, vel_comp
+                tran_t.data,
+                tran_t_j1.data,
+                tran_t_i1.data,
+                tran_t_j1i1.data,
+                dr + 1,
+                vel_comp,
             )
             normal_velocity_hpg[:, :, dr] = (
                 flow_dir
@@ -738,7 +780,10 @@ class Transect_f(Transect):
             "standard name": "velocity across the \
                           transect due to the hydrostatic pressure gradient",
         }
-        coords_spg = {"latitude": (("r_dim"), latitude), "longitude": (("r_dim"), longitude)}
+        coords_spg = {
+            "latitude": (("r_dim"), latitude),
+            "longitude": (("r_dim"), longitude),
+        }
         dims_spg = ["r_dim"]
         attributes_spg = {
             "units": "m/s",
@@ -755,10 +800,16 @@ class Transect_f(Transect):
 
         # Add DataArrays  to dataset
         self.data_cross_tran_flow["normal_velocity_hpg"] = xr.DataArray(
-            np.squeeze(normal_velocity_hpg), coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg
+            np.squeeze(normal_velocity_hpg),
+            coords=coords_hpg,
+            dims=dims_hpg,
+            attrs=attributes_hpg,
         )
         self.data_cross_tran_flow["normal_velocity_spg"] = xr.DataArray(
-            np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
+            np.squeeze(normal_velocity_spg),
+            coords=coords_spg,
+            dims=dims_spg,
+            attrs=attributes_spg,
         )
         self.data_cross_tran_flow["normal_transport_hpg"] = (
             (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(dim="depth_z_levels"))
@@ -914,7 +965,14 @@ class Transect_t(Transect):
 
     """
 
-    def __init__(self, nemo_t: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo_t: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         super().__init__(nemo_t, point_A, point_B, y_indices, x_indices)
 
     def construct_pressure(self, ref_density=None, z_levels=None, extrapolate=False):
@@ -983,9 +1041,17 @@ class Transect_t(Transect):
                     temperature_s_r = temperature_s[it, :, ir].compressed()
                     s_levels_r = s_levels[: len(salinity_s_r), ir]
 
-                    sal_func = interpolate.interp1d(s_levels_r, salinity_s_r, kind="linear", fill_value="extrapolate")
+                    sal_func = interpolate.interp1d(
+                        s_levels_r,
+                        salinity_s_r,
+                        kind="linear",
+                        fill_value="extrapolate",
+                    )
                     temp_func = interpolate.interp1d(
-                        s_levels_r, temperature_s_r, kind="linear", fill_value="extrapolate"
+                        s_levels_r,
+                        temperature_s_r,
+                        kind="linear",
+                        fill_value="extrapolate",
                     )
 
                     if extrapolate is True:
@@ -994,10 +1060,14 @@ class Transect_t(Transect):
                     else:
                         # set levels below the bathymetry to nan
                         salinity_z[it, :, ir] = np.where(
-                            z_levels <= self.data.bathymetry.values[ir], sal_func(z_levels), np.nan
+                            z_levels <= self.data.bathymetry.values[ir],
+                            sal_func(z_levels),
+                            np.nan,
                         )
                         temperature_z[it, :, ir] = np.where(
-                            z_levels <= self.data.bathymetry.values[ir], temp_func(z_levels), np.nan
+                            z_levels <= self.data.bathymetry.values[ir],
+                            temp_func(z_levels),
+                            np.nan,
                         )
 
         if extrapolate is False:
@@ -1025,7 +1095,10 @@ class Transect_t(Transect):
             "longitude": (("r_dim"), self.data.longitude),
         }
         dims = ["depth_z_levels", "r_dim"]
-        attributes = {"units": "kg / m^3", "standard name": "In-situ density on the z-level vertical grid"}
+        attributes = {
+            "units": "kg / m^3",
+            "standard name": "In-situ density on the z-level vertical grid",
+        }
 
         if shape_ds[0] != 1:
             coords["time"] = (("t_dim"), self.data.time.values)
@@ -1047,4 +1120,7 @@ class Transect_t(Transect):
             np.squeeze(hydrostatic_pressure), coords=coords, dims=dims, attrs=attributes
         )
         self.data["pressure_s"] = ref_density * self.GRAVITY * self.data.ssh.squeeze()
-        self.data.pressure_s.attrs = {"units": "kg m^{-1} s^{-2}", "standard_name": "Surface perturbation pressure"}
+        self.data.pressure_s.attrs = {
+            "units": "kg m^{-1} s^{-2}",
+            "standard_name": "Surface perturbation pressure",
+        }

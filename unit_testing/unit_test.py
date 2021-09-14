@@ -103,7 +103,11 @@ subsec = 96  # Code for '`' (1 below 'a')
 subsec = subsec + 1
 
 try:
-    sci = coast.NEMO(path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), grid_ref="t-grid")
+    sci = coast.NEMO(
+        path.join(dn_files, fn_nemo_dat),
+        path.join(dn_files, fn_nemo_dom),
+        grid_ref="t-grid",
+    )
 
     # Test the data has loaded
     sci_attrs_ref = dict(
@@ -204,13 +208,25 @@ else:
 subsec = subsec + 1
 
 try:
-    nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_t_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+    )
     if not np.isclose(np.nansum(nemo_t.dataset.depth_0.values), 1705804300.0):
         raise ValueError(" X - NEMO depth_0 failed on t-grid failed")
-    nemo_u = coast.NEMO(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="u-grid")
+    nemo_u = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_u_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="u-grid",
+    )
     if not np.isclose(np.nansum(nemo_u.dataset.depth_0.values), 1705317600.0):
         raise ValueError(" X - NEMO depth_0 failed on u-grid failed")
-    nemo_v = coast.NEMO(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="v-grid")
+    nemo_v = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_v_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="v-grid",
+    )
     if not np.isclose(np.nansum(nemo_v.dataset.depth_0.values), 1705419100.0):
         raise ValueError(" X - NEMO depth_0 failed on v-grid failed")
     nemo_f = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
@@ -233,7 +249,10 @@ try:
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset._coord_names == {"depth_0", "latitude", "longitude", "time"}:
-        print(str(sec) + chr(subsec) + " OK - NEMO data subset loaded ", "with correct coords: " + fn_nemo_dat_subset)
+        print(
+            str(sec) + chr(subsec) + " OK - NEMO data subset loaded ",
+            "with correct coords: " + fn_nemo_dat_subset,
+        )
     else:
         print(
             str(sec) + chr(subsec) + " X - There is an issue with ",
@@ -252,13 +271,24 @@ subsec = subsec + 1
 
 try:
     file_names_amm7 = "nemo_data_T_grid*.nc"
-    amm7 = coast.NEMO(dn_files + file_names_amm7, dn_files + fn_nemo_dom, grid_ref="t-grid", multiple=True)
+    amm7 = coast.NEMO(
+        dn_files + file_names_amm7,
+        dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+        multiple=True,
+    )
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset.time.size == 14:
-        print(str(sec) + chr(subsec) + " OK - NEMO data loaded combine ", "over time: " + file_names_amm7)
+        print(
+            str(sec) + chr(subsec) + " OK - NEMO data loaded combine ",
+            "over time: " + file_names_amm7,
+        )
     else:
-        print(str(sec) + chr(subsec) + " X - There is an issue with loading", "multiple data files " + file_names_amm7)
+        print(
+            str(sec) + chr(subsec) + " X - There is an issue with loading",
+            "multiple data files " + file_names_amm7,
+        )
 
 except:
     print(str(sec) + chr(subsec) + " FAILED. Test data in: {} on {}.".format(dn_files, file_names_amm7))
@@ -316,7 +346,11 @@ except:
 #
 subsec = subsec + 1
 try:
-    nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_t_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+    )
 
     e3t, e3u, e3v, e3f, e3w = coast.NEMO.get_e3_from_ssh(nemo_t, True, True, True, True, True)
     cksum = np.array([e3t.sum(), e3u.sum(), e3v.sum(), e3f.sum(), e3w.sum()])
@@ -411,7 +445,11 @@ subsec = 96
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_t_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="t-grid",
+)
 nemo_w = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
 
 try:
@@ -433,7 +471,10 @@ try:
         log_str += "Did not write correct attributes\n"
     # Test auto-naming derivative. Again test expected attributes.
     nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim")
-    if not nemo_w_3.dataset.temperature_dz.attrs == {"units": "degC/m", "standard_name": "temperature_dz"}:
+    if not nemo_w_3.dataset.temperature_dz.attrs == {
+        "units": "degC/m",
+        "standard_name": "temperature_dz",
+    }:
         log_str += "Problem with auto-naming derivative field\n"
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
@@ -441,8 +482,12 @@ try:
     nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], nemo_t.dataset["temperature"])
     nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_varstr="dzdz")
     if not np.isclose(
-        nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
-    ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
+        nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(),
+        -1,
+    ) or not np.isclose(
+        nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(),
+        -1,
+    ):
         log_str += "Problem with numerical derivative of f(z)=-z\n"
 
     if log_str == "":
@@ -459,13 +504,20 @@ except:
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_t_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="t-grid",
+)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
 try:
     if not np.allclose(
-        nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt, dims=["r_dim"]), y_dim=xr.DataArray(yt, dims=["r_dim"]))
+        nemo_t.dataset.density.sel(
+            x_dim=xr.DataArray(xt, dims=["r_dim"]),
+            y_dim=xr.DataArray(yt, dims=["r_dim"]),
+        )
         .sum(dim=["t_dim", "r_dim", "z_dim"])
         .item(),
         11185010.518671108,
@@ -554,7 +606,11 @@ subsec = 96
 subsec = subsec + 1
 
 # Extract transect indices
-nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_t_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="t-grid",
+)
 yt, xt, length_of_line = nemo_t.transect_indices([51, -5], [49, -9])
 
 # Test transect indices
@@ -649,9 +705,21 @@ else:
 #
 subsec = subsec + 1
 try:
-    nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
-    nemo_u = coast.NEMO(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="u-grid")
-    nemo_v = coast.NEMO(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="v-grid")
+    nemo_t = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_t_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+    )
+    nemo_u = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_u_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="u-grid",
+    )
+    nemo_v = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_v_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="v-grid",
+    )
     nemo_f = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
 
     tran_f = coast.Transect_f(nemo_f, (54, -15), (56, -12))
@@ -716,7 +784,10 @@ try:
     cksum3 = tran_f.data_cross_tran_flow.normal_transport_hpg.sum(dim=("t_dim", "r_dim")).item()
     cksum4 = tran_f.data_cross_tran_flow.normal_transport_spg.sum(dim=("t_dim", "r_dim")).item()
 
-    if np.allclose([cksum1, cksum2, cksum3, cksum4], [84.8632969783, -5.09718418121, 115.2587369660, -106.7897376093]):
+    if np.allclose(
+        [cksum1, cksum2, cksum3, cksum4],
+        [84.8632969783, -5.09718418121, 115.2587369660, -106.7897376093],
+    ):
         print(str(sec) + chr(subsec) + " OK - TRANSECT geostrophic flow calculations as expected")
     else:
         print(str(sec) + chr(subsec) + " X - TRANSECT geostrophic flow calculations now as expected")
@@ -796,7 +867,10 @@ try:
     ind = altimetry.subset_indices_lonlat_box([-10, 10], [45, 60])
     altimetry_nwes = altimetry.isel(t_dim=ind)  # nwes = northwest europe shelf
     ind_x, ind_y = general_utils.nearest_indices_2D(
-        sci.dataset.longitude, sci.dataset.latitude, altimetry_nwes.dataset.longitude, altimetry_nwes.dataset.latitude
+        sci.dataset.longitude,
+        sci.dataset.latitude,
+        altimetry_nwes.dataset.longitude,
+        altimetry_nwes.dataset.latitude,
     )
     if ind_x.shape == altimetry_nwes.dataset.longitude.shape:
         print(str(sec) + chr(subsec) + " OK - nearest_xy_indices works ")
@@ -1329,7 +1403,8 @@ try:
         "2020-10-13 14:36"
     )
     check4 = np.array_equal(
-        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
+        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_2").values,
+        [2.83, 8.01],
     )
     check5 = np.array_equal(
         tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
@@ -1366,8 +1441,18 @@ try:
     # Attempt a plot
     f = plt.figure()
     plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
-    plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker="o", c="g")
-    plt.scatter(extrema_comp.dataset.time_lows.values, extrema_comp.dataset.sea_level_lows, marker="o", c="r")
+    plt.scatter(
+        extrema_comp.dataset.time_highs.values,
+        extrema_comp.dataset.sea_level_highs,
+        marker="o",
+        c="g",
+    )
+    plt.scatter(
+        extrema_comp.dataset.time_lows.values,
+        extrema_comp.dataset.sea_level_lows,
+        marker="o",
+        c="r",
+    )
 
     plt.legend(["Time Series", "Maxima", "Minima"])
     plt.title("Tide Gauge Optima at Lowestoft")
@@ -1408,8 +1493,18 @@ try:
     # Attempt a plot
     f = plt.figure()
     plt.plot(tg.dataset.time, tg.dataset.sea_level)
-    plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker="o", c="g")
-    plt.scatter(extrema_cubc.dataset.time_lows.values, extrema_cubc.dataset.sea_level_lows, marker="o", c="r")
+    plt.scatter(
+        extrema_cubc.dataset.time_highs.values,
+        extrema_cubc.dataset.sea_level_highs,
+        marker="o",
+        c="g",
+    )
+    plt.scatter(
+        extrema_cubc.dataset.time_lows.values,
+        extrema_cubc.dataset.sea_level_lows,
+        marker="o",
+        c="r",
+    )
 
     plt.legend(["Time Series", "Maxima", "Minima"])
     plt.title("Tide Gauge Optima at Gladstone, fitted cubic spline")
@@ -1462,13 +1557,18 @@ except OSError:
 #%% ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
 subsec = subsec + 1
-nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_t_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="t-grid",
+)
 contours, no_contours = coast.Contour.get_contours(nemo_t, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], [50, -10], [60, 3])
 cont_t = coast.Contour_t(nemo_t, y_ind, x_ind, 200)
 cont_t.construct_pressure(1027)
 if np.allclose(
-    (cont_t.data_contour.pressure_s + cont_t.data_contour.pressure_h_zlevels).sum().item(), 27490693.20181531
+    (cont_t.data_contour.pressure_s + cont_t.data_contour.pressure_h_zlevels).sum().item(),
+    27490693.20181531,
 ):
     print(str(sec) + chr(subsec) + " OK - Perturbation pressure calculation is as expected")
 else:
@@ -1478,8 +1578,16 @@ else:
 #                                                                             #
 subsec = subsec + 1
 nemo_f = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
-nemo_u = coast.NEMO(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="u-grid")
-nemo_v = coast.NEMO(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="v-grid")
+nemo_u = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_u_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="u-grid",
+)
+nemo_v = coast.NEMO(
+    fn_data=dn_files + fn_nemo_grid_v_dat,
+    fn_domain=dn_files + fn_nemo_dom,
+    grid_ref="v-grid",
+)
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = coast.Contour_f(nemo_f, y_ind, x_ind, 200)
@@ -1523,7 +1631,11 @@ subsec = 96
 #
 subsec = subsec + 1
 try:
-    nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_t_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+    )
     eofs = coast.eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim="mode").sum(dim=["x_dim", "y_dim"])
@@ -1546,7 +1658,11 @@ except:
 #
 subsec = subsec + 1
 try:
-    nemo_t = coast.NEMO(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = coast.NEMO(
+        fn_data=dn_files + fn_nemo_grid_t_dat,
+        fn_domain=dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+    )
     heofs = coast.hilbert_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (
@@ -1771,7 +1887,10 @@ try:
     tg = coast.TIDEGAUGE(fn_tidegauge, date_start=date0, date_end=date1)
 
     tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method="comp")
-    check1 = np.isclose((tt.values[0] - np.datetime64("2007-01-15T00:15:00")) / np.timedelta64(1, "s"), 0)
+    check1 = np.isclose(
+        (tt.values[0] - np.datetime64("2007-01-15T00:15:00")) / np.timedelta64(1, "s"),
+        0,
+    )
     check2 = np.isclose(hh.values[0], 1.027)
 
     tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method="cubic")
@@ -1842,7 +1961,12 @@ try:
     vertices_lat = [40, 60, 60, 40]
     filled0 = mm.fill_polygon_by_lonlat(mask00, sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
     filled1 = mm.fill_polygon_by_lonlat(
-        mask01, sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat, additive=True
+        mask01,
+        sci.dataset.longitude,
+        sci.dataset.latitude,
+        vertices_lon,
+        vertices_lat,
+        additive=True,
     )
 
     # TEST: Check some data

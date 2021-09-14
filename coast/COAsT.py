@@ -7,7 +7,11 @@ from .logging_util import get_slug, debug, info, warn, warning
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
-    Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+    Client(
+        n_workers=workers,
+        threads_per_worker=threads,
+        memory_limit=memory_limit_per_worker,
+    )
 
 
 class COAsT:
@@ -58,12 +62,12 @@ class COAsT:
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into COAsT object's dataset variable. """
+        """Loads a single file into COAsT object's dataset variable."""
         info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
-        """ Loads multiple files from directory into dataset variable. """
+        """Loads multiple files from directory into dataset variable."""
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
@@ -277,7 +281,12 @@ class COAsT:
         return distance
 
     def get_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self,
+        var: str,
+        points_x: slice,
+        points_y: slice,
+        line_length: int = None,
+        time_counter: int = 0,
     ):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
@@ -314,7 +323,12 @@ class COAsT:
         return smaller
 
     def get_2d_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self,
+        var: str,
+        points_x: slice,
+        points_y: slice,
+        line_length: int = None,
+        time_counter: int = 0,
     ):
         """
 
@@ -386,7 +400,10 @@ class COAsT:
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.mpl.gridliner import (
+                LONGITUDE_FORMATTER,
+                LATITUDE_FORMATTER,
+            )  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
             import sys
@@ -406,7 +423,9 @@ class COAsT:
             self.dataset[var]
             .isel(time_counter=time_counter, deptht=0)
             .plot.pcolormesh(
-                np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
+                np.ma.masked_where(plot_var == np.NaN, plot_var),
+                transform=ccrs.PlateCarree(),
+                cmap=params.cmap,
             )
         )
 
@@ -419,7 +438,12 @@ class COAsT:
         ax.add_feature(coast, edgecolor="gray")
 
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
         )
 
         gl.xlabels_top = False

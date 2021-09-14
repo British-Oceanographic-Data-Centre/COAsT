@@ -249,14 +249,21 @@ class INTERNALTIDE(NEMO):
         debug(f"Generating quick plot for {get_slug(self)}")
 
         if var is None:
-            var_lst = [self.dataset.strat_1st_mom_masked, self.dataset.strat_2nd_mom_masked]
+            var_lst = [
+                self.dataset.strat_1st_mom_masked,
+                self.dataset.strat_2nd_mom_masked,
+            ]
         else:
             var_lst = [self.dataset[var]]
 
         for var in var_lst:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.gca()
-            plt.pcolormesh(self.dataset.longitude.squeeze(), self.dataset.latitude.squeeze(), var.isel(t_dim=0))
+            plt.pcolormesh(
+                self.dataset.longitude.squeeze(),
+                self.dataset.latitude.squeeze(),
+                var.isel(t_dim=0),
+            )
             #               var.mean(dim = 't_dim') )
             # plt.contourf( self.dataset.longitude.squeeze(),
             #               self.dataset.latitude.squeeze(),
