@@ -21,7 +21,9 @@ jobs:
         run: |
           black .
           git config --global user.name "BlackBot"
-          git config --global user.email "bodc@users.noreply.github.com"
+          git config --global author.name "BlackBot"
+          git config --global user.email "bodcsoft@bodc.ac.uk"
+          git config --global author.email "bodcsoft@bodc.ac.uk"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout $GITHUB_HEAD_REF
           git commit -am "Apply Black formatting to Python code."
