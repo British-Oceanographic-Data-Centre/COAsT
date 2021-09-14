@@ -1,0 +1,23 @@
+{
+	"type": "indexed",
+	"dimensionality": 1,
+	"chunks": [],
+	"dataset": {
+		"dimension_map": {
+			"ex0": "obs",
+			"ex1": "traj"
+		},
+		"variable_map": {
+			"ex0": "trajectory",
+			"time": "time",
+			"lat": "lat",
+			"lon": "lon",
+			"ex4": "z",
+			"ex5": "t",
+			"ex5": "s"
+		}
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}
