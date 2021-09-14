@@ -52,9 +52,7 @@ stats = tidegauge.basic_stats("interp_ssh", "sea_level")
 # Probability Score (CRPS). For this, we need to hand over the model object,
 # a model variable and an observed variable. We also give it a neighbourhood
 # radius in km (nh_radius). This may take a minute to run.
-crps = tidegauge.crps(
-    nemo, model_var_name="ssh", obs_var_name="sea_level", nh_radius=20
-)
+crps = tidegauge.crps(nemo, model_var_name="ssh", obs_var_name="sea_level", nh_radius=20)
 
 # Again, take a look inside crps.dataset to see some new variables. Similarly
 # to basic_stats, create_new_object can be set to false to save output to

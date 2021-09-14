@@ -135,9 +135,7 @@ def create_geo_axes(lonbounds, latbounds):
     fig.clf()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-    coast = NaturalEarthFeature(
-        category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="50m"
-    )
+    coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="50m")
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
     gl = ax.gridlines(
@@ -239,11 +237,7 @@ def geo_scatter(
     gl.left_labels = True
     plt.title(title)
 
-    if (
-        c is not None
-        and "vmax" in scatter_kwargs.keys()
-        and "vmin" in scatter_kwargs.keys()
-    ):
+    if c is not None and "vmax" in scatter_kwargs.keys() and "vmin" in scatter_kwargs.keys():
         extend_max = np.nanmax(c) > scatter_kwargs["vmax"]
         extend_min = np.nanmin(c) < scatter_kwargs["vmin"]
         extend = "neither"

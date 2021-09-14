@@ -53,9 +53,7 @@ tg.dataset.plot.scatter(x="time", y="sea_level")
 time_guess = np.datetime64("2020-10-13 12:48")
 # Then recover all the HLW events in a +/- window, of specified size (iteger hrs)
 # The default winsize = 2 (hrs)
-HLW = tg.get_tidetabletimes(
-    np.datetime64("2020-10-13 12:48"), method="window", winsize=24
-)
+HLW = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="window", winsize=24)
 
 # Alternatively recover the closest HLW event to the input timestamp
 HLW = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_1")
@@ -76,11 +74,7 @@ print("HT:", HT.values, "m at", HT.time.values)
 
 # The get_tidetabletimes() method can take extra paremeters such as a window
 # size, an integer number of hours to seek either side of the guess.
-HLW = tg.get_tidetabletimes(
-    np.datetime64("2020-10-13 12:48"), winsize=2, method="nearest_1"
-)
+HLW = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), winsize=2, method="nearest_1")
 
 
-HLW = tg.get_tidetabletimes(
-    np.datetime64("2020-10-13 12:48"), winsize=1, method="nearest_1"
-)
+HLW = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), winsize=1, method="nearest_1")

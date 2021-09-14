@@ -4,9 +4,7 @@ from scipy import linalg
 from scipy.signal import hilbert
 
 
-def eofs(
-    variable: xr.DataArray, full_matrices: bool = False, time_dim_name: str = "t_dim"
-):
+def eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_name: str = "t_dim"):
     """
     Computes the Empirical Orthogonal Functions (EOFs) of a variable (time series)
     that has 3 dimensions where one is time, i.e. (x,y,time)
@@ -50,9 +48,7 @@ def eofs(
     mean = signal.mean(axis=1)
     signal = signal - mean[:, np.newaxis]
 
-    EOFs, projections, variance_explained, mode_count = _compute(
-        signal, full_matrices, active_ind, I * J
-    )
+    EOFs, projections, variance_explained, mode_count = _compute(signal, full_matrices, active_ind, I * J)
 
     EOFs = np.reshape(EOFs, (I, J, mode_count))
 
@@ -87,9 +83,7 @@ def eofs(
     return dataset
 
 
-def hilbert_eofs(
-    variable: xr.DataArray, full_matrices=False, time_dim_name: str = "t_dim"
-):
+def hilbert_eofs(variable: xr.DataArray, full_matrices=False, time_dim_name: str = "t_dim"):
     """
     Computes the complex Hilbert Empirical Orthogonal Functions (HEOFs) of a
     variable (time series) that has 3 dimensions where one is time, i.e. (x,y,time).
@@ -136,9 +130,7 @@ def hilbert_eofs(
     # Apply Hilbert transform
     signal = hilbert(signal, axis=1)
     # Compute EOFs
-    EOFs, projections, variance_explained, mode_count = _compute(
-        signal, full_matrices, active_ind, I * J
-    )
+    EOFs, projections, variance_explained, mode_count = _compute(signal, full_matrices, active_ind, I * J)
 
     # Extract the amplitude and phase of the projections
     projection_amp = np.absolute(projections)
@@ -169,13 +161,9 @@ def hilbert_eofs(
     dataset.EOF_phase.attrs["units"] = "degrees"
 
     dims = (variable.dims[2], "mode")
-    dataset["temporal_amp"] = xr.DataArray(
-        projection_amp, coords=time_coords, dims=dims
-    )
+    dataset["temporal_amp"] = xr.DataArray(projection_amp, coords=time_coords, dims=dims)
     dataset.temporal_amp.attrs["standard_name"] = "temporal projection amplitude"
-    dataset["temporal_phase"] = xr.DataArray(
-        np.rad2deg(projection_phase), coords=time_coords, dims=dims
-    )
+    dataset["temporal_phase"] = xr.DataArray(np.rad2deg(projection_phase), coords=time_coords, dims=dims)
     dataset.temporal_phase.attrs["standard_name"] = "temporal projection phase"
     dataset.temporal_phase.attrs["units"] = "degrees"
 
