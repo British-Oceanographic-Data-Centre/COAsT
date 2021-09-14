@@ -36,7 +36,11 @@ try:
 
     chunks = {"x": 10, "y": 10, "time_counter": 10}
     sci_t = coast.NEMO(
-        dir_AMM60 + fil_names_AMM60, dir_AMM60 + "mesh_mask.nc", grid_ref="t-grid", multiple=True, chunks=chunks
+        dir_AMM60 + fil_names_AMM60,
+        dir_AMM60 + "mesh_mask.nc",
+        grid_ref="t-grid",
+        multiple=True,
+        chunks=chunks,
     )
 
     # create an empty w-grid object, to store stratification
@@ -48,7 +52,9 @@ except:
     dn_files = "./example_files/"
 
     if not os.path.isdir(dn_files):
-        print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
+        print(
+            "please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/"
+        )
         dn_files = input("what is the path to the example files:\n")
         if not os.path.isdir(dn_files):
             print(f"location f{dn_files} cannot be found")
@@ -57,7 +63,12 @@ except:
     fn_nemo_grid_t_dat = "nemo_data_T_grid_Aug2015.nc"
     fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
 
-    sci_t = coast.NEMO(dn_files + fn_nemo_grid_t_dat, dn_files + fn_nemo_dom, grid_ref="t-grid", multiple=True)
+    sci_t = coast.NEMO(
+        dn_files + fn_nemo_grid_t_dat,
+        dn_files + fn_nemo_dom,
+        grid_ref="t-grid",
+        multiple=True,
+    )
 
     # create an empty w-grid object, to store stratification
     sci_w = coast.NEMO(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
@@ -69,9 +80,13 @@ print("* Loaded ", config, " data")
 # Pick out a North Sea subdomain
 print("* Extract North Sea subdomain")
 ind_sci = sci_t.subset_indices([51, -4], [62, 15])
-sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+sci_nwes_t = sci_t.isel(
+    y_dim=ind_sci[0], x_dim=ind_sci[1]
+)  # nwes = northwest europe shelf
 ind_sci = sci_w.subset_indices([51, -4], [62, 15])
-sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+sci_nwes_w = sci_w.isel(
+    y_dim=ind_sci[0], x_dim=ind_sci[1]
+)  # nwes = northwest europe shelf
 
 #%% Apply masks to temperature and salinity
 if config == "AMM60":
@@ -114,12 +129,16 @@ IT.quick_plot()
 
 
 #%% Make transects
-print("* Construct transects to inspect stratification. This is an abuse of the transect code...")
+print(
+    "* Construct transects to inspect stratification. This is an abuse of the transect code..."
+)
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 tran_it = coast.Transect_t(IT, (51, 2.5), (61, 2.5))
 tran_w = coast.Transect_t(sci_nwes_w, (51, 2.5), (61, 2.5))
 tran_t = coast.Transect_t(sci_nwes_t, (51, 2.5), (61, 2.5))
-print(" - I have forced the w-pt nemo data and w-pt IT data into the t-point Transect objects\n")
+print(
+    " - I have forced the w-pt nemo data and w-pt IT data into the t-point Transect objects\n"
+)
 
 lat_sec = tran_t.data.latitude.expand_dims(dim={"z_dim": IT.nz})
 dep_sec = tran_t.data.depth_0
@@ -178,7 +197,9 @@ pycnocline and reduced precision on the depth\n"
 [JJ, II] = sci_nwes_t.find_j_i(lat=60, lon=2.5)
 zd_plus = IT.dataset.strat_1st_mom[0, JJ, II] + IT.dataset.strat_2nd_mom[0, JJ, II]
 zd_minus = IT.dataset.strat_1st_mom[0, JJ, II] - IT.dataset.strat_2nd_mom[0, JJ, II]
-plt.plot(sci_nwes_w.dataset.rho_dz[0, :, JJ, II], sci_nwes_w.dataset.depth_0[:, JJ, II], "+")
+plt.plot(
+    sci_nwes_w.dataset.rho_dz[0, :, JJ, II], sci_nwes_w.dataset.depth_0[:, JJ, II], "+"
+)
 plt.plot(IT.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
 plt.plot(
     [
@@ -195,7 +216,9 @@ plt.gca().invert_yaxis()
 plt.legend()
 plt.show()
 
-plt.plot(sci_nwes_t.dataset.density[0, :, JJ, II], sci_nwes_t.dataset.depth_0[:, JJ, II], "+")
+plt.plot(
+    sci_nwes_t.dataset.density[0, :, JJ, II], sci_nwes_t.dataset.depth_0[:, JJ, II], "+"
+)
 plt.plot(1027, IT.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
 plt.plot([1027, 1027], [zd_plus, zd_minus], "-", label="strat_2nd_mom")
 plt.xlim([1026, 1028])
@@ -213,7 +236,8 @@ print(" - we expect a RunTimeError here")
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     new_cmap = colors.LinearSegmentedColormap.from_list(
-        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval), cmap(np.linspace(minval, maxval, n))
+        "trunc({n},{a:.2f},{b:.2f})".format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)),
     )
     return new_cmap
 
@@ -229,7 +253,9 @@ H = sci_nwes_t.dataset.depth_0[-1, :, :].squeeze()
 lat = sci_nwes_t.dataset.latitude.squeeze()
 lon = sci_nwes_t.dataset.longitude.squeeze()
 
-zd = IT.dataset.strat_1st_mom_masked.where(H > 11).mean(dim="t_dim", skipna=True)  # make nan the land
+zd = IT.dataset.strat_1st_mom_masked.where(H > 11).mean(
+    dim="t_dim", skipna=True
+)  # make nan the land
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
@@ -237,10 +263,21 @@ fig = plt.figure()
 plt.rcParams["figure.figsize"] = (8.0, 8.0)
 
 ax = fig.add_subplot(111)
-cz = plt.contour(lon, lat, H, levels=[11, 50, 100, 200], colors=["k", "k", "k", "k"], linewidths=[1, 1, 1, 1])
+cz = plt.contour(
+    lon,
+    lat,
+    H,
+    levels=[11, 50, 100, 200],
+    colors=["k", "k", "k", "k"],
+    linewidths=[1, 1, 1, 1],
+)
 
-plt.contourf(lon, lat, zd, levels=np.arange(0, 40.0 + 10.0, 10.0), extend="both", cmap=new_cmap)
-ax.set_facecolor("#bbbbbb")  # Set 'underneath' to grey. contourf plots nothing for bad values
+plt.contourf(
+    lon, lat, zd, levels=np.arange(0, 40.0 + 10.0, 10.0), extend="both", cmap=new_cmap
+)
+ax.set_facecolor(
+    "#bbbbbb"
+)  # Set 'underneath' to grey. contourf plots nothing for bad values
 
 plt.xlim([-3, 11])
 plt.ylim([51, 62])

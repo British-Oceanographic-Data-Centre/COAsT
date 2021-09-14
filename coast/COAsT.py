@@ -6,8 +6,14 @@ import copy
 from .logging_util import get_slug, debug, info, warn, warning
 
 
-def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
-    Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
+def setup_dask_client(
+    workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"
+):
+    Client(
+        n_workers=workers,
+        threads_per_worker=threads,
+        memory_limit=memory_limit_per_worker,
+    )
 
 
 class COAsT:
@@ -22,7 +28,9 @@ class COAsT:
     ):
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
-        self.earth_raids = 6371.007176  # Radius of the earth in km TODO Could this be module-level?
+        self.earth_raids = (
+            6371.007176  # Radius of the earth in km TODO Could this be module-level?
+        )
         self.set_dimension_mapping()
         self.set_variable_mapping()
 
@@ -58,12 +66,12 @@ class COAsT:
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into COAsT object's dataset variable. """
+        """Loads a single file into COAsT object's dataset variable."""
         info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
-        """ Loads multiple files from directory into dataset variable. """
+        """Loads multiple files from directory into dataset variable."""
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
@@ -87,7 +95,9 @@ class COAsT:
 
     def set_grid_ref_attr(self):
         self.grid_ref_attr_mapping = None
-        debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
+        debug(
+            f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}"
+        )
 
     def set_dimension_names(self, dim_mapping: dict):
         """
@@ -98,14 +108,18 @@ class COAsT:
             dim_mapping (dict): keys are dimension names to change and values
                                 new dimension names
         """
-        debug(f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}")
+        debug(
+            f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}"
+        )
         if dim_mapping is None:
             return
         for key, value in dim_mapping.items():
             try:
                 self.dataset = self.dataset.rename_dims({key: value})
             except:  # TODO Catch specific exception(s)
-                warning(f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}")
+                warning(
+                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}"
+                )
 
     def set_variable_names(self, var_mapping: dict):
         """
@@ -123,21 +137,27 @@ class COAsT:
             try:
                 self.dataset = self.dataset.rename_vars({key: value})
             except:
-                warning(f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}")
+                warning(
+                    f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}"
+                )
 
     def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
         """
         Set attributes for variables to access within package.
         Set grid attributes to identify with grid variable is associated with.
         """
-        debug(f"Setting variable attributes for {get_slug(self)} with mapping {grid_ref_attr_mapping}")
+        debug(
+            f"Setting variable attributes for {get_slug(self)} with mapping {grid_ref_attr_mapping}"
+        )
         if grid_ref_attr_mapping is None:
             return
         for key, value in grid_ref_attr_mapping.items():
             try:
                 self.dataset[key].attrs["grid_ref"] = value
             except:
-                warning(f"{get_slug(self)}: Problem assigning attributes in {get_slug(self.dataset)}: {key} -> {value}")
+                warning(
+                    f"{get_slug(self)}: Problem assigning attributes in {get_slug(self.dataset)}: {key} -> {value}"
+                )
 
     def copy(self):
         new = copy.copy(self)
@@ -198,7 +218,9 @@ class COAsT:
     def distance_between_two_points(self):
         raise NotImplementedError
 
-    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, radius: float):
+    def subset_indices_by_distance(
+        self, centre_lon: float, centre_lat: float, radius: float
+    ):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
@@ -237,7 +259,9 @@ class COAsT:
         debug(f"Subsetting {get_slug(self)} indices within lon/lat")
         lon_str = "longitude"
         lat_str = "latitude"
-        lon = self.dataset[lon_str].copy()  # TODO Add a comment explaining why this needs to be copied
+        lon = self.dataset[
+            lon_str
+        ].copy()  # TODO Add a comment explaining why this needs to be copied
         lat = self.dataset[lat_str]
         ff = lon > lonbounds[0]
         ff *= lon < lonbounds[1]
@@ -246,7 +270,9 @@ class COAsT:
 
         return np.where(ff)
 
-    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
+    def calculate_haversine_distance(
+        self, lon1, lat1, lon2, lat2
+    ):  # TODO This could be a static method
         """
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
@@ -271,13 +297,21 @@ class COAsT:
         dlon = (lon2 - lon1) / 2
 
         # Haversine function.
-        distance = xr.ufuncs.sin(dlat) ** 2 + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
+        distance = (
+            xr.ufuncs.sin(dlat) ** 2
+            + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
+        )
         distance = 2 * 6371.007176 * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
 
         return distance
 
     def get_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self,
+        var: str,
+        points_x: slice,
+        points_y: slice,
+        line_length: int = None,
+        time_counter: int = 0,
     ):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
@@ -314,7 +348,12 @@ class COAsT:
         return smaller
 
     def get_2d_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self,
+        var: str,
+        points_x: slice,
+        points_y: slice,
+        line_length: int = None,
+        time_counter: int = 0,
     ):
         """
 
@@ -337,7 +376,9 @@ class COAsT:
         if time_counter is None:
             smaller = self.dataset[var].isel(x=points_x, y=points_y)
         else:
-            smaller = self.dataset[var].isel(time_counter=time_counter, x=points_x, y=points_y)
+            smaller = self.dataset[var].isel(
+                time_counter=time_counter, x=points_x, y=points_y
+            )
 
         return smaller
 
@@ -386,7 +427,10 @@ class COAsT:
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.mpl.gridliner import (
+                LONGITUDE_FORMATTER,
+                LATITUDE_FORMATTER,
+            )  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
             import sys
@@ -406,7 +450,9 @@ class COAsT:
             self.dataset[var]
             .isel(time_counter=time_counter, deptht=0)
             .plot.pcolormesh(
-                np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
+                np.ma.masked_where(plot_var == np.NaN, plot_var),
+                transform=ccrs.PlateCarree(),
+                cmap=params.cmap,
             )
         )
 
@@ -415,11 +461,18 @@ class COAsT:
         ax.add_feature(cartopy.feature.OCEAN)
         ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         ax.add_feature(cartopy.feature.RIVERS)
-        coast = NaturalEarthFeature(category="physical", scale="10m", facecolor="none", name="coastline")
+        coast = NaturalEarthFeature(
+            category="physical", scale="10m", facecolor="none", name="coastline"
+        )
         ax.add_feature(coast, edgecolor="gray")
 
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
         )
 
         gl.xlabels_top = False

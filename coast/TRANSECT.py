@@ -52,9 +52,13 @@ class Transect:
         if interpolated_depth is None:
             interpolated_depth = np.arange(0, np.nanmax(depth), 2)
 
-        interpolated_depth_variable_slice = np.zeros((len(interpolated_depth), variable_slice.shape[-1]))
+        interpolated_depth_variable_slice = np.zeros(
+            (len(interpolated_depth), variable_slice.shape[-1])
+        )
         for i in np.arange(0, variable_slice.shape[-1]):
-            depth_func = interpolate.interp1d(depth[:, i], variable_slice[:, i], axis=0, bounds_error=False)
+            depth_func = interpolate.interp1d(
+                depth[:, i], variable_slice[:, i], axis=0, bounds_error=False
+            )
             interpolated_depth_variable_slice[:, i] = depth_func(interpolated_depth)
 
         return interpolated_depth_variable_slice, interpolated_depth
@@ -75,11 +79,20 @@ class Transect:
         z_levels_60_290 = np.arange(60, 300, 10)
         z_levels_300_600 = np.arange(300, 650, 50)
         z_levels_650_ = np.arange(650, max_depth + 150, 150)
-        z_levels = np.concatenate((z_levels_0_50, z_levels_60_290, z_levels_300_600, z_levels_650_))
+        z_levels = np.concatenate(
+            (z_levels_0_50, z_levels_60_290, z_levels_300_600, z_levels_650_)
+        )
         z_levels = z_levels[z_levels <= max_depth]
         return z_levels
 
-    def __init__(self, nemo: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         """
         Class defining a generic transect type, which is a 3d dataset along
         a linear path between a point A and a point B, with a time dimension,
@@ -124,7 +137,9 @@ class Transect:
                     self.point_B = point_B
 
                 # Get points on transect
-                tran_y_ind, tran_x_ind, tran_len = nemo.transect_indices(self.point_A, self.point_B)
+                tran_y_ind, tran_x_ind, tran_len = nemo.transect_indices(
+                    self.point_A, self.point_B
+                )
                 tran_y_ind, tran_x_ind = self.process_transect_indices(
                     nemo, np.asarray(tran_y_ind), np.asarray(tran_x_ind)
                 )
@@ -132,7 +147,9 @@ class Transect:
                 if y_indices[0] > y_indices[-1]:
                     y_indices = y_indices[::-1]
                     x_indices = x_indices[::-1]
-                tran_y_ind, tran_x_ind = self.process_transect_indices(nemo, y_indices, x_indices)
+                tran_y_ind, tran_x_ind = self.process_transect_indices(
+                    nemo, y_indices, x_indices
+                )
                 self.point_A = (
                     nemo.dataset.latitude[tran_y_ind[0], tran_x_ind[0]],
                     nemo.dataset.longitude[tran_y_ind[0], tran_x_ind[0]],
@@ -182,25 +199,36 @@ class Transect:
             # Redefine transect so that each point on the transect is seperated
             # from its neighbours by a single index change in y or x, but not both
             dist_option_1 = (
-                nemo.dataset.e2.values[tran_y_ind, tran_x_ind] + nemo.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
+                nemo.dataset.e2.values[tran_y_ind, tran_x_ind]
+                + nemo.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
             )
             dist_option_2 = (
-                nemo.dataset.e2.values[tran_y_ind, tran_x_ind + 1] + nemo.dataset.e1.values[tran_y_ind, tran_x_ind]
+                nemo.dataset.e2.values[tran_y_ind, tran_x_ind + 1]
+                + nemo.dataset.e1.values[tran_y_ind, tran_x_ind]
             )
             spacing = np.abs(np.diff(tran_y_ind)) + np.abs(np.diff(tran_x_ind))
             if spacing.max() > 2:
                 raise ValueError(
-                    "The transect is not continuous. The transect must be defined on " "adjacent grid points."
+                    "The transect is not continuous. The transect must be defined on "
+                    "adjacent grid points."
                 )
             spacing[spacing != 2] = 0
             doublespacing = np.nonzero(spacing)[0]
             for ispacing in doublespacing[::-1]:
                 if dist_option_1[ispacing] < dist_option_2[ispacing]:
-                    tran_y_ind = np.insert(tran_y_ind, ispacing + 1, tran_y_ind[ispacing + 1])
-                    tran_x_ind = np.insert(tran_x_ind, ispacing + 1, tran_x_ind[ispacing])
+                    tran_y_ind = np.insert(
+                        tran_y_ind, ispacing + 1, tran_y_ind[ispacing + 1]
+                    )
+                    tran_x_ind = np.insert(
+                        tran_x_ind, ispacing + 1, tran_x_ind[ispacing]
+                    )
                 else:
-                    tran_y_ind = np.insert(tran_y_ind, ispacing + 1, tran_y_ind[ispacing])
-                    tran_x_ind = np.insert(tran_x_ind, ispacing + 1, tran_x_ind[ispacing + 1])
+                    tran_y_ind = np.insert(
+                        tran_y_ind, ispacing + 1, tran_y_ind[ispacing]
+                    )
+                    tran_x_ind = np.insert(
+                        tran_x_ind, ispacing + 1, tran_x_ind[ispacing + 1]
+                    )
             return tran_y_ind, tran_x_ind
         except ValueError:
             print(traceback.format_exc())
@@ -218,12 +246,17 @@ class Transect:
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER  # deg symb
+            from cartopy.mpl.gridliner import (
+                LONGITUDE_FORMATTER,
+                LATITUDE_FORMATTER,
+            )  # deg symb
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
             import sys
 
-            warnings.warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+            warnings.warn(
+                "No cartopy found - please run\nconda install -c conda-forge cartopy"
+            )
             sys.exit(-1)
 
         import matplotlib.pyplot as plt
@@ -236,12 +269,21 @@ class Transect:
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         coast = NaturalEarthFeature(
-            category="physical", scale="50m", facecolor=[0.8, 0.8, 0.8], name="coastline", alpha=0.5
+            category="physical",
+            scale="50m",
+            facecolor=[0.8, 0.8, 0.8],
+            name="coastline",
+            alpha=0.5,
         )
         ax.add_feature(coast, edgecolor="gray")
 
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
+            crs=ccrs.PlateCarree(),
+            draw_labels=True,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
         )
 
         gl.top_labels = False
@@ -289,7 +331,14 @@ class Transect_f(Transect):
 
     """
 
-    def __init__(self, nemo_f: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo_f: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         super().__init__(nemo_f, point_A, point_B, y_indices, x_indices)
 
     def calc_flow_across_transect(self, nemo_u: COAsT, nemo_v: COAsT):
@@ -356,7 +405,9 @@ class Transect_f(Transect):
                 v_ds["e3"] = v_ds.e3.expand_dims(dim={"t_dim": 1}, axis=0)
 
         velocity = np.ma.zeros((u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size - 1))
-        vol_transport = np.ma.zeros((u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size - 1))
+        vol_transport = np.ma.zeros(
+            (u_ds.t_dim.size, u_ds.z_dim.size, u_ds.r_dim.size - 1)
+        )
         depth_0 = np.ma.zeros((u_ds.z_dim.size, u_ds.r_dim.size - 1))
         latitude = np.ma.zeros((u_ds.r_dim.size - 1))
         longitude = np.ma.zeros((u_ds.r_dim.size - 1))
@@ -366,18 +417,26 @@ class Transect_f(Transect):
 
         # Find the indices where the derivative of the transect in the north, south, east and west
         # directions are positive.
-        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
+        dr_n = np.where(
+            np.diff(self.y_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
-        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
+        dr_e = np.where(
+            np.diff(self.x_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
         dr_e = dr_e[~np.isnan(dr_e)].astype(int)
-        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
+        dr_w = np.where(
+            np.diff(self.x_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
 
         # u flux (+ in)
         velocity[:, :, dr_n] = u_ds.u_velocity.to_masked_array()[:, :, dr_n + 1]
         if compute_transports:
             vol_transport[:, :, dr_n] = (
-                velocity[:, :, dr_n] * u_ds.e2.to_masked_array()[dr_n + 1] * u_ds.e3.to_masked_array()[:, :, dr_n + 1]
+                velocity[:, :, dr_n]
+                * u_ds.e2.to_masked_array()[dr_n + 1]
+                * u_ds.e3.to_masked_array()[:, :, dr_n + 1]
             )
             e3[:, :, dr_n] = u_ds.e3.values[:, :, dr_n + 1]
         depth_0[:, dr_n] = u_ds.depth_0.to_masked_array()[:, dr_n + 1]
@@ -390,7 +449,9 @@ class Transect_f(Transect):
         velocity[:, :, dr_e] = -v_ds.v_velocity.to_masked_array()[:, :, dr_e + 1]
         if compute_transports:
             vol_transport[:, :, dr_e] = (
-                velocity[:, :, dr_e] * v_ds.e1.to_masked_array()[dr_e + 1] * v_ds.e3.to_masked_array()[:, :, dr_e + 1]
+                velocity[:, :, dr_e]
+                * v_ds.e1.to_masked_array()[dr_e + 1]
+                * v_ds.e3.to_masked_array()[:, :, dr_e + 1]
             )
             e3[:, :, dr_e] = v_ds.e3.values[:, :, dr_e + 1]
         depth_0[:, dr_e] = v_ds.depth_0.to_masked_array()[:, dr_e + 1]
@@ -403,7 +464,9 @@ class Transect_f(Transect):
         velocity[:, :, dr_w] = v_ds.v_velocity.to_masked_array()[:, :, dr_w]
         if compute_transports:
             vol_transport[:, :, dr_w] = (
-                velocity[:, :, dr_w] * v_ds.e1.to_masked_array()[dr_w] * v_ds.e3.to_masked_array()[:, :, dr_w]
+                velocity[:, :, dr_w]
+                * v_ds.e1.to_masked_array()[dr_w]
+                * v_ds.e3.to_masked_array()[:, :, dr_w]
             )
             e3[:, :, dr_w] = v_ds.e3.values[:, :, dr_w]
         depth_0[:, dr_w] = v_ds.depth_0.to_masked_array()[:, dr_w]
@@ -426,7 +489,10 @@ class Transect_f(Transect):
             if compute_transports:
                 self.data_cross_tran_flow["normal_transports"] = xr.DataArray(
                     np.sum(vol_transport.squeeze(), axis=0) / 1000000.0,
-                    coords={"latitude": (("r_dim"), latitude), "longitude": (("r_dim"), longitude)},
+                    coords={
+                        "latitude": (("r_dim"), latitude),
+                        "longitude": (("r_dim"), longitude),
+                    },
                     dims=["r_dim"],
                 ).squeeze()
         else:
@@ -453,10 +519,14 @@ class Transect_f(Transect):
         self.data_cross_tran_flow["e1"] = xr.DataArray(e1, dims=["r_dim"])
         self.data_cross_tran_flow["e2"] = xr.DataArray(e2, dims=["r_dim"])
         if compute_transports:
-            self.data_cross_tran_flow["e3"] = xr.DataArray(e3, dims=["t_dim", "z_dim", "r_dim"])
+            self.data_cross_tran_flow["e3"] = xr.DataArray(
+                e3, dims=["t_dim", "z_dim", "r_dim"]
+            )
         # DataArray attributes
         self.data_cross_tran_flow.normal_velocities.attrs["units"] = "m/s"
-        self.data_cross_tran_flow.normal_velocities.attrs["standard_name"] = "velocity across the transect"
+        self.data_cross_tran_flow.normal_velocities.attrs[
+            "standard_name"
+        ] = "velocity across the transect"
         self.data_cross_tran_flow.normal_velocities.attrs[
             "long_name"
         ] = "velocity across the transect defined on the normal velocity grid points"
@@ -475,7 +545,9 @@ class Transect_f(Transect):
         ] = "Initial depth at time zero defined at the normal velocity grid points"
         self.data_cross_tran_flow = self.data_cross_tran_flow.squeeze()
 
-    def __pressure_grad_fpoint(self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, r_ind, velocity_component):
+    def __pressure_grad_fpoint(
+        self, ds_T, ds_T_j1, ds_T_i1, ds_T_j1i1, r_ind, velocity_component
+    ):
         """
         Calculates the hydrostatic and surface pressure gradients at a set of f-points
         along the transect, i.e. at a set of specific values of r_dim (but for all time and depth).
@@ -515,15 +587,23 @@ class Transect_f(Transect):
             e1v_i1 = 0.5 * (ds_T_j1i1.e1.data[r_ind] + ds_T_i1.e1.data[r_ind])
             e1f = 0.5 * (e1v + e1v_i1)
             # calculate gradients at v-points either side of f-point
-            hpg = (ds_T_j1.pressure_h_zlevels.data[:, :, r_ind] - ds_T.pressure_h_zlevels.data[:, :, r_ind]) / e2v
+            hpg = (
+                ds_T_j1.pressure_h_zlevels.data[:, :, r_ind]
+                - ds_T.pressure_h_zlevels.data[:, :, r_ind]
+            ) / e2v
             hpg_i1 = (
-                ds_T_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_T_i1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_T_j1i1.pressure_h_zlevels.data[:, :, r_ind]
+                - ds_T_i1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e2v_i1
             # average onto f-point
             hpg_f = 0.5 * ((e1v * hpg) + (e1v_i1 * hpg_i1)) / e1f
             # as aboave
-            spg = (ds_T_j1.pressure_s.data[:, r_ind] - ds_T.pressure_s.data[:, r_ind]) / e2v
-            spg_i1 = (ds_T_j1i1.pressure_s.data[:, r_ind] - ds_T_i1.pressure_s.data[:, r_ind]) / e2v_i1
+            spg = (
+                ds_T_j1.pressure_s.data[:, r_ind] - ds_T.pressure_s.data[:, r_ind]
+            ) / e2v
+            spg_i1 = (
+                ds_T_j1i1.pressure_s.data[:, r_ind] - ds_T_i1.pressure_s.data[:, r_ind]
+            ) / e2v_i1
             spg_f = 0.5 * ((e1v * spg) + (e1v_i1 * spg_i1)) / e1f
         elif velocity_component == "v":
             # required scale factors for derivative and averaging
@@ -533,15 +613,23 @@ class Transect_f(Transect):
             e2u_j1 = 0.5 * (ds_T_j1i1.e2.data[r_ind] + ds_T_j1.e2.data[r_ind])
             e2f = 0.5 * (e2u + e2u_j1)
             # calculate gradients at u-points either side of f-point
-            hpg = (ds_T_i1.pressure_h_zlevels.data[:, :, r_ind] - ds_T.pressure_h_zlevels.data[:, :, r_ind]) / e1u
+            hpg = (
+                ds_T_i1.pressure_h_zlevels.data[:, :, r_ind]
+                - ds_T.pressure_h_zlevels.data[:, :, r_ind]
+            ) / e1u
             hpg_j1 = (
-                ds_T_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_T_j1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_T_j1i1.pressure_h_zlevels.data[:, :, r_ind]
+                - ds_T_j1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e1u_j1
             # average onto f-point
             hpg_f = 0.5 * ((e2u * hpg) + (e2u_j1 * hpg_j1)) / e2f
             # as above
-            spg = (ds_T_i1.pressure_s.data[:, r_ind] - ds_T.pressure_s.data[:, r_ind]) / e1u
-            spg_j1 = (ds_T_j1i1.pressure_s.data[:, r_ind] - ds_T_j1.pressure_s.data[:, r_ind]) / e1u_j1
+            spg = (
+                ds_T_i1.pressure_s.data[:, r_ind] - ds_T.pressure_s.data[:, r_ind]
+            ) / e1u
+            spg_j1 = (
+                ds_T_j1i1.pressure_s.data[:, r_ind] - ds_T_j1.pressure_s.data[:, r_ind]
+            ) / e1u_j1
             spg_f = 0.5 * ((e2u * spg) + (e2u_j1 * spg_j1)) / e2f
 
         return (hpg_f, spg_f)
@@ -576,23 +664,36 @@ class Transect_f(Transect):
 
 
         """
-        debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(nemo_t)}")
+        debug(
+            f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with "
+            f"{get_slug(nemo_t)}"
+        )
 
         # If there is no time dimension, add one then remove at end. This is so
         # indexing can assume a time dimension exists
         nemo_t_local = nemo_t.copy()
         if "t_dim" not in nemo_t_local.dataset.dims:
-            nemo_t_local.dataset = nemo_t_local.dataset.expand_dims(dim={"t_dim": 1}, axis=0)
+            nemo_t_local.dataset = nemo_t_local.dataset.expand_dims(
+                dim={"t_dim": 1}, axis=0
+            )
 
         # We need to calculate the pressure at four t-points to get an
         # average onto the pressure gradient at the f-points, which will then
         # be averaged onto the normal velocity points. Here we subset the nemo_t
         # data around the transect so we have these four t-grid points at each
         # point along the transect
-        tran_t = Transect_t(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind)  # j,i
-        tran_t_j1 = Transect_t(nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind)  # j+1,i
-        tran_t_i1 = Transect_t(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind + 1)  # j,i+1
-        tran_t_j1i1 = Transect_t(nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind + 1)  # j+1,i+1
+        tran_t = Transect_t(
+            nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind
+        )  # j,i
+        tran_t_j1 = Transect_t(
+            nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind
+        )  # j+1,i
+        tran_t_i1 = Transect_t(
+            nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind + 1
+        )  # j,i+1
+        tran_t_j1i1 = Transect_t(
+            nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind + 1
+        )  # j+1,i+1
 
         bath_max = np.max(
             [
@@ -636,23 +737,40 @@ class Transect_f(Transect):
                         ),
                         dim="concat_dim",
                     )
-                    .mean(dim=("concat_dim", "r_dim", "t_dim", "depth_z_levels"), skipna=True)
+                    .mean(
+                        dim=("concat_dim", "r_dim", "t_dim", "depth_z_levels"),
+                        skipna=True,
+                    )
                     .item()
                 )
 
-        tran_t.data["pressure_h_zlevels"] = tran_t.data.pressure_h_zlevels - pressure_h_zlevel_mean
-        tran_t_j1.data["pressure_h_zlevels"] = tran_t_j1.data.pressure_h_zlevels - pressure_h_zlevel_mean
-        tran_t_i1.data["pressure_h_zlevels"] = tran_t_i1.data.pressure_h_zlevels - pressure_h_zlevel_mean
-        tran_t_j1i1.data["pressure_h_zlevels"] = tran_t_j1i1.data.pressure_h_zlevels - pressure_h_zlevel_mean
+        tran_t.data["pressure_h_zlevels"] = (
+            tran_t.data.pressure_h_zlevels - pressure_h_zlevel_mean
+        )
+        tran_t_j1.data["pressure_h_zlevels"] = (
+            tran_t_j1.data.pressure_h_zlevels - pressure_h_zlevel_mean
+        )
+        tran_t_i1.data["pressure_h_zlevels"] = (
+            tran_t_i1.data.pressure_h_zlevels - pressure_h_zlevel_mean
+        )
+        tran_t_j1i1.data["pressure_h_zlevels"] = (
+            tran_t_j1i1.data.pressure_h_zlevels - pressure_h_zlevel_mean
+        )
 
         # Coriolis parameter
         f = 2 * self.EARTH_ROT_RATE * np.sin(np.deg2rad(self.data.latitude))
 
         # Find the indices where the derivative of the transect in the north, south, east and west
         # directions are positive.
-        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
-        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
-        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
+        dr_n = np.where(
+            np.diff(self.y_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
+        dr_e = np.where(
+            np.diff(self.x_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
+        dr_w = np.where(
+            np.diff(self.x_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan
+        )
         dr_list = [
             dr_n[~np.isnan(dr_n)].astype(int),
             dr_e[~np.isnan(dr_e)].astype(int),
@@ -661,9 +779,15 @@ class Transect_f(Transect):
 
         # horizontal scale factors on the relevent u and v grids that are
         # normal to the transect for dr_n, dr_e, dr_w
-        e2u_j1 = 0.5 * (tran_t_j1.data.e2.data[dr_list[0]] + tran_t_j1i1.data.e2.data[dr_list[0]])
-        e1v_i1 = 0.5 * (tran_t_i1.data.e1.data[dr_list[1]] + tran_t_j1i1.data.e1.data[dr_list[1]])
-        e1v = 0.5 * (tran_t.data.e1.data[dr_list[2]] + tran_t_j1.data.e1.data[dr_list[2]])
+        e2u_j1 = 0.5 * (
+            tran_t_j1.data.e2.data[dr_list[0]] + tran_t_j1i1.data.e2.data[dr_list[0]]
+        )
+        e1v_i1 = 0.5 * (
+            tran_t_i1.data.e1.data[dr_list[1]] + tran_t_j1i1.data.e1.data[dr_list[1]]
+        )
+        e1v = 0.5 * (
+            tran_t.data.e1.data[dr_list[2]] + tran_t_j1.data.e1.data[dr_list[2]]
+        )
         e_horiz_vel = [e2u_j1, e1v_i1, e1v]
         # Horizontal scale factors on f-grid for dr_n, dr_e, dr_w
         e_horiz_f = [self.data.e2, self.data.e1, self.data.e1]
@@ -677,8 +801,12 @@ class Transect_f(Transect):
         # data_cross_flow dataset need to be on these points.
         da_y_ind = xr.DataArray(self.y_ind, dims=["r_dim"])
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
-        u_ds = NEMO(fn_domain=self.filename_domain, grid_ref="u-grid").dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        v_ds = NEMO(fn_domain=self.filename_domain, grid_ref="v-grid").dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        u_ds = NEMO(fn_domain=self.filename_domain, grid_ref="u-grid").dataset.isel(
+            y_dim=da_y_ind, x_dim=da_x_ind
+        )
+        v_ds = NEMO(fn_domain=self.filename_domain, grid_ref="v-grid").dataset.isel(
+            y_dim=da_y_ind, x_dim=da_x_ind
+        )
         ds = [u_ds, v_ds, v_ds]
 
         # Drop the last point because the normal velocity points are defined at
@@ -695,21 +823,37 @@ class Transect_f(Transect):
             dr_list, velocity_component, flow_direction, e_horiz_vel, e_horiz_f, ds
         ):
             hpg, spg = self.__pressure_grad_fpoint(
-                tran_t.data, tran_t_j1.data, tran_t_i1.data, tran_t_j1i1.data, dr, vel_comp
+                tran_t.data,
+                tran_t_j1.data,
+                tran_t_i1.data,
+                tran_t_j1i1.data,
+                dr,
+                vel_comp,
             )
             hpg_r1, spg_r1 = self.__pressure_grad_fpoint(
-                tran_t.data, tran_t_j1.data, tran_t_i1.data, tran_t_j1i1.data, dr + 1, vel_comp
+                tran_t.data,
+                tran_t_j1.data,
+                tran_t_i1.data,
+                tran_t_j1i1.data,
+                dr + 1,
+                vel_comp,
             )
             normal_velocity_hpg[:, :, dr] = (
                 flow_dir
                 * 0.5
-                * (e_hor_f.data[dr] * hpg / f.data[dr] + e_hor_f.data[dr + 1] * hpg_r1 / f.data[dr + 1])
+                * (
+                    e_hor_f.data[dr] * hpg / f.data[dr]
+                    + e_hor_f.data[dr + 1] * hpg_r1 / f.data[dr + 1]
+                )
                 / (e_hor_vel * ref_density)
             )
             normal_velocity_spg[:, dr] = (
                 flow_dir
                 * 0.5
-                * (e_hor_f.data[dr] * spg / f.data[dr] + e_hor_f.data[dr + 1] * spg_r1 / f.data[dr + 1])
+                * (
+                    e_hor_f.data[dr] * spg / f.data[dr]
+                    + e_hor_f.data[dr + 1] * spg_r1 / f.data[dr + 1]
+                )
                 / (e_hor_vel * ref_density)
             )
             e_horiz[:, dr] = e_hor_vel
@@ -721,7 +865,9 @@ class Transect_f(Transect):
         # H = np.zeros_like( self.data.bathymetry.values )[:-1]
         H = 0.5 * (self.data.bathymetry.values[:-1] + self.data.bathymetry.values[1:])
         # Remove redundent levels below bathymetry
-        normal_velocity_hpg = np.where(z_levels[:, np.newaxis] <= H, normal_velocity_hpg, np.nan)
+        normal_velocity_hpg = np.where(
+            z_levels[:, np.newaxis] <= H, normal_velocity_hpg, np.nan
+        )
         active_z_levels = np.count_nonzero(~np.isnan(normal_velocity_hpg), axis=1).max()
         normal_velocity_hpg = normal_velocity_hpg[:, :active_z_levels, :]
         z_levels = z_levels[:active_z_levels]
@@ -738,7 +884,10 @@ class Transect_f(Transect):
             "standard name": "velocity across the \
                           transect due to the hydrostatic pressure gradient",
         }
-        coords_spg = {"latitude": (("r_dim"), latitude), "longitude": (("r_dim"), longitude)}
+        coords_spg = {
+            "latitude": (("r_dim"), latitude),
+            "longitude": (("r_dim"), longitude),
+        }
         dims_spg = ["r_dim"]
         attributes_spg = {
             "units": "m/s",
@@ -755,13 +904,23 @@ class Transect_f(Transect):
 
         # Add DataArrays  to dataset
         self.data_cross_tran_flow["normal_velocity_hpg"] = xr.DataArray(
-            np.squeeze(normal_velocity_hpg), coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg
+            np.squeeze(normal_velocity_hpg),
+            coords=coords_hpg,
+            dims=dims_hpg,
+            attrs=attributes_hpg,
         )
         self.data_cross_tran_flow["normal_velocity_spg"] = xr.DataArray(
-            np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
+            np.squeeze(normal_velocity_spg),
+            coords=coords_spg,
+            dims=dims_spg,
+            attrs=attributes_spg,
         )
         self.data_cross_tran_flow["normal_transport_hpg"] = (
-            (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(dim="depth_z_levels"))
+            (
+                self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(
+                    dim="depth_z_levels"
+                )
+            )
             * e_horiz
             / 1000000
         )
@@ -780,9 +939,13 @@ class Transect_f(Transect):
         self.data_cross_tran_flow["latitude"] = xr.DataArray(latitude, dims=["r_dim"])
         self.data_cross_tran_flow["longitude"] = xr.DataArray(longitude, dims=["r_dim"])
         self.data_cross_tran_flow["e12"] = xr.DataArray(e_horiz[0, :], dims=["r_dim"])
-        self.data_cross_tran_flow["depth_0_original"] = xr.DataArray(depth_0, dims=["z_dim", "r_dim"])
+        self.data_cross_tran_flow["depth_0_original"] = xr.DataArray(
+            depth_0, dims=["z_dim", "r_dim"]
+        )
         self.data_cross_tran_flow.depth_0_original.attrs["units"] = "m"
-        self.data_cross_tran_flow.depth_0_original.attrs["standard_name"] = "original depth coordinate"
+        self.data_cross_tran_flow.depth_0_original.attrs[
+            "standard_name"
+        ] = "original depth coordinate"
         self.data_cross_tran_flow.e12.attrs[
             "standard_name"
         ] = "horizontal scale factor along the transect at the normal velocity point"
@@ -805,15 +968,21 @@ class Transect_f(Transect):
 
 
         """
-        debug(f"Plotting normal velocity for {get_slug(self)} with plot_info {plot_info}")
+        debug(
+            f"Plotting normal velocity for {get_slug(self)} with plot_info {plot_info}"
+        )
         try:
             data = self.data_cross_tran_flow.sel(t_dim=time)
         except KeyError:
             data = self.data_cross_tran_flow.isel(t_dim=time)
 
         if smoothing_window != 0:
-            normal_velocities, depth = Transect.interpolate_slice(data.normal_velocities, data.depth_0)
-            normal_velocities = Transect.moving_average(normal_velocities, smoothing_window, axis=-1)
+            normal_velocities, depth = Transect.interpolate_slice(
+                data.normal_velocities, data.depth_0
+            )
+            normal_velocities = Transect.moving_average(
+                normal_velocities, smoothing_window, axis=-1
+            )
             r_dim_2d = np.broadcast_to(data.r_dim, normal_velocities.shape)
         else:
             normal_velocities = data.normal_velocities
@@ -842,7 +1011,9 @@ class Transect_f(Transect):
         plt.show()
         return fig, ax
 
-    def plot_depth_integrated_transport(self, time, plot_info: dict, smoothing_window=0):
+    def plot_depth_integrated_transport(
+        self, time, plot_info: dict, smoothing_window=0
+    ):
         """
             Quick plot routine of depth integrated transport across the transect AB at a specific time.
             An option is provided to smooth along the transect via convolution,
@@ -863,7 +1034,9 @@ class Transect_f(Transect):
             data = self.data_cross_tran_flow.isel(t_dim=time)
 
         if smoothing_window != 0:
-            transport = self.moving_average(data.normal_transports, smoothing_window, axis=-1)
+            transport = self.moving_average(
+                data.normal_transports, smoothing_window, axis=-1
+            )
         else:
             transport = data.normal_transports
 
@@ -914,7 +1087,14 @@ class Transect_t(Transect):
 
     """
 
-    def __init__(self, nemo_t: COAsT, point_A: tuple = None, point_B: tuple = None, y_indices=None, x_indices=None):
+    def __init__(
+        self,
+        nemo_t: COAsT,
+        point_A: tuple = None,
+        point_B: tuple = None,
+        y_indices=None,
+        x_indices=None,
+    ):
         super().__init__(nemo_t, point_A, point_B, y_indices, x_indices)
 
     def construct_pressure(self, ref_density=None, z_levels=None, extrapolate=False):
@@ -983,9 +1163,17 @@ class Transect_t(Transect):
                     temperature_s_r = temperature_s[it, :, ir].compressed()
                     s_levels_r = s_levels[: len(salinity_s_r), ir]
 
-                    sal_func = interpolate.interp1d(s_levels_r, salinity_s_r, kind="linear", fill_value="extrapolate")
+                    sal_func = interpolate.interp1d(
+                        s_levels_r,
+                        salinity_s_r,
+                        kind="linear",
+                        fill_value="extrapolate",
+                    )
                     temp_func = interpolate.interp1d(
-                        s_levels_r, temperature_s_r, kind="linear", fill_value="extrapolate"
+                        s_levels_r,
+                        temperature_s_r,
+                        kind="linear",
+                        fill_value="extrapolate",
                     )
 
                     if extrapolate is True:
@@ -994,10 +1182,14 @@ class Transect_t(Transect):
                     else:
                         # set levels below the bathymetry to nan
                         salinity_z[it, :, ir] = np.where(
-                            z_levels <= self.data.bathymetry.values[ir], sal_func(z_levels), np.nan
+                            z_levels <= self.data.bathymetry.values[ir],
+                            sal_func(z_levels),
+                            np.nan,
                         )
                         temperature_z[it, :, ir] = np.where(
-                            z_levels <= self.data.bathymetry.values[ir], temp_func(z_levels), np.nan
+                            z_levels <= self.data.bathymetry.values[ir],
+                            temp_func(z_levels),
+                            np.nan,
                         )
 
         if extrapolate is False:
@@ -1008,16 +1200,24 @@ class Transect_t(Transect):
             z_levels = z_levels[:active_z_levels]
 
         # Absolute Pressure (depth must be negative)
-        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data.latitude))
+        pressure_absolute = np.ma.masked_invalid(
+            gsw.p_from_z(-z_levels[:, np.newaxis], self.data.latitude)
+        )
         # Absolute Salinity
         salinity_absolute = np.ma.masked_invalid(
-            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data.longitude, self.data.latitude)
+            gsw.SA_from_SP(
+                salinity_z, pressure_absolute, self.data.longitude, self.data.latitude
+            )
         )
         salinity_absolute = np.ma.masked_less(salinity_absolute, 0)
         # Conservative Temperature
-        temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(salinity_absolute, temperature_z))
+        temp_conservative = np.ma.masked_invalid(
+            gsw.CT_from_pt(salinity_absolute, temperature_z)
+        )
         # In-situ density
-        density_z = np.ma.masked_invalid(gsw.rho(salinity_absolute, temp_conservative, pressure_absolute))
+        density_z = np.ma.masked_invalid(
+            gsw.rho(salinity_absolute, temp_conservative, pressure_absolute)
+        )
 
         coords = {
             "depth_z_levels": (("depth_z_levels"), z_levels),
@@ -1025,7 +1225,10 @@ class Transect_t(Transect):
             "longitude": (("r_dim"), self.data.longitude),
         }
         dims = ["depth_z_levels", "r_dim"]
-        attributes = {"units": "kg / m^3", "standard name": "In-situ density on the z-level vertical grid"}
+        attributes = {
+            "units": "kg / m^3",
+            "standard name": "In-situ density on the z-level vertical grid",
+        }
 
         if shape_ds[0] != 1:
             coords["time"] = (("t_dim"), self.data.time.values)
@@ -1033,10 +1236,14 @@ class Transect_t(Transect):
 
         if ref_density is None:
             ref_density = np.mean(density_z)
-        self.data["density_zlevels"] = xr.DataArray(np.squeeze(density_z), coords=coords, dims=dims, attrs=attributes)
+        self.data["density_zlevels"] = xr.DataArray(
+            np.squeeze(density_z), coords=coords, dims=dims, attrs=attributes
+        )
 
         # Cumulative integral of perturbation density on z levels
-        density_cumulative = -cumtrapz(density_z - ref_density, x=-z_levels, axis=1, initial=0)
+        density_cumulative = -cumtrapz(
+            density_z - ref_density, x=-z_levels, axis=1, initial=0
+        )
         hydrostatic_pressure = density_cumulative * self.GRAVITY
 
         attributes = {
@@ -1047,4 +1254,7 @@ class Transect_t(Transect):
             np.squeeze(hydrostatic_pressure), coords=coords, dims=dims, attrs=attributes
         )
         self.data["pressure_s"] = ref_density * self.GRAVITY * self.data.ssh.squeeze()
-        self.data.pressure_s.attrs = {"units": "kg m^{-1} s^{-2}", "standard_name": "Surface perturbation pressure"}
+        self.data.pressure_s.attrs = {
+            "units": "kg m^{-1} s^{-2}",
+            "standard_name": "Surface perturbation pressure",
+        }

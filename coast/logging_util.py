@@ -15,7 +15,11 @@ def get_logger(name: str = None, level: int = logging.DEBUG):
     return logger
 
 
-def create_handler(logger: logging.Logger, stream: io.TextIOWrapper = sys.stdout, format_string: str = DEFAULT_FORMAT):
+def create_handler(
+    logger: logging.Logger,
+    stream: io.TextIOWrapper = sys.stdout,
+    format_string: str = DEFAULT_FORMAT,
+):
     handler = logging.StreamHandler(stream)
     handler.setLevel(logger.level)
     formatter = logging.Formatter(format_string)
@@ -57,7 +61,9 @@ def get_source(level=1):
 def add_info(msg, level=3):
     source = get_source(level=level)
     if isinstance(msg, Exception):
-        msg = f"{msg.__class__.__name__}: {str(msg)}\n" + "".join(traceback.format_tb(msg.__traceback__))
+        msg = f"{msg.__class__.__name__}: {str(msg)}\n" + "".join(
+            traceback.format_tb(msg.__traceback__)
+        )
     msg = f"{source[0]}.{source[2]}.{source[1]}: {msg}"
     return msg
 

@@ -38,9 +38,11 @@ class CDF:
         debug(f"{get_slug(self)} initialised")
 
     def set_x_bounds(self):
-        """ Calculate x bounds for CDF plotting """
+        """Calculate x bounds for CDF plotting"""
         # Is input a single value (st. dev == 0)
-        single_value = True if self.sigma == 0 else False  # TODO This could just be: single_value = self.sigma == 0
+        single_value = (
+            True if self.sigma == 0 else False
+        )  # TODO This could just be: single_value = self.sigma == 0
         if single_value:
             self.cdf_type = "empirical"
 
@@ -76,12 +78,18 @@ class CDF:
 
         elif self.cdf_type == "theoretical":
             if self.cdf_func == "gaussian":
-                y = stats_util.cumulative_distribution(mu=self.mu, sigma=self.sigma, x=x, cdf_func=self.cdf_func)
+                y = stats_util.cumulative_distribution(
+                    mu=self.mu, sigma=self.sigma, x=x, cdf_func=self.cdf_func
+                )
             else:
                 raise NotImplementedError
         else:
-            error(f'CDF type for {get_slug(self)} is "{self.cdf_type}", which is not acceptable, raising exception!')
-            raise Exception(f"CDF Type must be empirical or theoretical")  # TODO This should probably be a ValueError
+            error(
+                f'CDF type for {get_slug(self)} is "{self.cdf_type}", which is not acceptable, raising exception!'
+            )
+            raise Exception(
+                f"CDF Type must be empirical or theoretical"
+            )  # TODO This should probably be a ValueError
         debug(f'CDF type for {get_slug(self)} is "{self.cdf_type}"')
 
         return x, y
@@ -208,7 +216,7 @@ class CDF:
         return common_x
 
     def quick_plot(self):
-        """ A quick plot showing the CDF contained in this object."""
+        """A quick plot showing the CDF contained in this object."""
         debug(f"Generating quick plot for {get_slug(self)}")
         ax = plt.subplot(111)
         x, y = self.build_discrete_cdf()
