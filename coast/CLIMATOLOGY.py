@@ -144,6 +144,9 @@ class CLIMATOLOGY(COAsT):
             warn("Time dimension is not np.datatime64 but time variable is. Swapping time dimension for data variable.")
             new_ds = ds.swap_dims({f"{time_dim}": f"{time_var}"})
             time_dim = time_var
+        elif np.issubdtype(time_dim_da.dtype, np.datetime64):
+            # Continue without warning.
+            new_ds = ds
         else:
             # Slicing will most likely fail for non np.datetime64 datatypes.
             warn("Neither time dimension or time variable data are np.datetime64. Time slicing may fail.")
