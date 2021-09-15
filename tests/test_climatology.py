@@ -1,10 +1,10 @@
-from coast.CLIMATOLOGY import CLIMATOLOGY, Season
+from coast.CLIMATOLOGY import CLIMATOLOGY
+from coast import seasons
 from datetime import date
 
-
 YEARS = [2000, 2001]
-PERIOD = Season.ALL
-# Date ranges for WINTER 2000 -> 2003
+PERIOD = seasons.ALL
+# Date ranges for all seasons 2000 -> 2003.
 DATE_RANGES = [
     (date(2000, 3, 1), date(2000, 5, 31)),
     (date(2000, 6, 1), date(2000, 9, 30)),
