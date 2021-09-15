@@ -10,7 +10,7 @@ import xarray as xr
 from . import general_utils, stats_util
 from .COAsT import COAsT
 from .config import ConfigParser
-from .logging_util import get_slug, debug, info, warn, error
+from .logging_util import get_slug, debug, info, warn, error, warning
 
 
 class Gridded(COAsT):  # TODO Complete this docstring
@@ -73,7 +73,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
             dataset_domain = self.load_domain(self.fn_domain, chunks)
 
             # Define extra domain attributes using kwargs dictionary
-            ## This is a bit of a placeholder. Some domain/nemo files will have missing variables
+            # This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
                 dataset_domain[key] = value
 
@@ -104,8 +104,9 @@ class Gridded(COAsT):  # TODO Complete this docstring
             mapping = {key: value}
             try:
                 dataset_domain = dataset_domain.rename_dims(mapping)
-            except:  # FIXME Catch specific exception(s)
-                error(f"Exception while renaming dimensions from domain in NEMO object with key:value {mapping}")
+            except ValueError as err:
+                warning(f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                        f"{chr(10)}Error message of '{err}'")
 
         return dataset_domain
 
@@ -114,7 +115,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
         debug(f"Merging {get_slug(dataset_domain)} into {get_slug(self)}")
         # Define grid independent variables to pull across
 
-        all_vars = self.grid_vars + self.config.code_processing.not_grid_variables  # FIXME Add an else clause to avoid unhandled error when no ifs are True
+        all_vars = self.grid_vars + self.config.code_processing.not_grid_variables
 
         # Trim domain DataArray area if necessary.
         self.copy_domain_vars_to_dataset(dataset_domain, self.grid_vars)
@@ -124,15 +125,15 @@ class Gridded(COAsT):  # TODO Complete this docstring
         for var in self.config.code_processing.coord_variables:
             try:
                 self.dataset = self.dataset.set_coords(var)
-            except:  # FIXME Catch specific exception(s)
-                pass  # TODO Do we need to log something here?
+            except ValueError as err:
+                warning(f"Issue with settings coordinates using value {var}.{chr(10)}Error message of {err}")
 
         # Delete specified variables
         for var in self.config.code_processing.delete_variables:
             try:
                 self.dataset = self.dataset.drop(var)
-            except:  # FIXME Catch specific exception(s)
-                pass  # TODO Do we need to log something here?
+            except ValueError as err:
+                warning(f"Issue with dropping variable {var}.{chr(10)}Error message of {err}")
 
     def __getitem__(self, name: str):
         return self.dataset[name]
@@ -160,7 +161,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
 
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
-        except AttributeError:
+        except AttributeError as err:
             bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
             (warnings.warn(f"The model domain loaded, '{self.filename_domain}', does not contain the "
                            "bathy_metry' variable. This will result in the "
@@ -168,7 +169,8 @@ class Gridded(COAsT):  # TODO Complete this docstring
                            "may result in unexpected behaviour from routines that require "
                            "this variable."))
             debug(f"The bathy_metry variable was missing from the domain_cfg for "
-                  f"{get_slug(self)} with {get_slug(dataset_domain)}")
+                  f"{get_slug(self)} with {get_slug(dataset_domain)}"
+                  f"{chr(10)}Error message of {err}")
         try:
             if self.grid_ref == 't-grid':
                 e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
@@ -550,7 +552,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
             ny = var.sizes['y_dim']
             nx = var.sizes['x_dim']
 
-            ## Compute d(t_grid)/dz --> w-grid
+            # Compute d(t_grid)/dz --> w-grid
             # Check grid_ref and dir. Determine target grid_ref.
             if (self.grid_ref == 't-grid') and (dim == 'z_dim'):
                 out_grid = 'w-grid'

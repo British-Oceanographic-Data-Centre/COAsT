@@ -13,7 +13,8 @@ from .config_structure import (
     CodeProcessing
 )
 
-class ConfigParser():
+
+class ConfigParser:
     """Class for parsing gridded and indexed configuration files."""
     def __init__(self, json_path: Union[Path, str]):
         """Config parser constructor.
@@ -38,7 +39,7 @@ class ConfigParser():
             json_content (dict): Config file json.
         """
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
-        grid_ref = json_content[ConfigKeys.GRIDREF]
+        grid_ref = json_content[ConfigKeys.GRID_REF]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
         chunks = json_content[ConfigKeys.CHUNKS]
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
@@ -76,7 +77,7 @@ class ConfigParser():
             Args:
                 json_content (dict): Config file json.
         """
-        dataset_json = json_content[ConfigKeys.CODEPROCESSING]
+        dataset_json = json_content[ConfigKeys.CODE_PROCESSING]
         return CodeProcessing(coord_variables=dataset_json[ConfigKeys.COO_VAR],
                               delete_variables=dataset_json[ConfigKeys.DEL_VAR],
                               not_grid_variables=dataset_json[ConfigKeys.NO_GR_VAR])

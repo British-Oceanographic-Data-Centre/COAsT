@@ -10,15 +10,15 @@ class ConfigTypes(Enum):
     INDEXED = "indexed"
 
 
-class ConfigKeys():
+class ConfigKeys:
     """Class of constants representing valid keys within configuriation json."""
     TYPE="type"
     DIMENSIONALITY="dimensionality"
-    GRIDREF="grid_ref"
+    GRID_REF= "grid_ref"
     PROC_FLAGS="processing_flags"
     DATASET="dataset"
     DOMAIN="domain"
-    CODEPROCESSING="static_variables"
+    CODE_PROCESSING= "static_variables"
     DIM_MAP="dimension_map"
     VAR_MAP="variable_map"
     CHUNKS="chunks"
@@ -28,7 +28,7 @@ class ConfigKeys():
 
 
 @dataclass(frozen=True)
-class DataFile():
+class DataFile:
     """General parent dataclass for holding common config attributes of datafiles.
     
     Args:
@@ -41,9 +41,7 @@ class DataFile():
 
 @dataclass(frozen=True)
 class CodeProcessing:
-    """
-    Dataclass holding config attributes for static variables that might not need changing between model runs
-    """
+    """Dataclass holding config attributes for static variables that might not need changing between model runs"""
     not_grid_variables: list
     coord_variables: list
     delete_variables: list
@@ -51,23 +49,18 @@ class CodeProcessing:
 
 @dataclass(frozen=True)
 class Dataset(DataFile):
-    """
-    Dataclass holding config attributes for Dataset datafiles. Extends DataFile.
-    """
+    """Dataclass holding config attributes for Dataset datafiles. Extends DataFile."""
     pass
 
 
 @dataclass(frozen=True)
 class Domain(DataFile):
-    """
-    Dataclass holding config attributes for Domain datafiles. Extends DataFile.
-    """
+    """Dataclass holding config attributes for Domain datafiles. Extends DataFile."""
     pass
 
 
-
 @dataclass(frozen=True)
-class Config():
+class Config:
     """General dataclass for holding common config file attributes.
     
     Args:
