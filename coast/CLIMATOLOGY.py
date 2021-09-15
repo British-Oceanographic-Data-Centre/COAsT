@@ -136,7 +136,7 @@ class CLIMATOLOGY(COAsT):
             warn("Neither time dimension or time variable data are np.datetime64. Time slicing may fail.")
 
         # Get years of data.
-        data_years = list(new_ds[f"{time_dim}.year"].to_numpy())
+        data_years = list(new_ds[f"{time_dim}.year"].data)
         # Append first year - 1, to account for possible WINTER month data of year prior to data beginning.
         data_years.insert(0, data_years[0] - 1)
 
