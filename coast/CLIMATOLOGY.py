@@ -112,7 +112,7 @@ class CLIMATOLOGY(COAsT):
             ds (xr.Dataset): xarray dataset containing data.
             month_periods (list): A list containing tuples of start and end month integers.
             (i.e. [(3,5),(12, 2)] is Mar -> May, Dec -> Feb). Must be in chronological order.
-            The Season class can be used for convenience (e.g. Season.WINTER, Season.All etc. )
+            The seasons module can be used for convenience (e.g. seasons.WINTER, seasons.ALL etc. )
             time_var (str): String representing the time variable name within the dataset.
             time_dim (str): String representing the time dimension name within the dataset.
         returns:
@@ -174,16 +174,3 @@ class CLIMATOLOGY(COAsT):
             except ArithmeticError:
                 warn(f"Skipped mean calculation for {var_name} due to error: {traceback.format_exc()}")
         return ds_mean
-
-
-class Season:
-    """Class with attributes defining month ranges for the four seasons.
-
-    Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.
-    """
-
-    SPRING = [(3, 5)]
-    SUMMER = [(6, 9)]
-    AUTUMN = [(10, 11)]
-    WINTER = [(12, 2)]
-    ALL = [(3, 5), (6, 9), (10, 11), (12, 2)]
