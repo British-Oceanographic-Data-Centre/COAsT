@@ -119,8 +119,8 @@ class CLIMATOLOGY(COAsT):
 
     @staticmethod
     def multiyear_averages(
-        ds: xr.Dataset, month_periods: List[Tuple[int, int]], time_var: str = "time", time_dim: str = "t_dim"
-    ):
+        ds: xr.Dataset, month_periods: List[Tuple[int, int]], time_var: str = "time", time_dim: str = "t_dim")\
+            -> xr.Dataset:
         """Calculate multiyear means for all Data variables in a dataset between a given start and end month.
 
         Args:
