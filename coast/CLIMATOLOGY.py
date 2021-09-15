@@ -122,19 +122,18 @@ class CLIMATOLOGY(COAsT):
         time_dim_da = ds[f"{time_dim}"]
         time_var_da = ds[f"{time_var}"]
 
+        new_ds = ds
         # If time dimension isn't np.datetime64 but time variable is, then swap time variable to be the dimension.
-        # A datetime type is required for slicing data using xarray's sel() method.
+        # There should be a 1 to 1 mapping between time dimension values and time variable values.
+        # A datetime type within is required for slicing dates over a dimension using xarray's sel() method.
         if not np.issubdtype(time_dim_da.dtype, np.datetime64) and np.issubdtype(time_var_da.dtype, np.datetime64):
             warn("Time dimension is not np.datatime64 but time variable is. Swapping time dimension for data variable.")
+            # Swap time_var with time_dim.
             new_ds = ds.swap_dims({f"{time_dim}": f"{time_var}"})
             time_dim = time_var
-        elif np.issubdtype(time_dim_da.dtype, np.datetime64):
-            # Continue without warning.
-            new_ds = ds
         else:
             # Slicing will most likely fail for non np.datetime64 datatypes.
             warn("Neither time dimension or time variable data are np.datetime64. Time slicing may fail.")
-            new_ds = ds
 
         # Get years of data.
         data_years = list(new_ds[f"{time_dim}.year"].to_numpy())
