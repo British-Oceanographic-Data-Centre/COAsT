@@ -1,13 +1,14 @@
-from .COAsT import COAsT
 import calendar
 from datetime import date
+from typing import List, Tuple
+
+from dask.diagnostics import ProgressBar
 import numpy as np
 import pandas as pd
 import xarray as xr
-import xarray.ufuncs as uf
-from dask.diagnostics import ProgressBar
 
-from .logging_util import get_slug, debug, info, warn, error
+from .COAsT import COAsT
+from .logging_util import info, warn, error
 
 
 class CLIMATOLOGY(COAsT):
@@ -89,7 +90,8 @@ class CLIMATOLOGY(COAsT):
         return ds_mean
 
     @staticmethod
-    def _get_date_ranges(years, month_periods):
+    def _get_date_ranges(years: List[int], month_periods: List[Tuple[int, int]])\
+            -> List[Tuple[date, date]]:
         """Calculates a list of datetime date ranges for a given list of years and a specified start/end month.
 
         Args:
@@ -118,7 +120,8 @@ class CLIMATOLOGY(COAsT):
         return date_ranges
 
     @staticmethod
-    def multiyear_averages(ds: xr.Dataset, month_periods: list, time_var: str = "time", time_dim: str = "t_dim"):
+    def multiyear_averages(ds: xr.Dataset, month_periods: List[Tuple[int, int]], time_var: str = "time",
+                           time_dim: str = "t_dim"):
         """Calculate multiyear means for all Data variables in a dataset between a given start and end month.
 
         Args:
