@@ -178,12 +178,11 @@ class CLIMATOLOGY(COAsT):
         ds_mean = xr.Dataset()
         for var_name, da in filtered.data_vars.items():
             try:
-                # Ignore NaN values.
-                mask = xr.where(uf.isnan(da), 0, 1)
-                data = da.groupby('year_period').sum(dim=time_dim)
-                total_points = mask.groupby('year_period').sum(dim=time_dim)
-                ds_mean[f"{var_name}"] = data / total_points
-            except Exception as e:
+                # Apply .mean() to grouped data.
+                # skipna flag used to ignore NaN values.
+                da_mean = da.groupby('year_period').mean(dim=time_dim, skipna=True)
+                ds_mean[f"{var_name}"] = da_mean
+            except ArithmeticError as e:
                 warn(f"Skipped mean calculation for {var_name} due to error: {e}")
         return ds_mean
 
