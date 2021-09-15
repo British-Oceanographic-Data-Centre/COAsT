@@ -63,12 +63,10 @@ class CLIMATOLOGY(COAsT):
             ds_mean = xr.Dataset()
             for var_name, da in ds.data_vars.items():
                 try:
-                    mask = xr.where(uf.isnan(da), 0, 1)
-                    data = da.groupby(frequency_str).sum(dim=time_dim_name)
-                    total_points = mask.groupby(frequency_str).sum(dim=time_dim_name)
-                    ds_mean[var_name] = data / total_points
-                except Exception as e:
-                    error(f"Problem with {var_name}: {e}")
+                    da_mean = da.groupby(frequency_str).mean(dim=time_dim_name, skipna=True)
+                    ds_mean[var_name] = da_mean
+                except ArithmeticError as e:
+                    error(f"Skipped mean calculation for {var_name} due to error: {e}")
         else:
             if monthly_weights:
                 month_length = ds[time_var_name].dt.days_in_month
