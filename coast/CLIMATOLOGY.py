@@ -29,8 +29,7 @@ class CLIMATOLOGY(COAsT):
         monthly_weights=False,
         time_var_name="time",
         time_dim_name="t_dim",
-        fn_out=None,
-        missing_values=False,
+        fn_out=None
     ):
         """
         Calculates a climatology for all variables in a supplied dataset.
@@ -54,14 +53,17 @@ class CLIMATOLOGY(COAsT):
         time_var_name :: the string name of the time variable in dataset
         time_dim_name :: the string name of the time dimension variable in dataset
         fn_out :: string defining full output netcdf file path and name.
-        missing_values :: boolean where True indicates the data has missing values
-            that should be ignored. Missing values must be represented by NaNs.
         """
 
         frequency_str = time_var_name + "." + output_frequency
         info("Calculating climatological mean")
 
-        if missing_values:
+        if monthly_weights:
+            month_length = ds[time_var_name].dt.days_in_month
+            grouped = month_length.groupby(frequency_str)
+            weights = grouped / grouped.sum()
+            ds_mean = (ds * weights).groupby(frequency_str).sum(dim=time_dim_name)
+        else:
             ds_mean = xr.Dataset()
             for var_name, da in ds.data_vars.items():
                 try:
@@ -69,19 +71,6 @@ class CLIMATOLOGY(COAsT):
                     ds_mean[var_name] = da_mean
                 except ArithmeticError:
                     error(f"Skipped mean calculation for {var_name} due to error: {traceback.format_exc()}")
-        else:
-            if monthly_weights:
-                month_length = ds[time_var_name].dt.days_in_month
-                grouped = month_length.groupby(frequency_str)
-            else:
-                ds["clim_mean_ones_tmp"] = (time_dim_name, np.ones(ds[time_var_name].shape[0]))
-                grouped = ds["clim_mean_ones_tmp"].groupby(frequency_str)
-
-            weights = grouped / grouped.sum()
-            ds_mean = (ds * weights).groupby(frequency_str).sum(dim=time_dim_name)
-
-            if not monthly_weights:
-                ds = ds.drop_vars("clim_mean_ones_tmp")
 
         if fn_out is not None:
             info("Saving to file. May take some time..")
