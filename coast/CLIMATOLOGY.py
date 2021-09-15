@@ -107,12 +107,11 @@ class CLIMATOLOGY(COAsT):
             for period in month_periods:
                 start = period[0]
                 end = period[1]
+                begin_date = date(y, start, 1)
                 if start > end:
-                    begin_date = date(y, start, 1)
                     end_day = calendar.monthrange(y + 1, end)[1]
                     end_date = date(y + 1, end, end_day)
                 else:
-                    begin_date = date(y, start, 1)
                     end_day = calendar.monthrange(y, end)[1]
                     end_date = date(y, end, end_day)
                 date_ranges.append((begin_date, end_date))
