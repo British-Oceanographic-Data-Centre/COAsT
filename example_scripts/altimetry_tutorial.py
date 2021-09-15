@@ -1,7 +1,7 @@
 '''
 This is a demonstration script for using the ALTIMETRY object in the COAsT
 package. This object has strict data formatting requirements, which are
-outlined in ALTIMETRY.py.
+outlined in Track.py.
 '''
 
 # Begin by importing coast and other packages

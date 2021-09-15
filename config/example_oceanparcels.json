@@ -1,6 +1,6 @@
 {
 	"type": "indexed",
-	"dimensionality": 1,
+	"dimensionality": 2,
 	"chunks": [],
 	"dataset": {
 		"dimension_map": {
