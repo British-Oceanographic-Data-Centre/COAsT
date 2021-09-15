@@ -30,7 +30,7 @@ class CLIMATOLOGY(COAsT):
         fn_out=None,
         missing_values=False,
     ):
-        '''
+        """
         Calculates a climatology for all variables in a supplied dataset.
         The resulting xarray dataset will NOT be loaded to RAM. Instead,
         it is a set of dask operations. To load to RAM use, e.g. .compute().
@@ -54,10 +54,10 @@ class CLIMATOLOGY(COAsT):
         fn_out :: string defining full output netcdf file path and name.
         missing_values :: boolean where True indicates the data has missing values
             that should be ignored. Missing values must be represented by NaNs.
-        '''
+        """
 
-        frequency_str = time_var_name + '.' + output_frequency
-        info('Calculating climatological mean')
+        frequency_str = time_var_name + "." + output_frequency
+        info("Calculating climatological mean")
 
         if missing_values:
             ds_mean = xr.Dataset()
@@ -84,7 +84,7 @@ class CLIMATOLOGY(COAsT):
                 ds = ds.drop_vars("clim_mean_ones_tmp")
 
         if fn_out is not None:
-            info('Saving to file. May take some time..')
+            info("Saving to file. May take some time..")
             with ProgressBar():
                 ds_mean.to_netcdf(fn_out)
 
@@ -135,8 +135,8 @@ class CLIMATOLOGY(COAsT):
             Indexed by the key 'year'.
         """
 
-        time_dim_da = ds[f'{time_dim}']
-        time_var_da = ds[f'{time_var}']
+        time_dim_da = ds[f"{time_dim}"]
+        time_var_da = ds[f"{time_var}"]
 
         # If time dimension isn't np.datetime64 but time variable is, then swap time variable to be the dimension.
         # A datetime type is required for slicing data using xarray's sel() method.
@@ -150,7 +150,7 @@ class CLIMATOLOGY(COAsT):
             new_ds = ds
 
         # Get years of data.
-        data_years = list(new_ds[f'{time_dim}.year'].to_numpy())
+        data_years = list(new_ds[f"{time_dim}.year"].to_numpy())
         # Append first year - 1, to account for possible WINTER month data of year prior to data beginning.
         data_years.insert(0, data_years[0] - 1)
 
@@ -162,7 +162,7 @@ class CLIMATOLOGY(COAsT):
         year_index = []
         month_index = []
         for date_range in date_ranges:
-            sel_args = {f'{time_dim}': slice(date_range[0], date_range[1])}
+            sel_args = {f"{time_dim}": slice(date_range[0], date_range[1])}
             filtered = new_ds.sel(**sel_args)
             datasets.append(filtered)
             year_index = year_index + ([date_range[0].year] * filtered.sizes[time_dim])
@@ -172,8 +172,8 @@ class CLIMATOLOGY(COAsT):
         # New dataset built from extracted data between date ranges.
         filtered = xr.concat(datasets, dim=time_dim)
         # Data from same date range use common year-period multi-index so they can be grouped together.
-        period_idx = pd.MultiIndex.from_arrays([year_index, month_index], names=('year', 'period'))
-        filtered.coords['year_period'] = (f'{time_dim}', period_idx)
+        period_idx = pd.MultiIndex.from_arrays([year_index, month_index], names=("year", "period"))
+        filtered.coords["year_period"] = (f"{time_dim}", period_idx)
 
         # For each data variable, group on year-period multi-index and find the mean.
         # New dataset containing means across date ranges is returned.
@@ -182,7 +182,7 @@ class CLIMATOLOGY(COAsT):
             try:
                 # Apply .mean() to grouped data.
                 # skipna flag used to ignore NaN values.
-                da_mean = da.groupby('year_period').mean(dim=time_dim, skipna=True)
+                da_mean = da.groupby("year_period").mean(dim=time_dim, skipna=True)
                 ds_mean[f"{var_name}"] = da_mean
             except ArithmeticError as e:
                 warn(f"Skipped mean calculation for {var_name} due to error: {e}")
@@ -192,8 +192,9 @@ class CLIMATOLOGY(COAsT):
 class Season:
     """Class with attributes defining month ranges for the four seasons.
 
-        Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.
+    Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.
     """
+
     SPRING = [(3, 5)]
     SUMMER = [(6, 9)]
     AUTUMN = [(10, 11)]
