@@ -34,7 +34,7 @@ class DISTRIBUTION:
         debug(f"{get_slug(self)} initialised")
 
     def set_x_bounds(self):
-        """ Calculate x bounds for CDF plotting """
+        """Calculate x bounds for CDF plotting"""
         # Is input a single value (st. dev == 0)
         single_value = True if self.sigma == 0 else False  # TODO This could just be: single_value = self.sigma == 0
         if single_value:
@@ -142,7 +142,7 @@ class DISTRIBUTION:
         return common_x
 
     def plot_cdf(self):
-        """ A quick plot showing the CDF contained in this object."""
+        """A quick plot showing the CDF contained in this object."""
         debug(f"Generating quick plot for {get_slug(self)}")
         ax = plt.subplot(111)
         x, y = self.build_discrete_cdf()
