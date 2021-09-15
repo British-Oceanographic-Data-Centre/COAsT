@@ -1139,13 +1139,13 @@ class TIDEGAUGE:
         return np.sqrt(rmse)
 
     def time_mean(self, var_str, date0=None, date1=None):
-        """ Time mean of variable var_str between dates date0, date1"""
+        """Time mean of variable var_str between dates date0, date1"""
         var = self.dataset[var_str]
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanmean(var)
 
     def time_std(self, var_str, date0=None, date1=None):
-        """ Time st. dev of variable var_str between dates date0 and date1"""
+        """Time st. dev of variable var_str between dates date0 and date1"""
         var = self.dataset[var_str]
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanstd(var)

@@ -314,7 +314,7 @@ def dataarray_time_slice(data_array, date0, date1):
 
 
 def dayoweek(date: np.datetime64 = None):
-    """ Return the day of the week (3 letter str)"""
+    """Return the day of the week (3 letter str)"""
     if date == None:
         date = np.datetime64("now")
 

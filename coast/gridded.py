@@ -64,7 +64,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
             debug(f"Initialised {get_slug(self)}")
 
     def set_grid_vars(self):
-        """ Define the variables to map from the domain file to the NEMO obj"""
+        """Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
         if self.grid_ref == "u-grid":
             self.grid_vars = [
@@ -156,7 +156,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
-        """ Loads domain file and renames dimensions with dim_mapping_domain"""
+        """Loads domain file and renames dimensions with dim_mapping_domain"""
         # Load xarray dataset
         info(f'Loading domain: "{fn_domain}"')
         dataset_domain = xr.open_dataset(fn_domain)
@@ -172,7 +172,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
-        """ Merge domain dataset variables into self.dataset, using grid_ref"""
+        """Merge domain dataset variables into self.dataset, using grid_ref"""
         debug(f"Merging {get_slug(dataset_domain)} into {get_slug(self)}")
         # Define grid independent variables to pull across
         not_grid_vars = ["jpiglo", "jpjglo", "jpkglo", "jperio", "ln_zco", "ln_zps", "ln_sco", "ln_isfcav"]

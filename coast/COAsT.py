@@ -58,12 +58,12 @@ class COAsT:
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into COAsT object's dataset variable. """
+        """Loads a single file into COAsT object's dataset variable."""
         info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
-        """ Loads multiple files from directory into dataset variable. """
+        """Loads multiple files from directory into dataset variable."""
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
