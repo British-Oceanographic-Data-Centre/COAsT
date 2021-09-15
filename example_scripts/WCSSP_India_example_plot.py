@@ -24,8 +24,7 @@ fil_nam = "ind_1d_cat_20180101_20180105_25hourm_grid_T.nc"
 dom_nam = "domain_cfg_wcssp.nc"
 config_t = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
 
-sci_t = coast.Gridded(dir_nam + fil_nam, \
-        dir_nam + dom_nam, config=config_t)
+sci_t = coast.Gridded(dir_nam + fil_nam, dir_nam + dom_nam, config=config_t)
 
 #%% Plot
 fig = plt.figure()

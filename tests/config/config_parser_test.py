@@ -11,7 +11,7 @@ from coast.config.config_structure import (
     IndexedConfig,
     Dataset,
     Domain,
-    CodeProcessing
+    CodeProcessing,
 )
 
 # Valid gridded config json.
@@ -25,11 +25,7 @@ gridded_json = {
         "variable_map": {},
         "dimension_map": {},
     },
-    "static_variables": {
-        "not_grid_vars": [],
-        "coord_vars": [],
-        "delete_vars": []
-    },
+    "static_variables": {"not_grid_vars": [], "coord_vars": [], "delete_vars": []},
     "processing_flags": [],
 }
 
@@ -95,6 +91,7 @@ def test__get_code_processing_object(config_json, object_type):
     """Test _get_code_processing_object method."""
     data_obj = ConfigParser._get_code_processing_object(config_json)
     assert type(data_obj) is object_type
+
 
 # input_json argument indirectly links to json_file(input_json) method argument.
 @pytest.mark.parametrize(

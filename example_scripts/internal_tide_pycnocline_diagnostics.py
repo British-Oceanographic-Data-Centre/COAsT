@@ -26,25 +26,28 @@ try:
     config = "AMM60"
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    config_t = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"    
-    config_w = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"    
-    mon = 'July'
-    #mon = 'Feb'
+    config_t = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
+    config_w = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
+    mon = "July"
+    # mon = 'Feb'
 
     if mon == "July":
         fil_names_AMM60 = "AMM60_1d_201007*_grid_T.nc"
     elif mon == "Feb":
         fil_names_AMM60 = "AMM60_1d_201002*_grid_T.nc"
 
-    chunks = {"x_dim":10, "y_dim":10, "t_dim":10} # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
-    sci_t = coast.Gridded(fn_data=dir_AMM60 + fil_names_AMM60,
-                     fn_domain=dir_AMM60 + "mesh_mask.nc",
-                     config=config_t,
-                     multiple=True)
+    chunks = {
+        "x_dim": 10,
+        "y_dim": 10,
+        "t_dim": 10,
+    }  # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
+    sci_t = coast.Gridded(
+        fn_data=dir_AMM60 + fil_names_AMM60, fn_domain=dir_AMM60 + "mesh_mask.nc", config=config_t, multiple=True
+    )
     sci_t.dataset = sci_t.dataset.chunk(chunks)
 
     # create an empty w-grid object, to store stratification
-    sci_w = coast.Gridded( fn_domain = dir_AMM60 + "mesh_mask.nc", config=config_w)
+    sci_w = coast.Gridded(fn_domain=dir_AMM60 + "mesh_mask.nc", config=config_w)
 
 # OR load in AMM7 example data
 except:
@@ -61,12 +64,11 @@ except:
     fn_nemo_grid_t_dat = "nemo_data_T_grid_Aug2015.nc"
     fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
 
-    sci_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat,
-                     dn_files + fn_nemo_dom, config=config_t, multiple=True)
+    sci_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat, dn_files + fn_nemo_dom, config=config_t, multiple=True)
 
     # create an empty w-grid object, to store stratification
-    sci_w = coast.Gridded( fn_domain = dn_files + fn_nemo_dom, config=config_w)
-print('* Loaded ',config, ' data')
+    sci_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=config_w)
+print("* Loaded ", config, " data")
 
 #################################################
 #%% subset of data and domain ##
