@@ -10,7 +10,7 @@ import warnings
 from .logging_util import get_slug, debug, info, warn, error
 
 
-class NEMO(COAsT):  # TODO Complete this docstring
+class Gridded(COAsT):  # TODO Complete this docstring
     """
     Words to describe the NEMO class
 
@@ -633,7 +633,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 # If out_obj exists check grid_ref, else create out_obj.
                 if (out_obj is None) or (out_obj.grid_ref != out_grid):
                     try:
-                        out_obj = NEMO(fn_domain=self.filename_domain, grid_ref=out_grid)
+                        out_obj = Gridded(fn_domain=self.filename_domain, grid_ref=out_grid)
                     except:  # TODO Catch specific exception(s)
                         warn(
                             "Failed to create target NEMO obj. Perhaps self.",
@@ -883,7 +883,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         harmonic_y = "harmonic_" + components[1]
         y_data = xr.concat(y_arrays, dim="constituent").rename(harmonic_y)
 
-        nemo_harmonics = NEMO()
+        nemo_harmonics = Gridded()
         nemo_harmonics.dataset = xr.merge([x_data, y_data])
         nemo_harmonics.dataset["constituent"] = constituents
 
