@@ -24,12 +24,7 @@ class CLIMATOLOGY(COAsT):
 
     @staticmethod
     def make_climatology(
-        ds,
-        output_frequency,
-        monthly_weights=False,
-        time_var_name="time",
-        time_dim_name="t_dim",
-        fn_out=None
+        ds, output_frequency, monthly_weights=False, time_var_name="time", time_dim_name="t_dim", fn_out=None
     ):
         """
         Calculates a climatology for all variables in a supplied dataset.
@@ -109,8 +104,8 @@ class CLIMATOLOGY(COAsT):
 
     @staticmethod
     def multiyear_averages(
-        ds: xr.Dataset, month_periods: List[Tuple[int, int]], time_var: str = "time", time_dim: str = "t_dim")\
-            -> xr.Dataset:
+        ds: xr.Dataset, month_periods: List[Tuple[int, int]], time_var: str = "time", time_dim: str = "t_dim"
+    ) -> xr.Dataset:
         """Calculate multiyear means for all Data variables in a dataset between a given start and end month.
 
         Args:
