@@ -1,5 +1,6 @@
 import calendar
 from datetime import date
+import traceback
 from typing import List, Tuple
 
 from dask.diagnostics import ProgressBar
@@ -66,8 +67,8 @@ class CLIMATOLOGY(COAsT):
                 try:
                     da_mean = da.groupby(frequency_str).mean(dim=time_dim_name, skipna=True)
                     ds_mean[var_name] = da_mean
-                except ArithmeticError as e:
-                    error(f"Skipped mean calculation for {var_name} due to error: {e}")
+                except ArithmeticError:
+                    error(f"Skipped mean calculation for {var_name} due to error: {traceback.format_exc()}")
         else:
             if monthly_weights:
                 month_length = ds[time_var_name].dt.days_in_month
@@ -187,8 +188,8 @@ class CLIMATOLOGY(COAsT):
                 # skipna flag used to ignore NaN values.
                 da_mean = da.groupby("year_period").mean(dim=time_dim, skipna=True)
                 ds_mean[f"{var_name}"] = da_mean
-            except ArithmeticError as e:
-                warn(f"Skipped mean calculation for {var_name} due to error: {e}")
+            except ArithmeticError:
+                warn(f"Skipped mean calculation for {var_name} due to error: {traceback.format_exc()}")
         return ds_mean
 
 
