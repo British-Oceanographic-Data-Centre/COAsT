@@ -150,7 +150,9 @@ class CLIMATOLOGY(COAsT):
             new_ds = ds
 
         # Get years of data.
-        data_years = new_ds[f'{time_dim}.year'].to_numpy()
+        data_years = list(new_ds[f'{time_dim}.year'].to_numpy())
+        # Append first year - 1, to account for possible WINTER month data of year prior to data beginning.
+        data_years.insert(0, data_years[0] - 1)
 
         # Generate date ranges from years and given month periods.
         date_ranges = CLIMATOLOGY._get_date_ranges(data_years, month_periods)
