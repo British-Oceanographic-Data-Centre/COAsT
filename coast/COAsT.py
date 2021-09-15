@@ -6,23 +6,19 @@ import copy
 from .logging_util import get_slug, debug, info, warn, warning
 
 
-def setup_dask_client(
-        workers: int = 2,
-        threads: int = 2,
-        memory_limit_per_worker: str = '2GB'
-):
+def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
 class COAsT:
     def __init__(
-            self,
-            file: str = None,
-            chunks: dict = None,
-            multiple=False,
-            workers: int = 2,  # TODO Do something with this unused parameter
-            threads: int = 2,  # TODO Do something with this unused parameter
-            memory_limit_per_worker: str = '2GB'  # TODO Do something with this unused parameter
+        self,
+        file: str = None,
+        chunks: dict = None,
+        multiple=False,
+        workers: int = 2,  # TODO Do something with this unused parameter
+        threads: int = 2,  # TODO Do something with this unused parameter
+        memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter
     ):
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
@@ -34,9 +30,10 @@ class COAsT:
             warn(
                 "Object created but no file or directory specified: \n"
                 "{0} \n"
-                "Use COAsT.load() to load a NetCDF file from file path or directory into this object."
-                .format(str(self)),
-                UserWarning
+                "Use COAsT.load() to load a NetCDF file from file path or directory into this object.".format(
+                    str(self)
+                ),
+                UserWarning,
             )
         else:
             self.load(file, chunks, multiple)
@@ -45,7 +42,7 @@ class COAsT:
     def load(self, file_or_dir, chunks: dict = None, multiple=False):
         """
         Loads a file into a COAsT object's dataset variable using xarray
-        
+
         Args:
             file_or_dir (str)     : file name or directory to multiple files.
             chunks (dict)  : Chunks to use in Dask [default None]
@@ -55,35 +52,35 @@ class COAsT:
         if multiple:
             self.load_multiple(file_or_dir, chunks)
         else:
-            self.load_single(file_or_dir, chunks)    
+            self.load_single(file_or_dir, chunks)
 
     def __getitem__(self, name: str):
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into COAsT object's dataset variable. """
+        """Loads a single file into COAsT object's dataset variable."""
         info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None):
-        """ Loads multiple files from directory into dataset variable. """
+        """Loads multiple files from directory into dataset variable."""
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         self.dataset = xr.open_mfdataset(
-            directory_to_files, chunks=chunks, parallel=True, 
-            combine="by_coords") #, compat='override')
+            directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
+        )  # , compat='override')
 
     def load_dataset(self, dataset):
-        """        
+        """
         :param dataset: The dataset to use
         :type dataset: xarray.Dataset
         """
         self.dataset = dataset
         debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
-    
+
     def set_dimension_mapping(self):
         self.dim_mapping = None
         debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
-        
+
     def set_variable_mapping(self):
         self.var_mapping = None
         debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
@@ -93,10 +90,10 @@ class COAsT:
         debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: dict):
-        """ 
+        """
         Relabel dimensions in COAsT object xarray.dataset to ensure
         consistent naming throughout the COAsT package.
-        
+
         Args:
             dim_mapping (dict): keys are dimension names to change and values
                                 new dimension names
@@ -112,10 +109,10 @@ class COAsT:
                         f"{chr(10)}Error message of '{err}'")
                 
     def set_variable_names(self, var_mapping: dict):
-        """ 
+        """
         Relabel variables in COAsT object xarray.dataset to ensure
         consistent naming throughout the COAsT package.
-        
+
         Args:
             var_mapping (dict): keys are variable names to change and values
                                 are new variable names
@@ -136,7 +133,8 @@ class COAsT:
         Set grid attributes to identify with grid variable is associated with.
         """
         debug(f"Setting variable attributes for {get_slug(self)} with mapping {grid_ref_attr_mapping}")
-        if grid_ref_attr_mapping is None: return
+        if grid_ref_attr_mapping is None:
+            return
         for key, value in grid_ref_attr_mapping.items():
             try:
                 self.dataset[key].attrs['grid_ref'] = value
@@ -148,55 +146,53 @@ class COAsT:
         new = copy.copy(self)
         debug(f"Copied {get_slug(self)} to new {get_slug(new)}")
         return new
-        
-    def isel(self, indexers: dict = None, drop: bool = False,
-             **kwargs):
-        '''
-        Indexes COAsT object along specified dimensions using xarray isel. 
+
+    def isel(self, indexers: dict = None, drop: bool = False, **kwargs):
+        """
+        Indexes COAsT object along specified dimensions using xarray isel.
         Input is of same form as xarray.isel. Basic use, hand in either:
             1. Dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
-        '''
+        """
         obj_copy = self.copy()
         debug(f"Indexing (isel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
         return obj_copy
-    
-    def sel(self, indexers: dict = None, drop: bool = False,
-             **kwargs):
-        '''
-        Indexes COAsT object along specified dimensions using xarray sel. 
+
+    def sel(self, indexers: dict = None, drop: bool = False, **kwargs):
+        """
+        Indexes COAsT object along specified dimensions using xarray sel.
         Input is of same form as xarray.sel. Basic use, hand in either:
             1. Dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
-        '''
+        """
         obj_copy = self.copy()
         debug(f"Indexing (sel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
-    
-    def rename(self, rename_dict, inplace: bool=None, **kwargs):
+
+    def rename(self, rename_dict, inplace: bool = None, **kwargs):
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
         self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
         return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
-        '''
+        """
         Subsets all variables within the dataset inside self (a COAsT object).
         Input is a set of keyword argument pairs of the form:
             dimension_name = indices
         The entire object is then subsetted along this dimension at indices
-        '''
+        """
         debug(f"Subsetting {get_slug(self)}")
         self.dataset = self.dataset.isel(kwargs)
-        
+
     def subset_as_copy(self, **kwargs):
-        '''
+        """
         Similar to COAsT.subset() however applies the subsetting to a copy of
         the original COAsT object. This subsetted copy is then returned.
         Useful for preserving the original object whilst creating smaller
         subsetted object copies.
-        '''
+        """
         debug(f"Subsetting as copy {get_slug(self.dataset)}")
         obj_copy = self.copy()
         obj_copy.subset(**kwargs)
@@ -204,9 +200,8 @@ class COAsT:
 
     def distance_between_two_points(self):
         raise NotImplementedError
-        
-    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, 
-                                   radius: float):
+
+    def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, radius: float):
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
@@ -225,13 +220,12 @@ class COAsT:
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, 
-                                                 lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
-    
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
 
@@ -240,12 +234,12 @@ class COAsT:
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-        
+
         return: Indices corresponding to datapoints inside specified box
         """
         debug(f"Subsetting {get_slug(self)} indices within lon/lat")
-        lon_str = 'longitude'
-        lat_str = 'latitude'
+        lon_str = "longitude"
+        lat_str = "latitude"
         lon = self.dataset[lon_str].copy()  # TODO Add a comment explaining why this needs to be copied
         lat = self.dataset[lat_str]
         ff = lon > lonbounds[0]
@@ -256,7 +250,7 @@ class COAsT:
         return np.where(ff)
 
     def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
-        '''
+        """
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
         # does NOT create a distance matrix but outputs another 1D array.
@@ -265,7 +259,7 @@ class COAsT:
         #
         # lon1, lat1 :: Location(s) 1.
         # lon2, lat2 :: Location(s) 2.
-        '''
+        """
 
         debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
 
@@ -285,8 +279,9 @@ class COAsT:
 
         return distance
 
-    def get_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
-                             time_counter: int = 0):
+    def get_subset_as_xarray(
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+    ):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
 
@@ -321,8 +316,9 @@ class COAsT:
 
         return smaller
 
-    def get_2d_subset_as_xarray(self, var: str, points_x: slice, points_y: slice, line_length: int = None,
-                                time_counter: int = 0):
+    def get_2d_subset_as_xarray(
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+    ):
         """
 
         :param var:
@@ -372,19 +368,19 @@ class COAsT:
         info("Generating simple 2D plot...")
         import matplotlib.pyplot as plt
 
-        plt.close('all')
+        plt.close("all")
 
         fig = plt.figure()
-        plt.rcParams['figure.figsize'] = plot_info['fig_size']
+        plt.rcParams["figure.figsize"] = plot_info["fig_size"]
 
         ax = fig.add_subplot(411)
         plt.pcolormesh(x, y, data, cmap=cmap)
 
-        plt.ylim(plot_info['ylim'])
-        plt.xlim(plot_info['xlim'])
-        plt.title(plot_info['title'])
-        plt.ylabel(plot_info['ylabel'])
-        plt.clim(plot_info['clim'])
+        plt.ylim(plot_info["ylim"])
+        plt.xlim(plot_info["xlim"])
+        plt.title(plot_info["title"])
+        plt.ylabel(plot_info["ylabel"])
+        plt.clim(plot_info["clim"])
         plt.colorbar()
 
         return plt
@@ -397,30 +393,37 @@ class COAsT:
             from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
         except ImportError:
             import sys
+
             warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
             sys.exit(-1)
 
         import matplotlib.pyplot as plt
 
         info("Generating CartoPy plot...")
-        plt.close('all')
+        plt.close("all")
         fig = plt.figure(figsize=(10, 10))
         ax = fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-        cset = self.dataset[var].isel(time_counter=time_counter, deptht=0).plot.pcolormesh \
-            (np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap)
+        cset = (
+            self.dataset[var]
+            .isel(time_counter=time_counter, deptht=0)
+            .plot.pcolormesh(
+                np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
+            )
+        )
 
         cset.set_clim([params.levs[0], params.levs[-1]])
 
         ax.add_feature(cartopy.feature.OCEAN)
-        ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         ax.add_feature(cartopy.feature.RIVERS)
-        coast = NaturalEarthFeature(category='physical', scale='10m', facecolor='none', name='coastline')
-        ax.add_feature(coast, edgecolor='gray')
+        coast = NaturalEarthFeature(category="physical", scale="10m", facecolor="none", name="coastline")
+        ax.add_feature(coast, edgecolor="gray")
 
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-                          linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
+        gl = ax.gridlines(
+            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
+        )
 
         gl.xlabels_top = False
         gl.xlabels_bottom = True
@@ -429,7 +432,7 @@ class COAsT:
         gl.xformatter = LONGITUDE_FORMATTER
         gl.yformatter = LATITUDE_FORMATTER
 
-        plt.colorbar(cset, shrink=params.colorbar_shrink, pad=.05)
+        plt.colorbar(cset, shrink=params.colorbar_shrink, pad=0.05)
 
         # tmp = self.dataset.votemper
         # tmp.attrs = self.dataset.votemper.attrs

@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 import dask
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors # colormap fiddling
+import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
 #%%  Loading  data
@@ -34,4 +34,4 @@ plt.ylabel('latitude')
 plt.title('SE Asia, surface salinity (psu)')
 plt.colorbar()
 plt.show()
-fig.savefig('SEAsia_R12_SSS.png', dpi=120)
+fig.savefig("SEAsia_R12_SSS.png", dpi=120)
