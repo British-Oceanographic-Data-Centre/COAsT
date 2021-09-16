@@ -11,7 +11,7 @@ from coast.CLIMATOLOGY import CLIMATOLOGY
 
 YEARS = [2000, 2001]
 PERIOD = seasons.ALL
-# Date ranges for all seasons 2000 -> 2003.
+# Date ranges for each season of 2000 and 2001.
 DATE_RANGES = [
     (date(2000, 3, 1), date(2000, 5, 31)),
     (date(2000, 6, 1), date(2000, 9, 30)),
