@@ -44,7 +44,13 @@ class DataFile:
 
 @dataclass(frozen=True)
 class CodeProcessing:
-    """Dataclass holding config attributes for static variables that might not need changing between model runs"""
+    """Dataclass holding config attributes for static variables that might not need changing between model runs
+
+    Args:
+        not_grid_variables (list): A list of variables not belonging to the grid.
+        coord_variables (list):  A list of coordinate variables.
+        delete_variables (list):  A list of variables to drop from the dataset.
+    """
 
     not_grid_variables: list
     coord_variables: list
