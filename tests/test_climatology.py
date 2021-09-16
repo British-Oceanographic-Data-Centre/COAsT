@@ -29,8 +29,7 @@ EXPECTED_MEANS = np.array([45.5, 152.5, 244.0, 319.5, 410.5, 517.5, 609.0, 684.5
 @pytest.fixture
 def test_dataset():
     time = pd.date_range(start=DATE_RANGES[0][0], end=DATE_RANGES[-1][1], freq="D")
-    ds = xr.Dataset({"data": ("time", np.arange(len(time))),
-                     "data_ones": ("time", np.ones(len(time))), "time": time})
+    ds = xr.Dataset({"data": ("time", np.arange(len(time))), "data_ones": ("time", np.ones(len(time))), "time": time})
     yield ds
 
 
