@@ -748,9 +748,9 @@ class Transect_f(Transect):
 
         # Add time if required
         if "t_dim" in tran_t.data.dims:
-            coords_hpg["time"] = (("t_dim"), tran_t.data.time)
+            coords_hpg["time"] = (("t_dim"), tran_t.data.time.values)
             dims_hpg.insert(0, "t_dim")
-            coords_spg["time"] = (("t_dim"), tran_t.data.time)
+            coords_spg["time"] = (("t_dim"), tran_t.data.time.values)
             dims_spg.insert(0, "t_dim")
 
         # Add DataArrays  to dataset
@@ -1021,8 +1021,8 @@ class Transect_t(Transect):
 
         coords = {
             "depth_z_levels": (("depth_z_levels"), z_levels),
-            "latitude": (("r_dim"), self.data.latitude),
-            "longitude": (("r_dim"), self.data.longitude),
+            "latitude": (("r_dim"), self.data.latitude.values),
+            "longitude": (("r_dim"), self.data.longitude.values),
         }
         dims = ["depth_z_levels", "r_dim"]
         attributes = {"units": "kg / m^3", "standard name": "In-situ density on the z-level vertical grid"}

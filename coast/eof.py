@@ -58,10 +58,10 @@ def eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_name: str
     time_coords = {"mode": (("mode"), np.arange(1, mode_count + 1))}
     for coord in variable.coords:
         if variable.dims[2] not in variable[coord].dims:
-            coords[coord] = (variable[coord].dims, variable[coord])
+            coords[coord] = (variable[coord].dims, variable[coord].values)
         else:
             if (variable.dims[2],) == variable[coord].dims:
-                time_coords[coord] = (variable[coord].dims, variable[coord])
+                time_coords[coord] = (variable[coord].dims, variable[coord].values)
 
     dataset = xr.Dataset()
 
@@ -146,10 +146,10 @@ def hilbert_eofs(variable: xr.DataArray, full_matrices=False, time_dim_name: str
     time_coords = {"mode": (("mode"), np.arange(1, mode_count + 1))}
     for coord in variable.coords:
         if variable.dims[2] not in variable[coord].dims:
-            coords[coord] = (variable[coord].dims, variable[coord])
+            coords[coord] = (variable[coord].dims, variable[coord].values)
         else:
             if (variable.dims[2],) == variable[coord].dims:
-                time_coords[coord] = (variable[coord].dims, variable[coord])
+                time_coords[coord] = (variable[coord].dims, variable[coord].values)
 
     dims = (variable.dims[:2]) + ("mode",)
     dataset["EOF_amp"] = xr.DataArray(EOF_amp, coords=coords, dims=dims)
