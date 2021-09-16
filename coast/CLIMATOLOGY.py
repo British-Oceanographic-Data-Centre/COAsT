@@ -116,8 +116,8 @@ class CLIMATOLOGY(COAsT):
             time_var (str): String representing the time variable name within the dataset.
             time_dim (str): String representing the time dimension name within the dataset.
         returns:
-            ds_mean (xr.Dataset): A new dataset containing mean averages for each data variable across all years.
-            Indexed by the key 'year'.
+            ds_mean (xr.Dataset): A new dataset containing mean averages for each data variable across all years and
+            date periods. Indexed by the multi-index 'year_period' (i.e. (2000, 'Dec-Feb')).
         """
 
         time_dim_da = ds[f"{time_dim}"]
