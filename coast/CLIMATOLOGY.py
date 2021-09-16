@@ -87,7 +87,7 @@ class CLIMATOLOGY(COAsT):
                 date_ranges (list): A list of tuples, each containing a start and end datetime.date object.
         """
         date_ranges = []
-        for y in set(years):
+        for y in sorted(set(years)):
             y = int(y)
             for period in month_periods:
                 start = period[0]
