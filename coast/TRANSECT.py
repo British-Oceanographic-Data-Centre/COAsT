@@ -761,7 +761,7 @@ class Transect_f(Transect):
             np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
         )
         self.data_cross_tran_flow["normal_transport_hpg"] = (
-            (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(dim="depth_z_levels"))
+            (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(coord="depth_z_levels"))
             * e_horiz
             / 1000000
         )
