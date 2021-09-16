@@ -20,3 +20,5 @@ unit_testing/*log
 *.pyc
 
 *.DS_Store
+
+.vscode
