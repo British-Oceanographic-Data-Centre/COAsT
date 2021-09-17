@@ -21,14 +21,22 @@ config = "AMM15"
 dir_nam = "/projectsa/NEMO/gmaya/2013p2/"
 fil_nam = "20130415_25hourm_grid_T.nc"
 dom_nam = "/projectsa/NEMO/gmaya/AMM15_GRID/amm15.mesh_mask.cs3x.nc"
+config = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
 
+sci_t = coast.Gridded(dir_nam + fil_nam, dom_nam, config=config)  # , chunks=chunks)
+chunks = {
+    "x_dim": 10,
+    "y_dim": 10,
+    "t_dim": 10,
+}  # Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.
 
-chunks = {"x": 10, "y": 10, "time_counter": 10}
+sci_t.dataset.chunk(chunks)
 
 sci_t = coast.NEMO(dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks)
 
 # create an empty w-grid object, to store stratification
-sci_w = coast.NEMO(fn_domain=dom_nam, grid_ref="w-grid", chunks=chunks)
+sci_w = coast.Gridded(fn_domain=dom_nam, config=config.replace("t_nemo", "w_nemo"))
+sci_w.dataset.chunk({"x_dim": 10, "y_dim": 10})  # TODO set in config json
 
 
 print("* Loaded ", config, " data")

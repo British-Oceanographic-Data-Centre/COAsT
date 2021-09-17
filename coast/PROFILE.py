@@ -69,7 +69,7 @@ class PROFILE(INDEXED):
                 else:
                     file_to_read.append(file)
 
-            # Reorder files to read 
+            # Reorder files to read
             file_to_read = np.array(file_to_read)
             dates = [ff[-9:-3] for ff in file_to_read]
             dates = [datetime.datetime(int(dd[0:4]), int(dd[4:6]), 1) for dd in dates]
