@@ -30,7 +30,7 @@ class INDEXED:
         self.chunks = None
         self.var_mapping = None
         self.dim_mapping = None
-        self.load_all = True
+        self.load_all = False
 
         if config:
             self.json_config = config_parser.ConfigParser(config)

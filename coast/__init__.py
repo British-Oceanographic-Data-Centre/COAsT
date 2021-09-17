@@ -7,6 +7,7 @@ from .TRACK import TRACK
 from .LAGRANGIAN import LAGRANGIAN
 from .OCEANPARCELS import OCEANPARCELS
 from .GLIDER import GLIDER
+from .Argos import Argos
 from .ALTIMETRY import ALTIMETRY
 from .OBSERVATION import OBSERVATION
 from .DISTRIBUTION import DISTRIBUTION

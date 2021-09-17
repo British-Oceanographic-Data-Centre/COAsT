@@ -1,0 +1,18 @@
+{
+	"type": "indexed",
+	"dimensionality": 1,
+	"chunks": [],
+	"dataset": {
+		"dimension_map": {
+			"time": "t_time"
+		},
+		"variable_map": {
+			"DATIM": "time",
+			"LAT": "latitude",
+			"LON": "longitude"
+		}
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}
