@@ -1,13 +1,16 @@
-from .COAsT import COAsT
-from . import general_utils, stats_util
-import xarray as xr
-import numpy as np
+import os.path as path_lib
+import warnings
 
 # from dask import delayed, compute, visualize
 # import graphviz
 import gsw
-import warnings
-from .logging_util import get_slug, debug, info, warn, error
+import numpy as np
+import xarray as xr
+
+from . import general_utils, stats_util
+from .COAsT import COAsT
+from .config import ConfigParser
+from .logging_util import get_slug, debug, info, warn, error, warning
 
 
 class Gridded(COAsT):  # TODO Complete this docstring
@@ -21,10 +24,9 @@ class Gridded(COAsT):  # TODO Complete this docstring
     def __init__(
         self,
         fn_data=None,
-        fn_domain=None,
-        grid_ref="t-grid",  # TODO Super init not called + add a docstring
-        chunks: dict = None,
+        fn_domain=None,  # TODO Super init not called + add a docstring
         multiple=False,
+        config: str = " ",
         workers=2,
         threads=2,
         memory_limit_per_worker="2GB",
@@ -32,30 +34,57 @@ class Gridded(COAsT):  # TODO Complete this docstring
     ):
         debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
-        self.grid_ref = grid_ref.lower()
+        self.grid_ref = None
         self.domain_loaded = False
+        self.fn_data = fn_data
+        self.fn_domain = fn_domain
+        self.grid_vars = None
 
+        if path_lib.isfile(config):
+            self.config = ConfigParser(config).config
+            if self.config.chunks:
+                self._setup_grid_obj(self.config.chunks, multiple, **kwargs)
+            else:
+                self._setup_grid_obj(None, multiple, **kwargs)
+        else:  # allow for usage without config file, this will be limted and dosen't bring the full COAST features
+            if self.fn_data is not None:
+                self.load(self.fn_data, None, multiple)
+            if self.fn_domain is not None:
+                self.filename_domain = self.fn_domain
+                dataset_domain = self.load_domain(self.fn_domain, None)
+                self.dataset["domain"] = dataset_domain
+
+    def _setup_grid_obj(self, chunks, multiple, **kwargs):
+        """This is a helper method to reduce the size of def __init__
+
+        Args:
+            chunks: This is a setting for xarray as to whether dask (parrell processing) should be on and how it works
+            multiple: falg to tell if we are loading one or more files
+            **kwargs: pass direct to loaded xarray dataset
+        """
         self.set_grid_vars()
         self.set_dimension_mapping()
         self.set_variable_mapping()
-        if fn_data is not None:
-            self.load(fn_data, chunks, multiple)
-        self.set_dimension_names(self.dim_mapping)
-        self.set_variable_names(self.var_mapping)
 
-        if fn_domain is None:
+        if self.fn_data is not None:
+            self.load(self.fn_data, chunks, multiple)
+
+        self.set_dimension_names(self.config.dataset.dimension_map)
+        self.set_variable_names(self.config.dataset.variable_map)
+
+        if self.fn_domain is None:
             self.filename_domain = ""  # empty store for domain fileanme
             warn("No NEMO domain specified, only limited functionality" + " will be available")
         else:
-            self.filename_domain = fn_domain  # store domain fileanme
-            dataset_domain = self.load_domain(fn_domain, chunks)
+            self.filename_domain = self.fn_domain  # store domain fileanme
+            dataset_domain = self.load_domain(self.fn_domain, chunks)
 
             # Define extra domain attributes using kwargs dictionary
-            ## This is a bit of a placeholder. Some domain/nemo files will have missing variables
+            # This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
                 dataset_domain[key] = value
 
-            if fn_data is not None:
+            if self.fn_data is not None:
                 dataset_domain = self.trim_domain_size(dataset_domain)
             self.set_timezero_depths(
                 dataset_domain
@@ -66,93 +95,10 @@ class Gridded(COAsT):  # TODO Complete this docstring
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
-        if self.grid_ref == "u-grid":
-            self.grid_vars = [
-                "glamu",
-                "gphiu",
-                "e1u",
-                "e2u",
-                "e3u_0",
-                "depthu_0",
-            ]  # What about e3vw
-        elif self.grid_ref == "v-grid":
-            self.grid_vars = ["glamv", "gphiv", "e1v", "e2v", "e3v_0", "depthv_0"]
-        elif self.grid_ref == "t-grid":
-            self.grid_vars = ["glamt", "gphit", "e1t", "e2t", "e3t_0", "deptht_0", "tmask", "bottom_level"]
-        elif self.grid_ref == "w-grid":
-            self.grid_vars = ["glamt", "gphit", "e1t", "e2t", "e3w_0", "depthw_0", "bottom_level"]
-        elif self.grid_ref == "f-grid":
-            self.grid_vars = ["glamf", "gphif", "e1f", "e2f", "e3f_0", "depthf_0"]
-
-    def set_dimension_mapping(self):  # TODO Add a docstring
-        self.dim_mapping = {
-            "time_counter": "t_dim",
-            "deptht": "z_dim",
-            "depthu": "z_dim",
-            "depthv": "z_dim",
-            "y": "y_dim",
-            "x": "x_dim",
-            "x_grid_T": "x_dim",
-            "y_grid_T": "y_dim",
-        }
-        debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
-        self.dim_mapping_domain = {"t": "t_dim0", "x": "x_dim", "y": "y_dim", "z": "z_dim"}
-        debug(f"{get_slug(self)} dim_mapping_domain set to {self.dim_mapping_domain}")
-
-    def set_variable_mapping(self):  # TODO Add a docstring
-        # Variable names remapped  within NEMO object
-        self.var_mapping = {
-            "time_counter": "time",
-            "votemper": "temperature",
-            "thetao": "temperature",
-            "temp": "temperature",
-            "toce": "temperature",
-            "so": "salinity",
-            "vosaline": "salinity",
-            "soce": "salinity",
-            "voce": "v_velocity",
-            "vomecrty": "v_velocity",
-            "uoce": "u_velocity",
-            "vozocrtx": "u_velocity",
-            "sossheig": "ssh",
-            "zos": "ssh",
-        }
-        # Variable names mapped from domain to NEMO object
-        # NAMES NOT SET IN STONE.
-        self.var_mapping_domain = {
-            "time_counter": "time0",
-            "glamt": "longitude",
-            "glamu": "longitude",
-            "glamv": "longitude",
-            "glamf": "longitude",
-            "gphit": "latitude",
-            "gphiu": "latitude",
-            "gphiv": "latitude",
-            "gphif": "latitude",
-            "e1t": "e1",
-            "e1u": "e1",
-            "e1v": "e1",
-            "e1f": "e1",
-            "e2t": "e2",
-            "e2u": "e2",
-            "e2v": "e2",
-            "e2f": "e2",
-            "ff_t": "ff",
-            "ff_f": "ff",
-            "e3t_0": "e3_0",
-            "e3w_0": "e3_0",
-            "e3u_0": "e3_0",
-            "e3v_0": "e3_0",
-            "e3f_0": "e3_0",
-            "tmask": "mask",
-            "depthf_0": "depth_0",
-            "depthu_0": "depth_0",
-            "depthv_0": "depth_0",
-            "depthw_0": "depth_0",
-            "deptht_0": "depth_0",
-            "ln_sco": "ln_sco",
-            "bottom_level": "bottom_level",
-        }
+        #
+        for key, value in self.config.grid_ref.items():
+            self.grid_ref = key
+            self.grid_vars = value
 
     # TODO Add parameter type hints and a docstring
     def load_domain(self, fn_domain, chunks):  # TODO Do something with this unused parameter or remove it
@@ -162,12 +108,15 @@ class Gridded(COAsT):  # TODO Complete this docstring
         dataset_domain = xr.open_dataset(fn_domain)
         self.domain_loaded = True
         # Rename dimensions
-        for key, value in self.dim_mapping_domain.items():
+        for key, value in self.config.domain.dimension_map.items():
             mapping = {key: value}
             try:
                 dataset_domain = dataset_domain.rename_dims(mapping)
-            except:  # FIXME Catch specific exception(s)
-                error(f"Exception while renaming dimensions from domain in NEMO object with key:value {mapping}")
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
 
         return dataset_domain
 
@@ -175,37 +124,31 @@ class Gridded(COAsT):  # TODO Complete this docstring
         """Merge domain dataset variables into self.dataset, using grid_ref"""
         debug(f"Merging {get_slug(dataset_domain)} into {get_slug(self)}")
         # Define grid independent variables to pull across
-        not_grid_vars = ["jpiglo", "jpjglo", "jpkglo", "jperio", "ln_zco", "ln_zps", "ln_sco", "ln_isfcav"]
 
-        all_vars = (
-            self.grid_vars + not_grid_vars
-        )  # FIXME Add an else clause to avoid unhandled error when no ifs are True
+        all_vars = self.grid_vars + self.config.code_processing.not_grid_variables
 
         # Trim domain DataArray area if necessary.
         self.copy_domain_vars_to_dataset(dataset_domain, self.grid_vars)
 
         # Reset & set specified coordinates
-        coord_vars = ["longitude", "latitude", "time", "depth_0"]
         self.dataset = self.dataset.reset_coords()
-        for var in coord_vars:
+        for var in self.config.code_processing.coord_variables:
             try:
                 self.dataset = self.dataset.set_coords(var)
-            except:  # FIXME Catch specific exception(s)
-                pass  # TODO Do we need to log something here?
+            except ValueError as err:
+                warning(f"Issue with settings coordinates using value {var}.{chr(10)}Error message of {err}")
 
         # Delete specified variables
-        # TODO MIGHT NEED TO DELETE OTHER DEPTH VARS ON OTHER GRIDS?
-        delete_vars = ["nav_lat", "nav_lon", "deptht"]
-        for var in delete_vars:
+        for var in self.config.code_processing.delete_variables:
             try:
                 self.dataset = self.dataset.drop(var)
-            except:  # FIXME Catch specific exception(s)
-                pass  # TODO Do we need to log something here?
+            except ValueError as err:
+                warning(f"Issue with dropping variable {var}.{chr(10)}Error message of {err}")
 
     def __getitem__(self, name: str):
         return self.dataset[name]
 
-    def set_grid_ref_attr(self):
+    def set_grid_ref_attr(self):  # possible not used
         debug(f"{get_slug(self)} grid_ref_attr set to {self.grid_ref_attr_mapping}")
         self.grid_ref_attr_mapping = {
             "temperature": "t-grid",
@@ -230,7 +173,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
 
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
-        except AttributeError:
+        except AttributeError as err:
             bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
             (
                 warnings.warn(
@@ -244,6 +187,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
             debug(
                 f"The bathy_metry variable was missing from the domain_cfg for "
                 f"{get_slug(self)} with {get_slug(dataset_domain)}"
+                f"{chr(10)}Error message of {err}"
             )
         try:
             if self.grid_ref == "t-grid":
@@ -282,11 +226,12 @@ class Gridded(COAsT):  # TODO Complete this docstring
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
-            dataset_domain[f"depth{self.grid_ref.replace('-grid','')}_0"] = xr.DataArray(
+            dataset_domain[f"depth{self.grid_ref.replace('-grid', '')}_0"] = xr.DataArray(
                 depth_0,
                 dims=["z_dim", "y_dim", "x_dim"],
                 attrs={"units": "m", "standard_name": "Depth at time zero on the {}".format(self.grid_ref)},
             )
+
             self.dataset["bathymetry"] = bathymetry
             self.dataset["bathymetry"].attrs = {
                 "units": "m",
@@ -556,13 +501,13 @@ class Gridded(COAsT):  # TODO Complete this docstring
         debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
         for var in grid_vars:
             try:
-                new_name = self.var_mapping_domain[var]
+                new_name = self.config.domain.variable_map[var]
                 self.dataset[new_name] = dataset_domain[var].squeeze()
                 debug("map: {} --> {}".format(var, new_name))
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
 
-    def differentiate(self, in_varstr, dim="z_dim", out_varstr=None, out_obj=None):
+    def differentiate(self, in_varstr, config_path=None, dim="z_dim", out_varstr=None, out_obj=None):
         """
         Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
         wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
@@ -605,6 +550,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
         Parameters
         ----------
         in_varstr : str, name of variable to differentiate
+        config_path : str, path to the w grid config file
         dim : str, dimension to operate over. E.g. {'z_dim', 'y_dim', 'x_dim', 't_dim'}
         out_varstr : str, (optional) name of the target xr.DataArray
         out_obj : exiting NEMO obj to store xr.DataArray (optional)
@@ -625,7 +571,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
             ny = var.sizes["y_dim"]
             nx = var.sizes["x_dim"]
 
-            ## Compute d(t_grid)/dz --> w-grid
+            # Compute d(t_grid)/dz --> w-grid
             # Check grid_ref and dir. Determine target grid_ref.
             if (self.grid_ref == "t-grid") and (dim == "z_dim"):
                 out_grid = "w-grid"
@@ -633,7 +579,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
                 # If out_obj exists check grid_ref, else create out_obj.
                 if (out_obj is None) or (out_obj.grid_ref != out_grid):
                     try:
-                        out_obj = Gridded(fn_domain=self.filename_domain, grid_ref=out_grid)
+                        out_obj = Gridded(fn_domain=self.filename_domain, config=config_path)
                     except:  # TODO Catch specific exception(s)
                         warn(
                             "Failed to create target NEMO obj. Perhaps self.",

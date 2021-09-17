@@ -104,8 +104,11 @@ class COAsT:
         for key, value in dim_mapping.items():
             try:
                 self.dataset = self.dataset.rename_dims({key: value})
-            except:  # TODO Catch specific exception(s)
-                warning(f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}")
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
 
     def set_variable_names(self, var_mapping: dict):
         """
@@ -122,10 +125,13 @@ class COAsT:
         for key, value in var_mapping.items():
             try:
                 self.dataset = self.dataset.rename_vars({key: value})
-            except:
-                warning(f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}")
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
 
-    def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):
+    def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):  # TODO is this still used?
         """
         Set attributes for variables to access within package.
         Set grid attributes to identify with grid variable is associated with.
@@ -136,8 +142,11 @@ class COAsT:
         for key, value in grid_ref_attr_mapping.items():
             try:
                 self.dataset[key].attrs["grid_ref"] = value
-            except:
-                warning(f"{get_slug(self)}: Problem assigning attributes in {get_slug(self.dataset)}: {key} -> {value}")
+            except KeyError as err:
+                warning(
+                    f"{get_slug(self)}: Problem assigning attributes in {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
 
     def copy(self):
         new = copy.copy(self)
