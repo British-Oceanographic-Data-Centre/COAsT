@@ -88,6 +88,29 @@
 			"ex32": "bottom_level"
 		}
 	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
 	"processing_flags": [
 		"example_flag1",
 		"example_flag2"

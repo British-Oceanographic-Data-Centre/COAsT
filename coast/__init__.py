@@ -2,6 +2,7 @@ from .COAsT import COAsT
 from .COAsT import setup_dask_client
 from .INDEX import INDEXED
 from .NEMO import NEMO
+from .gridded import Gridded
 from .TRANSECT import Transect, Transect_f, Transect_t
 from .TRACK import TRACK
 from .LAGRANGIAN import LAGRANGIAN

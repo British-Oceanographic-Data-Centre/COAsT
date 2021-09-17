@@ -69,7 +69,7 @@ class PROFILE(INDEXED):
                 else:
                     file_to_read.append(file)
 
-            # Reorder files to read 
+            # Reorder files to read
             file_to_read = np.array(file_to_read)
             dates = [ff[-9:-3] for ff in file_to_read]
             dates = [datetime.datetime(int(dd[0:4]), int(dd[4:6]), 1) for dd in dates]
@@ -93,7 +93,7 @@ class PROFILE(INDEXED):
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-        
+
         return: Indices corresponding to datapoints inside specified box
         """
         ind = general_utils.subset_indices_lonlat_box(self.dataset.longitude,

@@ -1,13 +1,8 @@
 {
 	"type": "indexed",
 	"dimensionality": 3,
-	"chunks": [
-		1000,
-		1000,
-		1000
-	],
+	"chunks": {},
 	"dataset": {
-		"filepath": "path_to_file",
 		"dimension_map": {
 			"ex1": "time_counter",
 			"ex2": "deptht",

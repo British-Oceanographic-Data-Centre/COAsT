@@ -1,0 +1,30 @@
+name: Black
+on: pull_request
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.9 ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python-version }} for Black
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Black
+        run: pip install black
+      - name: Check Formatting
+        run: black --check .  # Only check the formatting, don't make any changes
+      - name: Apply Formatting
+        if: failure()  # Only run if Black suggests changes
+        run: |
+          black .
+          git config --global user.name "BlackBot"
+          git config --global author.name "BlackBot"
+          git config --global user.email "bodcsoft@bodc.ac.uk"
+          git config --global author.email "bodcsoft@bodc.ac.uk"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git checkout $GITHUB_HEAD_REF
+          git commit -am "Apply Black formatting to Python code."
+          git push

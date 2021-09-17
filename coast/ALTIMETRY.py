@@ -122,7 +122,7 @@ class ALTIMETRY(TRACK):
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-        
+
         return: Indices corresponding to datapoints inside specified box
         """
         print(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
