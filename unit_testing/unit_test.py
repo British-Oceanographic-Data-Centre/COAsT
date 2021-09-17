@@ -1886,7 +1886,7 @@ try:
     ds2 = ds.copy(deep=True)
     ds2["temperature"][::2, :100, :100] = np.nan
     ds2["ssh"][::2, :100, :100] = np.nan
-    seaC = clim.make_climatology(ds2, "season", missing_values=True)
+    seaC = clim.make_climatology(ds2, "season")
     seaX = ds2.groupby("time.season").mean("t_dim")
     # throws error is not close
     xr.testing.assert_allclose(seaC, seaX)
