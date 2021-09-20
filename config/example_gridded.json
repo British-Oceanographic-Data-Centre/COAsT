@@ -1,11 +1,7 @@
 {
 	"type": "gridded",
 	"dimensionality": 3,
-	"chunks": [
-		1000,
-		1000,
-		1000
-	],
+	"chunks": {},
 	"grid_ref": {
 		"t-grid": [
 			"glamt",

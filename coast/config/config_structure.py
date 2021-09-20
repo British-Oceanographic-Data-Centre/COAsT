@@ -78,7 +78,7 @@ class Config:
     Args:
         dataset (Dataset): Dataset object representing 'dataset' config.
         processing_flags (list): List of processing flags.
-        chunks (tuple): Tuple for dask chunking config. (i.e. (1000,1000,1000)).
+        chunks (dict): Dict for dask chunking config. (i.e. {"dim1":100, "dim2":100, "dim3":100}).
         type (ConfigTypes): Type of config. Must be a valid ConfigType.
     """
 
