@@ -127,11 +127,11 @@ class Contour:
         start_idx = ball_tree.query(np.deg2rad([start_coords]))[1][0][0]
         end_idx = ball_tree.query(np.deg2rad([end_coords]))[1][0][0]
         if start_idx > end_idx:
-            y_ind = y_ind[end_idx: start_idx + 1]
-            x_ind = x_ind[end_idx: start_idx + 1]
+            y_ind = y_ind[end_idx : start_idx + 1]
+            x_ind = x_ind[end_idx : start_idx + 1]
         else:
-            y_ind = y_ind[start_idx: end_idx + 1]
-            x_ind = x_ind[start_idx: end_idx + 1]
+            y_ind = y_ind[start_idx : end_idx + 1]
+            x_ind = x_ind[start_idx : end_idx + 1]
 
         # Ensure that the start point is closer to southern boundary of domain.
         # If start and end point have same latitude then ensure start point is
@@ -476,7 +476,7 @@ class ContourF(Contour):
             # calculate gradients at v-points either side of f-point
             hpg = (ds_t_j1.pressure_h_zlevels.data[:, :, r_ind] - ds_t.pressure_h_zlevels.data[:, :, r_ind]) / e2v
             hpg_i1 = (
-                             ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_i1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_i1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e2v_i1
             # average onto f-point
             hpg_f = 0.5 * ((e1v * hpg) + (e1v_i1 * hpg_i1)) / e1f
@@ -494,7 +494,7 @@ class ContourF(Contour):
             # calculate gradients at u-points either side of f-point
             hpg = (ds_t_i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t.pressure_h_zlevels.data[:, :, r_ind]) / e1u
             hpg_j1 = (
-                             ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_j1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_j1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e1u_j1
             # average onto f-point
             hpg_f = 0.5 * ((e2u * hpg) + (e2u_j1 * hpg_j1)) / e2f
@@ -680,7 +680,9 @@ class ContourF(Contour):
             e_horiz[:, dr] = e_hor_vel
 
         # Bathymetry at normal velocity points
-        h = np.zeros_like(self.data_contour.bathymetry.values)  # TODO Can someone sciencey give me the proper name for this?
+        h = np.zeros_like(
+            self.data_contour.bathymetry.values
+        )  # TODO Can someone sciencey give me the proper name for this?
         h[:-1] = 0.5 * (self.data_contour.bathymetry.values[:-1] + self.data_contour.bathymetry.values[1:])
         # Remove redundent levels below bathymetry
         normal_velocity_hpg = np.where(z_levels[:, np.newaxis] <= h, normal_velocity_hpg, np.nan)

@@ -120,7 +120,7 @@ class InternalTide(Nemo):  # TODO All abstract methods should be implemented
         if not hasattr(nemo_w.dataset, "rho_dz"):
             nemo_w = nemo_t.differentiate(
                 "density", dim="z_dim", out_varstr="rho_dz", out_obj=nemo_w
-            ) # TODO These kwargs don't appear to exist
+            )  # TODO These kwargs don't appear to exist
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in
         # z_dim, ydim, xdim
@@ -154,15 +154,21 @@ class InternalTide(Nemo):  # TODO All abstract methods should be implemented
         _, e3_0_4d = xr.broadcast(strat, nemo_w.dataset.e3_0.squeeze())
 
         # integrate strat over depth
-        intN2 = (strat * e3_0_4d).sum(dim="z_dim", skipna=True)  # TODO Can someone sciencey give me the proper name for this?
+        intN2 = (strat * e3_0_4d).sum(
+            dim="z_dim", skipna=True
+        )  # TODO Can someone sciencey give me the proper name for this?
         # integrate (depth * strat) over depth
-        intzN2 = (strat * e3_0_4d * depth_0_4d).sum(dim="z_dim", skipna=True)  # TODO Can someone sciencey give me the proper name for this?
+        intzN2 = (strat * e3_0_4d * depth_0_4d).sum(
+            dim="z_dim", skipna=True
+        )  # TODO Can someone sciencey give me the proper name for this?
 
         # compute pycnocline depth
         pycnocline_depth = intzN2 / intN2  # pycnocline depth
 
         # compute pycnocline thickness
-        intz2N2 = (xr.ufuncs.square(depth_0_4d - pycnocline_depth) * e3_0_4d * strat).sum(dim="z_dim", skipna=True)  # TODO Can someone sciencey give me the proper name for this?
+        intz2N2 = (xr.ufuncs.square(depth_0_4d - pycnocline_depth) * e3_0_4d * strat).sum(
+            dim="z_dim", skipna=True
+        )  # TODO Can someone sciencey give me the proper name for this?
         zt = xr.ufuncs.sqrt(intz2N2 / intN2)  # pycnocline thickness
 
         # Define xarray attributes

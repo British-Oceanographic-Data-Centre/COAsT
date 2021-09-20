@@ -514,7 +514,7 @@ class TransectF(Transect):
             # calculate gradients at v-points either side of f-point
             hpg = (ds_t_j1.pressure_h_zlevels.data[:, :, r_ind] - ds_t.pressure_h_zlevels.data[:, :, r_ind]) / e2v
             hpg_i1 = (
-                             ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_i1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_i1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e2v_i1
             # average onto f-point
             hpg_f = 0.5 * ((e1v * hpg) + (e1v_i1 * hpg_i1)) / e1f
@@ -532,7 +532,7 @@ class TransectF(Transect):
             # calculate gradients at u-points either side of f-point
             hpg = (ds_t_i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t.pressure_h_zlevels.data[:, :, r_ind]) / e1u
             hpg_j1 = (
-                             ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_j1.pressure_h_zlevels.data[:, :, r_ind]
+                ds_t_j1i1.pressure_h_zlevels.data[:, :, r_ind] - ds_t_j1.pressure_h_zlevels.data[:, :, r_ind]
             ) / e1u_j1
             # average onto f-point
             hpg_f = 0.5 * ((e2u * hpg) + (e2u_j1 * hpg_j1)) / e2f

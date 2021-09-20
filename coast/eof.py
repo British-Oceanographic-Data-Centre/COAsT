@@ -192,7 +192,9 @@ def _compute(signal, full_matrices, active_ind, number_points):
     mode_count : (int) number of modes computed
 
     """
-    p, d, q = linalg.svd(signal, full_matrices=full_matrices)  # TODO Can someone sciencey give me the proper name for these?
+    p, d, q = linalg.svd(
+        signal, full_matrices=full_matrices
+    )  # TODO Can someone sciencey give me the proper name for these?
     mode_count = p.shape[-1]
     eofs = np.full((number_points, mode_count), np.nan, dtype=p.dtype)
     eofs[active_ind, :] = p

@@ -819,7 +819,7 @@ class Nemo(Coast):  # TODO Complete this docstring
 
         return tuple(e3_return)
 
-    def harmonics_combine(self, constituents, components=["x", "y"]):   # TODO This [list] should probably be a (tuple)
+    def harmonics_combine(self, constituents, components=["x", "y"]):  # TODO This [list] should probably be a (tuple)
         """
         Contains a new NEMO object containing combined harmonic information
         from the original object.
