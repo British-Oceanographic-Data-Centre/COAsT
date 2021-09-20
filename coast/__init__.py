@@ -15,7 +15,6 @@ from . import plot_util
 from . import crps_util
 from .CONTOUR import Contour, Contour_f, Contour_t
 from .eof import *
-
 from .index import Indexed
 from .track import Track
 from .lagrangian import Lagrangian
