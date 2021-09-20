@@ -1,0 +1,29 @@
+{
+	"type": "indexed",
+	"dimensionality": 2,
+	"chunks": [],
+	"dataset": {
+		"dimension_map": {
+			"N_PROF": "profile",
+			"N_LEVELS": "z_dim"
+		},
+		"variable_map": {
+			"LATITUDE": "latitude",
+			"LONGITUDE": "longitude",
+			"DEPH_CORRECTED": "depth",
+			"JULD": "time",
+			"ex0": "potential_temperature",
+			"TEMP": "temperature",
+			"ex1": "practical_salinity",
+			"POTM_CORRECTED_QC": "qc_potential_temperature",
+			"PSAL_CORRECTED_QC": "qc_practical_salinity",
+			"DEPH_CORRECTED_QC": "qc_depth",
+			"JULD_QC": "qc_time"
+		},
+		"coord_vars": ["time","latitude","longitude"],
+		"keep_all_vars": "False"
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}
