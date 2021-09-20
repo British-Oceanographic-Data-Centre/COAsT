@@ -17,3 +17,13 @@ from . import plot_util
 from . import crps_util
 from .CONTOUR import Contour, Contour_f, Contour_t
 from .eof import *
+from .index import Indexed
+from .track import Track
+from .lagrangian import Lagrangian
+from .oceanparcels import Oceanparcels
+from .glider import Glider
+from .argos import Argos
+from .altimetry import Altimetry
+from .timeseries import Timeseries
+from .tidegauge import Tidegauge
+from .profile import Profile
