@@ -7,11 +7,6 @@ This needs to move to the above
 
 #%%
 import coast
-
-# import numpy as np
-# import xarray as xr
-# import dask
-# import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 
 # import matplotlib.colors as colors # colormap fiddling
@@ -67,7 +62,7 @@ plt.colorbar()
 # fig.savefig("")
 
 #%% Transect Method
-tran_w = coast.Transect_t(sci_nwes_w, (51, 2.5), (61, 2.5))
+tran_w = coast.TransectT(sci_nwes_w, (51, 2.5), (61, 2.5))
 
 lat_sec = tran_w.data.latitude.expand_dims(dim={"z_dim": 51})
 dep_sec = tran_w.data.depthw

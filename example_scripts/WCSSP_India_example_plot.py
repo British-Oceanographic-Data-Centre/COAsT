@@ -9,11 +9,7 @@ Simple plot of sea surface temperature
 
 #%%
 import coast
-import numpy as np
-import xarray as xr
-import dask
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
 #%%  Loading  data

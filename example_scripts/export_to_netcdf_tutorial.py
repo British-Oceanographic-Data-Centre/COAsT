@@ -14,7 +14,7 @@ fn_nemo_dom = "./example_files/COAsT_example_NEMO_domain.nc"
 ofile = "example_export_output.nc"  # The target filename for output
 
 # We need to load in a NEMO object for doing NEMO things.
-nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
+nemo = coast.Nemo(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
 # We can export the whole xr.DataSet to a netCDF file
 nemo.dataset.to_netcdf(ofile, mode="w", format="NETCDF4")
 # Other file formats are available. From the documentation:

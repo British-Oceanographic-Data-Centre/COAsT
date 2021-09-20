@@ -12,8 +12,6 @@ for pycnocline depth and thickness, suitable for a nearly two-layer fluid.
 import coast
 import numpy as np
 import os
-import xarray as xr
-import dask
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors  # colormap fiddling
 
@@ -123,9 +121,9 @@ IT.quick_plot()
 #%% Make transects
 print("* Construct transects to inspect stratification. This is an abuse of the transect code...")
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-tran_it = coast.Transect_t(IT, (51, 2.5), (61, 2.5))
-tran_w = coast.Transect_t(sci_nwes_w, (51, 2.5), (61, 2.5))
-tran_t = coast.Transect_t(sci_nwes_t, (51, 2.5), (61, 2.5))
+tran_it = coast.TransectT(IT, (51, 2.5), (61, 2.5))
+tran_w = coast.TransectT(sci_nwes_w, (51, 2.5), (61, 2.5))
+tran_t = coast.TransectT(sci_nwes_t, (51, 2.5), (61, 2.5))
 print(" - I have forced the w-pt nemo data and w-pt IT data into the t-point Transect objects\n")
 
 lat_sec = tran_t.data.latitude.expand_dims(dim={"z_dim": IT.nz})

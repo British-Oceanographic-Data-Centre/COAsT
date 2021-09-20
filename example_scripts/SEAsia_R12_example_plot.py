@@ -7,11 +7,8 @@ Make simple SEAsia 1/12 deg SSS plot.
 
 #%%
 import coast
-import numpy as np
-import xarray as xr
-import dask
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors  # colormap fiddling
+
 
 #################################################
 #%%  Loading  data

@@ -7,11 +7,7 @@ Make simple Belize SSH plot.
 
 #%%
 import coast
-import numpy as np
-import xarray as xr
-import dask
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
 #%%  Loading  data
@@ -33,7 +29,7 @@ sci_u = coast.Gridded(dir_nam + fil_nam.replace("grid_T", "grid_U"), dom_nam, co
 
 sci_v = coast.Gridded(dir_nam + fil_nam.replace("grid_T", "grid_V"), dom_nam, config=config_v)
 
-sci_v = coast.NEMO(dir_nam + fil_nam.replace("grid_T", "grid_V"), dom_nam, grid_ref="v-grid", multiple=False)
+sci_v = coast.Nemo(dir_nam + fil_nam.replace("grid_T", "grid_V"), dom_nam, grid_ref="v-grid", multiple=False)
 
 # create an empty w-grid object, to store stratification
 sci_w = coast.Gridded(fn_domain=dom_nam, config=config_w)
