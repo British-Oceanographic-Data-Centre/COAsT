@@ -27,24 +27,23 @@ def make_climatology():
     """
 
     # Paths to a single or multiple data files.
-    fn_nemo_data = '/path/to/nemo/datafile.nc'
+    fn_nemo_data = "/path/to/nemo/datafile.nc"
     # Set path for domain file if required.
     fn_nemo_domain = None
     # Define output filepath (optional)
     fn_out = "/path/to/output/nemo_seasonal.nc"
 
     # Define frequency -- Any xarray time string: season, month, etc
-    climatology_frequency = 'season'
+    climatology_frequency = "season"
 
     # Read in multiyear data (This example uses NEMO data from a single file.)
     nemo_data = coast.NEMO(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, chunks={}).dataset
     # Select specific data variables.
-    data = nemo_data[['temperature', 'ssh', 'salinity']]
+    data = nemo_data[["temperature", "ssh", "salinity"]]
 
     # Calculate the climatology and write to file.
     clim = coast.CLIMATOLOGY()
-    clim_mean = clim.make_climatology(data, climatology_frequency,
-                                      fn_out=fn_out)
+    clim_mean = clim.make_climatology(data, climatology_frequency, fn_out=fn_out)
     return clim_mean
 
 
@@ -55,16 +54,16 @@ def make_multiyear_climatology():
     """
 
     # Paths to a single or multiple data files.
-    fn_nemo_data = '/path/to/nemo/*.nc'
+    fn_nemo_data = "/path/to/nemo/*.nc"
     # Set path for domain file if required.
     fn_nemo_domain = None
 
     # Read in multiyear data (This example uses NEMO data from multiple datafiles.)
     nemo_data = coast.NEMO(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, multiple=True, chunks={}).dataset
     # Select specific data variables.
-    data = nemo_data[['temperature', 'ssh', 'salinity']]
+    data = nemo_data[["temperature", "ssh", "salinity"]]
 
     # Calculate means of each season across multiple years for specified data.
     clim = coast.CLIMATOLOGY()
-    clim_multiyear = clim.multiyear_averages(data, seasons.ALL, time_var='time', time_dim='t_dim')
+    clim_multiyear = clim.multiyear_averages(data, seasons.ALL, time_var="time", time_dim="t_dim")
     return clim_multiyear
