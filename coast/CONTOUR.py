@@ -719,8 +719,8 @@ class Contour_f(Contour):
         # DataArray attributes
         coords_hpg = {
             "depth_z_levels": (("depth_z_levels"), z_levels),
-            "latitude": (("r_dim"), self.data_cross_flow.latitude),
-            "longitude": (("r_dim"), self.data_cross_flow.longitude),
+            "latitude": (("r_dim"), self.data_cross_flow.latitude.values),
+            "longitude": (("r_dim"), self.data_cross_flow.longitude.values),
         }
         dims_hpg = ["depth_z_levels", "r_dim"]
         attributes_hpg = {
@@ -729,8 +729,8 @@ class Contour_f(Contour):
                           transect due to the hydrostatic pressure gradient",
         }
         coords_spg = {
-            "latitude": (("r_dim"), self.data_cross_flow.latitude),
-            "longitude": (("r_dim"), self.data_cross_flow.longitude),
+            "latitude": (("r_dim"), self.data_cross_flow.latitude.values),
+            "longitude": (("r_dim"), self.data_cross_flow.longitude.values),
         }
         dims_spg = ["r_dim"]
         attributes_spg = {
@@ -741,9 +741,9 @@ class Contour_f(Contour):
 
         # Add time if required
         if "t_dim" in cont_t.data_contour.dims:
-            coords_hpg["time"] = (("t_dim"), cont_t.data_contour.time)
+            coords_hpg["time"] = (("t_dim"), cont_t.data_contour.time.values)
             dims_hpg.insert(0, "t_dim")
-            coords_spg["time"] = (("t_dim"), cont_t.data_contour.time)
+            coords_spg["time"] = (("t_dim"), cont_t.data_contour.time.values)
             dims_spg.insert(0, "t_dim")
 
         # Add DataArrays  to dataset
@@ -754,7 +754,7 @@ class Contour_f(Contour):
             np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
         )
         self.data_cross_flow["transport_across_AB_hpg"] = (
-            (self.data_cross_flow.normal_velocity_hpg.fillna(0).integrate(dim="depth_z_levels")) * e_horiz / 1000000
+            (self.data_cross_flow.normal_velocity_hpg.fillna(0).integrate(coord="depth_z_levels")) * e_horiz / 1000000
         )
         self.data_cross_flow.transport_across_AB_hpg.attrs = {
             "units": "Sv",
@@ -898,8 +898,8 @@ class Contour_t(Contour):
 
         coords = {
             "depth_z_levels": (("depth_z_levels"), z_levels),
-            "latitude": (("r_dim"), self.data_contour.latitude),
-            "longitude": (("r_dim"), self.data_contour.longitude),
+            "latitude": (("r_dim"), self.data_contour.latitude.values),
+            "longitude": (("r_dim"), self.data_contour.longitude.values),
         }
         dims = ["depth_z_levels", "r_dim"]
         attributes = {"units": "kg / m^3", "standard name": "In-situ density on the z-level vertical grid"}

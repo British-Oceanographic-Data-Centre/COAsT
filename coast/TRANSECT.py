@@ -748,9 +748,9 @@ class Transect_f(Transect):
 
         # Add time if required
         if "t_dim" in tran_t.data.dims:
-            coords_hpg["time"] = (("t_dim"), tran_t.data.time)
+            coords_hpg["time"] = (("t_dim"), tran_t.data.time.values)
             dims_hpg.insert(0, "t_dim")
-            coords_spg["time"] = (("t_dim"), tran_t.data.time)
+            coords_spg["time"] = (("t_dim"), tran_t.data.time.values)
             dims_spg.insert(0, "t_dim")
 
         # Add DataArrays  to dataset
@@ -761,7 +761,7 @@ class Transect_f(Transect):
             np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
         )
         self.data_cross_tran_flow["normal_transport_hpg"] = (
-            (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(dim="depth_z_levels"))
+            (self.data_cross_tran_flow.normal_velocity_hpg.fillna(0).integrate(coord="depth_z_levels"))
             * e_horiz
             / 1000000
         )
@@ -1021,8 +1021,8 @@ class Transect_t(Transect):
 
         coords = {
             "depth_z_levels": (("depth_z_levels"), z_levels),
-            "latitude": (("r_dim"), self.data.latitude),
-            "longitude": (("r_dim"), self.data.longitude),
+            "latitude": (("r_dim"), self.data.latitude.values),
+            "longitude": (("r_dim"), self.data.longitude.values),
         }
         dims = ["depth_z_levels", "r_dim"]
         attributes = {"units": "kg / m^3", "standard name": "In-situ density on the z-level vertical grid"}

@@ -177,9 +177,9 @@ class COAsT:
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
 
-    def rename(self, rename_dict, inplace: bool = None, **kwargs):
+    def rename(self, rename_dict, **kwargs):
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
-        self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
+        self.dataset = self.dataset.rename(rename_dict, **kwargs)
         return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
