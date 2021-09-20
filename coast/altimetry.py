@@ -274,7 +274,7 @@ class Altimetry(Track):
             obs_var.time.values,
             nh_radius, time_interp)
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = Altimetry()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['crps'] = (('t_dim'), crps_list)
             new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
@@ -386,7 +386,7 @@ class Altimetry(Track):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = Altimetry()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['absolute_error'] = ae
             new_dataset['error'] = diff

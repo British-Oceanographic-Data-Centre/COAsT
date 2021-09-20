@@ -309,7 +309,7 @@ class Tidegauge(Timeseries):
         tidegauge_list = []
         for file in file_to_read:
             try:
-                new_object = TIDEGAUGE(file, date_start, date_end, config)
+                new_object = Tidegauge(file, date_start, date_end, config)
                 tidegauge_list.append(new_object)
             except FileNotFoundError as fne:
                 Warning(str(fne))
@@ -1071,7 +1071,7 @@ class Tidegauge(Timeseries):
             obs_var.time.values,
             nh_radius, time_interp)
         if create_new_obj:
-            new_object = TIDEGAUGE()
+            new_object = Tidegauge()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['crps'] = (('time'), crps_list)
             new_dataset['crps_n_model_pts'] = (('time'), n_model_pts)
@@ -1181,7 +1181,7 @@ class Tidegauge(Timeseries):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = TIDEGAUGE()
+            new_object = Tidegauge()
             new_dataset = self.dataset[['longitude', 'latitude', 'time']]
             new_dataset['absolute_error'] = ae
             new_dataset['error'] = diff
@@ -1273,7 +1273,7 @@ class Tidegauge(Timeseries):
         new_dataset['time_highs'] = ('time_highs', time_max)
         new_dataset['time_lows'] = ('time_lows', time_min)
 
-        new_object = TIDEGAUGE()
+        new_object = Tidegauge()
         new_object.dataset = new_dataset
 
         return new_object
