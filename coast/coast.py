@@ -10,15 +10,15 @@ def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worke
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
-class COAsT:
+class Coast:
     def __init__(
         self,
         file: str = None,
         chunks: dict = None,
         multiple=False,
-        workers: int = 2,  # TODO Do something with this unused parameter
-        threads: int = 2,  # TODO Do something with this unused parameter
-        memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter
+        workers: int = 2,  # TODO Do something with this unused parameter or delete it
+        threads: int = 2,  # TODO Do something with this unused parameter or delete it
+        memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter or delete it
     ):
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
@@ -78,15 +78,15 @@ class COAsT:
         debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
 
     def set_dimension_mapping(self):
-        self.dim_mapping = None
+        self.dim_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
-        self.var_mapping = None
+        self.var_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
 
-    def set_grid_ref_attr(self):
-        self.grid_ref_attr_mapping = None
+    def set_grid_ref_attribute(self):
+        self.grid_ref_attr_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: dict):
@@ -180,7 +180,6 @@ class COAsT:
     def rename(self, rename_dict, inplace: bool = None, **kwargs):
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
         self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
-        return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
         """
@@ -205,7 +204,7 @@ class COAsT:
         return obj_copy
 
     def distance_between_two_points(self):
-        raise NotImplementedError
+        raise NotImplementedError  # TODO Should this class be decorated as an abstractclass?
 
     def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, radius: float):
         """
@@ -255,7 +254,8 @@ class COAsT:
 
         return np.where(ff)
 
-    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
+    @staticmethod
+    def calculate_haversine_distance(lon1, lat1, lon2, lat2):  # TODO This could be a static method
         """
         # Estimation of geographical distance using the Haversine function.
         # Input can be single values or 1D arrays of locations. This
@@ -298,7 +298,7 @@ class COAsT:
         :param var: the name of the variable to get data from
         :param points_x: a list/array of indices for the x dimension
         :param points_y: a list/array of indices for the y dimension
-        :param line_length: (Optional) the length of your subset (assuming simple line transect)
+        :param line_length: (Optional) the length of your subset (assuming simple line transect)  TODO This is unsued
         :param time_counter: (Optional) which time slice to get data from, if None and the variable only has one a time
                              channel of length 1 then time_counter is fixed too an index of 0
         :return: data across all depths for the chosen variable along the given indices
@@ -339,7 +339,7 @@ class COAsT:
         try:
             [time_size, _, _, _] = self.dataset[var].shape
             if time_size == 1:
-                time_counter == 0
+                time_counter == 0  # TODO This should probably be =, not ==
         except ValueError:
             time_counter = None
 
@@ -379,7 +379,7 @@ class COAsT:
         fig = plt.figure()
         plt.rcParams["figure.figsize"] = plot_info["fig_size"]
 
-        ax = fig.add_subplot(411)
+        fig.add_subplot(411)
         plt.pcolormesh(x, y, data, cmap=cmap)
 
         plt.ylim(plot_info["ylim"])
@@ -408,7 +408,7 @@ class COAsT:
         info("Generating CartoPy plot...")
         plt.close("all")
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.gca()
+        fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
         cset = (
@@ -435,8 +435,8 @@ class COAsT:
         gl.xlabels_bottom = True
         gl.ylabels_right = False
         gl.ylabels_left = True
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
+        gl.x_formatter = LONGITUDE_FORMATTER
+        gl.y_formatter = LATITUDE_FORMATTER
 
         plt.colorbar(cset, shrink=params.colorbar_shrink, pad=0.05)
 

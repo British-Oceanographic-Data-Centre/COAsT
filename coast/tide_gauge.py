@@ -10,7 +10,7 @@ from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error, info
 
 
-class TIDEGAUGE:
+class TideGauge:
     """
     An object for reading, storing and manipulating tide gauge data.
     Functionality available for reading and organisation of GESLA files.
@@ -274,7 +274,7 @@ class TIDEGAUGE:
         return dataset
 
     @classmethod
-    def create_multiple_tidegauge(cls, file_list, date_start=None, date_end=None):
+    def create_multiple(cls, file_list, date_start=None, date_end=None):
         """
         Reads multiple GESLA tide gauge files from file_list (can include
         wildcards) and return them in a list. date_start and date_end should
@@ -309,7 +309,7 @@ class TIDEGAUGE:
         for file in file_to_read:
             try:
                 dataset = cls.read_gesla_to_xarray_v3(file, date_start, date_end)
-                new_object = TIDEGAUGE()
+                new_object = TideGauge()
                 new_object.dataset = dataset
                 tidegauge_list.append(new_object)
             except:
@@ -319,7 +319,7 @@ class TIDEGAUGE:
 
     ############ tide table methods (HLW) #########################################
     @classmethod
-    def read_HLW_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
+    def read_hlw_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
         xarray dataset. File contains high water and low water heights and times
@@ -347,8 +347,8 @@ class TIDEGAUGE:
         """
         debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
-            header_dict = cls.read_HLW_header(fn_hlw)
-            dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
+            header_dict = cls.read_hlw_header(fn_hlw)
+            dataset = cls.read_hlw_data(fn_hlw, header_dict, date_start, date_end)
             if header_dict["field"] == "TZ:UT(GMT)/BST":
                 debug("Read in as BST, stored as UTC")
             elif header_dict["field"] == "TZ:GMTonly":
@@ -356,7 +356,7 @@ class TIDEGAUGE:
             else:
                 debug("Not expecting that timezone")
 
-        except:
+        except:  # TODO Replace this bear except with something more specific.
             raise Exception("Problem reading HLW file: " + fn_hlw)
 
         dataset.attrs = header_dict
@@ -364,7 +364,7 @@ class TIDEGAUGE:
         return dataset
 
     @staticmethod
-    def read_HLW_header(filnam):
+    def read_hlw_header(filnam):
         """
         Reads header from a HWL file.
 
@@ -407,7 +407,7 @@ class TIDEGAUGE:
         return header_dict
 
     @staticmethod
-    def read_HLW_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
+    def read_hlw_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -481,13 +481,12 @@ class TIDEGAUGE:
         Print out the values in the xarray
         Displays with specified timezone
         """
-        # print(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
-        if timezone == None:
+        if timezone is None:
             for i in range(len(self.dataset.sea_level)):
                 #               print('time:', self.dataset.time[i].values,
                 print(
                     "time (UTC):",
-                    general_utils.dayoweek(self.dataset.time[i].values),
+                    general_utils.day_of_week(self.dataset.time[i].values),
                     np.datetime_as_string(self.dataset.time[i], unit="m"),
                     "height:",
                     self.dataset.sea_level[i].values,
@@ -498,14 +497,14 @@ class TIDEGAUGE:
                 #               print('time:', self.dataset.time[i].values,
                 print(
                     "time (" + timezone + "):",
-                    general_utils.dayoweek(self.dataset.time[i].values),
+                    general_utils.day_of_week(self.dataset.time[i].values),
                     np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
                     self.dataset.sea_level[i].values,
                     "m",
                 )
 
-    def get_tidetabletimes(
+    def get_tide_table_times(
         self,
         time_guess: np.datetime64 = None,
         time_var: str = "time",
@@ -593,12 +592,12 @@ class TIDEGAUGE:
 
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
-    def read_EA_API_to_xarray(
-        cls, ndays: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
+    def read_ea_api_to_xarray(
+        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, station_id="E70124"
     ):
         """
         load gauge data via environment.data.gov.uk EA API
-        Either loads last ndays, or from date_start:date_end
+        Either loads last n_days, or from date_start:date_end
 
         API Source:
         https://environment.data.gov.uk/flood-monitoring/doc/reference
@@ -606,54 +605,56 @@ class TIDEGAUGE:
         Details of available tidal stations are recovered with:
         https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
         Recover the "stationReference" for the gauge of interest and pass as
-        stationId:str. The default stationId="E70124" is Liverpool.
+        station_id:str. The default station_id="E70124" is Liverpool.
 
         INPUTS:
-            ndays : int. Extact the last ndays from now.
+            n_days : int. Extact the last n_days from now.
             date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
             date_end : datetime
-            stationId : int. Station id. Also referred to as stationReference in
+            station_id : int. Station id. Also referred to as stationReference in
              EA API. Default value is for Liverpool.
         OUTPUT:
             sea_level, time : xr.Dataset
         """
-        import requests, json
+        import requests
+        import json
 
-        cls.ndays = ndays
+        cls.n_days = n_days
         cls.date_start = date_start
         cls.date_end = date_end
-        cls.stationId = stationId  # EA id: stationReference
+        cls.station_id = station_id  # EA id: stationReference  # TODO This should happen in the __init__!
 
         #%% Obtain and process header information
         info("load station info")
-        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.stationId + ".json"
+        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.station_id + ".json"
         try:
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
         except ValueError:
-            print(f"Failed request for station {cls.stationId}")
+            print(f"Failed request for station {cls.station_id}")
             return
 
         try:
             header_dict["site_name"] = header_dict["items"]["label"]
             header_dict["latitude"] = header_dict["items"]["lat"]
             header_dict["longitude"] = header_dict["items"]["long"]
-        except:
+        except:  # TODO Replace this bare except with something more specific
             info(f"possible missing some header info: site_name,latitude,longitude")
         try:
             # Define url call with parameter from station info
-            htmlcall_stationId = header_dict["items"]["measures"]["@id"] + "/readings?"
-        except:
+            htmlcall_station_id = header_dict["items"]["measures"]["@id"] + "/readings?"
+        except:  # TODO Replace this bare except with something more specific
             debug(f"problem defining the parameter to read")
 
-        #%% Construct API request for data recovery
+        # Construct API request for data recovery
         info("load station data")
-        if (cls.date_start == None) & (cls.date_end == None):
-            info(f"GETting ndays= {cls.ndays} of data")
+        if (cls.date_start is None) & (cls.date_end is None):
+            # TODO I am a little troubled by these cls attribute comparisons... They should really be static.
+            info(f"GETting n_days= {cls.n_days} of data")
             url = (
-                htmlcall_stationId
+                htmlcall_station_id
                 + "since="
-                + (np.datetime64("now") - np.timedelta64(ndays, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
+                + (np.datetime64("now") - np.timedelta64(n_days, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
             )
             debug(f"url request: {url}")
         else:
@@ -662,7 +663,7 @@ class TIDEGAUGE:
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime("%Y-%m-%d")
                 enddate = cls.date_end.item().strftime("%Y-%m-%d")
-                url = htmlcall_stationId + "startdate=" + startdate + "&enddate=" + enddate
+                url = htmlcall_station_id + "startdate=" + startdate + "&enddate=" + enddate
                 debug(f"url request: {url}")
 
             else:
@@ -896,11 +897,11 @@ class TIDEGAUGE:
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
 
         title = "Location: " + self.dataset.attrs["site_name"]
-        X = self.dataset.longitude
-        Y = self.dataset.latitude
-        fig, ax = plot_util.geo_scatter(X, Y, title=title)
-        ax.set_xlim((X - 10, X + 10))
-        ax.set_ylim((Y - 10, Y + 10))
+        x = self.dataset.longitude
+        y = self.dataset.latitude
+        fig, ax = plot_util.geo_scatter(x, y, title=title)
+        ax.set_xlim((x - 10, x + 10))
+        ax.set_ylim((y - 10, y + 10))
         return fig, ax
 
     @classmethod
@@ -917,33 +918,34 @@ class TIDEGAUGE:
 
         debug(f"Plotting tide gauge locations for {get_slug(cls)}")
 
-        X = []
-        Y = []
-        C = []
+        x = []
+        y = []
+        c = []
         for tg in tidegauge_list:
-            X.append(tg.dataset.longitude)
-            Y.append(tg.dataset.latitude)
+            x.append(tg.dataset.longitude)
+            y.append(tg.dataset.latitude)
             if color_var_str is not None:
-                C.append(tg.dataset[color_var_str].values)
+                c.append(tg.dataset[color_var_str].values)
 
         title = ""
         if color_var_str is None:
-            fig, ax = plot_util.geo_scatter(X, Y, title=title)
+            fig, ax = plot_util.geo_scatter(x, y, title=title)
         else:
-            fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
+            fig, ax = plot_util.geo_scatter(x, y, title=title, c=c)
 
-        ax.set_xlim((min(X) - 10, max(X) + 10))
-        ax.set_ylim((min(Y) - 10, max(Y) + 10))
+        ax.set_xlim((min(x) - 10, max(x) + 10))
+        ax.set_ylim((min(y) - 10, max(y) + 10))
         return fig, ax
 
     def plot_timeseries(self, var_list=["sea_level"], date_start=None, date_end=None, plot_line=False):
+        # TODO Could var_list be a tuple?
         """
         Quick plot of time series stored within object's dataset
         Parameters
         ----------
         date_start (datetime) : Start date for plotting
         date_end (datetime) : End date for plotting
-        var_list  (str)  : List of variables to plot. Default: just sea_level
+        var_list  (str)  : List of variables to plot. Default: just sea_level  TODO Can this be a tuple?
         plot_line (bool) : If true, draw line between markers
 
         Returns
@@ -953,7 +955,7 @@ class TIDEGAUGE:
         debug(f"Plotting timeseries for {get_slug(self)}")
         fig = plt.figure(figsize=(10, 10))
         # Check input is a list (even for one variable)
-        if type(var_list) is str:
+        if isinstance(var_list, str):
             var_list = [var_list]
 
         for var_str in var_list:
@@ -986,13 +988,14 @@ class TIDEGAUGE:
         plt.xlabel("Date")
         plt.title("Site: " + self.dataset.site_name)
 
-        return fig, ax
+        return fig, ax  # TODO ax might not be defined
 
     ##############################################################################
     ###                ~        Model Comparison         ~                     ###
     ##############################################################################
 
     def obs_operator(self, model, mod_var_name: str, time_interp="nearest", model_mask=None):
+        # TODO time_interp is unused.
         """
         Interpolates a model array (specified using a model object and variable
         string) to TIDEGAUGE location and times. Takes the nearest model grid
@@ -1035,7 +1038,6 @@ class TIDEGAUGE:
         # Store interpolated array in dataset
         new_var_name = "interp_" + mod_var_name
         self.dataset[new_var_name] = interpolated.drop(["longitude", "latitude"])
-        return
 
     def crps(
         self,
@@ -1088,7 +1090,7 @@ class TIDEGAUGE:
             time_interp,
         )
         if create_new_obj:
-            new_object = TIDEGAUGE()
+            new_object = TideGauge()
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
             new_dataset["crps"] = (("time"), crps_list)
             new_dataset["crps_n_model_pts"] = (("time"), n_model_pts)
@@ -1101,10 +1103,11 @@ class TIDEGAUGE:
     def difference(self, var_str0: str, var_str1: str, date0=None, date1=None):
         """Difference two variables defined by var_str0 and var_str1 between
         two dates date0 and date1. Returns xr.DataArray"""
+        # TODO general_utils.data_array_time_slice doesn't seem to exist?
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         diff = var0 - var1
         return xr.DataArray(diff, dims="time", name="error", coords={"time": self.dataset.time})
 
@@ -1113,8 +1116,8 @@ class TIDEGAUGE:
         between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
         return xr.DataArray(adiff, dims="time", name="absolute_error", coords={"time": self.dataset.time})
 
@@ -1123,8 +1126,8 @@ class TIDEGAUGE:
         var_str1 between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         mae = metrics.mean_absolute_error(var0, var1)
         return mae
 
@@ -1133,21 +1136,21 @@ class TIDEGAUGE:
         var_str1 between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         rmse = metrics.mean_squared_error(var0, var1)
         return np.sqrt(rmse)
 
     def time_mean(self, var_str, date0=None, date1=None):
         """Time mean of variable var_str between dates date0, date1"""
         var = self.dataset[var_str]
-        var = general_utils.dataarray_time_slice(var, date0, date1)
+        var = general_utils.data_array_time_slice(var, date0, date1)
         return np.nanmean(var)
 
     def time_std(self, var_str, date0=None, date1=None):
         """Time st. dev of variable var_str between dates date0 and date1"""
         var = self.dataset[var_str]
-        var = general_utils.dataarray_time_slice(var, date0, date1)
+        var = general_utils.data_array_time_slice(var, date0, date1)
         return np.nanstd(var)
 
     def time_correlation(self, var_str0, var_str1, date0=None, date1=None, method="pearson"):
@@ -1157,8 +1160,8 @@ class TIDEGAUGE:
         var1 = self.dataset[var_str1]
         var0 = var0.rename("var1")
         var1 = var1.rename("var2")
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        var0 = general_utils.data_array_time_slice(var0, date0, date1)
+        var1 = general_utils.data_array_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
         pdvar = pdvar.to_dataframe()
         corr = pdvar.corr(method=method)
@@ -1171,8 +1174,8 @@ class TIDEGAUGE:
         var1 = self.dataset[var_str1]
         var0 = var0.rename("var1")
         var1 = var1.rename("var2")
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        var0 = general_utils.data_array_time_slice(var0, date0, date1)
+        var1 = general_utils.data_array_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
         pdvar = pdvar.to_dataframe()
         cov = pdvar.cov()
@@ -1194,7 +1197,7 @@ class TIDEGAUGE:
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = TIDEGAUGE()
+            new_object = TideGauge()
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
             new_dataset["absolute_error"] = ae
             new_dataset["error"] = diff
@@ -1251,7 +1254,7 @@ class TIDEGAUGE:
         Input ius expected to be hourly. Use resample_mean to average data
         to hourly frequency."""
         filtered = stats_util.doodson_x0_filter(self.dataset[var_str], ax=0)
-        self.dataset[var_str + "_dx0"] = (("time_1H"), filtered)
+        self.dataset[var_str + "_dx0"] = ("time_1H", filtered)
 
     def find_high_and_low_water(self, var_str, method="comp", **kwargs):
         """
@@ -1283,7 +1286,7 @@ class TIDEGAUGE:
         new_dataset["time_highs"] = ("time_highs", time_max)
         new_dataset["time_lows"] = ("time_lows", time_min)
 
-        new_object = TIDEGAUGE()
+        new_object = TideGauge()
         new_object.dataset = new_dataset
 
         return new_object

@@ -97,18 +97,18 @@ else:
 
 #%% Construct in-situ density and stratification
 print("* Construct in-situ density and stratification")
-sci_nwes_t.construct_density(EOS="EOS10")
+sci_nwes_t.construct_density(eos="EOS10")
 
 #%% Construct stratification. t-pts --> w-pts
 print("* Construct stratification. t-pts --> w-pts")
 sci_nwes_w = sci_nwes_t.differentiate(
-    "density", dim="z_dim", out_varstr="rho_dz", out_obj=sci_nwes_w
+    "density", dim="z_dim", out_var_str="rho_dz", out_obj=sci_nwes_w
 )  # --> sci_nwes_w.rho_dz
 
 #################################################
 #%% Create internal tide diagnostics object
 print("* Create internal tide diagnostics object")
-IT = coast.INTERNALTIDE(sci_nwes_t, sci_nwes_w)
+IT = coast.InternalTide(sci_nwes_t, sci_nwes_w)
 
 #%%  Construct pycnocline variables: depth and thickness
 print("* Compute density and rho_dz if they didn" "t exist")

@@ -1,16 +1,14 @@
-from .COAsT import COAsT
+from .coast import Coast
 from . import general_utils, stats_util
 import xarray as xr
 import numpy as np
-
-# from dask import delayed, compute, visualize
-# import graphviz
 import gsw
 import warnings
+import traceback
 from .logging_util import get_slug, debug, info, warn, error
 
 
-class NEMO(COAsT):  # TODO Complete this docstring
+class Nemo(Coast):  # TODO Complete this docstring
     """
     Words to describe the NEMO class
 
@@ -18,11 +16,11 @@ class NEMO(COAsT):  # TODO Complete this docstring
     if using s-scoord in an old domain file that does not carry this flag.
     """
 
-    def __init__(
+    def __init__(  # TODO Super init not called + add a docstring
         self,
         fn_data=None,
         fn_domain=None,
-        grid_ref="t-grid",  # TODO Super init not called + add a docstring
+        grid_ref="t-grid",
         chunks: dict = None,
         multiple=False,
         workers=2,
@@ -51,7 +49,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             dataset_domain = self.load_domain(fn_domain, chunks)
 
             # Define extra domain attributes using kwargs dictionary
-            ## This is a bit of a placeholder. Some domain/nemo files will have missing variables
+            # TODO This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
                 dataset_domain[key] = value
 
@@ -74,7 +72,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 "e2u",
                 "e3u_0",
                 "depthu_0",
-            ]  # What about e3vw
+            ]  # TODO What about e3vw?
         elif self.grid_ref == "v-grid":
             self.grid_vars = ["glamv", "gphiv", "e1v", "e2v", "e3v_0", "depthv_0"]
         elif self.grid_ref == "t-grid":
@@ -177,10 +175,6 @@ class NEMO(COAsT):  # TODO Complete this docstring
         # Define grid independent variables to pull across
         not_grid_vars = ["jpiglo", "jpjglo", "jpkglo", "jperio", "ln_zco", "ln_zps", "ln_sco", "ln_isfcav"]
 
-        all_vars = (
-            self.grid_vars + not_grid_vars
-        )  # FIXME Add an else clause to avoid unhandled error when no ifs are True
-
         # Trim domain DataArray area if necessary.
         self.copy_domain_vars_to_dataset(dataset_domain, self.grid_vars)
 
@@ -205,7 +199,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
     def __getitem__(self, name: str):
         return self.dataset[name]
 
-    def set_grid_ref_attr(self):
+    def set_grid_ref_attribute(self):
         debug(f"{get_slug(self)} grid_ref_attr set to {self.grid_ref_attr_mapping}")
         self.grid_ref_attr_mapping = {
             "temperature": "t-grid",
@@ -294,7 +288,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref),
             }
         except ValueError as err:
-            error(err)
+            error(traceback.format_exc())
 
     # Add subset method to NEMO class
     def subset_indices(self, start: tuple, end: tuple) -> tuple:
@@ -390,7 +384,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         """
         debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
         # Get nearest indices
-        ind_x, ind_y = general_utils.nearest_indices_2D(
+        ind_x, ind_y = general_utils.nearest_indices_2d(
             model_array.longitude, model_array.latitude, new_lon, new_lat, mask=mask
         )
 
@@ -435,10 +429,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, EOS="EOS10"):
+    def construct_density(self, eos="EOS10"):
 
         """
-            Constructs the in-situ density using the salinity, temperture and
+            Constructs the in-situ density using the salinity, temperature and
             depth_0 fields and adds a density attribute to the t-grid dataset
 
             Requirements: The supplied t-grid dataset must contain the
@@ -451,7 +445,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
         Parameters
         ----------
-        EOS : equation of state, optional
+        eos : equation of state, optional
             DESCRIPTION. The default is 'EOS10'.
 
 
@@ -461,10 +455,10 @@ class NEMO(COAsT):  # TODO Complete this docstring
         adds attribute NEMO.dataset.density
 
         """
-        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{EOS}"')
+        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
         try:
-            if EOS != "EOS10":
-                raise ValueError(str(self) + ": Density calculation for " + EOS + " not implemented.")
+            if eos != "EOS10":
+                raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
             if self.grid_ref != "t-grid":
                 raise ValueError(
                     str(self)
@@ -510,7 +504,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             attributes = {"units": "kg / m^3", "standard name": "In-situ density"}
 
             if shape_ds[0] != 1:
-                coords["time"] = (("t_dim"), self.dataset.time.values)
+                coords["time"] = ("t_dim", self.dataset.time.values)
                 dims.insert(0, "t_dim")
 
             self.dataset["density"] = xr.DataArray(np.squeeze(density), coords=coords, dims=dims, attrs=attributes)
@@ -562,7 +556,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
 
-    def differentiate(self, in_varstr, dim="z_dim", out_varstr=None, out_obj=None):
+    def differentiate(self, in_varstr, dim="z_dim", out_var_str=None, out_obj=None):
         """
         Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
         wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
@@ -606,7 +600,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         ----------
         in_varstr : str, name of variable to differentiate
         dim : str, dimension to operate over. E.g. {'z_dim', 'y_dim', 'x_dim', 't_dim'}
-        out_varstr : str, (optional) name of the target xr.DataArray
+        out_var_str : str, (optional) name of the target xr.DataArray
         out_obj : exiting NEMO obj to store xr.DataArray (optional)
 
         """
@@ -620,12 +614,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
             var = self.dataset[in_varstr]  # for convenience
 
-            nt = var.sizes["t_dim"]
-            nz = var.sizes["z_dim"]
-            ny = var.sizes["y_dim"]
-            nx = var.sizes["x_dim"]
-
-            ## Compute d(t_grid)/dz --> w-grid
+            # Compute d(t_grid)/dz --> w-grid
             # Check grid_ref and dir. Determine target grid_ref.
             if (self.grid_ref == "t-grid") and (dim == "z_dim"):
                 out_grid = "w-grid"
@@ -633,7 +622,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 # If out_obj exists check grid_ref, else create out_obj.
                 if (out_obj is None) or (out_obj.grid_ref != out_grid):
                     try:
-                        out_obj = NEMO(fn_domain=self.filename_domain, grid_ref=out_grid)
+                        out_obj = Nemo(fn_domain=self.filename_domain, grid_ref=out_grid)
                     except:  # TODO Catch specific exception(s)
                         warn(
                             "Failed to create target NEMO obj. Perhaps self.",
@@ -641,8 +630,8 @@ class NEMO(COAsT):  # TODO Complete this docstring
                         )
 
                 # Check is out_varstr is defined, else create it
-                if out_varstr is None:
-                    out_varstr = in_varstr + "_dz"
+                if out_var_str is None:
+                    out_var_str = in_varstr + "_dz"
 
                 # Create new DataArray with the same dimensions as the parent
                 # Crucially have a coordinate value that is appropriate to the target location.
@@ -652,12 +641,12 @@ class NEMO(COAsT):  # TODO Complete this docstring
                 diff = xr.concat([blank, var.diff(dim)], dim)
                 diff_ndim, e3w_ndim = xr.broadcast(diff, out_obj.dataset.e3_0.squeeze())
                 # Compute the derivative
-                out_obj.dataset[out_varstr] = -diff_ndim / e3w_ndim
+                out_obj.dataset[out_var_str] = -diff_ndim / e3w_ndim
 
                 # Assign attributes
                 new_units = var.units + "/" + out_obj.dataset.depth_0.units
                 # Convert to a xr.DataArray and return
-                out_obj.dataset[out_varstr].attrs = {"units": new_units, "standard_name": out_varstr}
+                out_obj.dataset[out_var_str].attrs = {"units": new_units, "standard_name": out_var_str}
 
                 # Return in object.
                 return out_obj
@@ -830,7 +819,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
 
         return tuple(e3_return)
 
-    def harmonics_combine(self, constituents, components=["x", "y"]):
+    def harmonics_combine(self, constituents, components=["x", "y"]):   # TODO This [list] should probably be a (tuple)
         """
         Contains a new NEMO object containing combined harmonic information
         from the original object.
@@ -883,7 +872,7 @@ class NEMO(COAsT):  # TODO Complete this docstring
         harmonic_y = "harmonic_" + components[1]
         y_data = xr.concat(y_arrays, dim="constituent").rename(harmonic_y)
 
-        nemo_harmonics = NEMO()
+        nemo_harmonics = Nemo()
         nemo_harmonics.dataset = xr.merge([x_data, y_data])
         nemo_harmonics.dataset["constituent"] = constituents
 
@@ -927,11 +916,11 @@ class NEMO(COAsT):  # TODO Complete this docstring
         Modifies NEMO() dataset in place. New variables added.
         """
         if direction == "cart2polar":
-            a, g = general_utils.cart2polar(self.dataset[x_var], self.dataset[y_var], degrees=degrees)
+            a, g = general_utils.cartesian_to_polar(self.dataset[x_var], self.dataset[y_var], degrees=degrees)
             self.dataset[a_var] = a
             self.dataset[g_var] = g
         elif direction == "polar2cart":
-            x, y = general_utils.polar2cart(self.dataset[a_var], self.dataset[g_var], degrees=degrees)
+            x, y = general_utils.polar_to_cartesian(self.dataset[a_var], self.dataset[g_var], degrees=degrees)
             self.dataset[x_var] = x
             self.dataset[y_var] = y
         else:

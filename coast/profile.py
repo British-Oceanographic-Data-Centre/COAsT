@@ -1,12 +1,13 @@
 import numpy as np
 import xarray as xr
-from . import general_utils, plot_util, crps_util, COAsT
+from . import general_utils, plot_util
+from .coast import Coast
 import matplotlib.pyplot as plt
 import glob
 import datetime
 
 
-class PROFILE(COAsT):
+class Profile(Coast):
     """
     OBSERVATION type class for storing data from a CTD Profile (or similar
     down and up observations). The structure of the class is based on data from
@@ -27,7 +28,7 @@ class PROFILE(COAsT):
         self.dataset = None
         return
 
-    def read_EN4(self, fn_en4, multiple=False, chunks={}):
+    def read_en4(self, fn_en4, multiple=False, chunks={}):
         """
         Reads a single or multiple EN4 netCDF files into the COAsT profile
         data structure.
@@ -128,7 +129,7 @@ class PROFILE(COAsT):
         plt.xlabel(var + "(" + self.dataset[var].units + ")")
         plt.ylabel("Depth (" + self.dataset.depth.units + ")")
         plt.grid()
-        return fig, ax
+        return fig, ax  # TODO ax might not be defined
 
     def plot_map(self, profile_indices=None, var_str=None, depth_index=None):
 

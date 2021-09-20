@@ -1,19 +1,19 @@
-from .COAsT import COAsT
-from .COAsT import setup_dask_client
-from .NEMO import NEMO
+from .coast import Coast
+from .coast import setup_dask_client
+from .nemo import Nemo
+from .transect import Transect, TransectF, TransectT
+from .observation import Observation
+from .tide_gauge import TideGauge
+from .profile import Profile
+from .mask_maker import MaskMaker
 from .gridded import Gridded
-from .TRANSECT import Transect, Transect_f, Transect_t
-from .ALTIMETRY import ALTIMETRY
-from .OBSERVATION import OBSERVATION
-from .DISTRIBUTION import DISTRIBUTION
-from .INTERNALTIDE import INTERNALTIDE
-from .TIDEGAUGE import TIDEGAUGE
-from .PROFILE import PROFILE
-from .CLIMATOLOGY import CLIMATOLOGY
-from .MASK_MAKER import MASK_MAKER
+from .altimetry import Altimetry
+from .distribution import Distribution
+from .internal_tide import InternalTide
+from .climatology import Climatology
 from . import logging_util
 from . import general_utils
 from . import plot_util
 from . import crps_util
-from .CONTOUR import Contour, Contour_f, Contour_t
-from .eof import *
+from .contour import Contour, ContourF, ContourT
+from .eof import compute_eofs, compute_hilbert_eofs

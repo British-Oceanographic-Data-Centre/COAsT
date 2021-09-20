@@ -19,7 +19,7 @@ nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
 # to read in CMEMS netCDF files. However, if no path is supplied, then the
 # object's dataset will be initialised as None. Custom data can then be loaded
 # if desired, as long as it follows the data formatting for ALTIMETRY.
-altimetry = coast.ALTIMETRY(fn_altimetry)
+altimetry = coast.Altimetry(fn_altimetry)
 
 # Before going any further, lets just cut out the bit of the altimetry that
 # is over the model domain. This can be done using subset_indices_lonlat_box

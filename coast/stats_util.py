@@ -9,7 +9,6 @@ Python definitions used to aid with statistical calculations.
 
 import numpy as np
 import xarray as xr
-from .logging_util import get_slug, debug, info, warn, error
 import scipy
 
 
@@ -49,7 +48,7 @@ def find_maxima(x, y, method="comp", **kwargs):
                 Future methods include linear interpolation.
 
         JP NOTE: Cubic method:
-            i) has ineligent fix for NaNs,
+            i) has intelligent fix for NaNs,
 
     Example usage:
     see example_scripts/tidegauge_tutorial.py
@@ -85,11 +84,11 @@ def find_maxima(x, y, method="comp", **kwargs):
 
         """
         # Remove NaNs
-        I = np.isnan(y)
-        if sum(I) > 0:
+        nan_mask = np.isnan(y)
+        if sum(nan_mask) > 0:
             print("find_maxima(): There were NaNs in timeseries")
-            x = x[np.logical_not(I)]
-            y = y[np.logical_not(I)]
+            x = x[np.logical_not(nan_mask)]
+            y = y[np.logical_not(nan_mask)]
 
         # Sort over time. Monotonic increasing
         y = y.sortby(x)
@@ -168,7 +167,7 @@ def doodson_x0_filter(elevation, ax=0):
         Filtered array of same rank as elevation.
     """
     if elevation.shape[ax] < 39:
-        print("Doodson_XO: Ensure time axis has >=39 elements. Returning.")
+        print("Doodson_XO: Ensure time axis has >=39 elements. Returning.")  # TODO Does this really need to be printed?
         return
     # Define DOODSON XO weights
     kern = np.array(
