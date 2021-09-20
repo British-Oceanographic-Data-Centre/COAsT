@@ -11,7 +11,8 @@
 			"qc_flags": "qc_flags",
 			"latitude": "lat_dim",
 			"longitude": "lon_dim"
-		}
+		},
+		"coord_vars": ["time"]
 	},
 	"processing_flags": [
 		"example_flag"

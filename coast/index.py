@@ -1,8 +1,7 @@
-"""WIP: INDEX class."""
+"""Index class."""
 from dask import array
 from dask.distributed import Client
-from .logging_util import get_slug, debug, info, warn, warning
-from .config import config_parser, config_structure
+from .config import config_parser
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
@@ -17,7 +16,7 @@ def setup_dask_client(
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
-class INDEXED:
+class Indexed:
     def __init__(self, config: Union[Path, str] = None):
         """ Configuration init.
 
@@ -30,7 +29,8 @@ class INDEXED:
         self.chunks = None
         self.var_mapping = None
         self.dim_mapping = None
-        self.load_all = False
+        self.coord_vars = None
+        self.keep_all_vars = False
 
         if config:
             self.json_config = config_parser.ConfigParser(config)
@@ -38,11 +38,13 @@ class INDEXED:
                 self.chunks = literal_eval(self.json_config.config.chunks[0])
             self.dim_mapping = self.json_config.config.dataset.dimension_map
             self.var_mapping = self.json_config.config.dataset.variable_map
-            # self.load_all = self.json_config.config.dataset.load_all
+            self.coord_vars = self.json_config.config.dataset.coord_var
+            self.keep_all_vars = literal_eval(self.json_config.config.dataset.keep_all_vars)
 
-    def apply_config_mappings(self):
-        """Applies json configuration mappings"""
+    def apply_config_mappings(self) -> None:
+        """Applies json configuration and mappings"""
         # We iterate through each mapping one by one which enables us to catch those variables that do not exist
+
         if self.dim_mapping is not None:
             for k in self.dim_mapping:
                 try:
@@ -59,6 +61,8 @@ class INDEXED:
                 except ValueError as e:
                     debug(f"Warning: {str(e)}")
 
-            # Just keep the variables specified in the json config variable mapping
-            if self.load_all:
+            if not self.keep_all_vars:
                 self.dataset = self.dataset[keep_vars]
+
+        if self.coord_vars is not None:
+            self.dataset = self.dataset.set_coords(self.coord_vars)

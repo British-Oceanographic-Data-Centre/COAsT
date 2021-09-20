@@ -19,7 +19,9 @@
 			"PSAL_CORRECTED_QC": "qc_practical_salinity",
 			"DEPH_CORRECTED_QC": "qc_depth",
 			"JULD_QC": "qc_time"
-		}
+		},
+		"coord_vars": ["time","latitude","longitude"],
+		"keep_all_vars": "False"
 	},
 	"processing_flags": [
 		"example_flag"

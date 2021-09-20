@@ -1,8 +1,8 @@
-"""WIP: PROFILE class"""
-from .INDEX import INDEXED
+"""Profile Class"""
+from .index import Indexed
 import numpy as np
 import xarray as xr
-from . import general_utils, plot_util, crps_util, COAsT
+from . import general_utils, plot_util
 import matplotlib.pyplot as plt
 import glob
 import datetime
@@ -11,7 +11,7 @@ from typing import Union
 from pathlib import Path
 
 
-class PROFILE(INDEXED):
+class Profile(Indexed):
     """
     OBSERVATION type class for storing data from a CTD Profile (or similar
     down and up observations). The structure of the class is based on data from
@@ -23,7 +23,6 @@ class PROFILE(INDEXED):
         > level   :: The dimension for depth levels. Called N_LEVELS in EN4
                      files.
     """
-
     def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
         """ Initialization and file reading.
 
@@ -42,12 +41,12 @@ class PROFILE(INDEXED):
                 UserWarning
             )
         else:
-            self.read_EN4(file_path, self.chunks, multiple)
+            self.read_en4(file_path, self.chunks, multiple)
             self.apply_config_mappings()
 
         print(f"{get_slug(self)} initialised")
 
-    def read_EN4(self, fn_en4, chunks: dict = {}, multiple=False):
+    def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
         """ Reads a single or multiple EN4 netCDF files into the COAsT profile data structure.
 
             Args:

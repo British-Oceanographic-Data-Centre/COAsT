@@ -1,5 +1,5 @@
-"""WIP: TIDE Gauge class"""
-from .TIMESERIES import TIMESERIES
+"""Tide Gauge class"""
+from .timeseries import Timeseries
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
@@ -9,14 +9,12 @@ import re
 import pytz
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
-from .config import config_parser
 from .logging_util import get_slug, debug, error, info
 from typing import Union
 from pathlib import Path
-from ast import literal_eval
 
 
-class TIDEGAUGE(TIMESERIES):
+class Tidegauge(Timeseries):
     """
     An object for reading, storing and manipulating tide gauge data.
     Functionality available for reading and organisation of GESLA files.

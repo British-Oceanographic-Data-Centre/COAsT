@@ -19,7 +19,8 @@
             "ex68": "LATITUDE_GPS_QC",
             "LONGITUDE_GPS": "LONGITUDE_GPS",
             "TEMP": "TEMP"
-        }
+        },
+        "coord_vars": []
     },
     "processing_flags": [
         "example_flag"

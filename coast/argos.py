@@ -1,5 +1,5 @@
 """Argos class"""
-from .INDEX import INDEXED
+from .index import Indexed
 import numpy as np
 import xarray as xr
 import pandas as pd
@@ -8,7 +8,7 @@ from typing import Union
 from pathlib import Path
 
 
-class Argos(INDEXED):
+class Argos(Indexed):
     """Class for reading Argos CSV formatted data files into an xarray object"""
 
     def __init__(self, file_path: str = None, config: Union[Path, str] = None):
@@ -48,4 +48,4 @@ class Argos(INDEXED):
             else:
                 self.dataset[name] = xr.DataArray(list(np.array(df[name])), dims=['time'])
 
-        self.dataset = self.dataset.set_coords(['LAT', 'LON'])
+        #self.dataset = self.dataset.set_coords(['LAT', 'LON'])  # TOdo: move into INDEX See BODCDMSYS-3717

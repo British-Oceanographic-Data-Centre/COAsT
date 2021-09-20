@@ -10,7 +10,8 @@
 		},
 		"variable_map": {
 			"ocean_tide": "ocean_tide_standard_name"
-		}
+		},
+		"coord_vars": []
 	},
 	"processing_flags": [
 		"example_flag"

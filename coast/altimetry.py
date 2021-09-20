@@ -1,5 +1,5 @@
-"""WIP: ALTIMETRY class"""
-from .TRACK import TRACK
+"""Altimetry class"""
+from .track import Track
 import numpy as np
 import xarray as xr
 import sklearn.metrics as metrics
@@ -7,10 +7,9 @@ from . import general_utils, plot_util, crps_util
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
-from ast import literal_eval
 
 
-class ALTIMETRY(TRACK):
+class Altimetry(Track):
     """
     An object for reading, storing and manipulating altimetry data.
     Currently the object contains functionality for reading altimetry netCDF
@@ -52,7 +51,6 @@ class ALTIMETRY(TRACK):
         -> basic_stats(): Calculates multiple of the above metrics.
 
     """
-
     def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
         """ Initialization and file reading.
 
@@ -76,7 +74,7 @@ class ALTIMETRY(TRACK):
 
         print(f"{get_slug(self)} initialised")
 
-    def read_cmems(self, file_path: str, multiple):
+    def read_cmems(self, file_path: str, multiple) -> None:
         """Read file.
 
             Args:
@@ -84,9 +82,8 @@ class ALTIMETRY(TRACK):
                 multiple (boolean): True if reading multiple files otherwise False
         """
         self.load(file_path, self.chunks, multiple)
-        # self.dataset.attrs = {}
 
-    def load(self, file_or_dir, chunks: dict = None, multiple=False):
+    def load(self, file_or_dir, chunks: dict = None, multiple=False) -> None:
         """
         Loads a file into a object's dataset variable using xarray
 
@@ -104,12 +101,22 @@ class ALTIMETRY(TRACK):
     def __getitem__(self, name: str):
         return self.dataset[name]
 
-    def load_single(self, file, chunks: dict = None):
-        """ Loads a single file into object's dataset variable. """
+    def load_single(self, file, chunks: dict = None) -> None:
+        """ Loads a single file into object's dataset variable.
+
+        Args:
+            file (str) : file name or directory to multiple files.
+            chunks (dict) : Chunks to use in Dask [default None]
+        """
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
-    def load_multiple(self, directory_to_files, chunks: dict = None):
-        """ Loads multiple files from directory into dataset variable. """
+    def load_multiple(self, directory_to_files, chunks: dict = None) -> None:
+        """ Loads multiple files from directory into dataset variable.
+
+        Args:
+            directory_to_files (str) : directory path to multiple files.
+            chunks (dict) : Chunks to use in Dask [default None]
+        """
         self.dataset = xr.open_mfdataset(
             directory_to_files, chunks=chunks, parallel=True,
             combine="by_coords")  # , compat='override')

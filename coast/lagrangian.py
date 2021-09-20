@@ -1,8 +1,8 @@
-"""WIP: LAGRANGIAN class"""
-from .INDEX import INDEXED
+"""Lagrangian class"""
+from .index import Indexed
 
 
-class LAGRANGIAN(INDEXED):
+class Lagrangian(Indexed):
     """Parent class for subclasses OCEANPARCELS ...
     Common methods ....
     """

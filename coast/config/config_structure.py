@@ -27,6 +27,7 @@ class ConfigKeys:
     NO_GR_VAR = "not_grid_vars"
     COO_VAR = "coord_vars"
     DEL_VAR = "delete_vars"
+    KEEP_ALL_VARS = "keep_all_vars"
 
 
 @dataclass(frozen=True)
@@ -36,10 +37,13 @@ class DataFile:
     Args:
         variable_map (dict): dict containing mapping for variable names.
         dimension_map (dict): dict containing mapping for dimension names.
+        coord_var (list): list of dataset coordinate variables
     """
 
     variable_map: dict
     dimension_map: dict
+    coord_var: list
+    keep_all_vars: False
 
 
 @dataclass(frozen=True)
