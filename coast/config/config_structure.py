@@ -37,9 +37,10 @@ class DataFile:
     Args:
         variable_map (dict): dict containing mapping for variable names.
         dimension_map (dict): dict containing mapping for dimension names.
-        coord_var (list): list of dataset coordinate variables
+        coord_var (list): list of dataset coordinate variables to apply once dataset is loaded
+        keep_all_vars (boolean): True if xarray is to retain all data file variables
+                                  otherwise False i.e keep only those in the json config file variable mappings.
     """
-
     variable_map: dict
     dimension_map: dict
     coord_var: list
