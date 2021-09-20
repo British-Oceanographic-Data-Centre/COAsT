@@ -1956,23 +1956,23 @@ try:
     subsec = subsec + 1
 
     if example_script_flag:
-        from example_scripts import AMM15_example_plot
+        from example_scripts import amm15_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
         subsec = subsec + 1
-        from example_scripts import ANChor_plots_of_NSea_wvel
+        from example_scripts import anchor_plots_of_nsea_wvel
 
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
         subsec = subsec + 1
-        from example_scripts import BLZ_example_plot
+        from example_scripts import blz_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
         subsec = subsec + 1
-        from example_scripts import SEAsia_R12_example_plot
+        from example_scripts import seasia_r12_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
         subsec = subsec + 1
-        from example_scripts import WCSSP_India_example_plot
+        from example_scripts import wcssp_india_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
         subsec = subsec + 1

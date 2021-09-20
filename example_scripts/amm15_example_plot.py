@@ -1,5 +1,5 @@
 """
-AMM15_example_plot.py 
+amm15_example_plot.py
 
 Make simple AMM15 SST plot.
 

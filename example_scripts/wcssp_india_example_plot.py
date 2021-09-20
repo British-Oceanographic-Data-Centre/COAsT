@@ -1,5 +1,5 @@
 """
-WCSSP_India_example_plot.py
+wcssp_india_example_plot.py
 
 India subcontinent maritime domain.
 WCSSP India configuration

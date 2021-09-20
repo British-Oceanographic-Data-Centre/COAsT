@@ -1,5 +1,5 @@
 """
-BLZ_example_plot.py 
+blz_example_plot.py
 
 Make simple Belize SSH plot.
 
