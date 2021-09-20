@@ -34,7 +34,7 @@ indexed_json = {
     "type": "indexed",
     "dimensionality": 3,
     "chunks": [],
-    "dataset": {"variable_map": {}, "dimension_map": {}},
+    "dataset": {"variable_map": {}, "dimension_map": {}, "coord_vars": []},
     "processing_flags": [],
 }
 

@@ -88,7 +88,6 @@ class ConfigParser:
         dataset_json = json_content[data_file_type]
         dataset_var = dataset_json[ConfigKeys.VAR_MAP]
         dataset_dim = dataset_json[ConfigKeys.DIM_MAP]
-
         dataset_coord_vars = dataset_json[ConfigKeys.COO_VAR]
         dataset_keep_all_vars = dataset_json[ConfigKeys.KEEP_ALL_VARS] \
             if ConfigKeys.KEEP_ALL_VARS in dataset_json else "False"
