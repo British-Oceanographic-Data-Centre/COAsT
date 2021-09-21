@@ -1,7 +1,7 @@
 {
     "type": "indexed",
     "dimensionality": 1,
-    "chunks": [],
+    "chunks": {},
     "dataset": {
         "dimension_map": {
             "ex0": "N_HISTORY",

@@ -1,7 +1,7 @@
 {
 	"type": "indexed",
 	"dimensionality": 2,
-	"chunks": [],
+	"chunks": {},
 	"dataset": {
 		"dimension_map": {
 			"N_PROF": "profile",

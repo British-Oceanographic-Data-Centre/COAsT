@@ -34,8 +34,7 @@ class Indexed:
 
         if config:
             self.json_config = config_parser.ConfigParser(config)
-            if self.json_config.config.chunks:
-                self.chunks = literal_eval(self.json_config.config.chunks[0])
+            self.chunks = self.json_config.config.chunks
             self.dim_mapping = self.json_config.config.dataset.dimension_map
             self.var_mapping = self.json_config.config.dataset.variable_map
             self.coord_vars = self.json_config.config.dataset.coord_var

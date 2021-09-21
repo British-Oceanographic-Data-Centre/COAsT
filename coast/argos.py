@@ -47,5 +47,3 @@ class Argos(Indexed):
                 self.dataset = self.dataset.set_coords(name)
             else:
                 self.dataset[name] = xr.DataArray(list(np.array(df[name])), dims=['time'])
-
-        #self.dataset = self.dataset.set_coords(['LAT', 'LON'])  # TOdo: move into INDEX See BODCDMSYS-3717

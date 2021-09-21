@@ -91,10 +91,9 @@ class ConfigParser:
 
         try:
             dataset_coord_vars = dataset_json[ConfigKeys.COO_VAR]
-            dataset_keep_all_vars = dataset_json[ConfigKeys.KEEP_ALL_VARS] \
-                if ConfigKeys.KEEP_ALL_VARS in dataset_json else "False"
+            dataset_keep_all_vars = dataset_json[ConfigKeys.KEEP_ALL_VARS]
         except KeyError:
-            pass  # domain file not expected to contain these 2 keys
+            dataset_keep_all_vars = "False"
 
         if data_file_type is ConfigKeys.DATASET:
             return Dataset(variable_map=dataset_var, dimension_map=dataset_dim, coord_var=dataset_coord_vars,

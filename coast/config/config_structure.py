@@ -44,7 +44,7 @@ class DataFile:
     variable_map: dict
     dimension_map: dict
     coord_var: list
-    keep_all_vars: False
+    keep_all_vars: bool = False
 
 
 @dataclass(frozen=True)
