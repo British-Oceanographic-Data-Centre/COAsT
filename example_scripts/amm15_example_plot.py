@@ -1,19 +1,16 @@
 """
-AMM15_example_plot.py 
+amm15_example_plot.py
 
 Make simple AMM15 SST plot.
 
 """
 
-#%%
+#
 import coast
-import numpy as np
-import xarray as xr
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
-#%%  Loading  data
+# Loading  data
 #################################################
 
 
@@ -32,7 +29,7 @@ chunks = {
 
 sci_t.dataset.chunk(chunks)
 
-sci_t = coast.NEMO(dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks)
+sci_t = coast.Nemo(dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks)
 
 # create an empty w-grid object, to store stratification
 sci_w = coast.Gridded(fn_domain=dom_nam, config=config.replace("t_nemo", "w_nemo"))

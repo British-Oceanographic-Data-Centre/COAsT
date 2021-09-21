@@ -51,20 +51,23 @@ class Altimetry(Track):
         -> basic_stats(): Calculates multiple of the above metrics.
 
     """
-
     def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
-        """Initialization and file reading.
+        """ Initialization and file reading.
 
-        Args:
-            file_path (str): path to data file
-            multiple (boolean): True if reading multiple files otherwise False
-            config (Union[Path, str]): path to json config file.
-        """
+            Args:
+                file_path (str): path to data file
+                multiple (boolean): True if reading multiple files otherwise False
+                config (Union[Path, str]): path to json config file.
+            """
         debug(f"Creating a new {get_slug(self)}")
         super().__init__(config)
 
         if file_path is None:
-            warn("Object created but no file or directory specified: \n" "{0}".format(str(self)), UserWarning)
+            warn(
+                "Object created but no file or directory specified: \n"
+                "{0}".format(str(self)),
+                UserWarning
+            )
         else:
             self.read_cmems(file_path, multiple)
             self.apply_config_mappings()
@@ -74,9 +77,9 @@ class Altimetry(Track):
     def read_cmems(self, file_path: str, multiple) -> None:
         """Read file.
 
-        Args:
-            file_path (str): path to data file
-            multiple (boolean): True if reading multiple files otherwise False
+            Args:
+                file_path (str): path to data file
+                multiple (boolean): True if reading multiple files otherwise False
         """
         self.load(file_path, self.chunks, multiple)
 
@@ -99,7 +102,7 @@ class Altimetry(Track):
         return self.dataset[name]
 
     def load_single(self, file, chunks: dict = None) -> None:
-        """Loads a single file into object's dataset variable.
+        """ Loads a single file into object's dataset variable.
 
         Args:
             file (str) : file name or directory to multiple files.
@@ -108,15 +111,15 @@ class Altimetry(Track):
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
     def load_multiple(self, directory_to_files, chunks: dict = None) -> None:
-        """Loads multiple files from directory into dataset variable.
+        """ Loads multiple files from directory into dataset variable.
 
         Args:
             directory_to_files (str) : directory path to multiple files.
             chunks (dict) : Chunks to use in Dask [default None]
         """
         self.dataset = xr.open_mfdataset(
-            directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
-        )  # , compat='override')
+            directory_to_files, chunks=chunks, parallel=True,
+            combine="by_coords")  # , compat='override')
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Generates array indices for data which lies in a given lon/lat box.
@@ -126,7 +129,7 @@ class Altimetry(Track):
         lat       -- Latitudes, 1D or 2D
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
-
+        
         return: Indices corresponding to datapoints inside specified box
         """
         print(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
@@ -151,15 +154,18 @@ class Altimetry(Track):
             title = color_var_str
         else:
             color_var = None
-            title = "Altimetry observation locations"
+            title = 'Altimetry observation locations'
         info("Drawing a quick plot...")
-        fig, ax = plot_util.geo_scatter(self.dataset.longitude, self.dataset.latitude, c=color_var, title=title)
+        fig, ax = plot_util.geo_scatter(self.dataset.longitude,
+                                        self.dataset.latitude,
+                                        c=color_var, title=title)
         info("Plot ready, displaying!")
         return fig, ax
 
     """======================= MODEL comparison routines ======================="""
 
-    def obs_operator(self, model, mod_var_name: str, time_interp="nearest", model_mask=None):
+    def obs_operator(self, model, mod_var_name: str,
+                     time_interp='nearest', model_mask=None):
         """
         For interpolating a model dataarray onto altimetry locations and times.
 
@@ -189,10 +195,10 @@ class Altimetry(Track):
         Adds a DataArray to self.dataset, containing interpolated values.
         """
 
-        print(f'Interpolating {get_slug(model)} "{mod_var_name}" with time_interp "{time_interp}"')
+        print(f"Interpolating {get_slug(model)} \"{mod_var_name}\" with time_interp \"{time_interp}\"")
 
         # Determine mask
-        if model_mask == "bathy":
+        if model_mask == 'bathy':
             model_mask = model.dataset.bathymetry.values == 0
 
         # Get data arrays
@@ -202,37 +208,34 @@ class Altimetry(Track):
         mod_var = model.dataset[mod_var_name]
 
         # Depth interpolation -> for now just take 0 index
-        if "z_dim" in mod_var.dims:
+        if 'z_dim' in mod_var.dims:
             mod_var = mod_var.isel(z_dim=0).squeeze()
 
         # Cast lat/lon to numpy arrays
         obs_lon = np.array(self.dataset.longitude).flatten()
         obs_lat = np.array(self.dataset.latitude).flatten()
 
-        interpolated = model.interpolate_in_space(mod_var, obs_lon, obs_lat)
+        interpolated = model.interpolate_in_space(mod_var, obs_lon,
+                                                  obs_lat)
 
         # Interpolate in time if t_dim exists in model array
-        if "t_dim" in mod_var.dims:
-            interpolated = model.interpolate_in_time(interpolated, self.dataset.time, interp_method=time_interp)
+        if 't_dim' in mod_var.dims:
+            interpolated = model.interpolate_in_time(interpolated,
+                                                     self.dataset.time,
+                                                     interp_method=time_interp)
             # Take diagonal from interpolated array (which contains too many points)
             diag_len = interpolated.shape[0]
             diag_ind = xr.DataArray(np.arange(0, diag_len))
             interpolated = interpolated.isel(interp_dim=diag_ind, t_dim=diag_ind)
-            interpolated = interpolated.swap_dims({"dim_0": "t_dim"})
+            interpolated = interpolated.swap_dims({'dim_0': 't_dim'})
 
         # Store interpolated array in dataset
-        new_var_name = "interp_" + mod_var_name
+        new_var_name = 'interp_' + mod_var_name
         self.dataset[new_var_name] = interpolated
 
-    def crps(
-        self,
-        model_object,
-        model_var_name,
-        obs_var_name,
-        nh_radius: float = 20,
-        time_interp: str = "linear",
-        create_new_object=True,
-    ):
+    def crps(self, model_object, model_var_name, obs_var_name,
+             nh_radius: float = 20, time_interp: str = 'linear',
+             create_new_object=True):
 
         """
         Comparison of observed variable to modelled using the Continuous
@@ -269,21 +272,19 @@ class Altimetry(Track):
             obs_var.latitude.values,
             obs_var.values,
             obs_var.time.values,
-            nh_radius,
-            time_interp,
-        )
+            nh_radius, time_interp)
         if create_new_object:
             new_object = Altimetry()
-            new_dataset = self.dataset[["longitude", "latitude", "time"]]
-            new_dataset["crps"] = (("t_dim"), crps_list)
-            new_dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
-            new_dataset["crps_contains_land"] = (("t_dim"), contains_land)
+            new_dataset = self.dataset[['longitude', 'latitude', 'time']]
+            new_dataset['crps'] = (('t_dim'), crps_list)
+            new_dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            new_dataset['crps_contains_land'] = (('t_dim'), contains_land)
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset["crps"] = (("t_dim"), crps_list)
-            self.dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
-            self.dataset["crps_contains_land"] = (("t_dim"), contains_land)
+            self.dataset['crps'] = (('t_dim'), crps_list)
+            self.dataset['crps_n_model_pts'] = (('t_dim'), n_model_pts)
+            self.dataset['crps_contains_land'] = (('t_dim'), contains_land)
 
     def difference(self, var_str0: str, var_str1: str, date0=None, date1=None):
         """Difference two variables defined by var_str0 and var_str1 between
@@ -293,7 +294,8 @@ class Altimetry(Track):
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return xr.DataArray(diff, dims="t_dim", name="error", coords={"time": self.dataset.time})
+        return xr.DataArray(diff, dims='t_dim', name='error',
+                            coords={'time': self.dataset.time})
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Absolute difference two variables defined by var_str0 and var_str1
@@ -303,7 +305,8 @@ class Altimetry(Track):
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
-        return xr.DataArray(adiff, dims="t_dim", name="absolute_error", coords={"time": self.dataset.time})
+        return xr.DataArray(adiff, dims='t_dim', name='absolute_error',
+                            coords={'time': self.dataset.time})
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Mean absolute difference two variables defined by var_str0 and
@@ -337,13 +340,14 @@ class Altimetry(Track):
         var = general_utils.dataarray_time_slice(var, date0, date1)
         return np.nanstd(var)
 
-    def time_correlation(self, var_str0, var_str1, date0=None, date1=None, method="pearson"):
+    def time_correlation(self, var_str0, var_str1, date0=None, date1=None,
+                         method='pearson'):
         """Time correlation between two variables defined by var_str0,
         var_str1 between dates date0 and date1. Uses Pandas corr()."""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = var0.rename("var1")
-        var1 = var1.rename("var2")
+        var0 = var0.rename('var1')
+        var1 = var1.rename('var2')
         var0 = general_utils.dataarray_time_slice(var0, date0, date1)
         var1 = general_utils.dataarray_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
@@ -356,8 +360,8 @@ class Altimetry(Track):
         var_str1 between dates date0 and date1. Uses Pandas corr()."""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = var0.rename("var1")
-        var1 = var1.rename("var2")
+        var0 = var0.rename('var1')
+        var1 = var1.rename('var2')
         var0 = general_utils.dataarray_time_slice(var0, date0, date1)
         var1 = general_utils.dataarray_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
@@ -365,7 +369,8 @@ class Altimetry(Track):
         cov = pdvar.cov()
         return cov.iloc[0, 1]
 
-    def basic_stats(self, var_str0, var_str1, date0=None, date1=None, create_new_object=True):
+    def basic_stats(self, var_str0, var_str1, date0=None, date1=None,
+                    create_new_object=True):
         """Calculates a selection of statistics for two variables defined by
         var_str0 and var_str1, between dates date0 and date1. This will return
         their difference, absolute difference, mean absolute error, root mean
@@ -382,19 +387,19 @@ class Altimetry(Track):
 
         if create_new_object:
             new_object = Altimetry()
-            new_dataset = self.dataset[["longitude", "latitude", "time"]]
-            new_dataset["absolute_error"] = ae
-            new_dataset["error"] = diff
-            new_dataset["mae"] = mae
-            new_dataset["rmse"] = rmse
-            new_dataset["corr"] = corr
-            new_dataset["cov"] = cov
+            new_dataset = self.dataset[['longitude', 'latitude', 'time']]
+            new_dataset['absolute_error'] = ae
+            new_dataset['error'] = diff
+            new_dataset['mae'] = mae
+            new_dataset['rmse'] = rmse
+            new_dataset['corr'] = corr
+            new_dataset['cov'] = cov
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset["absolute_error"] = ae
-            self.dataset["error"] = diff
-            self.dataset["mae"] = mae
-            self.dataset["rmse"] = rmse
-            self.dataset["corr"] = corr
-            self.dataset["cov"] = cov
+            self.dataset['absolute_error'] = ae
+            self.dataset['error'] = diff
+            self.dataset['mae'] = mae
+            self.dataset['rmse'] = rmse
+            self.dataset['corr'] = corr
+            self.dataset['cov'] = cov

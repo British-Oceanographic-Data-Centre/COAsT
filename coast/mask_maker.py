@@ -1,11 +1,10 @@
-from .COAsT import COAsT
 import xarray as xr
 import numpy as np
 import skimage.draw as draw
 from . import general_utils
 
 
-class MASK_MAKER:
+class MaskMaker:
     def __init__(self):
 
         return
@@ -64,9 +63,9 @@ class MASK_MAKER:
         Filled 2D array
         """
         array_to_fill = np.array(array_to_fill)
-        ind2D = general_utils.nearest_indices_2D(longitude, latitude, vertices_lon, vertices_lat)
+        ind_2d = general_utils.nearest_indices_2d(longitude, latitude, vertices_lon, vertices_lat)
 
-        polygon_ind = draw.polygon(ind2D[1], ind2D[0], array_to_fill.shape)
+        polygon_ind = draw.polygon(ind_2d[1], ind_2d[0], array_to_fill.shape)
         if additive:
             array_to_fill[polygon_ind[0], polygon_ind[1]] += fill_value
         else:
