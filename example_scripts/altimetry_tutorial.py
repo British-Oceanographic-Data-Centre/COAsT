@@ -1,7 +1,7 @@
 """
-This is a demonstration script for using the ALTIMETRY object in the COAsT
+This is a demonstration script for using the Altimetry object in the COAsT
 package. This object has strict data formatting requirements, which are
-outlined in ALTIMETRY.py.
+outlined in altimetry.py.
 """
 
 # Begin by importing coast and other packages
@@ -13,13 +13,13 @@ fn_nemo_dom = "./example_files/COAsT_example_NEMO_domain.nc"
 fn_altimetry = "./example_files/COAsT_example_altimetry_data.nc"
 
 # We need to load in a NEMO object for doing NEMO things.
-nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
+nemo = coast.Nemo(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
 
-# And now we can load in our ALTIMETRY data. By default, ALTIMETRY is set up
+# And now we can load in our Altimetry data. By default, Altimetry is set up
 # to read in CMEMS netCDF files. However, if no path is supplied, then the
 # object's dataset will be initialised as None. Custom data can then be loaded
-# if desired, as long as it follows the data formatting for ALTIMETRY.
-altimetry = coast.ALTIMETRY(fn_altimetry)
+# if desired, as long as it follows the data formatting for Altimetry.
+altimetry = coast.Altimetry(fn_altimetry)
 
 # Before going any further, lets just cut out the bit of the altimetry that
 # is over the model domain. This can be done using subset_indices_lonlat_box
@@ -35,7 +35,7 @@ altimetry = altimetry.isel(t_dim=ind)
 altimetry.obs_operator(nemo, mod_var_name="ssh", time_interp="nearest")
 
 # Doing this has created a new interpolated variable called interp_ssh and
-# saved it back into our ALTIMETRY object. Take a look at altimetry.dataset
+# saved it back into our Altimetry object. Take a look at altimetry.dataset
 # to see for yourself.
 #
 # Next we will compare this interpolated variable to an observed variable
@@ -45,7 +45,7 @@ altimetry.obs_operator(nemo, mod_var_name="ssh", time_interp="nearest")
 stats = altimetry.basic_stats("interp_ssh", "sla_filtered")
 
 # Take a look inside stats.dataset to see all of the new variables. When using
-# basic stats, the returned object is also an ALTIMETRY object, so all of the
+# basic stats, the returned object is also an Altimetry object, so all of the
 # same methods can be applied. Alternatively, if you want to save the new
 # metrics to the original altimetry object, set create_new_object = False.
 #
@@ -59,11 +59,11 @@ crps = altimetry.crps(nemo, model_var_name="ssh", obs_var_name="sla_filtered", n
 # to basic_stats, create_new_object can be set to false to save output to
 # the original altimetry object.
 #
-# ALTIMETRY has a ready built quick_plot() routine for taking a look at any
+# Altimetry has a ready built quick_plot() routine for taking a look at any
 # of the observed or derived quantities above. So to take a look at the
 # 'sla_filtered' variable:
 fig, ax = altimetry.quick_plot("sla_filtered")
 
-# As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:
+# As stats and crps are also Altimetry objects, quick_plot() can also be used:
 fig, ax = crps.quick_plot("crps")
 fig, ax = stats.quick_plot("absolute_error")

@@ -1,5 +1,5 @@
 """
-WCSSP_India_example_plot.py
+wcssp_india_example_plot.py
 
 India subcontinent maritime domain.
 WCSSP India configuration
@@ -9,11 +9,7 @@ Simple plot of sea surface temperature
 
 #%%
 import coast
-import numpy as np
-import xarray as xr
-import dask
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
 #%%  Loading  data

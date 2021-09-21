@@ -52,7 +52,7 @@ class CDF:
         elif self.cdf_func == "gaussian":
             xmin = self.mu - 5 * self.sigma
             xmax = self.mu + 5 * self.sigma
-        return xmin, xmax
+        return xmin, xmax  # TODO What should happen if neither condition is True?
 
     def build_discrete_cdf(self, x: np.ndarray = None, n_pts: int = 1000):
         """Builds a discrete CDF for plotting and direct comparison.

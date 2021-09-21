@@ -7,7 +7,6 @@ Probability Score.
 """
 
 import numpy as np
-import xarray as xr
 from . import general_utils
 
 
@@ -30,8 +29,8 @@ def crps_empirical(sample, obs):
         A single CRPS value.
     """
 
-    def calc(alpha, beta, p):
-        return alpha * p ** 2 + beta * (1 - p) ** 2
+    def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
+        return alpha * p ** 2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     xa = float(obs)
     crps_integral = 0
@@ -90,8 +89,8 @@ def crps_empirical_loop(sample, obs):
     memory.
     """
 
-    def calc(alpha, beta, p):
-        return alpha * p ** 2 + beta * (1 - p) ** 2
+    def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
+        return alpha * p ** 2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     crps_integral = 0
     sample = np.array(sample)
@@ -262,6 +261,5 @@ def crps_sonf_moving(mod_array, obs_lon, obs_lat, obs_var, obs_time, nh_radius: 
                 # Calculate CRPS and put into output array
                 crps_list[ii] = crps_empirical(mod_subset, obs_var[ii])
                 n_model_pts[ii] = int(mod_subset.shape[0])
-        crps_mean = np.nanmean(crps_list)
 
     return crps_list, n_model_pts, contains_land
