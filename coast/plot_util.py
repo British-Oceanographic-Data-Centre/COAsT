@@ -12,20 +12,18 @@ import numpy as np
 
 
 def r2_lin(x, y, fit):
-    """For calculating r-squared of a linear fit. Fit should be a python polyfit
-    object"""
-    # TODO Can someone sciencey give me the proper names for these?
-    fity = fit(x)
-    diff = (y - fity) ** 2
-    ybar = np.nanmean(y)
-    ymybar = (y - ybar) ** 2
+    """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
+    y_estimate = fit(x)
+    difference = (y - y_estimate) ** 2
+    y_mean = np.nanmean(y)
+    mean_square_deviation = (y - y_mean) ** 2
 
-    SStot = np.nansum(ymybar)
-    SSres = np.nansum(diff)
+    total_deviation = np.nansum(mean_square_deviation)
+    residual = np.nansum(difference)
 
-    R2 = 1 - SSres / SStot
+    correlation_coefficient = 1 - residual / total_deviation
 
-    return R2
+    return correlation_coefficient
 
 
 def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):

@@ -11,6 +11,8 @@ import numpy as np
 import xarray as xr
 import scipy
 
+from .logging_util import error
+
 
 def quadratic_spline_roots(spl):
     """
@@ -167,7 +169,7 @@ def doodson_x0_filter(elevation, ax=0):
         Filtered array of same rank as elevation.
     """
     if elevation.shape[ax] < 39:
-        print("Doodson_XO: Ensure time axis has >=39 elements. Returning.")  # TODO Does this really need to be printed?
+        error("Doodson_XO: Ensure time axis has >=39 elements. Returning.")
         return
     # Define DOODSON XO weights
     kern = np.array(
