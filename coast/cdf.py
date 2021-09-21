@@ -4,7 +4,7 @@ from . import stats_util
 from .logging_util import get_slug, debug, error
 
 
-class Cdf:
+class CDF:
     """
     An object for storing Cumulative Distribution Function information.
     Used primarily for calculating the Continuous Ranked Probability Score.
