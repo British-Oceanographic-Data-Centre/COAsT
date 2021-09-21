@@ -8,20 +8,16 @@ from pathlib import Path
 from ast import literal_eval
 
 
-def setup_dask_client(
-        workers: int = 2,
-        threads: int = 2,
-        memory_limit_per_worker: str = '2GB'
-):
+def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
 class Indexed:
     def __init__(self, config: Union[Path, str] = None):
-        """ Configuration init.
+        """Configuration init.
 
-            Args:
-                config (Union[Path, str]): path to json config file.
+        Args:
+            config (Union[Path, str]): path to json config file.
         """
         debug(f"Creating a new {get_slug(self)}")
 

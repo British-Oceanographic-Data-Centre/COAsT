@@ -96,8 +96,11 @@ class ConfigParser:
             dataset_keep_all_vars = "False"
 
         if data_file_type is ConfigKeys.DATASET:
-            return Dataset(variable_map=dataset_var, dimension_map=dataset_dim, coord_var=dataset_coord_vars,
-                           keep_all_vars=dataset_keep_all_vars)
+            return Dataset(
+                variable_map=dataset_var,
+                dimension_map=dataset_dim,
+                coord_var=dataset_coord_vars,
+                keep_all_vars=dataset_keep_all_vars,
+            )
         elif data_file_type is ConfigKeys.DOMAIN:
-            return Domain(variable_map=dataset_var, dimension_map=dataset_dim, coord_var=None,
-                          keep_all_vars=False)
+            return Domain(variable_map=dataset_var, dimension_map=dataset_dim, coord_var=None, keep_all_vars=False)
