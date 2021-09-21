@@ -37,14 +37,12 @@ class DataFile:
     Args:
         variable_map (dict): dict containing mapping for variable names.
         dimension_map (dict): dict containing mapping for dimension names.
-        coord_var (list): list of dataset coordinate variables to apply once dataset is loaded
         keep_all_vars (boolean): True if xarray is to retain all data file variables
                                   otherwise False i.e keep only those in the json config file variable mappings.
     """
 
     variable_map: dict
     dimension_map: dict
-    coord_var: list
     keep_all_vars: bool = False
 
 
@@ -54,19 +52,20 @@ class CodeProcessing:
 
     Args:
         not_grid_variables (list): A list of variables not belonging to the grid.
-        coord_variables (list):  A list of coordinate variables.
         delete_variables (list):  A list of variables to drop from the dataset.
     """
-
     not_grid_variables: list
-    coord_variables: list
     delete_variables: list
 
 
 @dataclass(frozen=True)
 class Dataset(DataFile):
-    """Dataclass holding config attributes for Dataset datafiles. Extends DataFile."""
+    """Dataclass holding config attributes for Dataset datafiles. Extends DataFile.
 
+    Args:
+        coord_var (list): list of dataset coordinate variables to apply once dataset is loaded
+    """
+    coord_var: list = None
     pass
 
 

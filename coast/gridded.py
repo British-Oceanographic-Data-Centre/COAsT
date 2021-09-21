@@ -132,7 +132,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # Reset & set specified coordinates
         self.dataset = self.dataset.reset_coords()
-        for var in self.config.code_processing.coord_variables:
+        for var in self.config.dataset.coord_var:
             try:
                 self.dataset = self.dataset.set_coords(var)
             except ValueError as err:
