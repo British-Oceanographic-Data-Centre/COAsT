@@ -28,7 +28,8 @@
 			"ex12": "vozocrtx",
 			"ex13": "sossheig",
 			"ex14": "zos"
-		}
+		},
+		"coord_vars": []
 	},
 	"processing_flags": [
 		"example_flag"
