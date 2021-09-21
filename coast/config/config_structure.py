@@ -54,6 +54,7 @@ class CodeProcessing:
         not_grid_variables (list): A list of variables not belonging to the grid.
         delete_variables (list):  A list of variables to drop from the dataset.
     """
+
     not_grid_variables: list
     delete_variables: list
 
@@ -65,6 +66,7 @@ class Dataset(DataFile):
     Args:
         coord_var (list): list of dataset coordinate variables to apply once dataset is loaded
     """
+
     coord_var: list = None
     pass
 
