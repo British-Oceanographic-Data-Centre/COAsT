@@ -1,5 +1,5 @@
 """
-This is a demonstration script for using the INDEXED class in the COAsT
+This is a demonstration script for using INDEXED classes in the COAsT
 package. This object has strict data formatting requirements, which are
 outlined for various (observational) data types.
 """
