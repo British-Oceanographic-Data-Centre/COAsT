@@ -1,0 +1,80 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {},
+	"grid_ref": {
+		"w-grid": [
+			"glamt",
+			"gphit",
+			"e1t",
+			"e2t",
+			"e3w_0",
+			"depthw_0"
+		]
+	},
+	"dataset": {
+		"dimension_map": {
+			"time_counter": "t_dim",
+			"deptht": "z_dim",
+			"depthu": "z_dim",
+			"depthv": "z_dim",
+			"y": "y_dim",
+			"x": "x_dim",
+			"x_grid_T": "x_dim",
+			"y_grid_T": "y_dim"
+		},
+		"variable_map": {
+			"time_counter": "time"
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
+	},
+	"domain": {
+		"dimension_map": {
+			"t": "t_dim0",
+			"x": "x_dim",
+			"y": "y_dim",
+			"z": "z_dim"
+		},
+		"variable_map": {
+			"time_counter": "time0",
+			"glamt": "longitude",
+			"glamf": "longitude",
+			"gphit": "latitude",
+			"gphif": "latitude",
+			"e1t": "e1",
+			"e1f": "e1",
+			"e2t": "e2",
+			"e2f": "e2",
+			"e3w_0": "e3_0",
+			"tmask": "mask",
+			"depthw_0": "depth_0",
+			"bottom_level": "bottom_level"
+		}
+	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
+	"processing_flags": [
+		"example_flag1",
+		"example_flag2"
+	]
+}

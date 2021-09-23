@@ -73,11 +73,11 @@ if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
 
 dn_fig = "unit_testing/figures/"
-json_config_file_t_grid = path.join(dn_files, "example_t_nemo_config.json")
-json_config_file_f_grid = path.join(dn_files, "example_f_nemo_config.json")
-json_config_file_u_grid = path.join(dn_files, "example_u_nemo_config.json")
-json_config_file_v_grid = path.join(dn_files, "example_v_nemo_config.json")
-json_config_file_w_grid = path.join(dn_files, "example_w_nemo_config.json")
+json_config_file_t_grid = path.join("./config", "example_nemo_grid_t.json")
+json_config_file_f_grid = path.join("./config", "example_nemo_grid_f.json")
+json_config_file_u_grid = path.join("./config", "example_nemo_grid_u.json")
+json_config_file_v_grid = path.join("./config", "example_nemo_grid_v.json")
+json_config_file_w_grid = path.join("./config", "example_nemo_grid_w.json")
 fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
