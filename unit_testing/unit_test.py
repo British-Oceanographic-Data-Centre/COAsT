@@ -77,10 +77,10 @@ fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
 fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat = "COAsT_example_NEMO_data.nc"
-fn_nemo_dat_subset = "COAsT_example_NEMO_subset_data.nc"
-fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
-fn_altimetry = "COAsT_example_altimetry_data.nc"
+fn_nemo_dat = "coast_example_nemo_data.nc"
+fn_nemo_dat_subset = "coast_example_nemo_subset_data.nc"
+fn_nemo_dom = "coast_example_nemo_domain.nc"
+fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
 fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
 fn_EN4 = dn_files + "EN4_example.nc"
@@ -137,12 +137,12 @@ try:
     sci_load_file = coast.Nemo()
     sci_load_file.load(dn_files + fn_nemo_dat)
     if sci_load_ds.dataset.identical(sci_load_file.dataset):
-        print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
+        print(str(sec) + chr(subsec) + " OK - coast.load_dataset()")
     else:
         print(
             str(sec)
             + chr(subsec)
-            + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()"
+            + " X - coast.load_dataset() ERROR - not identical to dataset loaded via coast.load()"
         )
 except:
     print(str(sec) + chr(subsec) + " FAILED")
@@ -331,14 +331,14 @@ except:
 
 """
 #################################################
-## ( 2 ) Test general utility methods in COAsT ##
+## ( 2 ) Test general utility methods in coast ##
 #################################################
 """
 sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 2a ) Copying a COAsT object                                               #
+#%% ( 2a ) Copying a coast object                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -346,28 +346,28 @@ subsec = subsec + 1
 try:
     sci_copy = sci.copy()
     if sci_copy.dataset == sci.dataset:
-        print(str(sec) + chr(subsec) + " OK - Copied COAsT object ")
+        print(str(sec) + chr(subsec) + " OK - Copied coast object ")
     else:
         print(str(sec) + chr(subsec) + " X - Copy Failed ")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2b ) COAsT __getitem__ returns variable                                   #
+#%% ( 2b ) coast __getitem__ returns variable                                   #
 #                                                                             #
 
 subsec = subsec + 1
 
 try:
     if sci.dataset["ssh"].equals(sci["ssh"]):
-        print(str(sec) + chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
+        print(str(sec) + chr(subsec) + " OK - coast.__getitem__ works correctly ")
     else:
-        print(str(sec) + chr(subsec) + " X - Problem with COAsT.__getitem__ ")
+        print(str(sec) + chr(subsec) + " X - Problem with coast.__getitem__ ")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2c ) Renaming variables inside a COAsT object                             #
+#%% ( 2c ) Renaming variables inside a coast object                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -747,11 +747,11 @@ try:
         print(
             str(sec)
             + chr(subsec)
-            + " OK - Nemo COAsT get_subset_as_xarray extracted expected array size and "
+            + " OK - Nemo coast get_subset_as_xarray extracted expected array size and "
             + "extreme values"
         )
     else:
-        print(str(sec) + chr(subsec) + " X - Issue with Nemo COAsT get_subset_as_xarray method")
+        print(str(sec) + chr(subsec) + " X - Issue with Nemo coast get_subset_as_xarray method")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
@@ -861,7 +861,7 @@ subsec = subsec + 1
 try:
     altimetry = coast.Altimetry(dn_files + fn_altimetry)
 
-    # Test the data has loaded using attribute comparison, as for NEMO_data
+    # Test the data has loaded using attribute comparison, as for nemo_data
     alt_attrs_ref = dict(
         [
             ("source", "Jason-1 measurements"),

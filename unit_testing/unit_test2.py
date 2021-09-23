@@ -82,10 +82,10 @@ fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
 fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat = "Coast_example_NEMO_data.nc"
-fn_nemo_dat_subset = "Coast_example_NEMO_subset_data.nc"
-fn_nemo_dom = "Coast_example_NEMO_domain.nc"
-fn_altimetry = "Coast_example_altimetry_data.nc"
+fn_nemo_dat = "coast_example_nemo_data.nc"
+fn_nemo_dat_subset = "Coast_example_nemo_subset_data.nc"
+fn_nemo_dom = "coast_example_nemo_domain.nc"
+fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
 fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
 fn_EN4 = dn_files + "EN4_example.nc"
@@ -885,7 +885,7 @@ subsec = subsec + 1
 try:
     altimetry = coast.Altimetry(dn_files + fn_altimetry)
 
-    # Test the data has loaded using attribute comparison, as for NEMO_data
+    # Test the data has loaded using attribute comparison, as for nemo_data
     alt_attrs_ref = dict(
         [
             ("source", "Jason-1 measurements"),
