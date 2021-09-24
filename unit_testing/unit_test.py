@@ -1960,10 +1960,10 @@ try:
         from example_scripts import wcssp_india_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        #subsec = subsec + 1
-        #from example_scripts import internal_tide_pycnocline_diagnostics
+        # subsec = subsec + 1
+        # from example_scripts import internal_tide_pycnocline_diagnostics
 
-        #print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+        # print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 
