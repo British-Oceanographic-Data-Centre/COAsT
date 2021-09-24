@@ -9,12 +9,15 @@ http://xarray.pydata.org/en/stable/generated/xarray.Dataset.to_netcdf.html
 import coast
 
 # And by defining some file paths
-fn_nemo_dat = "./example_files/COAsT_example_NEMO_data.nc"
-fn_nemo_dom = "./example_files/COAsT_example_NEMO_domain.nc"
+fn_nemo_dat = "./example_files/coast_example_nemo_data.nc"
+fn_nemo_dom = "./example_files/coast_example_nemo_domain.nc"
+config = "./config/example_nemo_grid_t.json"
+
 ofile = "example_export_output.nc"  # The target filename for output
 
 # We need to load in a NEMO object for doing NEMO things.
-nemo = coast.Nemo(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
+nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=config)
+
 # We can export the whole xr.DataSet to a netCDF file
 nemo.dataset.to_netcdf(ofile, mode="w", format="NETCDF4")
 # Other file formats are available. From the documentation:

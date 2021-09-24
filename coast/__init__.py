@@ -15,5 +15,15 @@ from . import logging_util
 from . import general_utils
 from . import plot_util
 from . import crps_util
+from .index import Indexed
+from .track import Track
+from .lagrangian import Lagrangian
+from .oceanparcels import Oceanparcels
+from .glider import Glider
+from .argos import Argos
+from .altimetry import Altimetry
+from .timeseries import Timeseries
+from .tidegauge import Tidegauge
+from .profile import Profile
 from .contour import Contour, ContourF, ContourT
 from .eof import compute_eofs, compute_hilbert_eofs

@@ -1,0 +1,26 @@
+{
+	"type": "indexed",
+	"dimensionality": 2,
+	"chunks": {},
+	"dataset": {
+		"dimension_map": {
+			"ex0": "obs",
+			"ex1": "traj"
+		},
+		"variable_map_comment":"mapping from external variable name to standard variable names see https://pcmdi.llnl.gov/mips/cmip3/variableList.html",
+		"variable_map": {
+			"ex0": "trajectory",
+			"time": "time",
+			"lat": "latitude",
+			"lon": "longitude",
+			"z": "depth",
+			"t": "t",
+			"s": "s"
+		},
+		"coord_vars": ["time","latitude","longitude"],
+		"keep_all_vars": "False"
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}

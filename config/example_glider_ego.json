@@ -1,0 +1,28 @@
+{
+    "type": "indexed",
+    "dimensionality": 1,
+    "chunks": {},
+    "dataset": {
+        "dimension_map": {
+            "ex0": "N_HISTORY",
+            "ex1": "N_TRANS_SYSTEM",
+            "ex2": "N_POSITIONING_SYSTEM",
+            "N_PARAM": "N_PARAM_STANDARD",
+            "ex4": "N_DERIVATION",
+            "TIME": "TIME_STANDARD",
+            "ex6": "TIME_GPS"
+        },
+        "variable_map": {
+            "PLATFORM_TYPE": "PLATFORM_TYPE",
+            "PLATFORM_MAKER": "PLATFORM_MAKER",
+            "LATITUDE_GPS": "LATITUDE_GPS",
+            "ex68": "LATITUDE_GPS_QC",
+            "LONGITUDE_GPS": "LONGITUDE_GPS",
+            "TEMP": "TEMP"
+        },
+        "coord_vars": []
+    },
+    "processing_flags": [
+        "example_flag"
+    ]
+}

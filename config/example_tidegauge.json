@@ -1,0 +1,20 @@
+{
+	"type": "indexed",
+	"dimensionality": 1,
+	"chunks": {},
+	"dataset": {
+		"dimension_map": {
+			"time": "time"
+		},
+		"variable_map": {
+			"sea_level": "sea_level",
+			"qc_flags": "qc_flags",
+			"latitude": "latitude",
+			"longitude": "longitude"
+		},
+		"coord_vars": ["time"]
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}

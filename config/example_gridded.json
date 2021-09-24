@@ -40,7 +40,13 @@
 			"ex12": "vozocrtx",
 			"ex13": "sossheig",
 			"ex14": "zos"
-		}
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
 	},
 	"domain": {
 		"dimension_map": {
@@ -94,12 +100,6 @@
 			"ln_zps",
 			"ln_sco",
 			"ln_isfcav"
-		],
-		"coord_vars": [
-			"longitude",
-			"latitude",
-			"time",
-			"depth_0"
 		],
 		"delete_vars": [
 			"nav_lat",
