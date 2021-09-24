@@ -1,6 +1,7 @@
 from dask import array
 import xarray as xr
 import numpy as np
+import coast.general_utils as gu
 from dask.distributed import Client
 import copy
 from .logging_util import get_slug, debug, info, warn, warning
@@ -12,13 +13,13 @@ def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worke
 
 class COAsT:
     def __init__(
-        self,
-        file: str = None,
-        chunks: dict = None,
-        multiple=False,
-        workers: int = 2,  # TODO Do something with this unused parameter
-        threads: int = 2,  # TODO Do something with this unused parameter
-        memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter
+            self,
+            file: str = None,
+            chunks: dict = None,
+            multiple=False,
+            workers: int = 2,  # TODO Do something with this unused parameter
+            threads: int = 2,  # TODO Do something with this unused parameter
+            memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter
     ):
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
@@ -211,10 +212,10 @@ class COAsT:
         """
         This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
-        Distance is calculated as haversine - see `self.calculate_haversine_distance`
+        Distance is calculated as haversine - see `calculate_haversine_distance`
 
-        :param centre_lon: The longitude of the users central point
-        :param centre_lat: The latitude of the users central point
+        :param centre_lon: The longitude of the user's central point
+        :param centre_lat: The latitude of the user's central point
         :param radius: The haversine distance (in km) from the central point
         :return: All indices in a `tuple` with the haversine distance of the central point
         """
@@ -226,67 +227,39 @@ class COAsT:
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
+        dist = gu.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
 
-    def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """Generates array indices for data which lies in a given lon/lat box.
+    def subset_indices_lonlat_box(self, ww=np.NaN, ee=np.NaN, ss=np.NaN, nn=np.NaN):
+        """
+        ww   western boundary (degrees)  - identifies limiting meridian on the left (can be +/-'ve)
+                                           if NaN ee must also be NaN and no selection takes place
+                                           on longitude
+        ee   eastern boundary (degrees)  - identifies limiting meridian on the right (can be +/-'ve)
+        ss   southern boundary (degrees) - can be NaN (i.e. south pole)
+        nn   northern boundary (degrees) - can be NaN (i.e. north pole)
+      Note (1) boundaries can be signed. E.g. -150 is 150W = 210E
+      Note (2) models sometimes duplicate vertices at boundary meridians.
+               These duplications are not removed by subsetting
 
-        Keyword arguments:
-        lon       -- Longitudes, 1D or 2D.
-        lat       -- Latitudes, 1D or 2D
-        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
-        latbounds -- Array of form [min_latitude, max_latitude]
 
-        return: Indices corresponding to datapoints inside specified box
+
         """
         debug(f"Subsetting {get_slug(self)} indices within lon/lat")
+
         lon_str = "longitude"
         lat_str = "latitude"
         lon = self.dataset[lon_str].copy()  # TODO Add a comment explaining why this needs to be copied
         lat = self.dataset[lat_str]
-        ff = lon > lonbounds[0]
-        ff *= lon < lonbounds[1]
-        ff *= lat > latbounds[0]
-        ff *= lat < latbounds[1]
+        return gu.subset_indices_lonlat_box(lon,lat,ww=ww,ee=ee,nn=nn,ss=ss)
 
-        return np.where(ff)
 
-    def calculate_haversine_distance(self, lon1, lat1, lon2, lat2):  # TODO This could be a static method
-        """
-        # Estimation of geographical distance using the Haversine function.
-        # Input can be single values or 1D arrays of locations. This
-        # does NOT create a distance matrix but outputs another 1D array.
-        # This works for either location vectors of equal length OR a single loc
-        # and an arbitrary length location vector.
-        #
-        # lon1, lat1 :: Location(s) 1.
-        # lon2, lat2 :: Location(s) 2.
-        """
-
-        debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
-
-        # Convert to radians for calculations
-        lon1 = xr.ufuncs.deg2rad(lon1)
-        lat1 = xr.ufuncs.deg2rad(lat1)
-        lon2 = xr.ufuncs.deg2rad(lon2)
-        lat2 = xr.ufuncs.deg2rad(lat2)
-
-        # Latitude and longitude differences
-        dlat = (lat2 - lat1) / 2
-        dlon = (lon2 - lon1) / 2
-
-        # Haversine function.
-        distance = xr.ufuncs.sin(dlat) ** 2 + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
-        distance = 2 * 6371.007176 * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
-
-        return distance
 
     def get_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+            self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
     ):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
@@ -323,7 +296,7 @@ class COAsT:
         return smaller
 
     def get_2d_subset_as_xarray(
-        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+            self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
     ):
         """
 
@@ -413,8 +386,8 @@ class COAsT:
 
         cset = (
             self.dataset[var]
-            .isel(time_counter=time_counter, deptht=0)
-            .plot.pcolormesh(
+                .isel(time_counter=time_counter, deptht=0)
+                .plot.pcolormesh(
                 np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
             )
         )

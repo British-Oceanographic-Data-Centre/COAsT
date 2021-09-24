@@ -1,0 +1,87 @@
+{
+
+  "type": "gridded",
+
+  "dimensionality": 4,
+
+  "chunks": {},
+
+  "grid_ref": {
+
+    "t-grid": []
+
+  },
+
+  "dataset": {
+
+    "dimension_map": {
+
+      "time": "t_dim",
+
+      "lev": "z_dim",
+
+      "i": "x_dim",
+
+      "j": "y_dim",
+
+    },
+
+    "variable_map": {
+
+      "time":"time",
+
+      "lat": "latitude",
+
+      "lon": "longitude",
+
+      "so": "salinity"
+
+    },
+
+    "dimension_map2": {
+
+      "t_dim": [],
+
+      "z_dim": [],
+
+      "y_dim": [],
+
+      "x_dim": []
+
+    },
+
+    "variable_map2": {},
+
+    "chunks": [
+
+      1000,
+
+      1000,
+
+      1000
+
+    ]
+
+  },
+
+  "domain": {
+
+    "dimension_map": {},
+
+    "variable_map": {}
+
+  },
+
+  "static_variables": {
+
+    "not_grid_vars" : [],
+
+    "coord_vars": [],
+
+    "delete_vars": []
+
+  },
+
+  "processing_flags": []
+
+}

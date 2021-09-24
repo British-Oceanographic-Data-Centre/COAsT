@@ -1,0 +1,52 @@
+{
+
+  "type": "gridded",
+
+  "dimensionality": 4,
+
+  "chunks": [],
+
+  "grid_ref": {
+
+    "t-grid": [
+
+      "lon",
+
+      "lat"
+
+    ]
+
+  },
+
+  "dataset": {
+
+    "dimension_map": {
+
+      "ex0": "time",
+
+      "ex1": "lev",
+
+      "ex2": "j",
+
+      "ex3": "i"
+
+    },
+
+    "variable_map": {
+
+
+
+      "ex0": "so"
+
+    }
+
+  },
+
+  "processing_flags": [
+
+    "example_flag"
+
+  ]
+
+}
+
