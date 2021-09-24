@@ -290,8 +290,8 @@ class Altimetry(Track):
         two dates date0 and date1. Returns xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         diff = var0 - var1
         return xr.DataArray(diff, dims="t_dim", name="error", coords={"time": self.dataset.time})
 
@@ -300,8 +300,8 @@ class Altimetry(Track):
         between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
         return xr.DataArray(adiff, dims="t_dim", name="absolute_error", coords={"time": self.dataset.time})
 
@@ -310,8 +310,8 @@ class Altimetry(Track):
         var_str1 between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         mae = metrics.mean_absolute_error(var0, var1)
         return mae
 
@@ -320,21 +320,21 @@ class Altimetry(Track):
         var_str1 between two dates date0 and date1. Return xr.DataArray"""
         var0 = self.dataset[var_str0]
         var1 = self.dataset[var_str1]
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
+        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
+        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
         rmse = metrics.mean_squared_error(var0, var1)
         return np.sqrt(rmse)
 
     def time_mean(self, var_str, date0=None, date1=None):
         """Time mean of variable var_str between dates date0, date1"""
         var = self.dataset[var_str]
-        var = general_utils.dataarray_time_slice(var, date0, date1)
+        var = general_utils.data_array_time_slice(var, date0, date1)
         return np.nanmean(var)
 
     def time_std(self, var_str, date0=None, date1=None):
         """Time st. dev of variable var_str between dates date0 and date1"""
         var = self.dataset[var_str]
-        var = general_utils.dataarray_time_slice(var, date0, date1)
+        var = general_utils.data_array_time_slice(var, date0, date1)
         return np.nanstd(var)
 
     def time_correlation(self, var_str0, var_str1, date0=None, date1=None, method="pearson"):
@@ -344,8 +344,8 @@ class Altimetry(Track):
         var1 = self.dataset[var_str1]
         var0 = var0.rename("var1")
         var1 = var1.rename("var2")
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        var0 = general_utils.data_array_time_slice(var0, date0, date1)
+        var1 = general_utils.data_array_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
         pdvar = pdvar.to_dataframe()
         corr = pdvar.corr(method=method)
@@ -358,8 +358,8 @@ class Altimetry(Track):
         var1 = self.dataset[var_str1]
         var0 = var0.rename("var1")
         var1 = var1.rename("var2")
-        var0 = general_utils.dataarray_time_slice(var0, date0, date1)
-        var1 = general_utils.dataarray_time_slice(var1, date0, date1)
+        var0 = general_utils.data_array_time_slice(var0, date0, date1)
+        var1 = general_utils.data_array_time_slice(var1, date0, date1)
         pdvar = xr.merge((var0, var1))
         pdvar = pdvar.to_dataframe()
         cov = pdvar.cov()

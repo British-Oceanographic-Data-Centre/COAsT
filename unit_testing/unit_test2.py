@@ -876,16 +876,17 @@ sec = sec + 1
 subsec = 96
 # This section is for testing and demonstrating the use of the Altimetry
 # object. First begin by reloading Nemo t-grid test data:
-sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+sci = coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+
 
 # -----------------------------------------------------------------------------#
-# %% ( 6a ) Load example altimetry data                                          #
+#%% ( 6a ) Load example altimetry data                                          #
 #                                                                             #
 
 subsec = subsec + 1
 # We can load altimetry data straight from a CMEMS netcdf file on initialisation
 try:
-    altimetry = coast.Altimetry(dn_files + fn_altimetry)
+    altimetry = coast.Altimetry(dn_files + fn_altimetry, config="./config/example_altimetry.json")
 
     # Test the data has loaded using attribute comparison, as for nemo_data
     alt_attrs_ref = dict(
@@ -905,8 +906,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6b ) Altimetry subsetting                                                 #
+#%% ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 
 subsec = subsec + 1
@@ -924,8 +926,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6c ) Interpolate model to altimetry                                       #
+#%% ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -946,8 +949,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6d ) Altimetry CRPS                                                       #
+#%% ( 6d ) Altimetry CRPS                                                       #
 #                                                                             #
 
 
@@ -957,10 +961,10 @@ subsec = subsec + 1
 # to the existing object. Here we look at the first option.
 
 try:
-    crps = altimetry_nwes.crps(sci, "ssh", "sla_filtered")
+    crps = altimetry_nwes.crps(sci, "ssh", "ocean_tide_standard_name")
 
     # TEST: Check length of crps and that it contains values
-    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
@@ -970,8 +974,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6e ) Altimetry Stats methods                                              #
+#%% ( 6e ) Altimetry Stats methods                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -980,13 +985,13 @@ subsec = subsec + 1
 # Here we compare an altimetry variable to our interpolate model SSH
 
 try:
-    stats = altimetry_nwes.basic_stats("sla_filtered", "interp_ssh")
-    altimetry_nwes.basic_stats("sla_filtered", "interp_ssh", create_new_object=False)
+    stats = altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh")
+    altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh", create_new_object=False)
 
     # TEST: Check new object resembles internal object
     check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
     # TEST: Check lengths and values
-    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Basic Stats for Altimetry")
     else:
@@ -995,8 +1000,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6f ) Altimetry quick_plot()                                               #
+#%% ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1012,6 +1018,7 @@ except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
 
 plt.close("all")
+
 
 """
 #################################################
