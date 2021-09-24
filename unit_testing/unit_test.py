@@ -1114,7 +1114,7 @@ try:
 
     # Alternatively extract the data for the last ndays, here for a specific
     # (the default) station.
-    eg.dataset = eg.read_ea_api_to_xarray(ndays=1, stationId="E70124")
+    eg.dataset = eg.read_ea_api_to_xarray(n_days=1, station_id="E70124")
     check3 = eg.dataset.site_name == "Liverpool"
     # eg.plot_timeseries()
 
@@ -1250,7 +1250,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    tidegauge_list = coast.TideGauge.create_multiple_tidegauge("./example_files/tide_gauges/l*", date0, date1)
+    tidegauge_list = coast.TideGauge.create_multiple("./example_files/tide_gauges/l*", date0, date1)
 
     # TEST: Check length of list
     check1 = len(tidegauge_list) == 2
