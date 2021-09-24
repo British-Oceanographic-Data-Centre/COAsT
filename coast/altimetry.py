@@ -130,8 +130,8 @@ class Altimetry(Track):
         return: Indices corresponding to datapoints inside specified box
         """
         print(f"Subsetting {get_slug(self)} indices in {lonbounds}, {latbounds}")
-        lon = self.dataset.longitude.copy()
-        lat = self.dataset.latitude
+        lon = self.dataset.longitude.copy().values
+        lat = self.dataset.latitude.values
         lon[lon > 180] = lon[lon > 180] - 360
         lon[lon < -180] = lon[lon < -180] + 360
         ff1 = (lon > lonbounds[0]).astype(int)  # FIXME This should fail? We can just treat bools as ints here...
@@ -211,14 +211,14 @@ class Altimetry(Track):
 
         interpolated = model.interpolate_in_space(mod_var, obs_lon, obs_lat)
 
-        # Interpolate in time if time exists in model array
-        if "time" in mod_var.dims:
+        # Interpolate in time if t_dim exists in model array
+        if "t_dim" in mod_var.dims:
             interpolated = model.interpolate_in_time(interpolated, self.dataset.time, interp_method=time_interp)
             # Take diagonal from interpolated array (which contains too many points)
             diag_len = interpolated.shape[0]
             diag_ind = xr.DataArray(np.arange(0, diag_len))
-            interpolated = interpolated.isel(interp_dim=diag_ind, time=diag_ind)
-            interpolated = interpolated.swap_dims({"dim_0": "time"})
+            interpolated = interpolated.isel(interp_dim=diag_ind, t_dim=diag_ind)
+            interpolated = interpolated.swap_dims({"dim_0": "t_dim"})
 
         # Store interpolated array in dataset
         new_var_name = "interp_" + mod_var_name
@@ -275,15 +275,15 @@ class Altimetry(Track):
         if create_new_object:
             new_object = Altimetry()
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
-            new_dataset["crps"] = (("time"), crps_list)
-            new_dataset["crps_n_model_pts"] = (("time"), n_model_pts)
-            new_dataset["crps_contains_land"] = (("time"), contains_land)
+            new_dataset["crps"] = (("t_dim"), crps_list)
+            new_dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
+            new_dataset["crps_contains_land"] = (("t_dim"), contains_land)
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset["crps"] = (("time"), crps_list)
-            self.dataset["crps_n_model_pts"] = (("time"), n_model_pts)
-            self.dataset["crps_contains_land"] = (("time"), contains_land)
+            self.dataset["crps"] = (("t_dim"), crps_list)
+            self.dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
+            self.dataset["crps_contains_land"] = (("t_dim"), contains_land)
 
     def difference(self, var_str0: str, var_str1: str, date0=None, date1=None):
         """Difference two variables defined by var_str0 and var_str1 between
@@ -293,7 +293,7 @@ class Altimetry(Track):
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         diff = var0 - var1
-        return xr.DataArray(diff, dims="time", name="error", coords={"time": self.dataset.time})
+        return xr.DataArray(diff, dims="t_dim", name="error", coords={"time": self.dataset.time})
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Absolute difference two variables defined by var_str0 and var_str1
@@ -303,7 +303,7 @@ class Altimetry(Track):
         var0 = general_utils.dataarray_time_slice(var0, date0, date1).values
         var1 = general_utils.dataarray_time_slice(var1, date0, date1).values
         adiff = np.abs(var0 - var1)
-        return xr.DataArray(adiff, dims="time", name="absolute_error", coords={"time": self.dataset.time})
+        return xr.DataArray(adiff, dims="t_dim", name="absolute_error", coords={"time": self.dataset.time})
 
     def mean_absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Mean absolute difference two variables defined by var_str0 and
