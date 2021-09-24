@@ -24,8 +24,8 @@ try:
     config = "AMM60"
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    config_t = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
-    config_w = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
+    config_t = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json"
+    config_w = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_w.json"
     mon = "July"
     # mon = 'Feb'
 
@@ -60,7 +60,9 @@ except:
 
     dn_fig = "unit_testing/figures/"
     fn_nemo_grid_t_dat = "nemo_data_T_grid_Aug2015.nc"
-    fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
+    fn_nemo_dom = "coast_example_nemo_domain.nc"
+    config_t = "config/example_nemo_grid_t.json"
+    config_w = "config/example_nemo_grid_w.json"
 
     sci_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat, dn_files + fn_nemo_dom, config=config_t, multiple=True)
 

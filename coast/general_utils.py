@@ -121,7 +121,7 @@ def compare_angles(a1, a2, degrees=True):
     return diff
 
 
-def cart2polar(x, y, degrees=True):
+def cartesian_to_polar(x, y, degrees=True):
     """
     # Conversion of cartesian to polar coordinate system
     # Output theta is in radians
@@ -133,7 +133,7 @@ def cart2polar(x, y, degrees=True):
     return r, theta
 
 
-def polar2cart(r, theta, degrees=True):
+def polar_to_cartesian(r, theta, degrees=True):
     """
     # Conversion of polar to cartesian coordinate system
     # Input theta must be in radians
@@ -320,7 +320,7 @@ def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
     return ind_x, ind_y
 
 
-def dataarray_time_slice(data_array, date0, date1):
+def data_array_time_slice(data_array, date0, date1):
     """Takes an xr.DataArray object and returns a new object with times
     sliced between dates date0 and date1. date0 and date1 may be a string or
     datetime type object."""

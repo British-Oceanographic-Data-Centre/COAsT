@@ -132,7 +132,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # Reset & set specified coordinates
         self.dataset = self.dataset.reset_coords()
-        for var in self.config.code_processing.coord_variables:
+        for var in self.config.dataset.coord_var:
             try:
                 self.dataset = self.dataset.set_coords(var)
             except ValueError as err:
@@ -381,7 +381,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, EOS="EOS10"):
+    def construct_density(self, eos="EOS10"):
 
         """
             Constructs the in-situ density using the salinity, temperture and
@@ -397,7 +397,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         Parameters
         ----------
-        EOS : equation of state, optional
+        eos : equation of state, optional
             DESCRIPTION. The default is 'EOS10'.
 
 
@@ -407,10 +407,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         adds attribute NEMO.dataset.density
 
         """
-        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{EOS}"')
+        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
         try:
-            if EOS != "EOS10":
-                raise ValueError(str(self) + ": Density calculation for " + EOS + " not implemented.")
+            if eos != "EOS10":
+                raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
             if self.grid_ref != "t-grid":
                 raise ValueError(
                     str(self)
@@ -508,7 +508,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
 
-    def differentiate(self, in_varstr, config_path=None, dim="z_dim", out_varstr=None, out_obj=None):
+    def differentiate(self, in_var_str, config_path=None, dim="z_dim", out_var_str=None, out_obj=None):
         """
         Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
         wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
@@ -523,7 +523,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         1) d(grid_t)/dz --> grid_w
 
         Returns  an object (with the appropriate target grid_ref) containing
-        derivative (out_varstr) as xr.DataArray
+        derivative (out_var_str) as xr.DataArray
 
         This is hardwired to expect:
         1) depth_0 and e3_0 fields exist
@@ -542,30 +542,30 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # For f(z)=-z. Compute df/dz = -1. Surface value is set to zero
         nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'], nemo_t.dataset['temperature'] )
-        nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_varstr='dzdz' )
+        nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_var_str='dzdz' )
 
         Provide an existing target NEMO object and target variable name:
-        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim', out_varstr='dTdz', out_obj=nemo_w_1 )
+        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim', out_var_str='dTdz', out_obj=nemo_w_1 )
 
 
         Parameters
         ----------
-        in_varstr : str, name of variable to differentiate
+        in_var_str : str, name of variable to differentiate
         config_path : str, path to the w grid config file
         dim : str, dimension to operate over. E.g. {'z_dim', 'y_dim', 'x_dim', 't_dim'}
-        out_varstr : str, (optional) name of the target xr.DataArray
+        out_var_str : str, (optional) name of the target xr.DataArray
         out_obj : exiting NEMO obj to store xr.DataArray (optional)
 
         """
-        # import xarray as xr
+        import xarray as xr
 
         new_units = ""
 
-        # Check in_varstr exists in self.
-        if hasattr(self.dataset, in_varstr):
-            # self.dataset[in_varstr] exists
+        # Check in_var_str exists in self.
+        if hasattr(self.dataset, in_var_str):
+            # self.dataset[in_var_str] exists
 
-            var = self.dataset[in_varstr]  # for convenience
+            var = self.dataset[in_var_str]  # for convenience
 
             nt = var.sizes["t_dim"]
             nz = var.sizes["z_dim"]
@@ -587,9 +587,9 @@ class Gridded(Coast):  # TODO Complete this docstring
                             "filename_domain={} is empty?".format(self.filename_domain),
                         )
 
-                # Check is out_varstr is defined, else create it
-                if out_varstr is None:
-                    out_varstr = in_varstr + "_dz"
+                # Check is out_var_str is defined, else create it
+                if out_var_str is None:
+                    out_var_str = in_var_str + "_dz"
 
                 # Create new DataArray with the same dimensions as the parent
                 # Crucially have a coordinate value that is appropriate to the target location.
@@ -599,12 +599,12 @@ class Gridded(Coast):  # TODO Complete this docstring
                 diff = xr.concat([blank, var.diff(dim)], dim)
                 diff_ndim, e3w_ndim = xr.broadcast(diff, out_obj.dataset.e3_0.squeeze())
                 # Compute the derivative
-                out_obj.dataset[out_varstr] = -diff_ndim / e3w_ndim
+                out_obj.dataset[out_var_str] = -diff_ndim / e3w_ndim
 
                 # Assign attributes
                 new_units = var.units + "/" + out_obj.dataset.depth_0.units
                 # Convert to a xr.DataArray and return
-                out_obj.dataset[out_varstr].attrs = {"units": new_units, "standard_name": out_varstr}
+                out_obj.dataset[out_var_str].attrs = {"units": new_units, "standard_name": out_var_str}
 
                 # Return in object.
                 return out_obj
@@ -613,7 +613,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 warn("Not ready for that combination of grid ({}) and " "derivative ({})".format(self.grid_ref, dim))
                 return None
         else:
-            warn(f"{in_varstr} does not exist in {get_slug(self)} dataset")
+            warn(f"{in_var_str} does not exist in {get_slug(self)} dataset")
             return None
 
     def apply_doodson_x0_filter(self, var_str):

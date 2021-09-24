@@ -72,7 +72,6 @@ class ConfigParser:
         """
         dataset_json = json_content[ConfigKeys.CODE_PROCESSING]
         return CodeProcessing(
-            coord_variables=dataset_json[ConfigKeys.COO_VAR],
             delete_variables=dataset_json[ConfigKeys.DEL_VAR],
             not_grid_variables=dataset_json[ConfigKeys.NO_GR_VAR],
         )
@@ -89,7 +88,18 @@ class ConfigParser:
         dataset_var = dataset_json[ConfigKeys.VAR_MAP]
         dataset_dim = dataset_json[ConfigKeys.DIM_MAP]
 
+        try:
+            dataset_keep_all_vars = dataset_json[ConfigKeys.KEEP_ALL_VARS]
+        except KeyError:
+            dataset_keep_all_vars = "False"
+
         if data_file_type is ConfigKeys.DATASET:
-            return Dataset(variable_map=dataset_var, dimension_map=dataset_dim)
+            dataset_coord_vars = dataset_json[ConfigKeys.COO_VAR]
+            return Dataset(
+                variable_map=dataset_var,
+                dimension_map=dataset_dim,
+                coord_var=dataset_coord_vars,
+                keep_all_vars=dataset_keep_all_vars,
+            )
         elif data_file_type is ConfigKeys.DOMAIN:
-            return Domain(variable_map=dataset_var, dimension_map=dataset_dim)
+            return Domain(variable_map=dataset_var, dimension_map=dataset_dim, keep_all_vars=False)

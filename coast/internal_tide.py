@@ -114,12 +114,12 @@ class InternalTide(Nemo):  # TODO All abstract methods should be implemented
         debug(f"Constructing pycnocline variables for {get_slug(self)}")
         # Construct in-situ density if not already done
         if not hasattr(nemo_t.dataset, "density"):
-            nemo_t.construct_density(EOS="EOS10")
+            nemo_t.construct_density(eos="EOS10")
 
         # Construct stratification if not already done. t-pts --> w-pts
         if not hasattr(nemo_w.dataset, "rho_dz"):
             nemo_w = nemo_t.differentiate(
-                "density", dim="z_dim", out_varstr="rho_dz", out_obj=nemo_w
+                "density", dim="z_dim", out_var_str="rho_dz", out_obj=nemo_w
             )  # TODO These kwargs don't appear to exist
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in

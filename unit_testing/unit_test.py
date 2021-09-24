@@ -77,15 +77,17 @@ fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
 fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat = "COAsT_example_NEMO_data.nc"
-fn_nemo_dat_subset = "COAsT_example_NEMO_subset_data.nc"
-fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
-fn_altimetry = "COAsT_example_altimetry_data.nc"
+fn_nemo_dat = "coast_example_nemo_data.nc"
+fn_nemo_dat_subset = "coast_example_nemo_subset_data.nc"
+fn_nemo_dom = "coast_example_nemo_domain.nc"
+fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
 fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
-fn_EN4 = dn_files + "EN4_example.nc"
 fn_nemo_harmonics = "coast_nemo_harmonics.nc"
 fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
+# EN4 profile data (NetCDF)
+fn_profile = dn_files + "EN4_example.nc"
+fn_profile_config = "config/example_en4_profiles.json"
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -137,12 +139,12 @@ try:
     sci_load_file = coast.Nemo()
     sci_load_file.load(dn_files + fn_nemo_dat)
     if sci_load_ds.dataset.identical(sci_load_file.dataset):
-        print(str(sec) + chr(subsec) + " OK - COAsT.load_dataset()")
+        print(str(sec) + chr(subsec) + " OK - coast.load_dataset()")
     else:
         print(
             str(sec)
             + chr(subsec)
-            + " X - COAsT.load_dataset() ERROR - not identical to dataset loaded via COAsT.load()"
+            + " X - coast.load_dataset() ERROR - not identical to dataset loaded via coast.load()"
         )
 except:
     print(str(sec) + chr(subsec) + " FAILED")
@@ -331,14 +333,14 @@ except:
 
 """
 #################################################
-## ( 2 ) Test general utility methods in COAsT ##
+## ( 2 ) Test general utility methods in coast ##
 #################################################
 """
 sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 2a ) Copying a COAsT object                                               #
+#%% ( 2a ) Copying a coast object                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -346,28 +348,28 @@ subsec = subsec + 1
 try:
     sci_copy = sci.copy()
     if sci_copy.dataset == sci.dataset:
-        print(str(sec) + chr(subsec) + " OK - Copied COAsT object ")
+        print(str(sec) + chr(subsec) + " OK - Copied coast object ")
     else:
         print(str(sec) + chr(subsec) + " X - Copy Failed ")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2b ) COAsT __getitem__ returns variable                                   #
+#%% ( 2b ) coast __getitem__ returns variable                                   #
 #                                                                             #
 
 subsec = subsec + 1
 
 try:
     if sci.dataset["ssh"].equals(sci["ssh"]):
-        print(str(sec) + chr(subsec) + " OK - COAsT.__getitem__ works correctly ")
+        print(str(sec) + chr(subsec) + " OK - coast.__getitem__ works correctly ")
     else:
-        print(str(sec) + chr(subsec) + " X - Problem with COAsT.__getitem__ ")
+        print(str(sec) + chr(subsec) + " X - Problem with coast.__getitem__ ")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2c ) Renaming variables inside a COAsT object                             #
+#%% ( 2c ) Renaming variables inside a coast object                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -747,11 +749,11 @@ try:
         print(
             str(sec)
             + chr(subsec)
-            + " OK - Nemo COAsT get_subset_as_xarray extracted expected array size and "
+            + " OK - Nemo coast get_subset_as_xarray extracted expected array size and "
             + "extreme values"
         )
     else:
-        print(str(sec) + chr(subsec) + " X - Issue with Nemo COAsT get_subset_as_xarray method")
+        print(str(sec) + chr(subsec) + " X - Issue with Nemo coast get_subset_as_xarray method")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
@@ -794,7 +796,7 @@ subsec = subsec + 1
 try:
     altimetry = coast.Altimetry(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10, 10], [45, 60])
-    altimetry_nwes = altimetry.isel(t_dim=ind)  # nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(time=ind)  # nwes = northwest europe shelf
     ind_x, ind_y = general_utils.nearest_indices_2d(
         sci.dataset.longitude, sci.dataset.latitude, altimetry_nwes.dataset.longitude, altimetry_nwes.dataset.latitude
     )
@@ -859,9 +861,9 @@ sci = coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-gri
 subsec = subsec + 1
 # We can load altimetry data straight from a CMEMS netcdf file on initialisation
 try:
-    altimetry = coast.Altimetry(dn_files + fn_altimetry)
+    altimetry = coast.Altimetry(dn_files + fn_altimetry, config="./config/example_altimetry.json")
 
-    # Test the data has loaded using attribute comparison, as for NEMO_data
+    # Test the data has loaded using attribute comparison, as for nemo_data
     alt_attrs_ref = dict(
         [
             ("source", "Jason-1 measurements"),
@@ -934,10 +936,10 @@ subsec = subsec + 1
 # to the existing object. Here we look at the first option.
 
 try:
-    crps = altimetry_nwes.crps(sci, "ssh", "sla_filtered")
+    crps = altimetry_nwes.crps(sci, "ssh", "ocean_tide_standard_name")
 
     # TEST: Check length of crps and that it contains values
-    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
@@ -958,13 +960,13 @@ subsec = subsec + 1
 # Here we compare an altimetry variable to our interpolate model SSH
 
 try:
-    stats = altimetry_nwes.basic_stats("sla_filtered", "interp_ssh")
-    altimetry_nwes.basic_stats("sla_filtered", "interp_ssh", create_new_object=False)
+    stats = altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh")
+    altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh", create_new_object=False)
 
     # TEST: Check new object resembles internal object
     check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
     # TEST: Check lengths and values
-    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Basic Stats for Altimetry")
     else:
@@ -1105,14 +1107,14 @@ try:
     date_end = np.datetime64("now") - np.timedelta64(10, "D")
     eg = coast.TideGauge()
     # Extract the data between explicit dates
-    eg.dataset = eg.read_EA_API_to_xarray(date_start=date_start, date_end=date_end)
+    eg.dataset = eg.read_ea_api_to_xarray(date_start=date_start, date_end=date_end)
     check1 = eg.dataset.site_name == "Liverpool"
     check2 = len(eg.dataset.sea_level) > 0
     # eg.plot_timeseries()
 
     # Alternatively extract the data for the last ndays, here for a specific
     # (the default) station.
-    eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
+    eg.dataset = eg.read_ea_api_to_xarray(n_days=1, station_id="E70124")
     check3 = eg.dataset.site_name == "Liverpool"
     # eg.plot_timeseries()
 
@@ -1248,7 +1250,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    tidegauge_list = coast.TideGauge.create_multiple_tidegauge("./example_files/tide_gauges/l*", date0, date1)
+    tidegauge_list = coast.TideGauge.create_multiple("./example_files/tide_gauges/l*", date0, date1)
 
     # TEST: Check length of list
     check1 = len(tidegauge_list) == 2
@@ -1321,18 +1323,18 @@ try:
 
     # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
     tg = coast.TideGauge()
-    tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
+    tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
 
     check1 = len(tg.dataset.sea_level) == 37
-    check2 = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
-    check3 = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_1").time.values == np.datetime64(
-        "2020-10-13 14:36"
-    )
+    check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
+    check3 = tg.get_tide_table_times(
+        np.datetime64("2020-10-13 12:48"), method="nearest_1"
+    ).time.values == np.datetime64("2020-10-13 14:36")
     check4 = np.array_equal(
-        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
+        tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
     )
     check5 = np.array_equal(
-        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
+        tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
         [3.47, 7.78, 2.8, 8.01, 2.83, 8.45, 2.08, 8.71],
     )
 
@@ -1374,9 +1376,9 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - Tidegauge local extrema found")
+        print(str(sec) + chr(subsec) + " OK - TideGauge local extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge local extrema")
+        print(str(sec) + chr(subsec) + " X - TideGauge local extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
@@ -1416,9 +1418,9 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1.all() and check2.all():
-        print(str(sec) + chr(subsec) + " OK - Tidegauge cubic extrema found")
+        print(str(sec) + chr(subsec) + " OK - TideGauge cubic extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge cubic extrema")
+        print(str(sec) + chr(subsec) + " X - TideGauge cubic extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
@@ -1587,13 +1589,17 @@ subsec = subsec + 1
 # Create Profile object and read EN4 example data file
 
 try:
-    profiles = coast.Profile()
-    profiles.read_EN4(fn_EN4)
+    # Create object without config file
+    profiles = coast.Profile(file_path=fn_profile)
+    check0 = profiles is not None
+
+    # Create object with config file
+    profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
 
     # TEST: Check some data
     check1 = profiles.dataset.dims["z_dim"] == 400
     check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check1 and check2:
+    if check0 and check1 and check2:
         print(str(sec) + chr(subsec) + " OK - EN4 Data read, Profile created")
     else:
         print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
@@ -1928,6 +1934,7 @@ try:
     from example_scripts import altimetry_tutorial  # This runs on example_files
     from example_scripts import tidegauge_tutorial  # This runs on example_files
     from example_scripts import tidetable_tutorial  # This runs on example_files
+    from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
 
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
@@ -1953,10 +1960,10 @@ try:
         from example_scripts import wcssp_india_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        subsec = subsec + 1
-        from example_scripts import internal_tide_pycnocline_diagnostics
+        # subsec = subsec + 1
+        # from example_scripts import internal_tide_pycnocline_diagnostics
 
-        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+        # print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 

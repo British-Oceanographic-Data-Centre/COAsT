@@ -20,7 +20,7 @@ gridded_json = {
     "grid_ref": {},
     "dimensionality": 3,
     "chunks": [],
-    "dataset": {"variable_map": {}, "dimension_map": {}},
+    "dataset": {"variable_map": {}, "dimension_map": {}, "coord_vars": [], "keep_all_vars": "False"},
     "domain": {
         "variable_map": {},
         "dimension_map": {},
@@ -34,7 +34,7 @@ indexed_json = {
     "type": "indexed",
     "dimensionality": 3,
     "chunks": [],
-    "dataset": {"variable_map": {}, "dimension_map": {}},
+    "dataset": {"variable_map": {}, "dimension_map": {}, "coord_vars": [], "keep_all_vars": "False"},
     "processing_flags": [],
 }
 

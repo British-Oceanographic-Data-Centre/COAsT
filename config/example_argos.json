@@ -1,0 +1,23 @@
+{
+	"type": "indexed",
+	"dimensionality": 1,
+	"chunks": {},
+	"dataset": {
+		"dimension_map": {
+			"time": "t_time"
+		},
+		"variable_map_comment":"mapping from external variable name to standard variable names see https://pcmdi.llnl.gov/mips/cmip3/variableList.html",
+		"variable_map": {
+			"DATIM": "time",
+			"LAT": "latitude",
+			"LON": "longitude",
+			"SST": "sea_surface_temperature",
+			"PPRES": "pressure"
+		},
+		"coord_vars": ["time","latitude","longitude"],
+		"keep_all_vars": "False"
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}

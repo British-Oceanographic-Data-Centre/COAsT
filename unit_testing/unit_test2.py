@@ -73,24 +73,26 @@ if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
 
 dn_fig = "unit_testing/figures/"
-json_config_file_t_grid = path.join(dn_files, "example_t_nemo_config.json")
-json_config_file_f_grid = path.join(dn_files, "example_f_nemo_config.json")
-json_config_file_u_grid = path.join(dn_files, "example_u_nemo_config.json")
-json_config_file_v_grid = path.join(dn_files, "example_v_nemo_config.json")
-json_config_file_w_grid = path.join(dn_files, "example_w_nemo_config.json")
+json_config_file_t_grid = path.join("./config", "example_nemo_grid_t.json")
+json_config_file_f_grid = path.join("./config", "example_nemo_grid_f.json")
+json_config_file_u_grid = path.join("./config", "example_nemo_grid_u.json")
+json_config_file_v_grid = path.join("./config", "example_nemo_grid_v.json")
+json_config_file_w_grid = path.join("./config", "example_nemo_grid_w.json")
 fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
 fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat = "Coast_example_NEMO_data.nc"
-fn_nemo_dat_subset = "Coast_example_NEMO_subset_data.nc"
-fn_nemo_dom = "Coast_example_NEMO_domain.nc"
-fn_altimetry = "Coast_example_altimetry_data.nc"
+fn_nemo_dat = "coast_example_nemo_data.nc"
+fn_nemo_dat_subset = "Coast_example_nemo_subset_data.nc"
+fn_nemo_dom = "coast_example_nemo_domain.nc"
+fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
 fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
-fn_EN4 = dn_files + "EN4_example.nc"
 fn_nemo_harmonics = "coast_nemo_harmonics.nc"
 fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
+# EN4 profile data (NetCDF)
+fn_profile = dn_files + "EN4_example.nc"
+fn_profile_config = "config/example_en4_profiles.json"
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -874,18 +876,19 @@ sec = sec + 1
 subsec = 96
 # This section is for testing and demonstrating the use of the Altimetry
 # object. First begin by reloading Nemo t-grid test data:
-sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+sci = coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+
 
 # -----------------------------------------------------------------------------#
-# %% ( 6a ) Load example altimetry data                                          #
+#%% ( 6a ) Load example altimetry data                                          #
 #                                                                             #
 
 subsec = subsec + 1
 # We can load altimetry data straight from a CMEMS netcdf file on initialisation
 try:
-    altimetry = coast.Altimetry(dn_files + fn_altimetry)
+    altimetry = coast.Altimetry(dn_files + fn_altimetry, config="./config/example_altimetry.json")
 
-    # Test the data has loaded using attribute comparison, as for NEMO_data
+    # Test the data has loaded using attribute comparison, as for nemo_data
     alt_attrs_ref = dict(
         [
             ("source", "Jason-1 measurements"),
@@ -903,8 +906,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6b ) Altimetry subsetting                                                 #
+#%% ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 
 subsec = subsec + 1
@@ -922,8 +926,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6c ) Interpolate model to altimetry                                       #
+#%% ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -944,8 +949,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6d ) Altimetry CRPS                                                       #
+#%% ( 6d ) Altimetry CRPS                                                       #
 #                                                                             #
 
 
@@ -955,10 +961,10 @@ subsec = subsec + 1
 # to the existing object. Here we look at the first option.
 
 try:
-    crps = altimetry_nwes.crps(sci, "ssh", "sla_filtered")
+    crps = altimetry_nwes.crps(sci, "ssh", "ocean_tide_standard_name")
 
     # TEST: Check length of crps and that it contains values
-    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     check2 = False in np.isnan(crps.dataset.crps)
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Altimetry CRPS")
@@ -968,8 +974,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6e ) Altimetry Stats methods                                              #
+#%% ( 6e ) Altimetry Stats methods                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -978,13 +985,13 @@ subsec = subsec + 1
 # Here we compare an altimetry variable to our interpolate model SSH
 
 try:
-    stats = altimetry_nwes.basic_stats("sla_filtered", "interp_ssh")
-    altimetry_nwes.basic_stats("sla_filtered", "interp_ssh", create_new_object=False)
+    stats = altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh")
+    altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh", create_new_object=False)
 
     # TEST: Check new object resembles internal object
     check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
     # TEST: Check lengths and values
-    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.sla_filtered.shape[0]
+    check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - Basic Stats for Altimetry")
     else:
@@ -993,8 +1000,9 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
+
 # -----------------------------------------------------------------------------#
-# %% ( 6f ) Altimetry quick_plot()                                               #
+#%% ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1010,6 +1018,7 @@ except:
     print(str(sec) + chr(subsec) + " X - Altimetry quick plot not saved")
 
 plt.close("all")
+
 
 """
 #################################################
@@ -1612,13 +1621,17 @@ subsec = subsec + 1
 # Create Profile object and read EN4 example data file
 
 try:
-    profiles = coast.Profile()
-    profiles.read_EN4(fn_EN4)
+    # Create object without config file
+    profiles = coast.Profile(file_path=fn_profile)
+    check0 = profiles is not None
+
+    # Create object with config file
+    profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
 
     # TEST: Check some data
     check1 = profiles.dataset.dims["z_dim"] == 400
     check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check1 and check2:
+    if check0 and check1 and check2:
         print(str(sec) + chr(subsec) + " OK - EN4 Data read, Profile created")
     else:
         print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
