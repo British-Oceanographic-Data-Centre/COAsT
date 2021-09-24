@@ -6,13 +6,14 @@ from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 from ast import literal_eval
+from .coast import Coast
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
-class Indexed:
+class Indexed(Coast):
     def __init__(self, config: Union[Path, str] = None):
         """Configuration init.
 
