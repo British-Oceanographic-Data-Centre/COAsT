@@ -1107,14 +1107,14 @@ try:
     date_end = np.datetime64("now") - np.timedelta64(10, "D")
     eg = coast.TideGauge()
     # Extract the data between explicit dates
-    eg.dataset = eg.read_EA_API_to_xarray(date_start=date_start, date_end=date_end)
+    eg.dataset = eg.read_ea_api_to_xarray(date_start=date_start, date_end=date_end)
     check1 = eg.dataset.site_name == "Liverpool"
     check2 = len(eg.dataset.sea_level) > 0
     # eg.plot_timeseries()
 
     # Alternatively extract the data for the last ndays, here for a specific
     # (the default) station.
-    eg.dataset = eg.read_EA_API_to_xarray(ndays=1, stationId="E70124")
+    eg.dataset = eg.read_ea_api_to_xarray(n_days=1, station_id="E70124")
     check3 = eg.dataset.site_name == "Liverpool"
     # eg.plot_timeseries()
 
@@ -1250,7 +1250,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    tidegauge_list = coast.TideGauge.create_multiple_tidegauge("./example_files/tide_gauges/l*", date0, date1)
+    tidegauge_list = coast.TideGauge.create_multiple("./example_files/tide_gauges/l*", date0, date1)
 
     # TEST: Check length of list
     check1 = len(tidegauge_list) == 2
@@ -1323,18 +1323,18 @@ try:
 
     # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
     tg = coast.TideGauge()
-    tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
+    tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
 
     check1 = len(tg.dataset.sea_level) == 37
-    check2 = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
-    check3 = tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_1").time.values == np.datetime64(
-        "2020-10-13 14:36"
-    )
+    check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
+    check3 = tg.get_tide_table_times(
+        np.datetime64("2020-10-13 12:48"), method="nearest_1"
+    ).time.values == np.datetime64("2020-10-13 14:36")
     check4 = np.array_equal(
-        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
+        tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
     )
     check5 = np.array_equal(
-        tg.get_tidetabletimes(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
+        tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
         [3.47, 7.78, 2.8, 8.01, 2.83, 8.45, 2.08, 8.71],
     )
 
@@ -1376,9 +1376,9 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - Tidegauge local extrema found")
+        print(str(sec) + chr(subsec) + " OK - TideGauge local extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge local extrema")
+        print(str(sec) + chr(subsec) + " X - TideGauge local extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
@@ -1418,9 +1418,9 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1.all() and check2.all():
-        print(str(sec) + chr(subsec) + " OK - Tidegauge cubic extrema found")
+        print(str(sec) + chr(subsec) + " OK - TideGauge cubic extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - Tidegauge cubic extrema")
+        print(str(sec) + chr(subsec) + " X - TideGauge cubic extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 

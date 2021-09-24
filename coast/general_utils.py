@@ -283,7 +283,7 @@ def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
     return ind_x, ind_y
 
 
-def dataarray_time_slice(data_array, date0, date1):
+def data_array_time_slice(data_array, date0, date1):
     """Takes an xr.DataArray object and returns a new object with times
     sliced between dates date0 and date1. date0 and date1 may be a string or
     datetime type object."""

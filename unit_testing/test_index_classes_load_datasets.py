@@ -1,9 +1,15 @@
 """
 
-Test loading various types datasets with and without configuration file
+Test loading various types of INDEXED datasets with and without configuration
+ files
 
         pytest -s tests/test_index_classes_load_datasets.py
 
+This file was in directory tests/ and executed under Git Actions. However, it
+calls external data that are too large for accessible hosting. Nevertheless,
+the structure proposed here "one file per type" could lend itself well to a
+restructure unit_testing work flow. So I move it there as a potential template
+for when the unit testing is restructured.
 """
 from coast import Altimetry, Profile, Glider, Argos, Oceanparcels, Tidegauge
 import datetime
