@@ -1934,6 +1934,7 @@ try:
     from example_scripts import altimetry_tutorial  # This runs on example_files
     from example_scripts import tidegauge_tutorial  # This runs on example_files
     from example_scripts import tidetable_tutorial  # This runs on example_files
+    from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
 
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
@@ -1959,10 +1960,10 @@ try:
         from example_scripts import wcssp_india_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        subsec = subsec + 1
-        from example_scripts import internal_tide_pycnocline_diagnostics
+        #subsec = subsec + 1
+        #from example_scripts import internal_tide_pycnocline_diagnostics
 
-        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+        #print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 

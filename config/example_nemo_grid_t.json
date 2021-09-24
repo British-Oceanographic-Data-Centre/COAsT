@@ -25,6 +25,7 @@
 		},
 		"variable_map": {
 			"time_counter": "time",
+			"tmask": "mask",
 			"votemper": "temperature",
 			"thetao": "temperature",
 			"temp": "temperature",

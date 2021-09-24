@@ -60,7 +60,9 @@ except:
 
     dn_fig = "unit_testing/figures/"
     fn_nemo_grid_t_dat = "nemo_data_T_grid_Aug2015.nc"
-    fn_nemo_dom = "COAsT_example_NEMO_domain.nc"
+    fn_nemo_dom = "coast_example_nemo_domain.nc"
+    config_t = "config/example_nemo_grid_t.json"
+    config_w = "config/example_nemo_grid_w.json"
 
     sci_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat, dn_files + fn_nemo_dom, config=config_t, multiple=True)
 
