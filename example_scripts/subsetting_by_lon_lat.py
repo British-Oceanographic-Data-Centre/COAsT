@@ -1,9 +1,10 @@
 import numpy as np
 import coast as cst
-lon = np.arange(10,30)
+
+lon = np.arange(10, 30)
 checkDim = False
-if checkDim :
-    lat = np.arange(20,41) #Testing array size check
+if checkDim:
+    lat = np.arange(20, 41)  # Testing array size check
 else:
     lat = lon  # = lon-10 would leave some selections empty in the following
 print("The dataset is a set of vertices on a straight line in lon/lat space")

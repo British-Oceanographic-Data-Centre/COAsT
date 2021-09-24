@@ -146,21 +146,21 @@ def polar2cart(r, theta, degrees=True):
 
 
 def subset_indices_lonlat_box(array_lon, array_lat, ww=np.NaN, ee=np.NaN, ss=np.NaN, nn=np.NaN):
-    """ array_lon  longitudes (degrees)  - no particular order
-        array_lat  latitudes  (degrees)  - no particular order
-        ww   western boundary (degrees)  - identifies limiting meridian on the left (can be +/-'ve)
-                                           if NaN ee must also be NaN and no selection takes place
-                                           on longitude
-        ee   eastern boundary (degrees)  - identifies limiting meridian on the right (can be +/-'ve)
-        ss   southern boundary (degrees) - can be NaN (i.e. south pole)
-        nn   northern boundary (degrees) - can be NaN (i.e. north pole)
+    """array_lon  longitudes (degrees)  - no particular order
+      array_lat  latitudes  (degrees)  - no particular order
+      ww   western boundary (degrees)  - identifies limiting meridian on the left (can be +/-'ve)
+                                         if NaN ee must also be NaN and no selection takes place
+                                         on longitude
+      ee   eastern boundary (degrees)  - identifies limiting meridian on the right (can be +/-'ve)
+      ss   southern boundary (degrees) - can be NaN (i.e. south pole)
+      nn   northern boundary (degrees) - can be NaN (i.e. north pole)
 
-      Note (1) Boundaries can be signed. E.g. -150 = 150W = 210E
-      Note (2) Vertices on Western and Southern boundaries are selected. Those
-               on Northern and Eastern boundaries are not. E.g. ww=1,ee=2
-               might select a single meridian of vertices if grid interval = 1
-      Note (3) Models sometimes duplicate vertices at the (model) boundary meridians.
-               These duplications are not removed by this function
+    Note (1) Boundaries can be signed. E.g. -150 = 150W = 210E
+    Note (2) Vertices on Western and Southern boundaries are selected. Those
+             on Northern and Eastern boundaries are not. E.g. ww=1,ee=2
+             might select a single meridian of vertices if grid interval = 1
+    Note (3) Models sometimes duplicate vertices at the (model) boundary meridians.
+             These duplications are not removed by this function
     """
     if len(array_lat) != len(array_lon):
         raise ValueError("The arrays must match on dimension")
@@ -171,7 +171,7 @@ def subset_indices_lonlat_box(array_lon, array_lat, ww=np.NaN, ee=np.NaN, ss=np.
     if ss >= nn:
         raise ValueError("Northern limit must be greater than Southern")
     ind_lat = np.logical_and(array_lat >= ss, array_lat < nn)
-    if np.logical_xor(np.isnan(ww),np.isnan(ee)):
+    if np.logical_xor(np.isnan(ww), np.isnan(ee)):
         raise ValueError("both E/W boundaries must be non-NaN or omitted altogether")
 
     if np.isnan(ww):
@@ -179,11 +179,11 @@ def subset_indices_lonlat_box(array_lon, array_lat, ww=np.NaN, ee=np.NaN, ss=np.
     #
     #  Meridian limits specified. We reset the zero meridian to co-incide with ww
     #
-    ww = np.mod(ww,360)
-    ee = np.mod(ee,360)
+    ww = np.mod(ww, 360)
+    ee = np.mod(ee, 360)
     if ww == ee:
         raise ValueError("Not allowed equal values for western and eastern boundaries")
-    array_lon  =  np.mod(array_lon-ww,360)
+    array_lon = np.mod(array_lon - ww, 360)
     ind_lon = array_lon < np.mod(ee - ww, 360)
     ind = np.logical_and(ind_lon, ind_lat)
     return ind

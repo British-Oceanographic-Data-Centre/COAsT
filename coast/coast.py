@@ -235,15 +235,15 @@ class Coast:
 
     def subset_indices_lonlat_box(self, ww=np.NaN, ee=np.NaN, ss=np.NaN, nn=np.NaN):
         """
-        ww   western boundary (degrees)  - identifies limiting meridian on the left (can be +/-'ve)
-                                           if NaN ee must also be NaN and no selection takes place
-                                           on longitude
-        ee   eastern boundary (degrees)  - identifies limiting meridian on the right (can be +/-'ve)
-        ss   southern boundary (degrees) - can be NaN (i.e. south pole)
-        nn   northern boundary (degrees) - can be NaN (i.e. north pole)
-      Note (1) boundaries can be signed. E.g. -150 is 150W = 210E
-      Note (2) models sometimes duplicate vertices at boundary meridians.
-               These duplications are not removed by subsetting
+          ww   western boundary (degrees)  - identifies limiting meridian on the left (can be +/-'ve)
+                                             if NaN ee must also be NaN and no selection takes place
+                                             on longitude
+          ee   eastern boundary (degrees)  - identifies limiting meridian on the right (can be +/-'ve)
+          ss   southern boundary (degrees) - can be NaN (i.e. south pole)
+          nn   northern boundary (degrees) - can be NaN (i.e. north pole)
+        Note (1) boundaries can be signed. E.g. -150 is 150W = 210E
+        Note (2) models sometimes duplicate vertices at boundary meridians.
+                 These duplications are not removed by subsetting
 
 
 
@@ -254,9 +254,7 @@ class Coast:
         lat_str = "latitude"
         lon = self.dataset[lon_str].copy()  # TODO Add a comment explaining why this needs to be copied
         lat = self.dataset[lat_str]
-        return gu.subset_indices_lonlat_box(lon,lat,ww=ww,ee=ee,nn=nn,ss=ss)
-
-
+        return gu.subset_indices_lonlat_box(lon, lat, ww=ww, ee=ee, nn=nn, ss=ss)
 
     def get_subset_as_xarray(
         self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
@@ -384,7 +382,13 @@ class Coast:
         fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-        cset = (self.dataset[var].isel(time_counter=time_counter, deptht=0).plot.pcolormesh(np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap))
+        cset = (
+            self.dataset[var]
+            .isel(time_counter=time_counter, deptht=0)
+            .plot.pcolormesh(
+                np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
+            )
+        )
 
         cset.set_clim([params.levs[0], params.levs[-1]])
 
