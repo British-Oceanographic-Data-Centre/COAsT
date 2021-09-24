@@ -8,6 +8,7 @@ from pathlib import Path
 from ast import literal_eval
 from .coast import Coast
 
+
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
