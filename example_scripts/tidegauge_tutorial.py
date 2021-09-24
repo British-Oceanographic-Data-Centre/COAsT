@@ -11,22 +11,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # And by defining some file paths
-fn_nemo_dat = "./example_files/COAsT_example_NEMO_data.nc"
-fn_nemo_dom = "./example_files/COAsT_example_NEMO_domain.nc"
-fn_tidegauge = "./example_files/tide_gauges/lowestoft-p024-uk-bodc"
-fn_tidegauge_mult = "./example_files/tide_gauges/l*"
+dn_files = "./example_files/"
+fn_nemo_dat = dn_files + "coast_example_nemo_data.nc"
+fn_nemo_dom = dn_files + "coast_example_nemo_domain.nc"
+fn_nemo_config = "./config/example_nemo_grid_t.json"
+
+fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
+fn_tidegauge_mult = dn_files + "tide_gauges/l*"
+fn_tidegauge_config = "./config/example_tidegauge.json"
 
 # We need to load in a NEMO object for doing NEMO things.
-nemo = coast.Nemo(fn_nemo_dat, fn_nemo_dom, grid_ref="t-grid")
+nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_nemo_config)
 
 # And now we can load in our ALTIMETRY data. By default, TideGauge is set up
 # to read in GESLA ASCII files. However, if no path is supplied, then the
 # object's dataset will be initialised as None. Custom data can then be loaded
 # if desired, as long as it follows the data formatting for TideGauge. Here
 # we load data between two specified dates:
-date0 = datetime.datetime(2007, 1, 10)
-date1 = datetime.datetime(2007, 1, 16)
-tidegauge = coast.TideGauge(fn_tidegauge, date_start=date0, date_end=date1)
+date_0 = datetime.datetime(2007, 1, 10)
+date_1 = datetime.datetime(2007, 1, 16)
+tidegauge = coast.Tidegauge(
+    file_path=fn_tidegauge, 
+    date_start=date_0, 
+    date_end=date_1, 
+    config=fn_tidegauge_config
+    )
 
 # Before comparing our observations to the model, we will interpolate a model
 # variable to the same time and geographical space as the tidegauge. This is

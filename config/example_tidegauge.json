@@ -4,13 +4,13 @@
 	"chunks": {},
 	"dataset": {
 		"dimension_map": {
-			"time": "t_dim"
+			"time": "time"
 		},
 		"variable_map": {
-			"sea_level": "h",
+			"sea_level": "sea_level",
 			"qc_flags": "qc_flags",
-			"latitude": "lat_dim",
-			"longitude": "lon_dim"
+			"latitude": "latitude",
+			"longitude": "longitude"
 		},
 		"coord_vars": ["time"]
 	},
