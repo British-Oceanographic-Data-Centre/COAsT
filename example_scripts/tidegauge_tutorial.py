@@ -30,12 +30,7 @@ nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_nemo_config)
 # we load data between two specified dates:
 date_0 = datetime.datetime(2007, 1, 10)
 date_1 = datetime.datetime(2007, 1, 16)
-tidegauge = coast.Tidegauge(
-    file_path=fn_tidegauge, 
-    date_start=date_0, 
-    date_end=date_1, 
-    config=fn_tidegauge_config
-    )
+tidegauge = coast.Tidegauge(file_path=fn_tidegauge, date_start=date_0, date_end=date_1, config=fn_tidegauge_config)
 
 # Before comparing our observations to the model, we will interpolate a model
 # variable to the same time and geographical space as the tidegauge. This is

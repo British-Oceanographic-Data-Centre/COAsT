@@ -22,7 +22,7 @@ nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_nemo_config)
 # to read in CMEMS netCDF files. However, if no path is supplied, then the
 # object's dataset will be initialised as None. Custom data can then be loaded
 # if desired, as long as it follows the data formatting for Altimetry.
-#altimetry = coast.Altimetry(fn_altimetry)
+# altimetry = coast.Altimetry(fn_altimetry)
 altimetry = coast.Altimetry(fn_altimetry, config=fn_altimetry_config)
 
 # Before going any further, lets just cut out the bit of the altimetry that
