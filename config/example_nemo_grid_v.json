@@ -9,19 +9,16 @@
 			"e1v",
 			"e2v",
 			"e3v_0",
-			"depthv_0"
+			"depthv_0",
+			"vmask"
 		]
 	},
 	"dataset": {
 		"dimension_map": {
 			"time_counter": "t_dim",
-			"deptht": "z_dim",
-			"depthu": "z_dim",
 			"depthv": "z_dim",
 			"y": "y_dim",
-			"x": "x_dim",
-			"x_grid_T": "x_dim",
-			"y_grid_T": "y_dim"
+			"x": "x_dim"
 		},
 		"variable_map": {
 			"time_counter": "time",
@@ -50,7 +47,8 @@
 			"e2v": "e2",
 			"e3v_0": "e3_0",
 			"depthv_0": "depth_0",
-			"bottom_level": "bottom_level"
+			"bottom_level": "bottom_level",
+			"vmask": "mask"
 		}
 	},
 	"static_variables": {
