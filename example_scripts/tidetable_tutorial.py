@@ -35,7 +35,7 @@ date_start = np.datetime64("2020-10-12 23:59")
 date_end = np.datetime64("2020-10-14 00:01")
 
 # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
-tg = coast.TideGauge()
+tg = coast.Tidegauge()
 # specify the data read as a High Low Water dataset
 tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
 # Show dataset. If timezone is specified then it is presented as requested, otherwise uses UTC

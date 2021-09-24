@@ -320,7 +320,7 @@ class Tidegauge(Timeseries):
 
     ############ tide table methods (HLW) #########################################
     @classmethod
-    def read_HLW_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
+    def read_hlw_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
         xarray dataset. File contains high water and low water heights and times
@@ -499,14 +499,14 @@ class Tidegauge(Timeseries):
                 #               debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (" + timezone + "):",
-                    general_utils.dayoweek(self.dataset.time[i].values),
+                    general_utils.day_of_week(self.dataset.time[i].values),
                     np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
                     self.dataset.sea_level[i].values,
                     "m",
                 )
 
-    def get_tidetabletimes(
+    def get_tide_table_times(
         self,
         time_guess: np.datetime64 = None,
         time_var: str = "time",
