@@ -88,9 +88,11 @@ fn_nemo_dom = "coast_example_nemo_domain.nc"
 fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
 fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
-fn_EN4 = dn_files + "EN4_example.nc"
 fn_nemo_harmonics = "coast_nemo_harmonics.nc"
 fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
+# EN4 profile data (NetCDF)
+fn_profile = dn_files + "EN4_example.nc"
+fn_profile_config = "config/example_en4_profiles.json"
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -1612,13 +1614,17 @@ subsec = subsec + 1
 # Create Profile object and read EN4 example data file
 
 try:
-    profiles = coast.Profile()
-    profiles.read_EN4(fn_EN4)
+    # Create object without config file
+    profiles = coast.Profile(file_path=fn_profile)
+    check0 = profiles is not None
+       
+    # Create object with config file
+    profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
 
     # TEST: Check some data
     check1 = profiles.dataset.dims["z_dim"] == 400
     check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check1 and check2:
+    if check0 and check1 and check2:
         print(str(sec) + chr(subsec) + " OK - EN4 Data read, Profile created")
     else:
         print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
