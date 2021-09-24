@@ -1,9 +1,8 @@
-from .COAsT import COAsT
-import numpy as np
-from .logging_util import get_slug, debug, info, warn, warning, error
+from .coast import Coast
+from .logging_util import get_slug, debug
 
 
-class OBSERVATION(COAsT):
+class Observation(Coast):
     def set_dimension_mapping(self):
         self.dim_mapping = None
         debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")

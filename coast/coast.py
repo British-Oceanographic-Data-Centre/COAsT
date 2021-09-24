@@ -1,7 +1,7 @@
 from dask import array
 import xarray as xr
 import numpy as np
-import coast.general_utils as gu
+from . import general_utils as gu
 from dask.distributed import Client
 import copy
 from .logging_util import get_slug, debug, info, warn, warning
@@ -11,15 +11,15 @@ def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worke
     Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
-class COAsT:
+class Coast:
     def __init__(
-            self,
-            file: str = None,
-            chunks: dict = None,
-            multiple=False,
-            workers: int = 2,  # TODO Do something with this unused parameter
-            threads: int = 2,  # TODO Do something with this unused parameter
-            memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter
+        self,
+        file: str = None,
+        chunks: dict = None,
+        multiple=False,
+        workers: int = 2,  # TODO Do something with this unused parameter or delete it
+        threads: int = 2,  # TODO Do something with this unused parameter or delete it
+        memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter or delete it
     ):
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
@@ -79,15 +79,15 @@ class COAsT:
         debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
 
     def set_dimension_mapping(self):
-        self.dim_mapping = None
+        self.dim_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
-        self.var_mapping = None
+        self.var_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
 
-    def set_grid_ref_attr(self):
-        self.grid_ref_attr_mapping = None
+    def set_grid_ref_attribute(self):
+        self.grid_ref_attr_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: dict):
@@ -178,9 +178,9 @@ class COAsT:
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
 
-    def rename(self, rename_dict, inplace: bool = None, **kwargs):
+    def rename(self, rename_dict, **kwargs):
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
-        self.dataset = self.dataset.rename(rename_dict, inplace, **kwargs)
+        self.dataset = self.dataset.rename(rename_dict, **kwargs)
         return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
@@ -206,7 +206,7 @@ class COAsT:
         return obj_copy
 
     def distance_between_two_points(self):
-        raise NotImplementedError
+        raise NotImplementedError  # TODO Should this class be decorated as an abstractclass?
 
     def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, radius: float):
         """
@@ -259,7 +259,7 @@ class COAsT:
 
 
     def get_subset_as_xarray(
-            self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
     ):
         """
         This method gets a subset of the data across the x/y indices given for the chosen variable.
@@ -271,7 +271,7 @@ class COAsT:
         :param var: the name of the variable to get data from
         :param points_x: a list/array of indices for the x dimension
         :param points_y: a list/array of indices for the y dimension
-        :param line_length: (Optional) the length of your subset (assuming simple line transect)
+        :param line_length: (Optional) the length of your subset (assuming simple line transect)  TODO This is unsued
         :param time_counter: (Optional) which time slice to get data from, if None and the variable only has one a time
                              channel of length 1 then time_counter is fixed too an index of 0
         :return: data across all depths for the chosen variable along the given indices
@@ -296,7 +296,7 @@ class COAsT:
         return smaller
 
     def get_2d_subset_as_xarray(
-            self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
     ):
         """
 
@@ -312,7 +312,7 @@ class COAsT:
         try:
             [time_size, _, _, _] = self.dataset[var].shape
             if time_size == 1:
-                time_counter == 0
+                time_counter == 0  # TODO This should probably be =, not ==
         except ValueError:
             time_counter = None
 
@@ -352,7 +352,7 @@ class COAsT:
         fig = plt.figure()
         plt.rcParams["figure.figsize"] = plot_info["fig_size"]
 
-        ax = fig.add_subplot(411)
+        fig.add_subplot(411)
         plt.pcolormesh(x, y, data, cmap=cmap)
 
         plt.ylim(plot_info["ylim"])
@@ -381,16 +381,10 @@ class COAsT:
         info("Generating CartoPy plot...")
         plt.close("all")
         fig = plt.figure(figsize=(10, 10))
-        ax = fig.gca()
+        fig.gca()
         ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-        cset = (
-            self.dataset[var]
-                .isel(time_counter=time_counter, deptht=0)
-                .plot.pcolormesh(
-                np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
-            )
-        )
+        cset = (self.dataset[var].isel(time_counter=time_counter, deptht=0).plot.pcolormesh(np.ma.masked_where(plot_var == np.NaN, plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap))
 
         cset.set_clim([params.levs[0], params.levs[-1]])
 
@@ -408,8 +402,8 @@ class COAsT:
         gl.xlabels_bottom = True
         gl.ylabels_right = False
         gl.ylabels_left = True
-        gl.xformatter = LONGITUDE_FORMATTER
-        gl.yformatter = LATITUDE_FORMATTER
+        gl.x_formatter = LONGITUDE_FORMATTER
+        gl.y_formatter = LATITUDE_FORMATTER
 
         plt.colorbar(cset, shrink=params.colorbar_shrink, pad=0.05)
 

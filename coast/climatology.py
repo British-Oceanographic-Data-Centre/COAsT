@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .COAsT import COAsT
+from .coast import Coast
 from .logging_util import info, warn, error
 
 
-class CLIMATOLOGY(COAsT):
+class Climatology(Coast):  # TODO All abstract methods should be implemented
     """
     A Python class containing methods for lazily creating climatologies of
     NEMO data (or any xarray datasets) and writing to file. Also for resampling
@@ -20,7 +20,7 @@ class CLIMATOLOGY(COAsT):
     """
 
     def __init__(self):
-        return
+        return  # TODO Super __init__ should be called at some point
 
     @staticmethod
     def make_climatology(
@@ -41,7 +41,7 @@ class CLIMATOLOGY(COAsT):
         The resulting cliamtology dataset can be written to disk using
         .to_netcdf(). Again, this may take a while for larger datasets.
 
-        ds :: xarray dataset object from a COAsT object.
+        ds :: xarray dataset object from a Coast object.
         output_frequency :: any xarray groupby string. i.e:
             'month'
             'season'
@@ -144,7 +144,7 @@ class CLIMATOLOGY(COAsT):
         data_years.insert(0, data_years[0] - 1)
 
         # Generate date ranges from years and given month periods.
-        date_ranges = CLIMATOLOGY._get_date_ranges(data_years, month_periods)
+        date_ranges = Climatology._get_date_ranges(data_years, month_periods)
 
         # Extract data from dataset between these date ranges and index each range with a common multi-index.
         datasets = []

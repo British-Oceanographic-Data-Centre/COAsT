@@ -6,11 +6,11 @@ import scipy.stats
 import xarray as xr
 
 
-class DISTRIBUTION:
+class Distribution:
     """
     An object for storing Cumulative Distribution Function information.
     Used primarily for calculating the Continuous Ranked Probability Score.
-    The object is initalisated by passing in a 'sample' vector of data for
+    The object is instantiated by passing in a 'sample' vector of data for
     which to determine a CDF. This sample is used to construct either a
     empirical or theoretical CDF, depending on the cdf_type argument.
     """
@@ -19,9 +19,6 @@ class DISTRIBUTION:
         """Initialisation of CDF object.
         Args:
             sample (array): Data sample over which to estimate CDF
-            cdf_type (str): Either 'empirical' or 'theoretical'.
-            cdf_func (str): Function type if cdf_type='theoretical'. Presently
-                            only 'gaussian'.
         Returns:
             New CDF object.
         """
@@ -36,19 +33,19 @@ class DISTRIBUTION:
     def set_x_bounds(self):
         """Calculate x bounds for CDF plotting"""
         # Is input a single value (st. dev == 0)
-        single_value = True if self.sigma == 0 else False  # TODO This could just be: single_value = self.sigma == 0
+        single_value = self.sigma == 0
         if single_value:
             self.cdf_type = "empirical"
 
         # Calculate x bounds as 5 std dev. either side of the mean
         debug(f"Calculating x bounds for {get_slug(self)}")
         if single_value:
-            xmin = self.mu - 1
-            xmax = self.mu + 1
+            x_min = self.mu - 1
+            x_max = self.mu + 1
         else:
-            xmin = self.mu - 5 * self.sigma
-            xmax = self.mu + 5 * self.sigma
-        return xmin, xmax
+            x_min = self.mu - 5 * self.sigma
+            x_max = self.mu + 5 * self.sigma
+        return x_min, x_max
 
     def build_discrete_cdf(self, x: np.ndarray = None, n_pts: int = 1000):
         """Builds a discrete CDF for plotting and direct comparison.
@@ -66,12 +63,12 @@ class DISTRIBUTION:
             x = np.linspace(self.plot_xmin, self.plot_xmax, n_pts)
 
         if self.cdf_type == "empirical":
-            y = stats_util.empirical_distribution(x, self.sample)
+            y = stats_util.empirical_distribution(x, self.sample)  # TODO Should this come from distribution.py?
 
         else:
             error(f"CDF type for {get_slug(self)} is , which is not acceptable, raising exception!")
 
-        return x, y
+        return x, y  # TODO What if we haven't defined y? (i.e. if cdf_type is not "empirical")
 
     @staticmethod
     def normal_distribution(mu: float = 0, sigma: float = 1, x: np.ndarray = None, n_pts: int = 1000):
@@ -107,7 +104,7 @@ class DISTRIBUTION:
         """
         debug(f"Estimating CDF using {get_slug(x)}")
         if cdf_func == "gaussian":  # If Gaussian, integrate under pdf
-            pdf = DISTRIBUTION.normal_distribution(mu=mu, sigma=sigma, x=x)
+            pdf = Distribution.normal_distribution(mu=mu, sigma=sigma, x=x)
             cdf = [np.trapz(pdf[:ii], x[:ii]) for ii in range(0, len(x))]
         else:
             raise NotImplementedError
@@ -186,6 +183,6 @@ class DISTRIBUTION:
                 plt.legend(("1", "2"))
 
         if plot:
-            return integral, fig, ax
+            return integral, fig, ax  # TODO fig and ax might not be defined
         else:
             return integral

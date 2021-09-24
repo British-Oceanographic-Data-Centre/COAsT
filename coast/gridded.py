@@ -8,12 +8,12 @@ import numpy as np
 import xarray as xr
 
 from . import general_utils, stats_util
-from .COAsT import COAsT
+from .coast import Coast
 from .config import ConfigParser
 from .logging_util import get_slug, debug, info, warn, error, warning
 
 
-class Gridded(COAsT):  # TODO Complete this docstring
+class Gridded(Coast):  # TODO Complete this docstring
     """
     Words to describe the NEMO class
 
@@ -336,7 +336,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
         """
         debug(f"Interpolating {get_slug(model_array)} in space with nearest neighbour")
         # Get nearest indices
-        ind_x, ind_y = general_utils.nearest_indices_2D(
+        ind_x, ind_y = general_utils.nearest_indices_2d(
             model_array.longitude, model_array.latitude, new_lon, new_lat, mask=mask
         )
 
@@ -656,7 +656,7 @@ class Gridded(COAsT):  # TODO Complete this docstring
 
         Parameters
         ----------
-        nemo_t : (COAsT.NEMO), NEMO object on the t-grid containing the ssh variable
+        nemo_t : (Coast.NEMO), NEMO object on the t-grid containing the ssh variable
         e3t : (boolean), true if e3t is to be returned. Default True.
         e3u : (boolean), true if e3u is to be returned. Default False.
         e3v : (boolean), true if e3v is to be returned. Default False.
@@ -817,7 +817,6 @@ class Gridded(COAsT):  # TODO Complete this docstring
         indices = np.array(indices).T.squeeze()
 
         # Index the possible names to match file names
-        print(indices)
         names_x = names_x[indices]
         names_y = names_y[indices]
         constituents = constituents[indices]

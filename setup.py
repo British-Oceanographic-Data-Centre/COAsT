@@ -28,7 +28,7 @@ PACKAGE = SimpleNamespace(
             "numpy>=1.16",
             "dask>=2",
             "dask[complete]>=2",
-            "xarray>=0.15",
+            "xarray~=0.19.0",
             "matplotlib==3.2.1",
             "netCDF4>=1",
             "scipy>=1",

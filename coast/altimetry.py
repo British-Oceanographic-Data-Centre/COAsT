@@ -1,12 +1,12 @@
-from .COAsT import COAsT  # ???
+from .coast import Coast
 import numpy as np
 import xarray as xr
-from .logging_util import get_slug, debug, error, info
+from .logging_util import get_slug, debug, info
 import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util
 
 
-class ALTIMETRY(COAsT):
+class Altimetry(Coast):  # TODO All abstract methods should be implemented
     """
     An object for reading, storing and manipulating altimetry data.
     Currently the object contains functionality for reading altimetry netCDF
@@ -60,21 +60,21 @@ class ALTIMETRY(COAsT):
         else:
             self.dataset = None
         debug(f"{get_slug(self)} initialised")
-        return
+        return  # TODO Super __init__ should be called at some point
 
     def read_cmems(self, file, chunks, multiple):
-        """Reads altimetry data from a CMEMS netcdf file. Calls COAsT.init()
+        """Reads altimetry data from a CMEMS netcdf file. Calls Coast.init()
         to make use of its load methods"""
         super().__init__(file, chunks, multiple)
         self.dataset = self.dataset.rename_dims(self.dim_mapping)
         # self.dataset.attrs = {}
 
     def set_dimension_mapping(self):
-        self.dim_mapping = {"time": "t_dim"}
+        self.dim_mapping = {"time": "t_dim"}  # TODO Object attributes should be set in __init__
         debug(f"{get_slug(self)} dim_mapping set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
-        self.var_mapping = None
+        self.var_mapping = None  # TODO Object attributes should be set in __init__
         debug(f"{get_slug(self)} var_mapping set to {self.var_mapping}")
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
@@ -138,7 +138,7 @@ class ALTIMETRY(COAsT):
         Parameters
         ----------
         model : model object (e.g. NEMO)
-        mod_var: variable name string to use from model object
+        mod_var_name: variable name string to use from model object
         time_interp: time interpolation method (optional, default: 'nearest')
             This can take any string scipy.interpolate would take. e.g.
             'nearest', 'linear' or 'cubic'
@@ -157,9 +157,6 @@ class ALTIMETRY(COAsT):
         # Determine mask
         if model_mask == "bathy":
             model_mask = model.dataset.bathymetry.values == 0
-
-        # Get data arrays
-        mod_var_array = model.dataset[mod_var_name]
 
         # Get data arrays
         mod_var = model.dataset[mod_var_name]
@@ -217,7 +214,7 @@ class ALTIMETRY(COAsT):
         -------
         xarray.Dataset containing times, sealevel and quality control flags
 
-        Example Useage
+        Example Usage
         -------
         # Compare modelled 'sossheig' with 'sla_filtered' using CRPS
         crps = altimetry.crps(nemo, 'sossheig', 'sla_filtered')
@@ -236,17 +233,17 @@ class ALTIMETRY(COAsT):
             time_interp,
         )
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = Altimetry()
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
-            new_dataset["crps"] = (("t_dim"), crps_list)
-            new_dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
-            new_dataset["crps_contains_land"] = (("t_dim"), contains_land)
+            new_dataset["crps"] = ("t_dim", crps_list)
+            new_dataset["crps_n_model_pts"] = ("t_dim", n_model_pts)
+            new_dataset["crps_contains_land"] = ("t_dim", contains_land)
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset["crps"] = (("t_dim"), crps_list)
-            self.dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
-            self.dataset["crps_contains_land"] = (("t_dim"), contains_land)
+            self.dataset["crps"] = ("t_dim", crps_list)
+            self.dataset["crps_n_model_pts"] = ("t_dim", n_model_pts)
+            self.dataset["crps_contains_land"] = ("t_dim", contains_land)
 
     def difference(self, var_str0: str, var_str1: str, date0=None, date1=None):
         """Difference two variables defined by var_str0 and var_str1 between
@@ -336,28 +333,28 @@ class ALTIMETRY(COAsT):
         then this method returns a new ALTIMETRY object containing statistics,
         otherwise variables are saved to the dateset inside this object."""
 
-        diff = self.difference(var_str0, var_str1, date0, date1)
-        ae = self.absolute_error(var_str0, var_str1, date0, date1)
-        mae = self.mean_absolute_error(var_str0, var_str1, date0, date1)
-        rmse = self.root_mean_square_error(var_str0, var_str1, date0, date1)
-        corr = self.time_correlation(var_str0, var_str1, date0, date1)
-        cov = self.time_covariance(var_str0, var_str1, date0, date1)
+        difference = self.difference(var_str0, var_str1, date0, date1)
+        absolute_error = self.absolute_error(var_str0, var_str1, date0, date1)
+        mean_absolute_error = self.mean_absolute_error(var_str0, var_str1, date0, date1)
+        root_mean_square_error = self.root_mean_square_error(var_str0, var_str1, date0, date1)
+        correlation = self.time_correlation(var_str0, var_str1, date0, date1)
+        covariance = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = ALTIMETRY()
+            new_object = Altimetry()
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
-            new_dataset["absolute_error"] = ae
-            new_dataset["error"] = diff
-            new_dataset["mae"] = mae
-            new_dataset["rmse"] = rmse
-            new_dataset["corr"] = corr
-            new_dataset["cov"] = cov
+            new_dataset["absolute_error"] = absolute_error
+            new_dataset["error"] = difference
+            new_dataset["mae"] = mean_absolute_error
+            new_dataset["rmse"] = root_mean_square_error
+            new_dataset["corr"] = correlation
+            new_dataset["cov"] = covariance
             new_object.dataset = new_dataset
             return new_object
         else:
-            self.dataset["absolute_error"] = ae
-            self.dataset["error"] = diff
-            self.dataset["mae"] = mae
-            self.dataset["rmse"] = rmse
-            self.dataset["corr"] = corr
-            self.dataset["cov"] = cov
+            self.dataset["absolute_error"] = absolute_error
+            self.dataset["error"] = difference
+            self.dataset["mae"] = mean_absolute_error
+            self.dataset["rmse"] = root_mean_square_error
+            self.dataset["corr"] = correlation
+            self.dataset["cov"] = covariance

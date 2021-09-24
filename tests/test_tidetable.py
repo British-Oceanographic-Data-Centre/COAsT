@@ -12,5 +12,5 @@ import coast.general_utils as general_utils
 #%% day of the week function                                           #
 #                                                                             #
 def test_dayoweek():
-    check1 = general_utils.dayoweek(np.datetime64("2020-10-16")) == "Fri"
+    check1 = general_utils.day_of_week(np.datetime64("2020-10-16")) == "Fri"
     assert check1

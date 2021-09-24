@@ -6,7 +6,7 @@ import pandas as pd
 import xarray as xr
 
 from coast import seasons
-from coast.CLIMATOLOGY import CLIMATOLOGY
+from coast.climatology import Climatology
 
 
 YEARS = [2000, 2001]
@@ -34,13 +34,13 @@ def test_dataset():
 
 
 def test_get_date_ranges():
-    result = CLIMATOLOGY._get_date_ranges(YEARS, PERIOD)
+    result = Climatology._get_date_ranges(YEARS, PERIOD)
     assert result == DATE_RANGES
 
 
 # Simple test for calculating means on a known small dataset. Generated within test_dataset().
 def test_multiyear_averages(test_dataset):
-    ds_mean = CLIMATOLOGY.multiyear_averages(test_dataset, PERIOD, time_var="time", time_dim="time")
+    ds_mean = Climatology.multiyear_averages(test_dataset, PERIOD, time_var="time", time_dim="time")
     # Assert ds_mean meaned data in equal to our precalculated EXPECTED_MEANS values.
     assert np.array_equal(ds_mean["data"], EXPECTED_MEANS)
     # Assert data_ones var is in output dataset, and it's meaned values are all 1.

@@ -7,25 +7,23 @@ Python definitions used to help with plotting routines.
 
 import matplotlib.pyplot as plt
 from warnings import warn
-from .logging_util import get_slug, debug, info, warn, error
+from .logging_util import warn
 import numpy as np
 
 
 def r2_lin(x, y, fit):
-    """For calculating r-squared of a linear fit. Fit should be a python polyfit
-    object"""
+    """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
+    y_estimate = fit(x)
+    difference = (y - y_estimate) ** 2
+    y_mean = np.nanmean(y)
+    mean_square_deviation = (y - y_mean) ** 2
 
-    fity = fit(x)
-    diff = (y - fity) ** 2
-    ybar = np.nanmean(y)
-    ymybar = (y - ybar) ** 2
+    total_deviation = np.nansum(mean_square_deviation)
+    residual = np.nansum(difference)
 
-    SStot = np.nansum(ymybar)
-    SSres = np.nansum(diff)
+    correlation_coefficient = 1 - residual / total_deviation
 
-    R2 = 1 - SSres / SStot
-
-    return R2
+    return correlation_coefficient
 
 
 def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
@@ -74,18 +72,18 @@ def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
     axmax = axmax0 + 0.1 * np.abs(axmax0 - axmin0)
 
     if yex:
-        lineX = [axmin, axmax]
-        fityx = np.poly1d([1, 0])
-        ax.plot(lineX, fityx(lineX), c=[0.5, 0.5, 0.5], linewidth=1)
+        line_x = [axmin, axmax]
+        fit_yx = np.poly1d([1, 0])
+        ax.plot(line_x, fit_yx(line_x), c=[0.5, 0.5, 0.5], linewidth=1)
 
-    sca = ax.scatter(x, y, c=c, s=s)
+    ax.scatter(x, y, c=c, s=s)
 
     if dofit:
-        lineX = [axmin, axmax]
+        line_x = [axmin, axmax]
         # Calculate data fit and cast to poly1d object
         fit_tmp = np.ma.polyfit(x, y, 1)
         fit = np.poly1d(fit_tmp)
-        ax.plot(lineX, fit(lineX), c=[1, 128 / 255, 0], linewidth=1.5)
+        ax.plot(line_x, fit(line_x), c=[1, 128 / 255, 0], linewidth=1.5)
         r2 = r2_lin(x, y, fit)
 
     ax.set_xlim(axmin, axmax)
@@ -173,7 +171,7 @@ def geo_scatter(
     figure_kwargs={},
     title="",
     figsize=None,
-):
+):  # TODO Some unused parameters here
     """
     Uses CartoPy to create a geographical scatter plot with land boundaries.
 

@@ -1,16 +1,9 @@
-from dask import delayed
-from dask import array
 import xarray as xr
 import numpy as np
-from dask.distributed import Client
-from warnings import warn
-import copy
-import scipy as sp
-from .logging_util import get_slug, debug, info, warn, error
 import sklearn.neighbors as nb
 
 
-def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, radius: float, mask=None):
+def subset_indices_by_distance_balltree(longitude, latitude, centre_lon, centre_lat, radius: float, mask=None):
     """
     Returns the indices of points that lie within a specified radius (km) of
     central latitude and longitudes. This makes use of BallTree.query_radius.
@@ -46,7 +39,7 @@ def subset_indices_by_distance_BT(longitude, latitude, centre_lon, centre_lat, r
     # For reshaping indices at the end
     original_shape = longitude.shape
     # Check if radius centres are numpy arrays. If not, make them into ndarrays
-    if not isinstance(centre_lon, (np.ndarray)):
+    if not isinstance(centre_lon, np.ndarray):
         centre_lat = np.array(centre_lat)
         centre_lon = np.array(centre_lon)
     # Determine number of centres provided
@@ -94,8 +87,8 @@ def subset_indices_by_distance(longitude, latitude, centre_lon: float, centre_la
     This method returns a `tuple` of indices within the `radius` of the
     lon/lat point given by the user.
     Scikit-learn BallTree is used to obtain indices.
-    :param centre_lon: The longitude of the users central point
-    :param centre_lat: The latitude of the users central point
+    :param longitude: The longitude of the users central point
+    :param latitude: The latitude of the users central point
     :param radius: The haversine distance (in km) from the central point
     :return: All indices in a `tuple` with the haversine distance of the
             central point
@@ -125,10 +118,6 @@ def compare_angles(a1, a2, degrees=True):
 
     diff = 180 - np.abs(np.abs(a1 - a2) - 180)
 
-    if not degrees:
-        a1 = np.radians(a1)
-        a2 = np.radians(a2)
-
     return diff
 
 
@@ -141,7 +130,7 @@ def cart2polar(x, y, degrees=True):
     theta = np.arctan2(y, x)
     if degrees:
         theta = np.rad2deg(theta)
-    return (r, theta)
+    return r, theta
 
 
 def polar2cart(r, theta, degrees=True):
@@ -153,7 +142,7 @@ def polar2cart(r, theta, degrees=True):
         theta = np.deg2rad(theta)
     x = r * np.cos(theta)
     y = r * np.sin(theta)
-    return (x, y)
+    return x, y
 
 
 def subset_indices_lonlat_box(array_lon, array_lat, ww=np.NaN, ee=np.NaN, ss=np.NaN, nn=np.NaN):
@@ -229,14 +218,14 @@ def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     return distance
 
 
-def remove_indices_by_mask(A, mask):
+def remove_indices_by_mask(array, mask):
     """
     Removes indices from a 2-dimensional array, A, based on true elements of
     mask. A and mask variable should have the same shape.
     """
-    A = np.array(A).flatten()
+    array = np.array(array).flatten()
     mask = np.array(mask, dtype=bool).flatten()
-    array_removed = A[~mask]
+    array_removed = array[~mask]
 
     return array_removed
 
@@ -250,21 +239,21 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     array_removed = np.array(array_removed)
     original_shape = mask.shape
     mask = np.array(mask, dtype=bool).flatten()
-    A = np.zeros(mask.shape)
-    A[~mask] = array_removed
-    A[mask] = fill_value
-    A = A.reshape(original_shape)
-    return A
+    array = np.zeros(mask.shape)
+    array[~mask] = array_removed
+    array[mask] = fill_value
+    array = array.reshape(original_shape)
+    return array
 
 
-def nearest_indices_2D(mod_lon, mod_lat, new_lon, new_lat, mask=None):
+def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
     """
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
     and its BallTree haversine method. Ensure there are no NaNs in
     input longitude/latitude arrays (or mask them using "mask"")
 
-    Example Useage
+    Example Usage
     ----------
     # Get indices of model points closest to altimetry points
     ind_x, ind_y = nemo.nearest_indices(altimetry.dataset.longitude,
@@ -350,9 +339,9 @@ def dataarray_time_slice(data_array, date0, date1):
         return data_array_sliced
 
 
-def dayoweek(date: np.datetime64 = None):
+def day_of_week(date: np.datetime64 = None):
     """Return the day of the week (3 letter str)"""
-    if date == None:
+    if date is None:
         date = np.datetime64("now")
 
     val = (np.datetime64(date, "D") - np.datetime64(date, "W")).astype(int)
