@@ -24,8 +24,8 @@ try:
     config = "AMM60"
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
-    config_t = "/work/jelt/GitHub/COAsT/example_files/example_t_nemo_config.json"
-    config_w = "/work/jelt/GitHub/COAsT/example_files/example_w_nemo_config.json"
+    config_t = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json"
+    config_w = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_w.json"
     mon = "July"
     # mon = 'Feb'
 
