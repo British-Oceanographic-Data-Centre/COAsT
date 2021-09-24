@@ -1617,7 +1617,7 @@ try:
     # Create object without config file
     profiles = coast.Profile(file_path=fn_profile)
     check0 = profiles is not None
-       
+
     # Create object with config file
     profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
 
