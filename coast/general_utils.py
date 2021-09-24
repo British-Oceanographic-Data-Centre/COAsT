@@ -121,7 +121,7 @@ def compare_angles(a1, a2, degrees=True):
     return diff
 
 
-def cart2polar(x, y, degrees=True):
+def cartesian_to_polar(x, y, degrees=True):
     """
     # Conversion of cartesian to polar coordinate system
     # Output theta is in radians
@@ -133,7 +133,7 @@ def cart2polar(x, y, degrees=True):
     return r, theta
 
 
-def polar2cart(r, theta, degrees=True):
+def polar_to_cartesian(r, theta, degrees=True):
     """
     # Conversion of polar to cartesian coordinate system
     # Input theta must be in radians
