@@ -524,25 +524,32 @@ class Gridded(Coast):  # TODO Complete this docstring
             s_levels = self.dataset.depth_0.to_masked_array()
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
-            # Absolute Pressure
-            pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
-            # Absolute Salinity
-            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
-            sal_absolute = np.ma.masked_less(sal_absolute, 0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
-
 
             # Construct intermediate variables
             depth_0_4d = self.dataset.depth_0.to_masked_array()[np.newaxis, ...]
             e3_0_4d = self.dataset.e3_0.to_masked_array()[np.newaxis, ...]
-            H = np.nansum(np.isfinite(temp_conservative) * e3_0_4d, axis=1 ) 
+            H = np.nansum(np.isfinite(temp) * e3_0_4d, axis=1 ) 
             # Depth average T,S
-            tbar = np.nansum(temp_conservative * e3_0_4d, axis=1) / H
-            sbar = np.nansum(sal_absolute * e3_0_4d, axis=1) / H
+            tbar = (np.nansum(temp * e3_0_4d, axis=1) / H)[:,np.newaxis,:,:]
+            sbar = (np.nansum(sal * e3_0_4d,  axis=1) / H)[:,np.newaxis,:,:]
+
+            # Absolute Pressure
+            pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
+            # Absolute Salinity 4D
+            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+            sal_absolute = np.ma.masked_less(sal_absolute, 0)
+            # Conservative Temperature - 4D
+            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+
+            # Absolute Salinity - depth ave
+            sbar_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sbar, pressure_absolute, lon, lat))
+            sbar_absolute = np.ma.masked_less(sbar_absolute, 0)
+            # Conservative Temperature - depth ave
+            tbar_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sbar_absolute, tbar))
+
 
             # In-situ density perturbation
-            rhop = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute)) - np.ma.masked_invalid(gsw.rho(sbar[:,np.newaxis,:,:], tbar[:,np.newaxis,:,:], pressure_absolute))
+            rhop = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute)) - np.ma.masked_invalid(gsw.rho(sbar_absolute, tbar_conservative, pressure_absolute))
 
             # PEA = g * mean (depth * (rho-rhobar) over depth).
             pea = g * np.nansum(rhop * e3_0_4d * depth_0_4d, axis=1 ) / H

@@ -22,6 +22,7 @@ import matplotlib.colors as colors  # colormap fiddling
 
 #  Loading AMM60 data if it is available
 try:
+    STOP
     config = "AMM60"
     dir_AMM60 = "/projectsa/COAsT/NEMO_example_data/AMM60/"
     fil_nam_AMM60 = "AMM60_1d_20100704_20100708_grid_T.nc"
