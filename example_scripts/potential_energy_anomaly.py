@@ -104,7 +104,7 @@ else:
 
 
 #%% Construct in-situ density and pea
-print("* Construct in-situ density and stratification")
+print("* Construct in-situ density and PEA")
 sci_nwes_t.construct_density(eos="EOS10")
 
 
