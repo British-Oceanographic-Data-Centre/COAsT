@@ -23,54 +23,6 @@ g = 9.81
 
 
 #################################################
-#%%  Define methods
-#################################################
-def quick_plot(var: xr.DataArray = None):
-    """
-
-    Map plot for PEA.
-
-    Parameters
-    ----------
-    var : xr.DataArray, optional
-        ignored: PEA is plotted.
-
-    Returns
-    -------
-    None.
-
-    Example Usage
-    -------------
-    pea.quick_plot()
-
-    """
-    import matplotlib.pyplot as plt
-
-  
-
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.gca()
-    plt.pcolormesh(var.longitude.squeeze(), var.latitude.squeeze(), var.data[0,:,:].squeeze())
-    #               var.mean(dim = 't_dim') )
-    # plt.contourf( self.dataset.longitude.squeeze(),
-    #               self.dataset.latitude.squeeze(),
-    #               var.mean(dim = 't_dim'), levels=(0,10,20,30,40) )
-    title_str = (
-        var.time[0].dt.strftime("%d %b %Y: ").values
-        + var.attrs["standard_name"]
-        + " ("
-        + var.attrs["units"]
-        + ")"
-    )
-    plt.title(title_str)
-    plt.xlabel("longitude")
-    plt.ylabel("latitude")
-    #plt.clim([0, 50])
-    plt.colorbar()
-    plt.show()
-    return fig, ax  # TODO if var_lst is empty this will cause an error
-
-#################################################
 #%%  Loading  data
 #################################################
 
@@ -129,11 +81,12 @@ print("* Loaded ", config, " data")
 #%% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
-print("* Extract North Sea subdomain")
-ind_sci = sci_t.subset_indices([51, -4], [62, 15])
-sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
-ind_sci = sci_w.subset_indices([51, -4], [62, 15])
-sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+
+#print("* Extract North Sea subdomain")
+#ind_sci = sci_t.subset_indices([51, -4], [62, 15])
+#sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+print("* Extract whole domain")
+sci_nwes_t = sci_t
 
 #%% Apply masks to temperature and salinity
 if config == "AMM60":
