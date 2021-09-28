@@ -505,18 +505,36 @@ class Gridded(Coast):  # TODO Complete this docstring
                     self.dataset.x_dim.size,
                 )
                 rho = self.dataset.density.to_masked_array()
+                sal = self.dataset.salinity.to_masked_array()
+                temp = self.dataset.temperature.to_masked_array()
             except AttributeError:
                 shape_ds = (1, self.dataset.z_dim.size, self.dataset.y_dim.size, self.dataset.x_dim.size)
+                sal = self.dataset.salinity.to_masked_array()[np.newaxis, ...]
+                temp = self.dataset.temperature.to_masked_array()[np.newaxis, ...]
                 rho = self.dataset.density.to_masked_array()[np.newaxis, ...]
 
             pea = np.ma.zeros(shape_ds)
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
 
             # Construct intermediate variables
             depth_0_4d = self.dataset.depth_0.to_masked_array()[np.newaxis, ...]
             e3_0_4d = self.dataset.e3_0.to_masked_array()[np.newaxis, ...]
-           
+            # Depth average T,S
+            tbar = np.nansum(temp * e3_0_4d, axis=1) / np.nansum(np.isfinite(temp) * e3_0_4d, axis=1 ) 
+            sbar = np.nansum(sal * e3_0_4d, axis=1) / np.nansum(np.isfinite(sal) * e3_0_4d, axis=1 ) 
+
+            # Absolute Salinity
+            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sbar, 0, lon, lat))
+            sal_absolute = np.ma.masked_less(sal_absolute, 0)
+            # Conservative Temperature
+            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, tbar))
+            # In-situ density, calculated from depth average T,S
+            rhobar = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, 0))
+            
+
             # mean density over depth
-            rhobar = np.nansum(rho * e3_0_4d, axis=1) / np.nansum(np.isfinite(rho) * e3_0_4d, axis=1 ) 
+            #rhobar = np.nansum(rho * e3_0_4d, axis=1) / np.nansum(np.isfinite(rho) * e3_0_4d, axis=1 ) 
             # PEA = g * mean (depth * (rho-rhobar) over depth).
             pea = g * np.nansum((rho-rhobar[:,np.newaxis,:,:]) * e3_0_4d * depth_0_4d, axis=1 ) / np.nansum(np.isfinite(rho) * e3_0_4d, axis=1 ) 
             

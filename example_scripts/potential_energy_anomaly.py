@@ -168,12 +168,13 @@ plt.title('Potential Energy Anomoly log10(J/m3)')
 plt.show()
 
 
+#%% Export as netcdf file
+ofile = "pea.nc"
+sci_nwes_t.dataset.pea.to_netcdf(ofile, format="NETCDF4")
 
 
-
-#%% Map pretty plots of North Sea pycnocline depth
-print("* Map pretty plots of North Sea pycnocline depth")
-print(" - we expect a RunTimeError here")
+#%% Map pretty plots of North Sea PEA 
+print("* Map pretty plots of North Sea Potential energy anomaly")
 
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
@@ -194,7 +195,7 @@ H = sci_nwes_t.dataset.depth_0[-1, :, :].squeeze()
 lat = sci_nwes_t.dataset.latitude.squeeze()
 lon = sci_nwes_t.dataset.longitude.squeeze()
 
-zd = np.log10(np.nanmean(sci_nwes_t.dataset.pea,axis=0))  # make nan the land
+var = np.log10(np.nanmean(sci_nwes_t.dataset.pea,axis=0))  # make nan the land
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
@@ -204,7 +205,7 @@ plt.rcParams["figure.figsize"] = (8.0, 8.0)
 ax = fig.add_subplot(111)
 cz = plt.contour(lon, lat, H, levels=[11, 50, 100, 200], colors=["k", "k", "k", "k"], linewidths=[1, 1, 1, 1])
 
-plt.contourf(lon, lat, zd, levels=np.arange(0, 3.0 + 0.5, 0.5), extend="both", cmap=new_cmap)
+plt.contourf(lon, lat, var, levels=np.arange(0, 3.0 + 0.5, 0.5), extend="both", cmap=new_cmap)
 ax.set_facecolor("#bbbbbb")  # Set 'underneath' to grey. contourf plots nothing for bad values
 
 plt.xlim([-3, 11])
