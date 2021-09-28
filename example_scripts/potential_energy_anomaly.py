@@ -17,12 +17,6 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
-#%%  Define   cnstants
-#################################################
-g = 9.81
-
-
-#################################################
 #%%  Loading  data
 #################################################
 
@@ -105,10 +99,10 @@ else:
 
 #%% Construct in-situ density and pea
 print("* Construct in-situ density and PEA")
-sci_nwes_t.construct_density(eos="EOS10")
+#sci_nwes_t.construct_density(eos="EOS10")
 
 
-sci_nwes_t.construct_pea()
+sci_nwes_t.construct_pea( eos="EOS10" )
 pea = sci_nwes_t.dataset.pea
 
 
@@ -116,7 +110,7 @@ pea = sci_nwes_t.dataset.pea
 #%%%%
 
 
-plt.pcolormesh(np.log10(np.nanmean(sci_nwes_t.dataset.pea,axis=0)));plt.colorbar();
+plt.pcolormesh(sci_nwes_t.dataset.longitude, sci_nwes_t.dataset.latitude, np.log10(np.nanmean(sci_nwes_t.dataset.pea,axis=0)));plt.colorbar();
 plt.title('Potential Energy Anomoly log10(J/m3)')
 plt.show()
 
