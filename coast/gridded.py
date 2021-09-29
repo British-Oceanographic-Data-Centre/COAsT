@@ -467,8 +467,9 @@ class Gridded(Coast):  # TODO Complete this docstring
     def construct_pea(self, eos="EOS10"):
 
         """
-            Constructs the potential energy anomaly using the salinity, temperture and
-            depth_0 fields and adds a density attribute to the t-grid dataset
+            Constructs the potential energy anomaly using the salinity, 
+            temperture and depth_0 fields and adds a PEA attribute to the
+            st-grid dataset
 
             Requirements: The supplied t-grid dataset must contain the
             Practical Salinity and the Potential Temperature variables. The depth_0
@@ -476,7 +477,8 @@ class Gridded(Coast):  # TODO Complete this docstring
             The Absolute Pressure, Absolute Salinity and Conservate Temperature.
 
             Note that currently density can only be constructed using the EOS10
-            equation of state.
+            equation of state. PEA is here calculated where the perturbation
+            density is calculated by vertically mixing T,S rather than density.
 
         Parameters
         ----------
@@ -487,10 +489,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         Returns
         -------
         None.
-        adds attribute NEMO.dataset.density
+        adds attribute NEMO.dataset.pea
 
         """
-        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
+        debug(f'Constructing Potential Energy Anomaly for {get_slug(self)} with EOS "{eos}"')
 
         g = 9.81 # Acceleration under gravity
 
@@ -570,100 +572,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         except AttributeError as err:
             error(err)
-            
-
-    def construct_pea2(self):
-
-        """
-            Constructs the potential energy anomaly using density and
-            depth_0 fields and adds a pea attribute to the t-grid dataset
-
-            Requirements: The supplied t-grid dataset must contain the
-            density variables. The depth_0 and e3_0 field must also be supplied. 
-
-        Parameters
-        ----------
-        None 
-
-        Returns
-        -------
-        None.
-        adds attribute gridded.dataset.pea
-
-        """
-        debug(f'Constructing PEA for {get_slug(self)}')
         
-        g = 9.81 # Acceleration under gravity
-        
-        try:
-            if self.dataset.density is None:
-                raise ValueError(str(self) + ": Density calculation must be invoked first")
-            if self.grid_ref != "t-grid":
-                raise ValueError(
-                    str(self)
-                    + ": PEA calculation can only be performed for a t-grid object,\
-                                 the tracer grid for NEMO."
-                )
-
-            try:
-                shape_ds = (
-                    self.dataset.t_dim.size,
-                    self.dataset.z_dim.size,
-                    self.dataset.y_dim.size,
-                    self.dataset.x_dim.size,
-                )
-                rho = self.dataset.density.to_masked_array()
-                sal = self.dataset.salinity.to_masked_array() # to calc rho(Tbar,Sbar)
-                temp = self.dataset.temperature.to_masked_array() # to calc rho(Tbar,Sbar)
-            except AttributeError:
-                shape_ds = (1, self.dataset.z_dim.size, self.dataset.y_dim.size, self.dataset.x_dim.size)
-                sal = self.dataset.salinity.to_masked_array()[np.newaxis, ...]
-                temp = self.dataset.temperature.to_masked_array()[np.newaxis, ...]
-                rho = self.dataset.density.to_masked_array()[np.newaxis, ...]
-
-            pea = np.ma.zeros(shape_ds)
-            lat = self.dataset.latitude.values
-            lon = self.dataset.longitude.values
-
-            # Construct intermediate variables
-            depth_0_4d = self.dataset.depth_0.to_masked_array()[np.newaxis, ...]
-            e3_0_4d = self.dataset.e3_0.to_masked_array()[np.newaxis, ...]
-            # Depth average T,S
-            tbar = np.nansum(temp * e3_0_4d, axis=1) / np.nansum(np.isfinite(temp) * e3_0_4d, axis=1 ) 
-            sbar = np.nansum(sal * e3_0_4d, axis=1) / np.nansum(np.isfinite(sal) * e3_0_4d, axis=1 ) 
-
-            # Absolute Salinity
-            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sbar, 0, lon, lat))
-            sal_absolute = np.ma.masked_less(sal_absolute, 0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, tbar))
-            # In-situ density, calculated from depth average T,S
-            rhobar = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, 0))
-            
-
-            # mean density over depth
-            #rhobar = np.nansum(rho * e3_0_4d, axis=1) / np.nansum(np.isfinite(rho) * e3_0_4d, axis=1 ) 
-            # PEA = g * mean (depth * (rho-rhobar) over depth).
-            pea = g * np.nansum((rho-rhobar[:,np.newaxis,:,:]) * e3_0_4d * depth_0_4d, axis=1 ) / np.nansum(np.isfinite(rho) * e3_0_4d, axis=1 ) 
-            
-            coords = {
-                "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
-                "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
-            }
-            dims = ["y_dim", "x_dim"]
-            attributes = {"units": "J / m^3", "standard name": "Potential Energy Anomaly"}
-
-            if shape_ds[0] != 1:
-                coords["time"] = (("t_dim"), self.dataset.time.values)
-                dims.insert(0, "t_dim")
-                
-            self.dataset["pea"] = xr.DataArray(np.squeeze(pea), coords=coords, dims=dims, attrs=attributes)
-
-        except AttributeError as err:
-            error(err)
-            
-
-
 
     def trim_domain_size(self, dataset_domain):
         """
