@@ -7,7 +7,6 @@ for pycnocline depth and thickness, suitable for a nearly two-layer fluid.
 
 
 """
-
 #%%
 import coast
 import numpy as np
@@ -76,13 +75,13 @@ try:
     if sci_nwes_t.dataset['bathymetry'] is None:
         print('Bathymetry variable missing')
         sci_nwes_t.dataset['bathymetry'] = sci_nwes_t.dataset.depth_0.where( sci_nwes_t.dataset.mask > 0 ).max(dim='z_dim')
-    
+
     elif np.nanmax( sci_nwes_t.dataset['bathymetry'].values )<1:
         print('Bathymetry variable zero')
         sci_nwes_t.dataset['bathymetry'] = sci_nwes_t.dataset.depth_0.where( sci_nwes_t.dataset.mask > 0 ).max(dim='z_dim')
 except:
         print('Problem sorting out bathymetry')
-    
+
 #################################################
 #%% subset of data and domain ##
 #################################################
@@ -105,7 +104,7 @@ if config == "AMM60":
     # Construct intermediate variables
     depth_0_4d = sci_nwes_t.dataset.depth_0.where( sci_nwes_t.dataset.mask > 0 ).to_masked_array()[np.newaxis, ...]
     e3_0_4d = sci_nwes_t.dataset.e3_0.where( sci_nwes_t.dataset.mask > 0 ).to_masked_array()[np.newaxis, ...]
-    H = np.max(depth_0_4d, axis=1) 
+    H = np.max(depth_0_4d, axis=1)
 else:
     # Apply fake masks to temperature and salinity
     #sci_nwes_t.dataset["temperature_m"] = sci_nwes_t.dataset.temperature
@@ -120,7 +119,7 @@ sal = sci_nwes_t.dataset["salinity"]
 
 
 
-#%% Construct in-situ density 
+#%% Construct in-situ density
 print("* Construct in-situ density")
 sci_nwes_t.construct_density(eos="EOS10")
 
@@ -130,7 +129,7 @@ sci_nwes_t.construct_pea( eos="EOS10" )
 pea = sci_nwes_t.dataset.pea
 
 
-#%% North Sea Transect 
+#%% North Sea Transect
 tran_t = coast.TransectT(sci_nwes_t, (50, 2.5), (61, 2.5))
 
 lat_sec = tran_t.data.latitude.expand_dims(dim={"z_dim": 51})
@@ -182,7 +181,7 @@ plt.title('Potential Energy Anomoly log10(J/m3)')
 plt.show()
 
 
-#%% Map pretty plots of North Sea PEA 
+#%% Map pretty plots of North Sea PEA
 print("* Map pretty plots of North Sea Potential energy anomaly")
 
 
@@ -253,9 +252,9 @@ try:
     import numpy as np
     import gsw
     from seawater import eos80 as sw
-    
+
     def approx_depth_t(ds : xr.Dataset):
-        depth_w = xr.zeros_like(ds.e3t)    
+        depth_w = xr.zeros_like(ds.e3t)
         depth_w[dict(z_dim=slice(1,None))] = ds.e3t.cumsum(dim='z_dim').isel(z_dim=slice(0,-1))
         depth_w = depth_w.assign_coords({'k': ('z_dim', ds.z_dim.data)})
         e3w = depth_w.differentiate('k',edge_order=2)
@@ -265,11 +264,11 @@ try:
                                             + depth_t[dict(z_dim=0)]
         depth_t = depth_t.drop('k')
         return depth_t
-        
+
     def pot_energy_anom(nemo_t: xr.Dataset, teos10=True):
         g = 9.81
         ds = nemo_t.dataset
-        # get the approximate z coordinate (= -depth) for t-points 
+        # get the approximate z coordinate (= -depth) for t-points
         z_t = -approx_depth_t(ds)
         if teos10==True:
             # Approx pressure from depth
@@ -282,12 +281,11 @@ try:
             # In situ density using EOS80, assumes practical salinity and temperature
             density = sw.dens( ds.salinity, ds.temperature, pressure )
         # get the water column thickness
-        thickness = ds.e3t.sum(dim='z_dim',skipna=True).data   
+        thickness = ds.e3t.sum(dim='z_dim',skipna=True).data
         # depth average density
         density_depthavg = (density*ds.e3t).sum(dim='z_dim') / thickness
-            
+
         PEA = (g/thickness) * (( ( density_depthavg.data[:,np.newaxis,:,:] - density ) * z_t ) * ds.e3t ).sum(dim='z_dim')
         PEA.name='Potential Energy Anomaly'
 except:
-    print("Anthony's code is probably better. Uses seawater package")        
-        
+    print("Anthony's code is probably better. Uses seawater package")
