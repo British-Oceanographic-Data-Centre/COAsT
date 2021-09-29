@@ -27,3 +27,4 @@ from .tidegauge import Tidegauge
 from .profile import Profile
 from .contour import Contour, ContourF, ContourT
 from .eof import compute_eofs, compute_hilbert_eofs
+from .stratification import pot_energy_anom, approx_depth_t
