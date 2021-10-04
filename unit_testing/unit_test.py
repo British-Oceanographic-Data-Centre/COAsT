@@ -412,7 +412,7 @@ sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-# %% ( 3a ) Computing a vertical spatial derivative                              #
+#%% ( 3a ) Computing a vertical spatial derivative                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -462,7 +462,7 @@ except:
     print(str(sec) + chr(subsec) + " X - setting derivative attributes failed ")
 
 # -----------------------------------------------------------------------------#
-# %% ( 3b ) Construct density                                                    #
+#%% ( 3b ) Construct density                                                    #
 #                                                                             #
 
 subsec = subsec + 1
@@ -484,7 +484,7 @@ except ValueError as err:
 densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt, dims=["r_dim"]), y_dim=xr.DataArray(yt, dims=["r_dim"]))
 
 # -----------------------------------------------------------------------------#
-# %% ( 3c ) Construct pycnocline depth and thickness                             #
+#%% ( 3c ) Construct pycnocline depth and thickness                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -533,7 +533,7 @@ except:
     print(str(sec) + chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
 # -----------------------------------------------------------------------------#
-# %% ( 3d ) Plot pycnocline depth                                              #
+#%% ( 3d ) Plot pycnocline depth                                              #
 #                                                                             #
 
 subsec = subsec + 1
