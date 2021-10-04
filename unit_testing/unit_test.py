@@ -418,13 +418,13 @@ subsec = 96
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
-nemo_w = coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 
 try:
     log_str = ""
     # Compute dT/dz
-    nemo_w_1 = nemo_t.differentiate("temperature", dim="z_dim")
+    nemo_w_1 = nemo_t.differentiate("temperature", config_path=fn_config_w_grid, dim="z_dim")
     if nemo_w_1 is None:  # Test whether object was returned
         log_str += "No object returned\n"
     # Make sure the hardwired grid requirements are present
@@ -439,14 +439,14 @@ try:
     if not nemo_w_2.dataset.dTdz.attrs == {"units": "degC/m", "standard_name": "dTdz"}:
         log_str += "Did not write correct attributes\n"
     # Test auto-naming derivative. Again test expected attributes.
-    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim")
+    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim", config_path=fn_config_w_grid)
     if not nemo_w_3.dataset.temperature_dz.attrs == {"units": "degC/m", "standard_name": "temperature_dz"}:
         log_str += "Problem with auto-naming derivative field\n"
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
     # Construct a depth variable - needs to be 4D
     nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], nemo_t.dataset["temperature"])
-    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz")
+    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz", config_path=fn_config_w_grid)
     if not np.isclose(
         nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
     ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
@@ -458,15 +458,15 @@ try:
         print(str(sec) + chr(subsec) + " X - Nemo.differentiate method failed: " + log_str)
 
 except:
+    traceback.print_exc()
     print(str(sec) + chr(subsec) + " X - setting derivative attributes failed ")
-
 
 # -----------------------------------------------------------------------------#
 #%% ( 3b ) Construct density                                                    #
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
@@ -491,9 +491,9 @@ subsec = subsec + 1
 
 nemo_t = None
 nemo_w = None
-nemo_t = coast.Nemo(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 # create an empty w-grid object, to store stratification
-nemo_w = coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 try:
     log_str = ""
     # initialise Internal Tide object
@@ -532,9 +532,8 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
-
 # -----------------------------------------------------------------------------#
-#%% ( 3d ) Plot pycnocline depth                                                #
+#%% ( 3d ) Plot pycnocline depth                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -713,7 +712,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
 # -----------------------------------------------------------------------------#
-# %% ( 4e ) Calculate the geostrophic flow across the transect                 #
+#%% ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
 subsec = subsec + 1
 try:
@@ -1499,7 +1498,7 @@ if np.allclose(
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
 # -----------------------------------------------------------------------------#
-# %% ( 8e ) Calculate pressure gradient driven flow across contour               #
+#%% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
 cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)

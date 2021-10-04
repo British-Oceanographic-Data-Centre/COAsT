@@ -441,7 +441,7 @@ try:
     if not hasattr(nemo_w.dataset.depth_0, "units"):
         log_str += "Missing depth units\n"
     # Test attributes of derivative. This are generated last so can indicate earlier problems
-    nemo_w_2 = nemo_t.differentiate("temperature", dim="z_dim", out_varstr="dTdz", out_obj=nemo_w)
+    nemo_w_2 = nemo_t.differentiate("temperature", dim="z_dim", out_var_str="dTdz", out_obj=nemo_w)
     if not nemo_w_2.dataset.dTdz.attrs == {"units": "degC/m", "standard_name": "dTdz"}:
         log_str += "Did not write correct attributes\n"
     # Test auto-naming derivative. Again test expected attributes.
@@ -452,7 +452,7 @@ try:
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
     # Construct a depth variable - needs to be 4D
     nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], nemo_t.dataset["temperature"])
-    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_varstr="dzdz", config_path=fn_config_w_grid)
+    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz", config_path=fn_config_w_grid)
     if not np.isclose(
         nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
     ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
