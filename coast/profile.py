@@ -10,7 +10,7 @@ from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 import xarray.ufuncs as uf
-
+import pandas as pd
 
 class Profile(Indexed):
     """
@@ -182,7 +182,7 @@ class Profile(Indexed):
         else:
             landmask = masks.landmask
         # SPATIAL indices - nearest neighbour
-        ind_x, ind_y = general_utils.nearest_indices_2D(masks['longitude'], 
+        ind_x, ind_y = general_utils.nearest_indices_2d(masks['longitude'], 
                                                         masks['latitude'],
                                                         ds['longitude'], 
                                                         ds['latitude'], 
@@ -264,20 +264,30 @@ class Profile(Indexed):
                              interp_method='linear'):
         
         if type(new_depth) is Profile:
-            print('yesitis')
             new_depth = new_depth.dataset.depth
+            
+        if len(new_depth.shape) == 1:
+            repeated_depth = True
+            print('Interpolating onto reference depths', flush=True)
+        else:
+            print('Interpolating onto depths of existing Profile object', flush=True)
+            repeated_depth = False
         
         ds = self.dataset
         n_prof = ds.dims['profile']
         
         # Now loop over profiles and interpolate model onto obs.
-        print('Interpolating onto new depths...')
         count_ii=0
         for pp in range(0,n_prof):
             
             # Select the current profile
             profile = ds.isel(profile = pp).rename({'depth':'z_dim'})
-            new_depth_prof = new_depth.isel(profile=pp).values
+            profile = profile.dropna('z_dim')
+            
+            if repeated_depth:
+                new_depth_prof = new_depth
+            else:
+                new_depth_prof = new_depth.isel(profile=pp).values
                     
             interpolated_tmp = profile.interp(z_dim=new_depth_prof, 
                                           method=interp_method)
@@ -299,69 +309,56 @@ class Profile(Indexed):
             
         return return_interpolated
 
-    def obs_operator(self, nemo, mask_bottom_level=True):
+    def obs_operator(self, gridded, mask_bottom_level=True):
         '''
-        VERSION 1.4 (05/07/2021)
+        VERSION 2.0 (04/10/2021)
+        Author: David Byrne
         
-        Extracts and does some basic analysis and identification of model data at obs
-        locations, times and depths. Writes extracted data to file. This routine
-        does the analysis per file, for example monthly files. Output can be
-        subsequently input to analyse_ts_regional. Data is extracted saved in two
-        forms: on the original model depth levels and interpolated onto the
-        observed depth levels.
+        Does a spatial and time interpolation of a gridded object's data.
+        A nearest neighbour approach is used for both interpolations. Both
+        datasets (the Profile and Gridded objects) must contain longitude,
+        latitude and time coordinates. This routine expects there to be a 
+        landmask variable in the gridded object. This is is not available,
+        then place an array of zeros into the dataset, with dimensions
+        (y_dim, x_dim).
         
-        This routine can be used in a loop to loop over all files containing
-        daily or 25hourm data. Output files can be concatenated using a tools such
-        as ncks or the concatenate_output_files() routine in this module.
-        This is the recommended useage.
+        This routine will do the interpolation based on the chunking applied
+        to the Gridded object. Please ensure you have the available memory to
+        have an entire Gridded chunk loaded to memory. If multiple files are 
+        used, then using one chunk per file will be most efficient. Time
+        chunking is generally the better option for this routine.
         
         INPUTS:
-         nemo                 : NEMO object created on t-grid
-         fn_out (str)         : Absolute filepath for desired output file.
-                                If not provided, a delayed dataset will be returned
-         run_name (str)       : Name of run. [default='Undefined']
-                                Will be saved to output
-         z_interp (str)       : Type of scipy interpolation to use for depth interpolation
-                                [default = 'linear']
-         nemo_frequency (str) : Time frequency of NEMO daily. String inputs can
-                                be 'hourly', 'daily' or 'monthly'. Alternatively,
-                                provide an integer number of hours.
-         en4_sal_name (str)   : Name of EN4 (COAST) variable to use for salinity
-                                [default = 'practical_salinity']
-         en4_tem_name (str)   : Name of EN4 (COAST) variable to use for temperature
-                                [default = 'potential_temperature']
-         fn_mesh_mask (str)   : Full path to mesh_mask.nc if data is NEMO v3.6
-         start_date (datetime): Start date for EN4 data. If not provided, script
-                                will make a guess based on nemo_frequency.
-         end_date (datetime)  : End date for EN4 data. If not provided, script
-                                will make a guess based on nemo_frequency.
+         gridded (Gridded)        : gridded object created on t-grid
+         mask_bottom_level (bool) : Whether or not to mask any data below the
+                                    model's bottom level. If True, then ensure
+                                    the Gridded object's dataset contain's a
+                                    bottom_level variable with dims 
+                                    (y_dim, x_dim).
                                 
         OUTPUTS:
-         Returns a new PROFILE object containing an uncomputed dataset and 
-         can write to file (recommended):
-         Writes extracted data to file. Extracted dataset has the dimensions:
+         Returns a new PROFILE object containing a computed dataset of extracted
+         profiles.
         '''
             
         # Read EN4, then extract desired variables
         en4 = self.dataset
-        nemo = nemo.dataset
+        gridded = gridded.dataset
         
         # CHECKS
         # 1. Check that bottom_level is in dataset if mask_bottom_level is True
         if mask_bottom_level:
-            if 'bottom_level' not in nemo.variables:
+            if 'bottom_level' not in gridded.variables:
                 raise ValueError('bottom_level not found in input dataset. Please ensure variable is present or set mask_bottom_level to False')
         
         # Use only observations that are within model time window.
         en4_time = en4.time.values
-        mod_time = nemo.time.values
+        mod_time = gridded.time.values
         
         # SPATIAL indices - nearest neighbour
-        ind2D = general_utils.nearest_indices_2D(nemo['longitude'], nemo['latitude'],
+        ind_x, ind_y = general_utils.nearest_indices_2d(gridded['longitude'], gridded['latitude'],
                                            en4['longitude'], en4['latitude'], 
-                                           mask=nemo.landmask)
-        ind_x = ind2D[0]
-        ind_y = ind2D[1]
+                                           mask=gridded.landmask)
         print('Spatial Indices Calculated', flush=True)
         
         # TIME indices - model nearest to obs time
@@ -372,17 +369,17 @@ class Profile(Indexed):
         
         # Find out which variables have both depth and profile
         # This is for applying the bottom_level mask later
-        var_list = list(nemo.keys())
+        var_list = list(gridded.keys())
         bl_var_list = []
         for vv in var_list:
-            cond1 = 'z_dim' not in nemo[vv].dims
+            cond1 = 'z_dim' not in gridded[vv].dims
             if cond1:
                 bl_var_list.append(vv)
         
         # Get chunks along the time dimension and determine whether chunks
         # are described by a single equal size, or a tuples of sizes
-        time_chunks = nemo.chunks['t_dim']
-        time_dim = nemo.dims['t_dim']
+        time_chunks = gridded.chunks['t_dim']
+        time_dim = gridded.dims['t_dim']
         start_ii = 0 # Starting index for loading data. Increments each loop
         count_ii = 0 # Counting index for allocating data. Increments 1 each loop
         
@@ -405,7 +402,7 @@ class Profile(Indexed):
             ind_t_in_chunk = ind_t[ind_in_chunk] - start_ii
             
             # Index a temporary chunk and read it to memory
-            ds_tmp = nemo.isel(t_dim=np.arange(start_ii, end_ii)).load()
+            ds_tmp = gridded.isel(t_dim=np.arange(start_ii, end_ii)).load()
             
             # Index loaded chunk and rename dim_0 to profile
             ds_tmp_indexed = ds_tmp.isel(x_dim = ind_x_in_chunk, 
@@ -459,3 +456,163 @@ class Profile(Indexed):
         return_prof = Profile()
         return_prof.dataset = mod_profiles
         return return_prof
+    
+    def process_en4(self, sort_time = True):
+        '''
+        VERSION 1.4 (05/07/2021)
+        
+        PREPROCESSES EN4 data ready for comparison with model data.
+        This routine will cut out a desired geographical box of EN4 data and
+        then apply quality control according to the available flags in the
+        netCDF files. Quality control happens in two steps:
+            1. Where a whole data profile is flagged, it is completely removed
+               from the dataset
+            2. Where a single datapoint is rejected in either temperature or 
+               salinity, it is set to NaN.
+        This routine attempts to use xarray/dask chunking magic to keep 
+        memory useage low however some memory is still needed for loading
+        flags etc. May be slow if using large EN4 datasets.
+        
+        Routine will return a processed profile object dataset and can write 
+        the new dataset to file if fn_out is defined. If saving to the
+        PROFILE object, be aware that DASK computations will not have happened
+        and will need to be done using .load(), .compute() or similar before
+        accessing the values. IF using multiple EN4 files or large dataset,
+        make sure you have chunked the data over N_PROF dimension.
+        
+        INPUTS
+         fn_out (str)      : Full path to a desired output file. If unspecified
+                             then nothing is written.
+         
+        EXAMPLE USEAGE:
+         profile = coast.PROFILE()
+         profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
+         fn_out = '~/output_file.nc'
+         new_profile = profile.preprocess_en4(fn_out = fn_out, 
+                                              lonbounds = [-10, 10], 
+                                              latbounds = [45, 65])
+        '''
+        
+        ds = self.dataset
+        
+        # REJECT profiles that are QC flagged.
+        print(' Applying QUALITY CONTROL to EN4 data...', flush=True)
+        ds.qc_flags_profiles.load()
+        
+        # This line reads converts the QC integer to a binary string.
+        # Each bit of this string is a different QC flag. Which flag is which can
+        # be found on the EN4 website:
+        # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
+        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims['profile'])]
+        
+        # Determine indices of kept profiles
+        reject_tem_prof = np.array( [int( qq[0] ) for qq in qc_str], dtype=bool )
+        reject_sal_prof = np.array( [int( qq[1] ) for qq in qc_str], dtype=bool )
+        reject_both_prof = np.logical_and( reject_tem_prof, reject_sal_prof )
+        ds['reject_tem_prof'] = (['profile'], reject_tem_prof)
+        ds['reject_sal_prof'] = (['profile'], reject_sal_prof)
+        print('     >>> QC: Completely rejecting {0} / {1} profiles'.format(np.sum(reject_both_prof), ds.dims['profile']), flush=True)
+        
+        ds = ds.isel(profile=~reject_both_prof)
+        reject_tem_prof = reject_tem_prof[~reject_both_prof]
+        reject_sal_prof = reject_sal_prof[~reject_both_prof]
+        qc_lev = ds.qc_flags_levels.values
+        
+        print(' QC: Additional profiles converted to NaNs: ', flush=True)
+        print('     >>> {0} temperature profiles '.format(np.sum(reject_tem_prof)), flush=True)
+        print('     >>> {0} salinity profiles '.format(np.sum(reject_sal_prof)), flush=True)
+        
+        reject_tem_lev = np.zeros((ds.dims['profile'], ds.dims['z_dim']), dtype=bool)
+        reject_sal_lev = np.zeros((ds.dims['profile'], ds.dims['z_dim']), dtype=bool)
+        
+        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
+        for ii in range(len(int_tem)):
+            reject_tem_lev[qc_lev == int_tem[ii]] = 1
+        for ii in range(len(int_sal)):
+            reject_sal_lev[qc_lev == int_sal[ii]] = 1
+        for ii in range(len(int_both)):
+            reject_tem_lev[qc_lev == int_both[ii]] = 1
+            reject_sal_lev[qc_lev == int_both[ii]] = 1
+            
+        ds['reject_tem_datapoint'] = (['profile','z_dim'], reject_tem_lev)
+        ds['reject_sal_datapoint'] = (['profile','z_dim'], reject_sal_lev)
+            
+        print('MASKING rejected datapoints, replacing with NaNs...',flush=True)
+        ds['temperature'] = xr.where(~reject_tem_lev, ds['temperature'], np.nan)
+        ds['potential_temperature'] = xr.where(~reject_tem_lev, ds['temperature'], np.nan)
+        ds['practical_salinity'] = xr.where(~reject_tem_lev, ds['practical_salinity'], np.nan)
+        ds['profile'] = (['profile'], np.arange(ds.dims['profile'])) 
+        
+        if sort_time:
+            print('Sorting Time Dimension...',flush=True)
+            ds = ds.sortby('time')
+        
+        print('Finished processing data. Returning new Profile object.',flush=True)
+        
+        ds['profile'] = (['profile'], np.arange(ds.dims['profile']))
+        
+        return_prof = Profile()
+        return_prof.dataset = ds
+        return return_prof
+        
+    def calculate_all_en4_qc_flags(self):
+        '''
+        Brute force method for identifying all rejected points according to
+        EN4 binary integers. It can be slow to convert large numbers of integers
+        to a sequence of bits and is actually quicker to just generate every
+        combination of possible QC integers. That's what this routine does.
+        Used in PROFILE.preprocess_en4().
+        
+        INPUTS
+         NO INPUTS
+         
+        OUTPUTS
+         qc_integers_tem  : Array of integers signifying the rejection of ONLY
+                            temperature datapoints
+         qc_integers_sal  : Array of integers signifying the rejection of ONLY
+                            salinity datapoints
+         qc_integers_both : Array of integers signifying the rejection of BOTH
+                            temperature and salinity datapoints.
+        '''
+        
+        reject_tem_ind = 0
+        reject_sal_ind = 1
+        reject_tem_reasons = [2,3,8,9,10,11,12,13,14,15,16]
+        reject_sal_reasons = [2,3,20,21,22,23,24,25,26,27,28,29]
+        
+        qc_integers_tem = []
+        qc_integers_sal = []
+        qc_integers_both = []
+        n_tem_reasons = len(reject_tem_reasons)
+        n_sal_reasons = len(reject_sal_reasons)
+        bin_len = 30
+        
+        # IF reject_tem = 1, reject_sal = 0
+        for ii in range(n_tem_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_tem_ind] = 1
+            bin_tmp[reject_tem_reasons[ii]] = 1
+            qc_integers_tem.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+        
+        # IF reject_tem = 0, reject_sal = 1
+        for ii in range(n_sal_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_sal_ind] = 1
+            bin_tmp[reject_sal_reasons[ii]] = 1
+            qc_integers_sal.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+        
+        # IF reject_tem = 1, reject_sal = 1
+        for tt in range(n_tem_reasons):
+            for ss in range(n_sal_reasons):
+                bin_tmp = np.zeros(bin_len, dtype=int)
+                bin_tmp[reject_tem_ind] = 1
+                bin_tmp[reject_sal_ind] = 1
+                bin_tmp[reject_tem_reasons[tt]] = 1
+                bin_tmp[reject_sal_reasons[ss]] = 1
+                qc_integers_both.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+                
+        qc_integers_tem = list( set(qc_integers_tem))  
+        qc_integers_sal = list( set(qc_integers_sal)) 
+        qc_integers_both = list( set(qc_integers_both)) 
+        
+        return qc_integers_tem, qc_integers_sal, qc_integers_both
