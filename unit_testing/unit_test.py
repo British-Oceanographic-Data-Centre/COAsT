@@ -88,6 +88,11 @@ fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
 # EN4 profile data (NetCDF)
 fn_profile = dn_files + "EN4_example.nc"
 fn_profile_config = "config/example_en4_profiles.json"
+fn_config_t_grid = path.join("./config", "example_nemo_grid_t.json")
+fn_config_f_grid = path.join("./config", "example_nemo_grid_f.json")
+fn_config_u_grid = path.join("./config", "example_nemo_grid_u.json")
+fn_config_v_grid = path.join("./config", "example_nemo_grid_v.json")
+fn_config_w_grid = path.join("./config", "example_nemo_grid_w.json")
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -407,19 +412,21 @@ sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 3a ) Computing a vertical spatial derivative                              #
+# %% ( 3a ) Computing a vertical spatial derivative                              #
 #                                                                             #
 
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
-nemo_w = coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
+nemo_t = coast.Gridded(
+    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+)
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_w_grid)
 
 try:
     log_str = ""
     # Compute dT/dz
-    nemo_w_1 = nemo_t.differentiate("temperature", dim="z_dim")
+    nemo_w_1 = nemo_t.differentiate("temperature", config_path=json_config_file_w_grid, dim="z_dim")
     if nemo_w_1 is None:  # Test whether object was returned
         log_str += "No object returned\n"
     # Make sure the hardwired grid requirements are present
@@ -434,14 +441,14 @@ try:
     if not nemo_w_2.dataset.dTdz.attrs == {"units": "degC/m", "standard_name": "dTdz"}:
         log_str += "Did not write correct attributes\n"
     # Test auto-naming derivative. Again test expected attributes.
-    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim")
+    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim", config_path=json_config_file_w_grid)
     if not nemo_w_3.dataset.temperature_dz.attrs == {"units": "degC/m", "standard_name": "temperature_dz"}:
         log_str += "Problem with auto-naming derivative field\n"
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
     # Construct a depth variable - needs to be 4D
     nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], nemo_t.dataset["temperature"])
-    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz")
+    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz", config_path=json_config_file_w_grid)
     if not np.isclose(
         nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
     ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
@@ -453,15 +460,17 @@ try:
         print(str(sec) + chr(subsec) + " X - Nemo.differentiate method failed: " + log_str)
 
 except:
+    traceback.print_exc()
     print(str(sec) + chr(subsec) + " X - setting derivative attributes failed ")
 
-
 # -----------------------------------------------------------------------------#
-#%% ( 3b ) Construct density                                                    #
+# %% ( 3b ) Construct density                                                    #
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.Gridded(
+    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
@@ -479,16 +488,16 @@ except ValueError as err:
 densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt, dims=["r_dim"]), y_dim=xr.DataArray(yt, dims=["r_dim"]))
 
 # -----------------------------------------------------------------------------#
-#%% ( 3c ) Construct pycnocline depth and thickness                             #
+# %% ( 3c ) Construct pycnocline depth and thickness                             #
 #                                                                             #
 
 subsec = subsec + 1
 
 nemo_t = None
 nemo_w = None
-nemo_t = coast.Nemo(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
 # create an empty w-grid object, to store stratification
-nemo_w = coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="w-grid")
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_w_grid)
 try:
     log_str = ""
     # initialise Internal Tide object
@@ -527,9 +536,8 @@ try:
 except:
     print(str(sec) + chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
-
 # -----------------------------------------------------------------------------#
-#%% ( 3d ) Plot pycnocline depth                                                #
+# %% ( 3d ) Plot pycnocline depth                                              #
 #                                                                             #
 
 subsec = subsec + 1
