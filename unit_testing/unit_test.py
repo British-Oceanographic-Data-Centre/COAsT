@@ -88,6 +88,11 @@ fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
 # EN4 profile data (NetCDF)
 fn_profile = dn_files + "EN4_example.nc"
 fn_profile_config = "config/example_en4_profiles.json"
+fn_config_t_grid = path.join("./config", "example_nemo_grid_t.json")
+fn_config_f_grid = path.join("./config", "example_nemo_grid_f.json")
+fn_config_u_grid = path.join("./config", "example_nemo_grid_u.json")
+fn_config_v_grid = path.join("./config", "example_nemo_grid_v.json")
+fn_config_w_grid = path.join("./config", "example_nemo_grid_w.json")
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -708,11 +713,14 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
 # -----------------------------------------------------------------------------#
-#%% ( 4e ) Calculate the geostrophic flow across the transect                   #
+# %% ( 4e ) Calculate the geostrophic flow across the transect                 #
 #
 subsec = subsec + 1
 try:
-    tran_f.calc_geostrophic_flow(nemo_t)
+    tran_f.calc_geostrophic_flow(nemo_t,
+        config_u=fn_config_u_grid,
+        config_v=fn_config_v_grid
+        )
     cksum1 = tran_f.data_cross_tran_flow.normal_velocity_hpg.sum(dim=("t_dim", "depth_z_levels", "r_dim")).item()
     cksum2 = tran_f.data_cross_tran_flow.normal_velocity_spg.sum(dim=("t_dim", "r_dim")).item()
     cksum3 = tran_f.data_cross_tran_flow.normal_transport_hpg.sum(dim=("t_dim", "r_dim")).item()
@@ -1494,10 +1502,13 @@ if np.allclose(
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
 # -----------------------------------------------------------------------------#
-#%% ( 8e ) Calculate pressure gradient driven flow across contour               #
+# %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
-cont_f.calc_geostrophic_flow(nemo_t, 1027)
+cont_f.calc_geostrophic_flow(nemo_t,
+        config_u=fn_config_u_grid,
+        config_v=fn_config_v_grid,
+        ref_density=1027)
 if np.allclose(
     (
         cont_f.data_cross_flow.normal_velocity_hpg
