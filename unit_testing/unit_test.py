@@ -418,9 +418,7 @@ subsec = 96
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 
 try:
@@ -468,9 +466,7 @@ except:
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
