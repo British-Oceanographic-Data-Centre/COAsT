@@ -1,5 +1,6 @@
 from .coast import Coast
-#from .nemo import Nemo
+
+# from .nemo import Nemo
 from .gridded import Gridded
 from scipy.ndimage import convolve1d
 from scipy import interpolate
@@ -183,10 +184,12 @@ class Transect:
             # Redefine transect so that each point on the transect is seperated
             # from its neighbours by a single index change in y or x, but not both
             dist_option_1 = (
-                gridded.dataset.e2.values[tran_y_ind, tran_x_ind] + gridded.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
+                gridded.dataset.e2.values[tran_y_ind, tran_x_ind]
+                + gridded.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
             )
             dist_option_2 = (
-                gridded.dataset.e2.values[tran_y_ind, tran_x_ind + 1] + gridded.dataset.e1.values[tran_y_ind, tran_x_ind]
+                gridded.dataset.e2.values[tran_y_ind, tran_x_ind + 1]
+                + gridded.dataset.e1.values[tran_y_ind, tran_x_ind]
             )
             spacing = np.abs(np.diff(tran_y_ind)) + np.abs(np.diff(tran_x_ind))
             if spacing.max() > 2:
@@ -545,11 +548,13 @@ class TransectF(Transect):
 
         return hpg_f, spg_f
 
-    def calc_geostrophic_flow(self, gridded_t: Coast,
-                ref_density=None,
-                config_u="config/example_nemo_grid_u.json",
-                config_v="config/example_nemo_grid_v.json"
-                ):
+    def calc_geostrophic_flow(
+        self,
+        gridded_t: Coast,
+        ref_density=None,
+        config_u="config/example_nemo_grid_u.json",
+        config_v="config/example_nemo_grid_v.json",
+    ):
         """
         This method will calculate the geostrophic velocity and volume transport
         (due to the geostrophic current) across the transect.
@@ -582,7 +587,9 @@ class TransectF(Transect):
             configuration file for v-grid object
 
         """
-        debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(gridded_t)}")
+        debug(
+            f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(gridded_t)}"
+        )
 
         # If there is no time dimension, add one then remove at end. This is so
         # indexing can assume a time dimension exists

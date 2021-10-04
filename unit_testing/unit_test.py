@@ -717,10 +717,7 @@ except:
 #
 subsec = subsec + 1
 try:
-    tran_f.calc_geostrophic_flow(nemo_t,
-        config_u=fn_config_u_grid,
-        config_v=fn_config_v_grid
-        )
+    tran_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid)
     cksum1 = tran_f.data_cross_tran_flow.normal_velocity_hpg.sum(dim=("t_dim", "depth_z_levels", "r_dim")).item()
     cksum2 = tran_f.data_cross_tran_flow.normal_velocity_spg.sum(dim=("t_dim", "r_dim")).item()
     cksum3 = tran_f.data_cross_tran_flow.normal_transport_hpg.sum(dim=("t_dim", "r_dim")).item()
@@ -1505,10 +1502,7 @@ else:
 # %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
-cont_f.calc_geostrophic_flow(nemo_t,
-        config_u=fn_config_u_grid,
-        config_v=fn_config_v_grid,
-        ref_density=1027)
+cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)
 if np.allclose(
     (
         cont_f.data_cross_flow.normal_velocity_hpg

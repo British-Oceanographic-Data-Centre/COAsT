@@ -6,7 +6,8 @@ import warnings
 import gsw
 import traceback
 from .coast import Coast
-#from .nemo import Nemo
+
+# from .nemo import Nemo
 from .gridded import Gridded
 from scipy import interpolate
 from scipy.integrate import cumtrapz
@@ -506,11 +507,13 @@ class ContourF(Contour):
 
         return hpg_f, spg_f
 
-    def calc_geostrophic_flow(self, gridded_t: Coast,
-                    ref_density=None,
-                    config_u="config/example_nemo_grid_u.json",
-                    config_v="config/example_nemo_grid_v.json"
-                    ):
+    def calc_geostrophic_flow(
+        self,
+        gridded_t: Coast,
+        ref_density=None,
+        config_u="config/example_nemo_grid_u.json",
+        config_v="config/example_nemo_grid_v.json",
+    ):
         """
         This method will calculate the geostrophic velocity and volume transport
         (due to the geostrophic current) across the contour.

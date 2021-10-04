@@ -110,9 +110,7 @@ subsec = 96  # Code for '`' (1 below 'a')
 subsec = subsec + 1
 
 try:
-    sci = coast.Gridded(
-        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=fn_config_t_grid
-    )
+    sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=fn_config_t_grid)
 
     # Test the data has loaded
     sci_attrs_ref = dict(
@@ -266,9 +264,7 @@ subsec = subsec + 1
 
 try:
     file_names_amm7 = "nemo_data_T_grid*.nc"
-    amm7 = coast.Gridded(
-        dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=fn_config_t_grid, multiple=True
-    )
+    amm7 = coast.Gridded(dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=fn_config_t_grid, multiple=True)
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset.time.size == 14:
@@ -288,9 +284,7 @@ subsec = subsec + 1
 # Nemo obejct and dataset.
 
 try:
-    harmonics = coast.Gridded(
-        dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid
-    )
+    harmonics = coast.Gridded(dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid)
     constituents = ["K1", "M2", "S2", "K2"]
     harmonics_combined = harmonics.harmonics_combine(constituents)
 
@@ -430,9 +424,7 @@ subsec = 96
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 
 try:
@@ -480,9 +472,7 @@ except:
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
@@ -576,9 +566,7 @@ subsec = 96
 subsec = subsec + 1
 
 # Extract transect indices
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 yt, xt, length_of_line = nemo_t.transect_indices([51, -5], [49, -9])
 
 # Test transect indices
@@ -739,10 +727,7 @@ except:
 #
 subsec = subsec + 1
 try:
-    tran_f.calc_geostrophic_flow(nemo_t,
-        config_u=fn_config_u_grid,
-        config_v=fn_config_v_grid
-        )
+    tran_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid)
     cksum1 = tran_f.data_cross_tran_flow.normal_velocity_hpg.sum(dim=("t_dim", "depth_z_levels", "r_dim")).item()
     cksum2 = tran_f.data_cross_tran_flow.normal_velocity_spg.sum(dim=("t_dim", "r_dim")).item()
     cksum3 = tran_f.data_cross_tran_flow.normal_transport_hpg.sum(dim=("t_dim", "r_dim")).item()
@@ -1489,9 +1474,7 @@ except OSError:
 # %% ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
 subsec = subsec + 1
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_t, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], [50, -10], [60, 3])
 cont_t = coast.ContourT(nemo_t, y_ind, x_ind, 200)
@@ -1507,12 +1490,8 @@ else:
 #                                                                             #
 subsec = subsec + 1
 nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
-nemo_u = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid
-)
-nemo_v = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid
-)
+nemo_u = coast.Gridded(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid)
+nemo_v = coast.Gridded(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = coast.ContourF(nemo_f, y_ind, x_ind, 200)
@@ -1528,10 +1507,7 @@ else:
 # %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
-cont_f.calc_geostrophic_flow(nemo_t,
-        config_u=fn_config_u_grid,
-        config_v=fn_config_v_grid,
-        ref_density=1027)
+cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)
 if np.allclose(
     (
         cont_f.data_cross_flow.normal_velocity_hpg
