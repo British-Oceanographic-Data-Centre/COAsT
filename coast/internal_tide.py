@@ -1,11 +1,11 @@
-from .nemo import Nemo
+from .gridded import Gridded
 import numpy as np
 import xarray as xr
 import copy
 from .logging_util import get_slug, debug
 
 
-class InternalTide(Nemo):  # TODO All abstract methods should be implemented
+class InternalTide(Gridded):  # TODO All abstract methods should be implemented
     """
     Object for handling and storing necessary information, methods and outputs
     for calculation of internal tide diagnostics.
