@@ -1,5 +1,6 @@
 from .coast import Coast
-from .nemo import Nemo
+#from .nemo import Nemo
+from .gridded import Gridded
 from scipy.ndimage import convolve1d
 from scipy import interpolate
 import gsw
@@ -571,6 +572,10 @@ class TransectF(Transect):
             reference density value. If None a transect mean density will be calculated
             and used.
 
+        config_u : file
+            configuration file for u-grid object
+        config_v : file
+            configuration file for v-grid object
 
         """
         debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(nemo_t)}")
@@ -674,8 +679,8 @@ class TransectF(Transect):
         # data_cross_flow dataset need to be on these points.
         da_y_ind = xr.DataArray(self.y_ind, dims=["r_dim"])
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
-        u_ds = Nemo(fn_domain=self.filename_domain, grid_ref="u-grid").dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        v_ds = Nemo(fn_domain=self.filename_domain, grid_ref="v-grid").dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        u_ds = Gridded(fn_domain=self.filename_domain, config=config_u).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        v_ds = Gridded(fn_domain=self.filename_domain, config=config_v).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
         ds = [u_ds, v_ds, v_ds]
 
         # Drop the last point because the normal velocity points are defined at
