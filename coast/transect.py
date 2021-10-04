@@ -4,12 +4,13 @@ from .gridded import Gridded
 from scipy.ndimage import convolve1d
 from scipy import interpolate
 import gsw
+import os.path as path_lib
 import xarray as xr
 import numpy as np
 from scipy.integrate import cumtrapz
 import warnings
 import traceback
-from .logging_util import get_slug, debug, warn
+from .logging_util import get_slug, debug, warn, info
 
 # =============================================================================
 # The TRANSECT module is a place for code related to transects only
@@ -79,7 +80,7 @@ class Transect:
         z_levels = z_levels[z_levels <= max_depth]
         return z_levels
 
-    def __init__(self, nemo: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
+    def __init__(self, gridded: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
         """
         Class defining a generic transect type, which is a 3d dataset along
         a linear path between a point A and a point B, with a time dimension,
@@ -97,13 +98,13 @@ class Transect:
         Example usage:
             point_A = (54,-15)
             point_B = (56,-12)
-            transect = coast.Transect( nemo_t, point_A, point_B )
+            transect = coast.Transect( gridded_t, point_A, point_B )
             or
-            transect = coast.Transect( nemo_f, y_indices=y_ind, x_indices=x_ind )
+            transect = coast.Transect( gridded_f, y_indices=y_ind, x_indices=x_ind )
 
         Parameters
         ----------
-        nemo : NEMO object
+        gridded : GRIDDED object
         point_a : tuple, (lat,lon)
         point_b : tuple, (lat,lon)
         y_indices : 1d array of model y indices defining the points of the transect
@@ -112,7 +113,7 @@ class Transect:
         """
         debug(f"Creating a new {get_slug(self)}")
         try:
-            self.filename_domain = nemo.filename_domain
+            self.filename_domain = gridded.filename_domain
 
             if point_a is not None and point_b is not None:
                 # point A should be of lower latitude than point B
@@ -124,22 +125,22 @@ class Transect:
                     self.point_B = point_b
 
                 # Get points on transect
-                tran_y_ind, tran_x_ind, tran_len = nemo.transect_indices(self.point_A, self.point_B)
+                tran_y_ind, tran_x_ind, tran_len = gridded.transect_indices(self.point_A, self.point_B)
                 tran_y_ind, tran_x_ind = self.process_transect_indices(
-                    nemo, np.asarray(tran_y_ind), np.asarray(tran_x_ind)
+                    gridded, np.asarray(tran_y_ind), np.asarray(tran_x_ind)
                 )
             elif y_indices is not None and x_indices is not None:
                 if y_indices[0] > y_indices[-1]:
                     y_indices = y_indices[::-1]
                     x_indices = x_indices[::-1]
-                tran_y_ind, tran_x_ind = self.process_transect_indices(nemo, y_indices, x_indices)
+                tran_y_ind, tran_x_ind = self.process_transect_indices(gridded, y_indices, x_indices)
                 self.point_A = (
-                    nemo.dataset.latitude[tran_y_ind[0], tran_x_ind[0]],
-                    nemo.dataset.longitude[tran_y_ind[0], tran_x_ind[0]],
+                    gridded.dataset.latitude[tran_y_ind[0], tran_x_ind[0]],
+                    gridded.dataset.longitude[tran_y_ind[0], tran_x_ind[0]],
                 )
                 self.point_B = (
-                    nemo.dataset.latitude[tran_y_ind[-1], tran_x_ind[-1]],
-                    nemo.dataset.longitude[tran_y_ind[-1], tran_x_ind[-1]],
+                    gridded.dataset.latitude[tran_y_ind[-1], tran_x_ind[-1]],
+                    gridded.dataset.longitude[tran_y_ind[-1], tran_x_ind[-1]],
                 )
             else:
                 raise ValueError(
@@ -153,23 +154,23 @@ class Transect:
             self.len = len(tran_y_ind)
             self.data_cross_tran_flow = xr.Dataset()
 
-            # Subset the nemo data along the transect creating a new dimension (r_dim),
+            # Subset the gridded data along the transect creating a new dimension (r_dim),
             # which is a paramterisation for x_dim and y_dim defining the transect
             da_tran_y_ind = xr.DataArray(tran_y_ind, dims=["r_dim"])
             da_tran_x_ind = xr.DataArray(tran_x_ind, dims=["r_dim"])
-            self.data = nemo.dataset.isel(y_dim=da_tran_y_ind, x_dim=da_tran_x_ind)
+            self.data = gridded.dataset.isel(y_dim=da_tran_y_ind, x_dim=da_tran_x_ind)
 
             debug(f"{get_slug(self)} initialised")
         except ValueError:
             print(traceback.format_exc())
 
-    def process_transect_indices(self, nemo, tran_y_ind, tran_x_ind):
+    def process_transect_indices(self, gridded, tran_y_ind, tran_x_ind):
         """
         Get the transect indices on a specific grid
 
         Parameters
         ----------
-        nemo : the model grid to define the transect on
+        gridded : the model grid to define the transect on
 
         Return
         ----------
@@ -177,15 +178,15 @@ class Transect:
         tran_x_ind : array of x_dim indices
 
         """
-        debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(nemo)}")
+        debug(f"Fetching transect indices for {get_slug(self)} with {get_slug(gridded)}")
         try:
             # Redefine transect so that each point on the transect is seperated
             # from its neighbours by a single index change in y or x, but not both
             dist_option_1 = (
-                nemo.dataset.e2.values[tran_y_ind, tran_x_ind] + nemo.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
+                gridded.dataset.e2.values[tran_y_ind, tran_x_ind] + gridded.dataset.e1.values[tran_y_ind + 1, tran_x_ind]
             )
             dist_option_2 = (
-                nemo.dataset.e2.values[tran_y_ind, tran_x_ind + 1] + nemo.dataset.e1.values[tran_y_ind, tran_x_ind]
+                gridded.dataset.e2.values[tran_y_ind, tran_x_ind + 1] + gridded.dataset.e1.values[tran_y_ind, tran_x_ind]
             )
             spacing = np.abs(np.diff(tran_y_ind)) + np.abs(np.diff(tran_x_ind))
             if spacing.max() > 2:
@@ -211,7 +212,7 @@ class Transect:
 
         Example usage:
         --------------
-        tran = coast.Transect( (54,-15), (56,-12), nemo )
+        tran = coast.Transect( (54,-15), (56,-12), gridded )
         tran.plot_map()
         """
         debug(f"Generating plot on map for {get_slug(self)}")
@@ -272,13 +273,13 @@ class TransectF(Transect):
     Example usage:
         point_A = (54,-15)
         point_B = (56,-12)
-        transect = coast.Transect_f( nemo_f, point_A, point_B )
+        transect = coast.Transect_f( gridded_f, point_A, point_B )
         or
-        transect = coast.Transect_f( nemo_f, y_indices=y_ind, x_indices=x_ind )
+        transect = coast.Transect_f( gridded_f, y_indices=y_ind, x_indices=x_ind )
 
     Parameters
     ----------
-    nemo_f : NEMO object on the f-grid
+    gridded_f : GRIDDED object on the f-grid
     point_a : tuple, (lat,lon)
     point_b : tuple, (lat,lon)
     y_indices : 1d array of model y indices defining the points of the transect
@@ -286,10 +287,10 @@ class TransectF(Transect):
 
     """
 
-    def __init__(self, nemo_f: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
-        super().__init__(nemo_f, point_a, point_b, y_indices, x_indices)
+    def __init__(self, gridded_f: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
+        super().__init__(gridded_f, point_a, point_b, y_indices, x_indices)
 
-    def calc_flow_across_transect(self, nemo_u: Coast, nemo_v: Coast):
+    def calc_flow_across_transect(self, gridded_u: Coast, gridded_v: Coast):
         # TODO the code here has become a little messy, could do with being
         # rewritten as in similar function in CONTOUR
         """
@@ -305,13 +306,13 @@ class TransectF(Transect):
         on the normal velocity points are also stored in the dataset.
 
         If the time dependent cell thicknesses (e3) on the u and v grids are
-        present in the nemo_u and nemo_v datasets they will be used, if they
+        present in the gridded_u and gridded_v datasets they will be used, if they
         are not then the initial cell thicknesses (e3_0) will be used.
 
         parameters
         ----------
-        nemo_u : Nemo object on the u-grid containing the i-component velocities
-        nemo_v : Nemo object on the v-gridc ontaining the j-component velocities
+        gridded_u : GRIDDED object on the u-grid containing the i-component velocities
+        gridded_v : GRIDDED object on the v-gridc ontaining the j-component velocities
 
         """
         debug(f"Computing flow across the transect for {get_slug(self)}")
@@ -322,8 +323,8 @@ class TransectF(Transect):
         # subset the u and v datasets
         da_y_ind = xr.DataArray(self.y_ind, dims=["r_dim"])
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
-        u_ds = nemo_u.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        v_ds = nemo_v.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        u_ds = gridded_u.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        v_ds = gridded_v.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
 
         # use time varying if e3 is present, if not default to e3_0
         if "e3" not in u_ds.data_vars:
@@ -544,7 +545,11 @@ class TransectF(Transect):
 
         return hpg_f, spg_f
 
-    def calc_geostrophic_flow(self, nemo_t: Coast, ref_density=None):
+    def calc_geostrophic_flow(self, gridded_t: Coast,
+                ref_density=None,
+                config_u="config/example_nemo_grid_u.json",
+                config_v="config/example_nemo_grid_v.json"
+                ):
         """
         This method will calculate the geostrophic velocity and volume transport
         (due to the geostrophic current) across the transect.
@@ -565,36 +570,35 @@ class TransectF(Transect):
 
         Parameters
         ----------
-        nemo_t : Coast
-            This is the nemo model data on the t-grid for the entire domain. It
+        gridded_t : Coast
+            This is gridded model data on the t-grid for the entire domain. It
             must contain the temperature, salinity and t-grid domain data (e1t, e2t, e3t_0).
         ref_density : float, optional
             reference density value. If None a transect mean density will be calculated
             and used.
-
         config_u : file
             configuration file for u-grid object
         config_v : file
             configuration file for v-grid object
 
         """
-        debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(nemo_t)}")
+        debug(f"Calculating geostrophic velocity and volume transport for {get_slug(self)} with " f"{get_slug(gridded_t)}")
 
         # If there is no time dimension, add one then remove at end. This is so
         # indexing can assume a time dimension exists
-        nemo_t_local = nemo_t.copy()
-        if "t_dim" not in nemo_t_local.dataset.dims:
-            nemo_t_local.dataset = nemo_t_local.dataset.expand_dims(dim={"t_dim": 1}, axis=0)
+        gridded_t_local = gridded_t.copy()
+        if "t_dim" not in gridded_t_local.dataset.dims:
+            gridded_t_local.dataset = gridded_t_local.dataset.expand_dims(dim={"t_dim": 1}, axis=0)
 
         # We need to calculate the pressure at four t-points to get an
         # average onto the pressure gradient at the f-points, which will then
-        # be averaged onto the normal velocity points. Here we subset the nemo_t
+        # be averaged onto the normal velocity points. Here we subset the gridded_t
         # data around the transect so we have these four t-grid points at each
         # point along the transect
-        tran_t = TransectT(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind)  # j,i
-        tran_t_j1 = TransectT(nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind)  # j+1,i
-        tran_t_i1 = TransectT(nemo_t_local, y_indices=self.y_ind, x_indices=self.x_ind + 1)  # j,i+1
-        tran_t_j1i1 = TransectT(nemo_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind + 1)  # j+1,i+1
+        tran_t = TransectT(gridded_t_local, y_indices=self.y_ind, x_indices=self.x_ind)  # j,i
+        tran_t_j1 = TransectT(gridded_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind)  # j+1,i
+        tran_t_i1 = TransectT(gridded_t_local, y_indices=self.y_ind, x_indices=self.x_ind + 1)  # j,i+1
+        tran_t_j1i1 = TransectT(gridded_t_local, y_indices=self.y_ind + 1, x_indices=self.x_ind + 1)  # j+1,i+1
 
         bath_max = np.max(
             [
@@ -905,13 +909,13 @@ class TransectT(Transect):
     Example usage:
         point_A = (54,-15)
         point_B = (56,-12)
-        transect = coast.Transect_t( nemo_t, point_A, point_B )
+        transect = coast.Transect_t( gridded_t, point_A, point_B )
         or
-        transect = coast.Transect_t( nemo_t, y_indices=y_ind, x_indices=x_ind )
+        transect = coast.Transect_t( gridded_t, y_indices=y_ind, x_indices=x_ind )
 
     Parameters
     ----------
-    nemo_t : NEMO object  on the t-grid
+    gridded_t : GRIDDED object on the t-grid
     point_a : tuple, (lat,lon)
     point_b : tuple, (lat,lon)
     y_indices : 1d array of model y indices defining the points of the transect
@@ -919,8 +923,8 @@ class TransectT(Transect):
 
     """
 
-    def __init__(self, nemo_t: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
-        super().__init__(nemo_t, point_a, point_b, y_indices, x_indices)
+    def __init__(self, gridded_t: Coast, point_a: tuple = None, point_b: tuple = None, y_indices=None, x_indices=None):
+        super().__init__(gridded_t, point_a, point_b, y_indices, x_indices)
 
     def construct_pressure(self, ref_density=None, z_levels=None, extrapolate=False):
         """
