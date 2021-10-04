@@ -146,175 +146,170 @@ class Profile(Indexed):
 
     """======================= Model Comparison ======================="""
 
-        # Bottom values
- #       print('Averaging EN4 over bottom {0}m for bottom definition'.format(bottom_def), flush=True)
- #       bathy_pts = ds.bathymetry.isel(x_dim = ind2D[0], y_dim = ind2D[1]).swap_dims({'dim_0':'profile'})
- #       bottom_ind = en4.depth >= (bathy_pts - bottom_def)
+    # Bottom values
+    #       print('Averaging EN4 over bottom {0}m for bottom definition'.format(bottom_def), flush=True)
+    #       bathy_pts = ds.bathymetry.isel(x_dim = ind2D[0], y_dim = ind2D[1]).swap_dims({'dim_0':'profile'})
+    #       bottom_ind = en4.depth >= (bathy_pts - bottom_def)
 
-#        sbt_en4 = en4[en4_tem_name].where(bottom_ind, np.nan)
-#        sbs_en4 = en4[en4_sal_name].where(bottom_ind, np.nan)
-#    
-#        sbt_en4 = sbt_en4.mean(dim="z_dim", skipna=True).load()
-#        sbs_en4 = sbs_en4.mean(dim="z_dim", skipna=True).load()
+    #        sbt_en4 = en4[en4_tem_name].where(bottom_ind, np.nan)
+    #        sbs_en4 = en4[en4_sal_name].where(bottom_ind, np.nan)
+    #
+    #        sbt_en4 = sbt_en4.mean(dim="z_dim", skipna=True).load()
+    #        sbs_en4 = sbs_en4.mean(dim="z_dim", skipna=True).load()
 
     def depth_means(self, depth_bounds):
-        
-        print('Averaging all variables between {0}m <= x < {1}m'.format(depth_bounds[0], depth_bounds[1]), flush=True)
+
+        print("Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]), flush=True)
         ds = self.dataset
         layer_ind0 = ds.depth >= depth_bounds[0]
         layer_ind1 = ds.depth < depth_bounds[1]
         layer_ind = layer_ind0 * layer_ind1
         masked = ds.where(layer_ind, np.nan)
         meaned = masked.mean(dim="z_dim", skipna=True).load()
-        
+
         return meaned
-    
-    def bottom_means(self, ):
+
+    def bottom_means(
+        self,
+    ):
         return
-    
+
     def determine_region_indices(self, masks):
-        
+
         ds = self.dataset
-        
+
         # If landmask not present, set to None for nearest_indices (no masking)
-        if 'landmask' not in list(masks.keys()):
+        if "landmask" not in list(masks.keys()):
             landmask = None
         else:
             landmask = masks.landmask
         # SPATIAL indices - nearest neighbour
-        ind_x, ind_y = general_utils.nearest_indices_2D(masks['longitude'], 
-                                                        masks['latitude'],
-                                                        ds['longitude'], 
-                                                        ds['latitude'], 
-                                                        mask=landmask)
+        ind_x, ind_y = general_utils.nearest_indices_2D(
+            masks["longitude"], masks["latitude"], ds["longitude"], ds["latitude"], mask=landmask
+        )
         # Figure out which points lie in which region
-        print('Figuring out which regions each profile is in..')
-        region_indices = masks.isel(x_dim = ind_x, y_dim = ind_y)
-        
-        return region_indices.rename({'dim_0':'profile'})
-        
+        print("Figuring out which regions each profile is in..")
+        region_indices = masks.isel(x_dim=ind_x, y_dim=ind_y)
+
+        return region_indices.rename({"dim_0": "profile"})
 
     def mask_means(self, mask_indices, mask_names=None):
-        
+
         ds = self.dataset
-        
-        n_masks = mask_indices.dims['dim_mask']
-        
+
+        n_masks = mask_indices.dims["dim_mask"]
+
         if mask_names is None:
             mask_names = np.arange(n_masks)
-        
+
         # Loop over maskal arrays. Assign mean to mask and seasonal means
-        print('Calculating maskal averages..')
-        for mm in range(0,n_masks):
-            mask = mask_indices.isel(dim_mask = mm).mask.values
-            mask_ind = np.where( mask.astype(bool) )[0]
-            if len(mask_ind)<1:
+        print("Calculating maskal averages..")
+        for mm in range(0, n_masks):
+            mask = mask_indices.isel(dim_mask=mm).mask.values
+            mask_ind = np.where(mask.astype(bool))[0]
+            if len(mask_ind) < 1:
                 continue
-            mask_data = ds.isel(profile = mask_ind)
-            ds_average_prof = mask_data.mean(dim='profile', skipna=True).compute()
+            mask_data = ds.isel(profile=mask_ind)
+            ds_average_prof = mask_data.mean(dim="profile", skipna=True).compute()
             ds_average_all = mask_data.mean(skipna=True).compute()
-            
+
             var_list = list(ds_average_prof.keys())
             for vv in var_list:
-                ds_average_prof = ds_average_prof.rename({vv:'profile_average_'+vv})
-                ds_average_all = ds_average_all.rename({vv:'average_'+vv})
-            
+                ds_average_prof = ds_average_prof.rename({vv: "profile_average_" + vv})
+                ds_average_all = ds_average_all.rename({vv: "average_" + vv})
+
             ds_average_tmp = xr.merge((ds_average_prof, ds_average_all))
-            
+
             if mm == 0:
                 ds_average = ds_average_tmp
             else:
-                ds_average = xr.concat((ds_average, ds_average_tmp), dim='dim_mask')
-        
+                ds_average = xr.concat((ds_average, ds_average_tmp), dim="dim_mask")
+
         return
 
-    def difference(self, other, absolute_diff = True, square_diff = True):
-        
+    def difference(self, other, absolute_diff=True, square_diff=True):
+
         differenced = self.dataset - other.dataset
         diff_vars = list(differenced.keys())
-        
+
         for vv in diff_vars:
-            differenced = differenced.rename({vv:'diff_'+vv})
-            
+            differenced = differenced.rename({vv: "diff_" + vv})
+
         if absolute_diff:
             abs_tmp = uf.fabs(differenced)
             diff_vars = list(abs_tmp.keys())
             for vv in diff_vars:
-                abs_tmp = abs_tmp.rename({vv:'abs_'+vv})
+                abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
         else:
             abs_tmp = xr.Dataset()
-            
-            
+
         if square_diff:
             sq_tmp = uf.square(differenced)
             diff_vars = list(sq_tmp.keys())
             for vv in diff_vars:
-                sq_tmp = sq_tmp.rename({vv:'square_'+vv})
+                sq_tmp = sq_tmp.rename({vv: "square_" + vv})
         else:
             sq_tmp = xr.Dataset()
-            
+
         differenced = xr.merge((differenced, abs_tmp, sq_tmp))
-        
+
         return_differenced = Profile()
         return_differenced.dataset = differenced
-        
+
         return return_differenced
 
-    def interpolate_vertical(self, new_depth, 
-                             interp_method='linear'):
-        
+    def interpolate_vertical(self, new_depth, interp_method="linear"):
+
         if type(new_depth) is Profile:
-            print('yesitis')
+            print("yesitis")
             new_depth = new_depth.dataset.depth
-        
+
         ds = self.dataset
-        n_prof = ds.dims['profile']
-        
+        n_prof = ds.dims["profile"]
+
         # Now loop over profiles and interpolate model onto obs.
-        print('Interpolating onto new depths...')
-        count_ii=0
-        for pp in range(0,n_prof):
-            
+        print("Interpolating onto new depths...")
+        count_ii = 0
+        for pp in range(0, n_prof):
+
             # Select the current profile
-            profile = ds.isel(profile = pp).rename({'depth':'z_dim'})
+            profile = ds.isel(profile=pp).rename({"depth": "z_dim"})
             new_depth_prof = new_depth.isel(profile=pp).values
-                    
-            interpolated_tmp = profile.interp(z_dim=new_depth_prof, 
-                                          method=interp_method)
-            
-            interpolated_tmp = interpolated_tmp.rename_vars({'z_dim':'depth'})
-            interpolated_tmp = interpolated_tmp.reset_coords(['depth'])
-            
+
+            interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
+
+            interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
+            interpolated_tmp = interpolated_tmp.reset_coords(["depth"])
+
             # If not first iteration, concat this interpolated profile
             if count_ii == 0:
                 interpolated = interpolated_tmp
             else:
-                interpolated = xr.concat((interpolated, interpolated_tmp),
-                                           dim = 'profile', coords='all')
-            count_ii = count_ii+1
-        
-        interpolated = interpolated.set_coords(['depth'])
+                interpolated = xr.concat((interpolated, interpolated_tmp), dim="profile", coords="all")
+            count_ii = count_ii + 1
+
+        interpolated = interpolated.set_coords(["depth"])
         return_interpolated = Profile()
         return_interpolated.dataset = interpolated
-            
+
         return return_interpolated
 
     def obs_operator(self, nemo, mask_bottom_level=True):
-        '''
+        """
         VERSION 1.4 (05/07/2021)
-        
+
         Extracts and does some basic analysis and identification of model data at obs
         locations, times and depths. Writes extracted data to file. This routine
         does the analysis per file, for example monthly files. Output can be
         subsequently input to analyse_ts_regional. Data is extracted saved in two
         forms: on the original model depth levels and interpolated onto the
         observed depth levels.
-        
+
         This routine can be used in a loop to loop over all files containing
         daily or 25hourm data. Output files can be concatenated using a tools such
         as ncks or the concatenate_output_files() routine in this module.
         This is the recommended useage.
-        
+
         INPUTS:
          nemo                 : NEMO object created on t-grid
          fn_out (str)         : Absolute filepath for desired output file.
@@ -335,126 +330,121 @@ class Profile(Indexed):
                                 will make a guess based on nemo_frequency.
          end_date (datetime)  : End date for EN4 data. If not provided, script
                                 will make a guess based on nemo_frequency.
-                                
+
         OUTPUTS:
-         Returns a new PROFILE object containing an uncomputed dataset and 
+         Returns a new PROFILE object containing an uncomputed dataset and
          can write to file (recommended):
          Writes extracted data to file. Extracted dataset has the dimensions:
-        '''
-            
+        """
+
         # Read EN4, then extract desired variables
         en4 = self.dataset
         nemo = nemo.dataset
-        
+
         # CHECKS
         # 1. Check that bottom_level is in dataset if mask_bottom_level is True
         if mask_bottom_level:
-            if 'bottom_level' not in nemo.variables:
-                raise ValueError('bottom_level not found in input dataset. Please ensure variable is present or set mask_bottom_level to False')
-        
+            if "bottom_level" not in nemo.variables:
+                raise ValueError(
+                    "bottom_level not found in input dataset. Please ensure variable is present or set mask_bottom_level to False"
+                )
+
         # Use only observations that are within model time window.
         en4_time = en4.time.values
         mod_time = nemo.time.values
-        
+
         # SPATIAL indices - nearest neighbour
-        ind2D = general_utils.nearest_indices_2D(nemo['longitude'], nemo['latitude'],
-                                           en4['longitude'], en4['latitude'], 
-                                           mask=nemo.landmask)
+        ind2D = general_utils.nearest_indices_2D(
+            nemo["longitude"], nemo["latitude"], en4["longitude"], en4["latitude"], mask=nemo.landmask
+        )
         ind_x = ind2D[0]
         ind_y = ind2D[1]
-        print('Spatial Indices Calculated', flush=True)
-        
+        print("Spatial Indices Calculated", flush=True)
+
         # TIME indices - model nearest to obs time
         en4_time = en4.time.values
-        ind_t = [ np.argmin( np.abs( mod_time - en4_time[tt] ) ) for tt in range(en4.dims['profile'])]
+        ind_t = [np.argmin(np.abs(mod_time - en4_time[tt])) for tt in range(en4.dims["profile"])]
         ind_t = xr.DataArray(ind_t)
-        print('Time Indices Calculated', flush=True)
-        
+        print("Time Indices Calculated", flush=True)
+
         # Find out which variables have both depth and profile
         # This is for applying the bottom_level mask later
         var_list = list(nemo.keys())
         bl_var_list = []
         for vv in var_list:
-            cond1 = 'z_dim' not in nemo[vv].dims
+            cond1 = "z_dim" not in nemo[vv].dims
             if cond1:
                 bl_var_list.append(vv)
-        
+
         # Get chunks along the time dimension and determine whether chunks
         # are described by a single equal size, or a tuples of sizes
-        time_chunks = nemo.chunks['t_dim']
-        time_dim = nemo.dims['t_dim']
-        start_ii = 0 # Starting index for loading data. Increments each loop
-        count_ii = 0 # Counting index for allocating data. Increments 1 each loop
-        
+        time_chunks = nemo.chunks["t_dim"]
+        time_dim = nemo.dims["t_dim"]
+        start_ii = 0  # Starting index for loading data. Increments each loop
+        count_ii = 0  # Counting index for allocating data. Increments 1 each loop
+
         while start_ii < time_dim:
-            end_ii = start_ii+time_chunks[count_ii]
-            #print('{0}: {1} > {2}'.format(count_ii, start_ii, end_ii))
-            
+            end_ii = start_ii + time_chunks[count_ii]
+            # print('{0}: {1} > {2}'.format(count_ii, start_ii, end_ii))
+
             # Determine which time indices lie in this chunk
-            ind_in_chunk = np.logical_and(ind_t>=start_ii, ind_t<end_ii)
-            
+            ind_in_chunk = np.logical_and(ind_t >= start_ii, ind_t < end_ii)
+
             # Check There are some indices at all
             if np.sum(ind_in_chunk) == 0:
                 start_ii = end_ii
                 count_ii = count_ii + 1
                 continue
-            
+
             # Pull out x,y and t indices
             ind_x_in_chunk = ind_x[ind_in_chunk]
             ind_y_in_chunk = ind_y[ind_in_chunk]
             ind_t_in_chunk = ind_t[ind_in_chunk] - start_ii
-            
+
             # Index a temporary chunk and read it to memory
             ds_tmp = nemo.isel(t_dim=np.arange(start_ii, end_ii)).load()
-            
+
             # Index loaded chunk and rename dim_0 to profile
-            ds_tmp_indexed = ds_tmp.isel(x_dim = ind_x_in_chunk, 
-                                         y_dim = ind_y_in_chunk,
-                                         t_dim = ind_t_in_chunk)
-            ds_tmp_indexed = ds_tmp_indexed.rename({'dim_0':'profile'})
-            
+            ds_tmp_indexed = ds_tmp.isel(x_dim=ind_x_in_chunk, y_dim=ind_y_in_chunk, t_dim=ind_t_in_chunk)
+            ds_tmp_indexed = ds_tmp_indexed.rename({"dim_0": "profile"})
+
             # Mask out all levels deeper than bottom_level
             # Here I have used set_coords() and reset_coords() to omit variables
-            # with no z_dim from the masking. Otherwise xr.where expands these 
+            # with no z_dim from the masking. Otherwise xr.where expands these
             # dimensions into full 2D arrays.
             if mask_bottom_level:
-                n_z_tmp = ds_tmp_indexed.dims['z_dim']
+                n_z_tmp = ds_tmp_indexed.dims["z_dim"]
                 bl_array = ds_tmp_indexed.bottom_level.values
-                z_index, bl_index = np.meshgrid(np.arange(0,n_z_tmp), 
-                                                bl_array)
-                mask2 = xr.DataArray(z_index < bl_index, dims=['profile','z_dim'])
+                z_index, bl_index = np.meshgrid(np.arange(0, n_z_tmp), bl_array)
+                mask2 = xr.DataArray(z_index < bl_index, dims=["profile", "z_dim"])
                 ds_tmp_indexed = ds_tmp_indexed.set_coords(bl_var_list)
                 ds_tmp_indexed = ds_tmp_indexed.where(mask2)
                 ds_tmp_indexed = ds_tmp_indexed.reset_coords(bl_var_list)
-            
+
             # If not first iteration, concatenate this indexed chunk onto
             # final output dataset
             if count_ii == 0:
                 mod_profiles = ds_tmp_indexed
             else:
-                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed),
-                                           dim = 'profile')
-                
+                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="profile")
+
             # Update counters
             start_ii = end_ii
             count_ii = count_ii + 1
-            
-        
+
         # Put obs time into the output array
-        mod_profiles['obs_time'] = (['profile'], en4_time)
-        
+        mod_profiles["obs_time"] = (["profile"], en4_time)
+
         # Calculate interpolation distances
         interp_dist = general_utils.calculate_haversine_distance(
-                                             en4.longitude, 
-                                             en4.latitude, 
-                                             mod_profiles.longitude, 
-                                             mod_profiles.latitude)
-        mod_profiles['interp_dist'] = (['profile'], interp_dist.values)
-        
+            en4.longitude, en4.latitude, mod_profiles.longitude, mod_profiles.latitude
+        )
+        mod_profiles["interp_dist"] = (["profile"], interp_dist.values)
+
         # Calculate interpolation time lags
-        interp_lag = (mod_profiles.time.values - en4_time).astype('timedelta64[h]')
-        mod_profiles['interp_lag'] = (['profile'], interp_lag)
-            
+        interp_lag = (mod_profiles.time.values - en4_time).astype("timedelta64[h]")
+        mod_profiles["interp_lag"] = (["profile"], interp_lag)
+
         # Create return object and put dataset into it.
         return_prof = Profile()
         return_prof.dataset = mod_profiles
