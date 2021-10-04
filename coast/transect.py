@@ -1,6 +1,4 @@
 from .coast import Coast
-
-# from .nemo import Nemo
 from .gridded import Gridded
 from scipy.ndimage import convolve1d
 from scipy import interpolate

@@ -6,8 +6,6 @@ import warnings
 import gsw
 import traceback
 from .coast import Coast
-
-# from .nemo import Nemo
 from .gridded import Gridded
 from scipy import interpolate
 from scipy.integrate import cumtrapz
