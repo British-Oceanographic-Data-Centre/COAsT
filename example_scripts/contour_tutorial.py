@@ -91,7 +91,7 @@ cont_f = coast.ContourF(nemo_f, y_ind, x_ind, 200)
 
 cont_f.calc_cross_contour_flow(nemo_u, nemo_v)
 
-# This creates fields ``cont_f.data_cross_flow.normal_velocities`` and  
+# This creates fields ``cont_f.data_cross_flow.normal_velocities`` and
 ## ``cont_f.data_cross_flow.depth_integrated_normal_transport``
 
 
@@ -99,9 +99,9 @@ cont_f.calc_cross_contour_flow(nemo_u, nemo_v)
 # %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 
-# The "calc_geostrophic_flow()" operates on f-grid objects and requires 
+# The "calc_geostrophic_flow()" operates on f-grid objects and requires
 # configuration files for the u- and v- grids
- 
+
 cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)
 
 """
