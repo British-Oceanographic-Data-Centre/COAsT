@@ -44,8 +44,9 @@ tran_t.data
 # %% Plot the data
 # It is simple to plot a scalar such as temperature along the transect:
 temp_mean = tran_t.data.temperature.mean(dim="t_dim")
+plt.figure()
 temp_mean.plot.pcolormesh(y="depth_0", yincrease=False)
-
+plt.show()
 
 # %% Flow across the transect
 # With NEMO’s staggered grid, the first step is to define the transect on the f-grid so that the velocity components are between f-points. We do not need any model data on the f-grid, just the grid information, so create a nemo f-grid object
@@ -83,12 +84,14 @@ tran_f.data_cross_tran_flow
 
 
 cross_velocity_mean = tran_f.data_cross_tran_flow.normal_velocities.mean(dim="t_dim")
+plt.figure()
 cross_velocity_mean.rolling(r_dim=2).mean().plot.pcolormesh(yincrease=False, y="depth_0", cbar_kwargs={"label": "m/s"})
-
+plt.show()
 
 # or the volume transport across the transect, we can plot the ‘normal_transports’ variable
 
-
+plt.figure()
 cross_transport_mean = tran_f.data_cross_tran_flow.normal_transports.mean(dim="t_dim")
 cross_transport_mean.rolling(r_dim=2).mean().plot()
 plt.ylabel("Sv")
+plt.show()
