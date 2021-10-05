@@ -98,13 +98,13 @@ sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
 """
 #################################################
-## ( 1 ) Nemo Loading/Initialisation           ##
+## ( 1 ) Loading/Initialisation                ##
 #################################################
 """
 # This section is for testing the loading and initialisation of Nemo objects.
 
 # -----------------------------------------------------------------------------#
-# %% ( 1a ) Load example Nemo data (Temperature, Salinity, SSH)                  #
+# %% ( 1a ) Load example Gridded Nemo data (Temperature, Salinity, SSH)                  #
 #                                                                             #
 
 subsec = subsec + 1
@@ -155,7 +155,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-# %% ( 1c ) Set Nemo variable name                                               #
+# %% ( 1c ) Set Gridded variable name                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -171,7 +171,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-# %% ( 1d ) Set Nemo grid attributes - dimension names                           #
+# %% ( 1d ) Set Gridded grid attributes - dimension names                           #
 #                                                                             #
 
 subsec = subsec + 1
