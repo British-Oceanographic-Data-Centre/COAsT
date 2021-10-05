@@ -31,10 +31,10 @@ fn_config_u_grid = "./config/example_nemo_grid_u.json"
 fn_config_v_grid = "./config/example_nemo_grid_v.json"
 
 # %%  Load data variables that are on the NEMO t-grid
-nemo_t = coast.Gridded( fn_data = fn_nemo_dat_t, fn_domain = fn_nemo_dom, config=fn_config_t_grid )
+nemo_t = coast.Gridded(fn_data=fn_nemo_dat_t, fn_domain=fn_nemo_dom, config=fn_config_t_grid)
 
 # Now create a transect between the points (54 N 15 W) and (56 N, 12 W) using the `coast.TransectT` object. This needs to be passed the corresponding NEMO object and transect end points. The model points closest to these coordinates will be selected as the transect end points.
-tran_t = coast.TransectT( nemo_t, (54,-15), (56,-12) )
+tran_t = coast.TransectT(nemo_t, (54, -15), (56, -12))
 
 # Inspect the data
 tran_t.data
@@ -43,34 +43,34 @@ tran_t.data
 
 # %% Plot the data
 # It is simple to plot a scalar such as temperature along the transect:
-temp_mean = tran_t.data.temperature.mean(dim='t_dim')
-temp_mean.plot.pcolormesh(y='depth_0', yincrease=False )
+temp_mean = tran_t.data.temperature.mean(dim="t_dim")
+temp_mean.plot.pcolormesh(y="depth_0", yincrease=False)
 
 
 # %% Flow across the transect
 # With NEMO’s staggered grid, the first step is to define the transect on the f-grid so that the velocity components are between f-points. We do not need any model data on the f-grid, just the grid information, so create a nemo f-grid object
 
 
-nemo_f = coast.Gridded( fn_domain = fn_nemo_dom, config=fn_config_f_grid )
+nemo_f = coast.Gridded(fn_domain=fn_nemo_dom, config=fn_config_f_grid)
 
 # and a transect on the f-grid
 
 
-tran_f = coast.TransectF( nemo_f, (54,-15), (56,-12) )
+tran_f = coast.TransectF(nemo_f, (54, -15), (56, -12))
 tran_f.data
 
 
 # We also need the i- and j-components of velocity so (lazy) load the model data on the u- and v-grid grids
 
 
-nemo_u = coast.Gridded( fn_data = fn_nemo_dat_u, fn_domain = fn_nemo_dom, config=fn_config_u_grid )
-nemo_v = coast.Gridded( fn_data = fn_nemo_dat_v, fn_domain = fn_nemo_dom, config=fn_config_v_grid )
+nemo_u = coast.Gridded(fn_data=fn_nemo_dat_u, fn_domain=fn_nemo_dom, config=fn_config_u_grid)
+nemo_v = coast.Gridded(fn_data=fn_nemo_dat_v, fn_domain=fn_nemo_dom, config=fn_config_v_grid)
 
 
 # Now we can calculate the flow across the transect with the method
 
 
-tran_f.calc_flow_across_transect(nemo_u,nemo_v)
+tran_f.calc_flow_across_transect(nemo_u, nemo_v)
 
 
 # The flow across the transect is stored in a new dataset where the variables are all defined at the points between f-points.
@@ -82,14 +82,13 @@ tran_f.data_cross_tran_flow
 # For example, to plot the time averaged velocity across the transect, we can plot the ‘normal_velocities’ variable
 
 
-cross_velocity_mean = tran_f.data_cross_tran_flow.normal_velocities.mean(dim='t_dim')
-cross_velocity_mean.rolling(r_dim=2).mean().plot.pcolormesh(yincrease=False,y='depth_0',cbar_kwargs={'label': 'm/s'})
+cross_velocity_mean = tran_f.data_cross_tran_flow.normal_velocities.mean(dim="t_dim")
+cross_velocity_mean.rolling(r_dim=2).mean().plot.pcolormesh(yincrease=False, y="depth_0", cbar_kwargs={"label": "m/s"})
 
 
 # or the volume transport across the transect, we can plot the ‘normal_transports’ variable
 
 
-cross_transport_mean = tran_f.data_cross_tran_flow.normal_transports.mean(dim='t_dim')
+cross_transport_mean = tran_f.data_cross_tran_flow.normal_transports.mean(dim="t_dim")
 cross_transport_mean.rolling(r_dim=2).mean().plot()
-plt.ylabel('Sv')
-
+plt.ylabel("Sv")
