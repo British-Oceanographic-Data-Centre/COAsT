@@ -1,4 +1,4 @@
-'''
+"""
 This script will take you through the key methods and workflows associated with
 COAsT's Profile object. This is a data object for storing multiple profiles
 and comparing them to Gridded objects.
@@ -10,7 +10,7 @@ capabilities. Not all of them do however. If working with very large datasets
 it is recommended that the resulting datasets are saved to file at every step
 and read into a new profile object, with new chunking, before continuing. This
 can be done easily by calling xarrays to_netcdf().
-'''
+"""
 
 #%% >> 1. Import some things to make this script work
 import coast
@@ -21,26 +21,24 @@ import matplotlib.pyplot as plt
 
 #%% >> 2. Define file paths
 
-fn_dom = '/Users/dbyrne/Projects/CO9_AMM15/data/nemo/CO7_EXACT_CFG_FILE.nc'
-fn_dat = '/Users/dbyrne/Projects/CO9_AMM15/data/nemo/co7/2004*'
-fn_out = '/Users/dbyrne/test.nc'
-fn_en4 = '/Users/dbyrne/Projects/coast/workshops/07092021/data/EN.4*'
-fn_p = '/Users/dbyrne/Projects/CO9_AMM15/obs/en4/proc.nc'
+fn_dom = "/Users/dbyrne/Projects/CO9_AMM15/data/nemo/CO7_EXACT_CFG_FILE.nc"
+fn_dat = "/Users/dbyrne/Projects/CO9_AMM15/data/nemo/co7/2004*"
+fn_out = "/Users/dbyrne/test.nc"
+fn_en4 = "/Users/dbyrne/Projects/coast/workshops/07092021/data/EN.4*"
+fn_p = "/Users/dbyrne/Projects/CO9_AMM15/obs/en4/proc.nc"
 
 #%% >> 3. Create a Gridded object using your data and domain files.
 
-nemo = coast.Gridded(fn_dat, fn_dom, multiple=True,
-                  config="./config/example_nemo_grid_t.json")
+nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
 
 # Create a landmask array and put it into the nemo object.
 # Here, using the bottom_level == 0 variable from the domain file is enough.
-nemo.dataset['landmask'] = nemo.dataset.bottom_level == 0
-nemo.dataset = nemo.dataset.rename({'depth_0':'depth'})
+nemo.dataset["landmask"] = nemo.dataset.bottom_level == 0
+nemo.dataset = nemo.dataset.rename({"depth_0": "depth"})
 
 #%% >> 4. Create a Profile object. Here we use EN4 data.
 
-profile = coast.Profile(fn_en4, multiple=True, 
-                        config="./config/example_en4_profiles.json")
+profile = coast.Profile(fn_en4, multiple=True, config="./config/example_en4_profiles.json")
 
 
 #%% >> 5. Do some processing of the EN4 data. Here, we cut out a box of the
@@ -52,8 +50,8 @@ ind = profile.subset_indices_lonlat_box([-25.47, 16.25], [44, 63.5])[0]
 profile = profile.isel(profile=ind)
 
 # Just for this example script, thin the data (remove before any serious runs)
-n_profiles = profile.dataset.dims['profile']
-profile.dataset = profile.dataset.isel(profile=np.arange(0, n_profiles,5))
+n_profiles = profile.dataset.dims["profile"]
+profile.dataset = profile.dataset.isel(profile=np.arange(0, n_profiles, 5))
 
 # Create a new profile object called processed, containing the quality
 # controlled data. NOTE: .compute() or .load() will need to be called on
@@ -72,7 +70,7 @@ model_profiles = processed.obs_operator(nemo)
 # and the x, y and t indices used in the nearest neighbour.
 
 # Lets remove any points where the nearest neighbour was further than x km from
-# the original point. 
+# the original point.
 too_far = 5
 keep_indices = model_profiles.dataset.interp_dist <= too_far
 model_profiles = model_profiles.isel(profile=keep_indices)
@@ -81,20 +79,18 @@ processed = processed.isel(profile=keep_indices)
 #%% >> 7. Interpolate both model and observed profiles onto reference depths.
 
 # Define our reference depths
-reference_depths = np.arange(0,500,2)
+reference_depths = np.arange(0, 500, 2)
 
 # Take just temperature for this example
-model_profiles.dataset = model_profiles.dataset[['temperature']]
+model_profiles.dataset = model_profiles.dataset[["temperature"]]
 
 # Vertical interpolation of model profiles using interpolate_vertical().
-model_profiles_interp = model_profiles.interpolate_vertical(reference_depths,
-                                                            interp_method='linear')
+model_profiles_interp = model_profiles.interpolate_vertical(reference_depths, interp_method="linear")
 
 
 # Vertical interpolation of processed observations
-processed.dataset = processed.dataset[['temperature','depth']]
-processed_interp = processed.interpolate_vertical(reference_depths, 
-                                                  interp_method='linear')
+processed.dataset = processed.dataset[["temperature", "depth"]]
+processed_interp = processed.interpolate_vertical(reference_depths, interp_method="linear")
 
 
 #%% >> 8. Data differences/errors
@@ -123,10 +119,10 @@ lon = nemo.dataset.longitude.values
 lat = nemo.dataset.latitude.values
 
 # Make a North Sea and Whole Domain mask
-mm_north_sea = mm.region_def_nws_north_sea(lon,lat,bath)
+mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
 mm_whole_domain = np.ones(lon.shape)
 mask_list = [mm_north_sea, mm_whole_domain]
-mask_names = ['North Sea', 'Whole Domain']
+mask_names = ["North Sea", "Whole Domain"]
 
 # Turn mask list into an xarray dataset
 mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
@@ -137,7 +133,7 @@ mask_indices = model_profiles_interp.determine_mask_indices(mask_list)
 # Do average differences for each region
 mask_means = differences.mask_means(mask_indices)
 
-#%% >> 10. Surface and bottom averaging. 
+#%% >> 10. Surface and bottom averaging.
 #      We can use a couple of routines to get surface and bottom values
 #      for the profile data. This can be used to give us maps of e.g. SST.
 #      It also allows us to calculate more statistics such as the CRPS
@@ -154,8 +150,8 @@ surface_errors = obs_profiles_surface.difference(model_profiles_surface)
 # Lets get bottom values by averaging over the bottom 30m, except whether
 # depth is <100m, then average over the bottom 10m
 model_profiles_bottom = model_profiles.bottom_means([10, 30], [100, np.inf])
-obs_bathymetry = model_profiles.dataset['bathymetry'].values
-processed.dataset['bathymetry'] = (['profile'], obs_bathymetry)
+obs_bathymetry = model_profiles.dataset["bathymetry"].values
+processed.dataset["bathymetry"] = (["profile"], obs_bathymetry)
 obs_profiles_bottom = processed.bottom_means([10, 30], [100, np.inf])
 
 # Get differences
