@@ -1,7 +1,7 @@
 {
 	"type": "gridded",
 	"dimensionality": 3,
-	"chunks": {},
+	"chunks": {"time_counter":2},
 	"grid_ref": {
 		"t-grid": [
 			"glamt",
@@ -10,7 +10,9 @@
 			"e2t",
 			"e3t_0",
 			"deptht_0",
-			"tmask"
+			"tmask",
+			"bottom_level",
+			"hbatt"
 		]
 	},
 	"dataset": {
@@ -57,7 +59,8 @@
 			"e3t_0": "e3_0",
 			"tmask":"mask",
 			"deptht_0": "depth_0",
-			"bottom_level": "bottom_level"
+			"bottom_level": "bottom_level",
+			"hbatt":"bathymetry"
 		}
 	},
 	"static_variables": {

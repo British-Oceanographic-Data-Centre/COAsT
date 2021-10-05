@@ -10,6 +10,21 @@ class MaskMaker:
         return
 
     @staticmethod
+    def make_mask_dataset(longitude, latitude, mask_list):
+        if type(mask_list) is not list:
+            mask_list = [mask_list]
+        gridded_mask = xr.Dataset()
+        gridded_mask["longitude"] = (["y_dim", "x_dim"], longitude)
+        gridded_mask["latitude"] = (["y_dim", "x_dim"], latitude)
+        n_masks = len(mask_list)
+        nr, nc = mask_list[0].shape
+        all_masks = np.zeros((n_masks, nr, nc))
+        gridded_mask["mask"] = (["dim_mask", "y_dim", "x_dim"], all_masks)
+        for mm in np.arange(n_masks):
+            gridded_mask["mask"][mm] = mask_list[mm]
+        return gridded_mask
+
+    @staticmethod
     def fill_polygon_by_index(array_to_fill, vertices_r, vertices_c, fill_value=1, additive=False):
         """
         Draws and fills a polygon onto an existing numpy array based on array
