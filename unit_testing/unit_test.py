@@ -86,7 +86,7 @@ fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
 fn_nemo_harmonics = "coast_nemo_harmonics.nc"
 fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
 # EN4 profile data (NetCDF)
-fn_profile = dn_files + "EN4_example.nc"
+fn_profile = dn_files + "coast_example_EN4_201008.nc"
 fn_profile_config = "config/example_en4_profiles.json"
 fn_config_t_grid = path.join("./config", "example_nemo_grid_t.json")
 fn_config_f_grid = path.join("./config", "example_nemo_grid_f.json")
@@ -1610,69 +1610,179 @@ subsec = 96
 # -----------------------------------------------------------------------------#
 # ( 10a ) Load EN4 data                                                       #
 #                                                                             #
-
 subsec = subsec + 1
-# Create Profile object and read EN4 example data file
+# <Introduction>
 
 try:
-    # Create object without config file
-    profiles = coast.Profile(file_path=fn_profile)
-    check0 = profiles is not None
+    profile = coast.Profile(fn_profile, config=fn_profile_config)
+    profile.dataset = profile.dataset.isel(profile=np.arange(0, profile.dataset.dims["profile"], 10)).load()
 
-    # Create object with config file
-    profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
+    check1 = type(profile) == coast.Profile
+    check2 = profile.dataset.temperature.values[0, 0] = 8.981
 
-    # TEST: Check some data
-    check1 = profiles.dataset.dims["z_dim"] == 400
-    check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check0 and check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - EN4 Data read, Profile created")
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
     else:
-        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-
 # -----------------------------------------------------------------------------#
-# ( 10b ) Plot locations on map                                               #
-#                                                                             #
-
+# ( 10b ) Process EN4 data                                                     #
+#
 subsec = subsec + 1
-# Plot profile locations on a map
+# <Introduction>
 
 try:
-    f, a = profiles.plot_map()
-    f.savefig(dn_fig + "profiles_map.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
+    processed = profile.process_en4()
+    processed.dataset.load()
+
+    check1 = type(processed) == coast.profile.Profile
+    check2 = np.isnan(processed.dataset.temperature.values[0, 0])
+    check3 = processed.dataset.dims["profile"] == 111
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# ( 10c ) Plot ts diagram                                                     #
-#                                                                             #
-
+# ( 10c ) Gridded obs_operaor                                                  #
+#
 subsec = subsec + 1
-# Plot ts diagram
+# <Introduction>
 
 try:
-    f, a = profiles.plot_ts_diagram(10)
-    f.savefig(dn_fig + "profile_ts_diagram.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
+    # First read some new NEMO data
+    nemo_t = coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
+    )
+    nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
+    nemo_profiles = processed.obs_operator(nemo_t)
+
+    check1 = type(nemo_profiles) == coast.profile.Profile
+    check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
+    check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# ( 10d ) Plot temperature profile                                            #
-#                                                                             #
-
+# ( 10d ) Vertical Interpolation                                               #
+#
 subsec = subsec + 1
-# Plot ts diagram
+# <Introduction>
 
 try:
-    f, a = profiles.plot_profile(var="potential_temperature", profile_indices=[10])
-    f.savefig(dn_fig + "profile_temperature_diagram.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
+    reference_depths = np.arange(0, 500, 2)
+    nemo_profiles.dataset = nemo_profiles.dataset.rename({"depth_0": "depth"})
+    model_interpolated = nemo_profiles.interpolate_vertical(processed)
+
+    check1 = type(model_interpolated) == coast.profile.Profile
+    check2 = nemo_profiles.dataset.temperature.values[0, 0] == np.float32(1.7324219)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+# -----------------------------------------------------------------------------#
+# ( 10e ) Profile Differencing                                                 #
+#
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    difference = processed.difference(model_interpolated)
+    difference.dataset.load()
+
+    check1 = type(difference) == coast.profile.Profile
+    check2 = difference.dataset.diff_temperature.values[0, 2] == np.float32(1.1402345)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+# -----------------------------------------------------------------------------#
+# ( 10f ) Regional Averaging                                                   #
+#
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    # First let's make some masks to define regions of the model domain
+    mm = coast.MaskMaker()
+
+    # Make some variables easier to access
+    bath = nemo_t.dataset.bathymetry.values
+    lon = nemo_t.dataset.longitude.values
+    lat = nemo_t.dataset.latitude.values
+
+    mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
+    mm_whole_domain = np.ones(lon.shape)
+    mask_list = [mm_north_sea, mm_whole_domain]
+    mask_names = ["North Sea", "Whole Domain"]
+
+    # Turn mask list into an xarray dataset
+    mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
+
+    # Determine whether each profile is in each masked region or not
+    mask_indices = model_interpolated.determine_mask_indices(mask_list)
+
+    # Do average differences for each region
+    mask_means = difference.mask_means(mask_indices)
+
+    check1 = mask_means.average_diff_temperature.values[0] == np.float32(-0.78869253)
+
+    if check1:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+# -----------------------------------------------------------------------------#
+# ( 10g ) Surface/Bottom Averaging                                             #
+#
+subsec = subsec + 1
+# <Introduction>
+
+try:
+
+    # Lets get surface values by averaging over the top 5m of data
+    surface = 5
+    model_profiles_surface = nemo_profiles.depth_means([0, surface])
+
+    # Lets get bottom values by averaging over the bottom 30m, except whether
+    # depth is <100m, then average over the bottom 10m
+    model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf])
+
+    check1 = type(model_profiles_surface) == coast.profile.Profile
+    check1 = type(model_profiles_bottom) == coast.profile.Profile
+    check3 = model_profiles_surface.dataset.temperature.values[0] == np.float32(1.7500391)
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
+
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 # %%

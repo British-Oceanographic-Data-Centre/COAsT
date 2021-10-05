@@ -18,7 +18,9 @@
 			"POTM_CORRECTED_QC": "qc_potential_temperature",
 			"PSAL_CORRECTED_QC": "qc_practical_salinity",
 			"DEPH_CORRECTED_QC": "qc_depth",
-			"JULD_QC": "qc_time"
+			"JULD_QC": "qc_time",
+			"QC_FLAGS_PROFILES":"qc_flags_profiles",
+			"QC_FLAGS_LEVELS":"qc_flags_levels"
 		},
 		"coord_vars": ["time","latitude","longitude"],
 		"keep_all_vars": "False"
