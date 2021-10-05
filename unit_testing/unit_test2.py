@@ -73,11 +73,11 @@ if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
 
 dn_fig = "unit_testing/figures/"
-json_config_file_t_grid = path.join("./config", "example_nemo_grid_t.json")
-json_config_file_f_grid = path.join("./config", "example_nemo_grid_f.json")
-json_config_file_u_grid = path.join("./config", "example_nemo_grid_u.json")
-json_config_file_v_grid = path.join("./config", "example_nemo_grid_v.json")
-json_config_file_w_grid = path.join("./config", "example_nemo_grid_w.json")
+fn_config_t_grid = path.join("./config", "example_nemo_grid_t.json")
+fn_config_f_grid = path.join("./config", "example_nemo_grid_f.json")
+fn_config_u_grid = path.join("./config", "example_nemo_grid_u.json")
+fn_config_v_grid = path.join("./config", "example_nemo_grid_v.json")
+fn_config_w_grid = path.join("./config", "example_nemo_grid_w.json")
 fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
 fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
@@ -110,9 +110,7 @@ subsec = 96  # Code for '`' (1 below 'a')
 subsec = subsec + 1
 
 try:
-    sci = coast.Gridded(
-        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=json_config_file_t_grid
-    )
+    sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=fn_config_t_grid)
 
     # Test the data has loaded
     sci_attrs_ref = dict(
@@ -141,9 +139,9 @@ except:
 subsec = subsec + 1
 try:
     ds = xr.open_dataset(dn_files + fn_nemo_dat)
-    sci_load_ds = coast.Gridded(config=json_config_file_t_grid)
+    sci_load_ds = coast.Gridded(config=fn_config_t_grid)
     sci_load_ds.load_dataset(ds)
-    sci_load_file = coast.Gridded(config=json_config_file_t_grid)
+    sci_load_file = coast.Gridded(config=fn_config_t_grid)
     sci_load_file.load(dn_files + fn_nemo_dat)
     if sci_load_ds.dataset.identical(sci_load_file.dataset):
         print(str(sec) + chr(subsec) + " OK - Coast.load_dataset()")
@@ -162,7 +160,7 @@ except:
 
 subsec = subsec + 1
 try:
-    sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+    sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
     try:
         sci.dataset.temperature
     except NameError:
@@ -192,7 +190,7 @@ except:
 subsec = subsec + 1
 
 pass_test = False
-nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_f_grid)
+nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
 
 if nemo_f.dataset._coord_names == {"depth_0", "latitude", "longitude"}:
     var_name_list = []
@@ -214,21 +212,21 @@ subsec = subsec + 1
 
 try:
     nemo_t = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
     if not np.isclose(np.nansum(nemo_t.dataset.depth_0.values), 1705804300.0):
         raise ValueError(" X - Nemo depth_0 failed on t-grid failed")
     nemo_u = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_u_grid
+        fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid
     )
     if not np.isclose(np.nansum(nemo_u.dataset.depth_0.values), 1705317600.0):
         raise ValueError(" X - Nemo depth_0 failed on u-grid failed")
     nemo_v = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_v_grid
+        fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid
     )
     if not np.isclose(np.nansum(nemo_v.dataset.depth_0.values), 1705419100.0):
         raise ValueError(" X - Nemo depth_0 failed on v-grid failed")
-    nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_f_grid)
+    nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
     if not np.isclose(np.nansum(nemo_f.dataset.depth_0.values), 1704932600.0):
         raise ValueError(" X - Nemo depth_0 failed on f-grid failed")
 
@@ -244,7 +242,7 @@ subsec = subsec + 1
 
 try:
 
-    amm7 = coast.Gridded(dn_files + fn_nemo_dat_subset, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+    amm7 = coast.Gridded(dn_files + fn_nemo_dat_subset, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset._coord_names == {"depth_0", "latitude", "longitude", "time"}:
@@ -266,9 +264,7 @@ subsec = subsec + 1
 
 try:
     file_names_amm7 = "nemo_data_T_grid*.nc"
-    amm7 = coast.Gridded(
-        dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=json_config_file_t_grid, multiple=True
-    )
+    amm7 = coast.Gridded(dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=fn_config_t_grid, multiple=True)
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset.time.size == 14:
@@ -288,9 +284,7 @@ subsec = subsec + 1
 # Nemo obejct and dataset.
 
 try:
-    harmonics = coast.Gridded(
-        dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=json_config_file_t_grid
-    )
+    harmonics = coast.Gridded(dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid)
     constituents = ["K1", "M2", "S2", "K2"]
     harmonics_combined = harmonics.harmonics_combine(constituents)
 
@@ -334,7 +328,7 @@ except:
 subsec = subsec + 1
 try:
     nemo_t = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
 
     e3t, e3u, e3v, e3f, e3w = coast.Gridded.get_e3_from_ssh(nemo_t, True, True, True, True, True)
@@ -430,15 +424,13 @@ subsec = 96
 subsec = subsec + 1
 
 # Initialise DataArrays
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
-)
-nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_w_grid)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 
 try:
     log_str = ""
     # Compute dT/dz
-    nemo_w_1 = nemo_t.differentiate("temperature", config_path=json_config_file_w_grid, dim="z_dim")
+    nemo_w_1 = nemo_t.differentiate("temperature", config_path=fn_config_w_grid, dim="z_dim")
     if nemo_w_1 is None:  # Test whether object was returned
         log_str += "No object returned\n"
     # Make sure the hardwired grid requirements are present
@@ -449,18 +441,18 @@ try:
     if not hasattr(nemo_w.dataset.depth_0, "units"):
         log_str += "Missing depth units\n"
     # Test attributes of derivative. This are generated last so can indicate earlier problems
-    nemo_w_2 = nemo_t.differentiate("temperature", dim="z_dim", out_varstr="dTdz", out_obj=nemo_w)
+    nemo_w_2 = nemo_t.differentiate("temperature", dim="z_dim", out_var_str="dTdz", out_obj=nemo_w)
     if not nemo_w_2.dataset.dTdz.attrs == {"units": "degC/m", "standard_name": "dTdz"}:
         log_str += "Did not write correct attributes\n"
     # Test auto-naming derivative. Again test expected attributes.
-    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim", config_path=json_config_file_w_grid)
+    nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim", config_path=fn_config_w_grid)
     if not nemo_w_3.dataset.temperature_dz.attrs == {"units": "degC/m", "standard_name": "temperature_dz"}:
         log_str += "Problem with auto-naming derivative field\n"
 
     ## Test numerical calculation. Differentiate f(z)=-z --> -1
     # Construct a depth variable - needs to be 4D
     nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], nemo_t.dataset["temperature"])
-    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_varstr="dzdz", config_path=json_config_file_w_grid)
+    nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz", config_path=fn_config_w_grid)
     if not np.isclose(
         nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
     ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
@@ -480,9 +472,7 @@ except:
 #                                                                             #
 
 subsec = subsec + 1
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 nemo_t.construct_density()
 yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
@@ -507,9 +497,9 @@ subsec = subsec + 1
 
 nemo_t = None
 nemo_w = None
-nemo_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+nemo_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat_summer, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 # create an empty w-grid object, to store stratification
-nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_w_grid)
+nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid)
 try:
     log_str = ""
     # initialise Internal Tide object
@@ -576,9 +566,7 @@ subsec = 96
 subsec = subsec + 1
 
 # Extract transect indices
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 yt, xt, length_of_line = nemo_t.transect_indices([51, -5], [49, -9])
 
 # Test transect indices
@@ -673,15 +661,15 @@ else:
 subsec = subsec + 1
 try:
     nemo_t = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
     nemo_u = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_u_grid
+        fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid
     )
     nemo_v = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_v_grid
+        fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid
     )
-    nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_f_grid)
+    nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
 
     tran_f = coast.TransectF(nemo_f, (54, -15), (56, -12))
     tran_f.calc_flow_across_transect(nemo_u, nemo_v)
@@ -739,7 +727,7 @@ except:
 #
 subsec = subsec + 1
 try:
-    tran_f.calc_geostrophic_flow(nemo_t)
+    tran_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid)
     cksum1 = tran_f.data_cross_tran_flow.normal_velocity_hpg.sum(dim=("t_dim", "depth_z_levels", "r_dim")).item()
     cksum2 = tran_f.data_cross_tran_flow.normal_velocity_spg.sum(dim=("t_dim", "r_dim")).item()
     cksum3 = tran_f.data_cross_tran_flow.normal_transport_hpg.sum(dim=("t_dim", "r_dim")).item()
@@ -1030,7 +1018,7 @@ subsec = 96
 
 # This section is for testing and demonstrating the use of the TideGauge
 # object. First begin by reloading Nemo t-grid test data:
-sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
 # -----------------------------------------------------------------------------#
 # %% ( 7a ) Load in GESLA tide gauge files from directory                      #
@@ -1458,7 +1446,7 @@ subsec = 96
 # %% ( 8a ) Extract isbath contour between two points and create contour object  #
 #                                                                             #
 subsec = subsec + 1
-nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_f_grid)
+nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = coast.ContourF(nemo_f, y_ind, x_ind, 200)
@@ -1486,9 +1474,7 @@ except OSError:
 # %% ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
 subsec = subsec + 1
-nemo_t = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
-)
+nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_t, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], [50, -10], [60, 3])
 cont_t = coast.ContourT(nemo_t, y_ind, x_ind, 200)
@@ -1503,13 +1489,9 @@ else:
 # %% ( 8d ) Calculate flow across contour                                        #
 #                                                                             #
 subsec = subsec + 1
-nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=json_config_file_f_grid)
-nemo_u = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_u_grid
-)
-nemo_v = coast.Gridded(
-    fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_v_grid
-)
+nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
+nemo_u = coast.Gridded(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid)
+nemo_v = coast.Gridded(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid)
 contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = coast.ContourF(nemo_f, y_ind, x_ind, 200)
@@ -1525,7 +1507,7 @@ else:
 # %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
-cont_f.calc_geostrophic_flow(nemo_t, 1027)
+cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)
 if np.allclose(
     (
         cont_f.data_cross_flow.normal_velocity_hpg
@@ -1554,7 +1536,7 @@ subsec = 96
 subsec = subsec + 1
 try:
     nemo_t = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
     eofs = coast.compute_eofs(nemo_t.dataset.ssh)
 
@@ -1579,7 +1561,7 @@ except:
 subsec = subsec + 1
 try:
     nemo_t = coast.Gridded(
-        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=json_config_file_t_grid
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
     heofs = coast.compute_hilbert_eofs(nemo_t.dataset.ssh)
 
@@ -1834,7 +1816,7 @@ subsec = 96
 
 # Preparation: Create two arrays to put mask onto, one of zeros and one of ones
 # This allows us to test the additive feature.
-sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 mask00 = np.zeros((sci.dataset.dims["y_dim"], sci.dataset.dims["x_dim"]))
 mask01 = np.ones((sci.dataset.dims["y_dim"], sci.dataset.dims["x_dim"]))
 
@@ -1901,7 +1883,7 @@ except:
 sec = sec + 1
 subsec = 96
 
-sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=json_config_file_t_grid)
+sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 ds = sci.dataset[["temperature", "ssh"]].isel(z_dim=0)
 
 # -----------------------------------------------------------------------------#
