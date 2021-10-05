@@ -867,7 +867,7 @@ sec = sec + 1
 subsec = 96
 # This section is for testing and demonstrating the use of the Altimetry
 # object. First begin by reloading Nemo t-grid test data:
-sci = coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
 
 # -----------------------------------------------------------------------------#
