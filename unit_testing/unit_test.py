@@ -56,7 +56,7 @@ import xarray.ufuncs as uf
 """
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
-coast.logging_util.setup_logging(stream=log_file, level=logging.DEBUG)
+coast.logging_util.setup_logging(stream=log_file, level=logging.INFO)
 ## Alternative logging levels
 # ..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 # ..., level=logging.INFO) # Confirmation that things are working as expected.
@@ -1593,8 +1593,15 @@ subsec = subsec + 1
 
 try:
     profile = coast.Profile(fn_profile, config=fn_profile_config)
-    profile.dataset = profile.dataset.isel(profile=np.arange(0, profile.dataset.dims["profile"], 10))
-    print(str(sec) + chr(subsec) + " OK")
+    profile.dataset = profile.dataset.isel(profile=np.arange(0, profile.dataset.dims["profile"], 10)).load()
+
+    check1 = type(profile) == coast.Profile
+    check2 = profile.dataset.temperature.values[0, 0] = 8.981
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1608,7 +1615,15 @@ subsec = subsec + 1
 try:
     processed = profile.process_en4()
     processed.dataset.load()
-    print(str(sec) + chr(subsec) + " OK")
+
+    check1 = type(processed) == coast.profile.Profile
+    check2 = np.isnan(processed.dataset.temperature.values[0, 0])
+    check3 = processed.dataset.dims["profile"] == 111
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1626,7 +1641,15 @@ try:
     )
     nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
     nemo_profiles = processed.obs_operator(nemo_t)
-    print(str(sec) + chr(subsec) + " OK")
+
+    check1 = type(nemo_profiles) == coast.profile.Profile
+    check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
+    check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1642,7 +1665,13 @@ try:
     nemo_profiles.dataset = nemo_profiles.dataset.rename({"depth_0": "depth"})
     model_interpolated = nemo_profiles.interpolate_vertical(processed)
 
-    print(str(sec) + chr(subsec) + " OK")
+    check1 = type(model_interpolated) == coast.profile.Profile
+    check2 = nemo_profiles.dataset.temperature.values[0, 0] == np.float32(1.7324219)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1656,7 +1685,14 @@ subsec = subsec + 1
 try:
     difference = processed.difference(model_interpolated)
     difference.dataset.load()
-    print(str(sec) + chr(subsec) + " OK")
+
+    check1 = type(difference) == coast.profile.Profile
+    check2 = difference.dataset.diff_temperature.values[0, 2] == np.float32(1.1402345)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1690,7 +1726,12 @@ try:
     # Do average differences for each region
     mask_means = difference.mask_means(mask_indices)
 
-    print(str(sec) + chr(subsec) + " OK")
+    check1 = mask_means.average_diff_temperature.values[0] == np.float32(-0.78869253)
+
+    if check1:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1711,7 +1752,14 @@ try:
     # depth is <100m, then average over the bottom 10m
     model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf])
 
-    print(str(sec) + chr(subsec) + " OK")
+    check1 = type(model_profiles_surface) == coast.profile.Profile
+    check1 = type(model_profiles_bottom) == coast.profile.Profile
+    check3 = model_profiles_surface.dataset.temperature.values[0] == np.float32(1.7500391)
+
+    if check1 and check2 and check3:
+        print(str(sec) + chr(subsec) + " OK")
+    else:
+        print(str(sec) + chr(subsec) + " X")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1988,8 +2036,6 @@ subsec = 96
 
 print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
-print("  script output follows  ")
-print(" ")
 #
 # -----------------------------------------------------------------------------#
 #%% ( Na ) Example script testing                                               #
@@ -2007,9 +2053,6 @@ try:
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
     from example_scripts import transect_tutorial  # This runs on example_files
 
-    print(" ")
-    print("  script output ends  ")
-    print("++++++++++++++++++++++++")
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec + 1
 
