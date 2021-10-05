@@ -572,7 +572,7 @@ subsec = 96
 subsec = subsec + 1
 
 # Extract transect indices
-nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = Coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 yt, xt, length_of_line = nemo_t.transect_indices([51, -5], [49, -9])
 
 # Test transect indices
@@ -1026,7 +1026,7 @@ subsec = 96
 
 # This section is for testing and demonstrating the use of the TideGauge
 # object. First begin by reloading Nemo t-grid test data:
-sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+sci = Coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
 
 # -----------------------------------------------------------------------------#
@@ -1458,7 +1458,7 @@ subsec = 96
 # %% ( 8a ) Extract isbath contour between two points and create contour object  #
 #                                                                             #
 subsec = subsec + 1
-nemo_f = Coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
+nemo_f = Coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
 contours, no_contours = Coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = Coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = Coast.ContourF(nemo_f, y_ind, x_ind, 200)
@@ -1486,7 +1486,7 @@ except OSError:
 # %% ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
 subsec = subsec + 1
-nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+nemo_t = Coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid)
 contours, no_contours = Coast.Contour.get_contours(nemo_t, 200)
 y_ind, x_ind, contour = Coast.Contour.get_contour_segment(nemo_t, contours[0], [50, -10], [60, 3])
 cont_t = Coast.ContourT(nemo_t, y_ind, x_ind, 200)
@@ -1501,9 +1501,9 @@ else:
 # %% ( 8d ) Calculate flow across contour                                        #
 #                                                                             #
 subsec = subsec + 1
-nemo_f = Coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
-nemo_u = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="u-grid")
-nemo_v = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="v-grid")
+nemo_f = Coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
+nemo_u = Coast.Gridded(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid)
+nemo_v = Coast.Gridded(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid)
 contours, no_contours = Coast.Contour.get_contours(nemo_f, 200)
 y_ind, x_ind, contour = Coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
 cont_f = Coast.ContourF(nemo_f, y_ind, x_ind, 200)
@@ -1547,7 +1547,9 @@ subsec = 96
 #
 subsec = subsec + 1
 try:
-    nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = Coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
+    )
     eofs = Coast.compute_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (eofs.EOF * eofs.temporal_proj).sum(dim="mode").sum(dim=["x_dim", "y_dim"])
@@ -1570,7 +1572,9 @@ except:
 #
 subsec = subsec + 1
 try:
-    nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
+    nemo_t = Coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
+    )
     heofs = Coast.compute_hilbert_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (
@@ -1826,7 +1830,7 @@ subsec = 96
 
 # Preparation: Create two arrays to put mask onto, one of zeros and one of ones
 # This allows us to test the additive feature.
-sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+sci = Coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 mask00 = np.zeros((sci.dataset.dims["y_dim"], sci.dataset.dims["x_dim"]))
 mask01 = np.ones((sci.dataset.dims["y_dim"], sci.dataset.dims["x_dim"]))
 
@@ -1893,7 +1897,7 @@ except:
 sec = sec + 1
 subsec = 96
 
-sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-grid")
+sci = Coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 ds = sci.dataset[["temperature", "ssh"]].isel(z_dim=0)
 
 
@@ -1914,7 +1918,7 @@ try:
     ds2 = ds.copy(deep=True)
     ds2["temperature"][::2, :100, :100] = np.nan
     ds2["ssh"][::2, :100, :100] = np.nan
-    seaC = clim.make_climatology(ds2, "season")
+    seaC = clim.make_climatology(ds2, "season", missing_values=True)
     seaX = ds2.groupby("time.season").mean("t_dim")
     # throws error is not close
     xr.testing.assert_allclose(seaC, seaX)
@@ -1956,10 +1960,10 @@ try:
     from example_scripts import altimetry_tutorial  # This runs on example_files
     from example_scripts import tidegauge_tutorial  # This runs on example_files
     from example_scripts import tidetable_tutorial  # This runs on example_files
-    from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
     from example_scripts import transect_tutorial  # This runs on example_files
     from example_scripts import contour_tutorial  # This runs on example_files
+    from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files unless it is on livljobs, then it is AMM60 data
 
 
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
@@ -1967,28 +1971,27 @@ try:
 
     if example_script_flag:
         from example_scripts import amm15_example_plot
-
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
+
         subsec = subsec + 1
         from example_scripts import anchor_plots_of_nsea_wvel
-
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
+
         subsec = subsec + 1
         from example_scripts import blz_example_plot
-
         print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
+
         subsec = subsec + 1
         from example_scripts import seasia_r12_example_plot
-
         print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
+
         subsec = subsec + 1
         from example_scripts import wcssp_india_example_plot
-
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        # subsec = subsec + 1
-        # from example_scripts import internal_tide_pycnocline_diagnostics
 
-        # print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+        subsec = subsec + 1 # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
+        from example_scripts import internal_tide_pycnocline_diagnostics
+        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 
