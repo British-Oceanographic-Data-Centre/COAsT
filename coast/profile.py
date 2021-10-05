@@ -43,7 +43,7 @@ class Profile(Indexed):
             self.read_en4(file_path, self.chunks, multiple)
             self.apply_config_mappings()
 
-        print(f"{get_slug(self)} initialised")
+        debug(f"{get_slug(self)} initialised")
 
     def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
         """Reads a single or multiple EN4 netCDF files into the COAsT profile data structure.
@@ -155,7 +155,7 @@ class Profile(Indexed):
 
         """
 
-        print("Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]), flush=True)
+        debug(f"Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]))
         ds = self.dataset
 
         # We need to remove any time variables or the later .where() won't work
@@ -292,7 +292,7 @@ class Profile(Indexed):
         )
 
         # Figure out which points lie in which region
-        print("Figuring out which regions each profile is in..")
+        debug(f"Figuring out which regions each profile is in..")
         region_indices = masks.isel(x_dim=ind_x, y_dim=ind_y)
 
         return region_indices.rename({"dim_0": "profile"})
@@ -304,7 +304,7 @@ class Profile(Indexed):
         n_masks = mask_indices.dims["dim_mask"]
 
         # Loop over maskal arrays. Assign mean to mask and seasonal means
-        print("Calculating maskal averages..")
+        debug(f"Calculating maskal averages..")
         for mm in range(0, n_masks):
             mask = mask_indices.isel(dim_mask=mm).mask.values
             mask_ind = np.where(mask.astype(bool))[0]
@@ -395,9 +395,9 @@ class Profile(Indexed):
         # If input is 1D, then interpolation will be done onto this for all.
         if len(new_depth.shape) == 1:
             repeated_depth = True
-            print("Interpolating onto reference depths", flush=True)
+            debug(f"Interpolating onto reference depths")
         else:
-            print("Interpolating onto depths of existing Profile object", flush=True)
+            debug(f"Interpolating onto depths of existing Profile object")
             repeated_depth = False
 
         ds = self.dataset
@@ -490,13 +490,13 @@ class Profile(Indexed):
         ind_x, ind_y = general_utils.nearest_indices_2d(
             gridded["longitude"], gridded["latitude"], en4["longitude"], en4["latitude"], mask=gridded.landmask
         )
-        print("Spatial Indices Calculated", flush=True)
+        debug(f"Spatial Indices Calculated")
 
         # TIME indices - model nearest to obs time
         en4_time = en4.time.values
         ind_t = [np.argmin(np.abs(mod_time - en4_time[tt])) for tt in range(en4.dims["profile"])]
         ind_t = xr.DataArray(ind_t)
-        print("Time Indices Calculated", flush=True)
+        debug(f"Time Indices Calculated")
 
         # Find out which variables have both depth and profile
         # This is for applying the bottom_level mask later
@@ -516,7 +516,7 @@ class Profile(Indexed):
 
         while start_ii < time_dim:
             end_ii = start_ii + time_chunks[count_ii]
-            print("{0}: {1} > {2}".format(count_ii, start_ii, end_ii))
+            debug(f"{0}: {1} > {2}".format(count_ii, start_ii, end_ii))
 
             # Determine which time indices lie in this chunk
             ind_in_chunk = np.logical_and(ind_t >= start_ii, ind_t < end_ii)
@@ -627,7 +627,7 @@ class Profile(Indexed):
         ds = self.dataset
 
         # REJECT profiles that are QC flagged.
-        print(" Applying QUALITY CONTROL to EN4 data...", flush=True)
+        debug(f" Applying QUALITY CONTROL to EN4 data...")
         ds.qc_flags_profiles.load()
 
         # This line reads converts the QC integer to a binary string.
@@ -642,9 +642,8 @@ class Profile(Indexed):
         reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
         ds["reject_tem_prof"] = (["profile"], reject_tem_prof)
         ds["reject_sal_prof"] = (["profile"], reject_sal_prof)
-        print(
-            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["profile"]),
-            flush=True,
+        debug(
+            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["profile"])
         )
 
         ds = ds.isel(profile=~reject_both_prof)
@@ -652,9 +651,9 @@ class Profile(Indexed):
         reject_sal_prof = reject_sal_prof[~reject_both_prof]
         qc_lev = ds.qc_flags_levels.values
 
-        print(" QC: Additional profiles converted to NaNs: ", flush=True)
-        print("     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)), flush=True)
-        print("     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)), flush=True)
+        debug(f" QC: Additional profiles converted to NaNs: ")
+        debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
+        debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
 
         reject_tem_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
         reject_sal_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
@@ -671,16 +670,16 @@ class Profile(Indexed):
         ds["reject_tem_datapoint"] = (["profile", "z_dim"], reject_tem_lev)
         ds["reject_sal_datapoint"] = (["profile", "z_dim"], reject_sal_lev)
 
-        print("MASKING rejected datapoints, replacing with NaNs...", flush=True)
+        debug(f"MASKING rejected datapoints, replacing with NaNs...")
         ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
         ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
         ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
 
         if sort_time:
-            print("Sorting Time Dimension...", flush=True)
+            debug(f"Sorting Time Dimension...")
             ds = ds.sortby("time")
 
-        print("Finished processing data. Returning new Profile object.", flush=True)
+        debug(f"Finished processing data. Returning new Profile object.")
 
         return_prof = Profile()
         return_prof.dataset = ds
