@@ -1952,6 +1952,7 @@ try:
     from example_scripts import tidetable_tutorial  # This runs on example_files
     from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
+    from example_scripts import transect_tutorial  # This runs on example_files
 
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec + 1
