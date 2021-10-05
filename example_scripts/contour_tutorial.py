@@ -32,7 +32,7 @@ fn_config_v_grid = "./config/example_nemo_grid_v.json"
 
 
 # -----------------------------------------------------------------------------#
-# %% ( 8a ) Extract isbath contour between two points and create contour object  #
+# %% ( 8a ) Extract isobath contour between two points and create contour object  #
 #
 
 # Create a gridded object with the grid only.
