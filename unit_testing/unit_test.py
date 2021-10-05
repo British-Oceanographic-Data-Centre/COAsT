@@ -1585,70 +1585,11 @@ subsec = 96
 # ( 10a ) Load EN4 data                                                       #
 #                                                                             #
 
-subsec = subsec + 1
-# Create Profile object and read EN4 example data file
-
-try:
-    # Create object without config file
-    profiles = coast.Profile(file_path=fn_profile)
-    check0 = profiles is not None
-
-    # Create object with config file
-    profiles = coast.Profile(file_path=fn_profile, config=fn_profile_config)
-
-    # TEST: Check some data
-    check1 = profiles.dataset.dims["z_dim"] == 400
-    check2 = profiles.dataset.longitude[11].values == 9.89777
-    if check0 and check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - EN4 Data read, Profile created")
-    else:
-        print(str(sec) + chr(subsec) + " X - Problem with EN4 reading")
-
-except:
-    print(str(sec) + chr(subsec) + " FAILED.")
-
 
 # -----------------------------------------------------------------------------#
-# ( 10b ) Plot locations on map                                               #
-#                                                                             #
+# ( 10a ) Process EN4 data                                                     #
+#        
 
-subsec = subsec + 1
-# Plot profile locations on a map
-
-try:
-    f, a = profiles.plot_map()
-    f.savefig(dn_fig + "profiles_map.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles map plot saved")
-except:
-    print(str(sec) + chr(subsec) + " FAILED.")
-
-# -----------------------------------------------------------------------------#
-# ( 10c ) Plot ts diagram                                                     #
-#                                                                             #
-
-subsec = subsec + 1
-# Plot ts diagram
-
-try:
-    f, a = profiles.plot_ts_diagram(10)
-    f.savefig(dn_fig + "profile_ts_diagram.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles ts diagram plot saved")
-except:
-    print(str(sec) + chr(subsec) + " FAILED.")
-
-# -----------------------------------------------------------------------------#
-# ( 10d ) Plot temperature profile                                            #
-#                                                                             #
-
-subsec = subsec + 1
-# Plot ts diagram
-
-try:
-    f, a = profiles.plot_profile(var="potential_temperature", profile_indices=[10])
-    f.savefig(dn_fig + "profile_temperature_diagram.png")
-    print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
-except:
-    print(str(sec) + chr(subsec) + " FAILED.")
 #%%
 """
 #################################################
