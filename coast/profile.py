@@ -17,12 +17,12 @@ class Profile(Indexed):
     """
     OBSERVATION type class for storing data from a CTD Profile (or similar
     down and up observations). The structure of the class is based on data from
-    the EN4 database. The class dataset should contain two dimensions:
+    the EN4 database. The class dataset should contain two dimension:
 
         > profile :: The profiles dimension. Called N_PROF in EN4 data.
                      Each element of this dimension contains data for a
                      individual location.
-        > level   :: The dimension for depth levels. Called N_LEVELS in EN4
+        > z_dim   :: The dimension for depth levels. Called N_LEVELS in EN4
                      files.
     """
 
@@ -120,18 +120,14 @@ class Profile(Indexed):
         plt.grid()
         return fig, ax
 
-    def plot_map(self, profile_indices=None, var_str=None, depth_index=None):
+    def plot_map(self, var_str=None):
 
-        if profile_indices is None:
-            profile_indices = np.arange(0, self.dataset.dims["profile"])
-
-        profiles = self.dataset.isel(profile=profile_indices)
+        profiles = self.dataset
 
         if var_str is None:
             fig, ax = plot_util.geo_scatter(profiles.longitude.values, profiles.latitude.values, s=5)
         else:
-            print(profiles)
-            c = profiles[var_str].isel(level=depth_index)
+            c = profiles[var_str]
             fig, ax = plot_util.geo_scatter(profiles.longitude.values, profiles.latitude.values, c=c, s=5)
         return fig, ax
 
@@ -147,35 +143,143 @@ class Profile(Indexed):
 
     """======================= Model Comparison ======================="""
 
-    # Bottom values
-    #       print('Averaging EN4 over bottom {0}m for bottom definition'.format(bottom_def), flush=True)
-    #       bathy_pts = ds.bathymetry.isel(x_dim = ind2D[0], y_dim = ind2D[1]).swap_dims({'dim_0':'profile'})
-    #       bottom_ind = en4.depth >= (bathy_pts - bottom_def)
-
-    #        sbt_en4 = en4[en4_tem_name].where(bottom_ind, np.nan)
-    #        sbs_en4 = en4[en4_sal_name].where(bottom_ind, np.nan)
-    #
-    #        sbt_en4 = sbt_en4.mean(dim="z_dim", skipna=True).load()
-    #        sbs_en4 = sbs_en4.mean(dim="z_dim", skipna=True).load()
-
     def depth_means(self, depth_bounds):
+        """
+        (04/10/2021)
+        Author: David Byrne      
+
+        INPUTS:
+         masks (Dataset) : 
+
+        OUTPUTS:
+         
+        """
 
         print("Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]), flush=True)
         ds = self.dataset
+        
+        # We need to remove any time variables or the later .where() won't work
+        var_list = list(ds.keys())
+        time_var_list = ['time']
+        for vv in var_list:
+            if ds[vv].dtype in ['M8[ns]', 'timedelta64[ns]']:
+                time_var_list.append(vv)
+                
+        time_vars = ds[time_var_list]
+        ds = ds.drop(time_var_list)
+        
         layer_ind0 = ds.depth >= depth_bounds[0]
         layer_ind1 = ds.depth < depth_bounds[1]
         layer_ind = layer_ind0 * layer_ind1
         masked = ds.where(layer_ind, np.nan)
         meaned = masked.mean(dim="z_dim", skipna=True).load()
+        
+        # Remerge time variables
+        ds = xr.merge((meaned, time_vars))
+        
+        return_prof = Profile()
+        return_prof.dataset = ds
 
-        return meaned
+        return return_prof
 
     def bottom_means(
-        self,
+        self, layer_thickness, depth_thresholds=[np.inf]
     ):
-        return
+        """
+        (04/10/2021)
+        Author: David Byrne   
+        
+        Averages profile data in some layer above the bathymetric depth. This
+        routine requires there to be a 'bathymetry' variable in the Profile dataset.
+        It can apply a constant averaging layer thickness across all profiles
+        or a bespoke thickness dependent on the bathymetric depth. For example,
+        you may want to define the 'bottom' as the average of 100m above the
+        bathymetry in very deep ocean but only 10m in the shallower ocean.
+        If there is no data available in the layer specified (e.g. CTD cast not
+        deep enough or model bathymetry wrong) then it will be NaN
+        
+        To apply constant thickness, you only need to provide a value (in metre)
+        for layer_thickness. For different thicknesses, you also need to give
+        depth_thresholds. The last threshold must always be np.inf, i.e. all
+        data below a specific bathymetry depth.
+        
+        For example, to apply 10m to everywhere <100m, 50m to 100m -> 500m and
+        100m elsewhere, use:
+            
+            layer_thickness = [10, 50, 100]
+            depth_thresholds = [100, 500, np.inf]
+            
+        The bottom bound is always assumed to be 0.
+        
+        *NOTE: If time related issues arise, then remove any time variables
+        from the profile dataset before running this routine.
 
-    def determine_region_indices(self, masks):
+        INPUTS:
+         layer_thickness (array) : A scalar layer thickness or list of values
+         depth_thresholds (array) : Optional. List of bathymetry thresholds.
+
+        OUTPUTS:
+         New profile object containing bottom averaged data.
+         
+        """
+        
+        # Extract bathymetry points
+        ds = self.dataset
+        bathy_pts = ds.bathymetry.values
+        
+        # We need to remove any time variables or the later .where() won't work
+        var_list = list(ds.keys())
+        time_var_list = ['time']
+        for vv in var_list:
+            if ds[vv].dtype in ['M8[ns]', 'timedelta64[ns]']:
+                time_var_list.append(vv)
+                
+        time_vars = ds[time_var_list]
+        ds = ds.drop(time_var_list)
+        
+        if depth_thresholds[-1] != np.inf:
+            raise ValueError('Please ensure the final element of depth_thresholds is np.inf')
+        
+        # Convert to numpy arrays where necessary
+        if np.isscalar(layer_thickness):
+            layer_thickness = [layer_thickness]
+        
+        depth_thresholds = np.array(depth_thresholds)
+        layer_thickness = np.array(layer_thickness)
+        
+        # Get depths, thresholds and thicknesses at each profile
+        prof_threshold = np.array( [np.sum(ii>depth_thresholds) for ii in bathy_pts] )
+        prof_thickness = layer_thickness[prof_threshold]
+        
+        # Insert NaNs where not in the bottom
+        try:
+            bottom_ind = ds.depth >= (bathy_pts - prof_thickness)
+        except:
+            bottom_ind = ds.depth.transpose() >= (bathy_pts - prof_thickness)
+        ds = ds.where(bottom_ind, np.nan)
+        
+        # Average the remaining data
+        ds = ds.mean(dim="z_dim", skipna=True).load()
+        
+        # Remerge time variables
+        ds = xr.merge((ds, time_vars))
+        
+        return_prof = Profile()
+        return_prof.dataset = ds
+        
+        return return_prof
+
+    def determine_mask_indices(self, masks):
+        """
+        (04/10/2021)
+        Author: David Byrne      
+
+        INPUTS:
+         masks (Dataset) : 
+
+        OUTPUTS:
+         
+        """
 
         ds = self.dataset
 
@@ -195,14 +299,11 @@ class Profile(Indexed):
 
         return region_indices.rename({"dim_0": "profile"})
 
-    def mask_means(self, mask_indices, mask_names=None):
+    def mask_means(self, mask_indices):
 
         ds = self.dataset
 
         n_masks = mask_indices.dims["dim_mask"]
-
-        if mask_names is None:
-            mask_names = np.arange(n_masks)
 
         # Loop over maskal arrays. Assign mean to mask and seasonal means
         print("Calculating maskal averages..")
@@ -227,12 +328,13 @@ class Profile(Indexed):
             else:
                 ds_average = xr.concat((ds_average, ds_average_tmp), dim="dim_mask")
 
-        return
+        return ds_average
 
     def difference(self, other, absolute_diff=True, square_diff=True):
 
         differenced = self.dataset - other.dataset
         diff_vars = list(differenced.keys())
+        save_coords = list(self.dataset.coords.keys())
 
         for vv in diff_vars:
             differenced = differenced.rename({vv: "diff_" + vv})
@@ -253,7 +355,7 @@ class Profile(Indexed):
         else:
             sq_tmp = xr.Dataset()
 
-        differenced = xr.merge((differenced, abs_tmp, sq_tmp))
+        differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
 
         return_differenced = Profile()
         return_differenced.dataset = differenced
@@ -261,10 +363,36 @@ class Profile(Indexed):
         return return_differenced
 
     def interpolate_vertical(self, new_depth, interp_method="linear"):
+        """
+        (04/10/2021)
+        Author: David Byrne
 
+        For vertical interpolation of all profiles within this object. User
+        should pass an array describing the new depths or another profile object
+        containing the same number of profiles as this object.
+
+        If a 1D numpy array is passed then all profiles will be interpolated
+        onto this single set of depths. If a xarray.DataArray is passed, it
+        should have dimensions (profile, z_dim) and contain a variable called
+        depth. This DataArray should contain the same number of profiles as
+        this object and will map profiles in order for interpolation. If
+        another profile object is passed, profiles will be mapped and
+        interpolated onto the other objects depth array.        
+
+        INPUTS:
+         new_depth (array or dataArray) : new depths onto which to interpolate
+                                          see description above for more info.
+         interp_method (str)            : Any scipy interpolation string.
+
+        OUTPUTS:
+         Returns a new PROFILE object containing the interpolated dataset.
+        """
+
+        # If input is Profile, extract depth dataarray
         if type(new_depth) is Profile:
             new_depth = new_depth.dataset.depth
 
+        # If input is 1D, then interpolation will be done onto this for all.
         if len(new_depth.shape) == 1:
             repeated_depth = True
             print("Interpolating onto reference depths", flush=True)
@@ -282,12 +410,15 @@ class Profile(Indexed):
             # Select the current profile
             profile = ds.isel(profile=pp).rename({"depth": "z_dim"})
             profile = profile.dropna("z_dim")
+            profile = profile.set_coords('z_dim')
 
+            # Extract new depths for this profile
             if repeated_depth:
                 new_depth_prof = new_depth
             else:
                 new_depth_prof = new_depth.isel(profile=pp).values
 
+            # Do the interpolation and rename dimensions/vars back to normal
             interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
 
             interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
@@ -297,9 +428,11 @@ class Profile(Indexed):
             if count_ii == 0:
                 interpolated = interpolated_tmp
             else:
-                interpolated = xr.concat((interpolated, interpolated_tmp), dim="profile", coords="all")
+                interpolated = xr.concat((interpolated, interpolated_tmp), 
+                                         dim="profile", coords="all")
             count_ii = count_ii + 1
 
+        # Create and format output dataset
         interpolated = interpolated.set_coords(["depth"])
         return_interpolated = Profile()
         return_interpolated.dataset = interpolated
@@ -444,6 +577,11 @@ class Profile(Indexed):
         interp_lag = (mod_profiles.time.values - en4_time).astype("timedelta64[h]")
         mod_profiles["interp_lag"] = (["profile"], interp_lag)
 
+        # Put x and y indices into dataset
+        mod_profiles["nearest_index_x"] = (['profile'], ind_x.values)
+        mod_profiles["nearest_index_y"] = (['profile'], ind_y.values)
+        mod_profiles["nearest_index_t"] = (['profile'], ind_t.values)
+
         # Create return object and put dataset into it.
         return_prof = Profile()
         return_prof.dataset = mod_profiles
@@ -536,15 +674,12 @@ class Profile(Indexed):
         ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
         ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
         ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
-        ds["profile"] = (["profile"], np.arange(ds.dims["profile"]))
 
         if sort_time:
             print("Sorting Time Dimension...", flush=True)
             ds = ds.sortby("time")
 
         print("Finished processing data. Returning new Profile object.", flush=True)
-
-        ds["profile"] = (["profile"], np.arange(ds.dims["profile"]))
 
         return_prof = Profile()
         return_prof.dataset = ds

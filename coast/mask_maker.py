@@ -21,7 +21,7 @@ class MaskMaker:
         all_masks = np.zeros((n_masks, nr, nc))
         gridded_mask["mask"] = (["dim_mask", "y_dim", "x_dim"], all_masks)
         for mm in np.arange(n_masks):
-            gridded_mask["mask"][mm] = mask_list[0]
+            gridded_mask["mask"][mm] = mask_list[mm]
         return gridded_mask
 
     @staticmethod
