@@ -49,6 +49,10 @@ from socket import gethostname  # to get hostname
 import traceback
 import xarray.ufuncs as uf
 
+print("********")
+print("unit_test2.y IS ALMOST OBSOLETE NOW. MOST v2 CHANGES ARE MAPPED TO unit_test.py")
+print("THIS IS FOR REFERENCE, UNTIL IT IS (SOON) DELETED")
+print("********")
 """
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
