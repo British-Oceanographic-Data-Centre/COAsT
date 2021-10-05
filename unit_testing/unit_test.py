@@ -101,7 +101,7 @@ subsec = 96  # Code for '`' (1 below 'a')
 ## ( 1 ) Loading/Initialisation                ##
 #################################################
 """
-# This section is for testing the loading and initialisation of Nemo objects.
+# This section is for testing the loading and initialisation of Gridded objects.
 
 # -----------------------------------------------------------------------------#
 # %% ( 1a ) Load example Gridded Nemo data (Temperature, Salinity, SSH)                  #
@@ -184,7 +184,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-# %% ( 1e ) Load only domain data in Nemo                                        #
+# %% ( 1e ) Load only domain data in Gridded                                        #
 #                                                                             #
 
 subsec = subsec + 1
@@ -200,9 +200,9 @@ if nemo_f.dataset._coord_names == {"depth_0", "latitude", "longitude"}:
         pass_test = True
 
 if pass_test:
-    print(str(sec) + chr(subsec) + " OK - Nemo loaded domain data only")
+    print(str(sec) + chr(subsec) + " OK - Gridded loaded domain data only")
 else:
-    print(str(sec) + chr(subsec) + " X - Nemo didn't load domain data correctly")
+    print(str(sec) + chr(subsec) + " X - Gridded didn't load domain data correctly")
 
 # -----------------------------------------------------------------------------#
 # %% ( 1f ) Calculate depth_0 for t,u,v,w,f grids                                #
@@ -215,22 +215,22 @@ try:
         fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
     if not np.isclose(np.nansum(nemo_t.dataset.depth_0.values), 1705804300.0):
-        raise ValueError(" X - Nemo depth_0 failed on t-grid failed")
+        raise ValueError(" X - Gridded depth_0 failed on t-grid failed")
     nemo_u = coast.Gridded(
         fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid
     )
     if not np.isclose(np.nansum(nemo_u.dataset.depth_0.values), 1705317600.0):
-        raise ValueError(" X - Nemo depth_0 failed on u-grid failed")
+        raise ValueError(" X - Gridded depth_0 failed on u-grid failed")
     nemo_v = coast.Gridded(
         fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid
     )
     if not np.isclose(np.nansum(nemo_v.dataset.depth_0.values), 1705419100.0):
-        raise ValueError(" X - Nemo depth_0 failed on v-grid failed")
+        raise ValueError(" X - Gridded depth_0 failed on v-grid failed")
     nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
     if not np.isclose(np.nansum(nemo_f.dataset.depth_0.values), 1704932600.0):
-        raise ValueError(" X - Nemo depth_0 failed on f-grid failed")
+        raise ValueError(" X - Gridded depth_0 failed on f-grid failed")
 
-    print(str(sec) + chr(subsec) + " OK - Nemo depth_0 calculations correct")
+    print(str(sec) + chr(subsec) + " OK - Gridded depth_0 calculations correct")
 except ValueError as err:
     print(str(sec) + chr(subsec) + str(err))
 
@@ -246,7 +246,7 @@ try:
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset._coord_names == {"depth_0", "latitude", "longitude", "time"}:
-        print(str(sec) + chr(subsec) + " OK - Nemo data subset loaded ", "with correct coords: " + fn_nemo_dat_subset)
+        print(str(sec) + chr(subsec) + " OK - Gridded data subset loaded ", "with correct coords: " + fn_nemo_dat_subset)
     else:
         print(
             str(sec) + chr(subsec) + " X - There is an issue with ",
@@ -268,7 +268,7 @@ try:
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset.time.size == 14:
-        print(str(sec) + chr(subsec) + " OK - Nemo data loaded combine ", "over time: " + file_names_amm7)
+        print(str(sec) + chr(subsec) + " OK - Gridded data loaded combine ", "over time: " + file_names_amm7)
     else:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading", "multiple data files " + file_names_amm7)
 
@@ -280,8 +280,8 @@ except:
 #                                                                             #
 
 subsec = subsec + 1
-# Load in a Nemo data file containing harmonics and combine them into a new
-# Nemo obejct and dataset.
+# Load in a Gridded data file containing harmonics and combine them into a new
+# Gridded object and dataset.
 
 try:
     harmonics = coast.Gridded(dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid)
@@ -459,9 +459,9 @@ try:
         log_str += "Problem with numerical derivative of f(z)=-z\n"
 
     if log_str == "":
-        print(str(sec) + chr(subsec) + " OK - Nemo.differentiate (for d/dz) method passes all tests")
+        print(str(sec) + chr(subsec) + " OK - Gridded.differentiate (for d/dz) method passes all tests")
     else:
-        print(str(sec) + chr(subsec) + " X - Nemo.differentiate method failed: " + log_str)
+        print(str(sec) + chr(subsec) + " X - Gridded.differentiate method failed: " + log_str)
 
 except:
     traceback.print_exc()
@@ -652,9 +652,9 @@ length_ref = 37
 
 
 if (xt == xt_ref) and (yt == yt_ref) and (length_of_line == length_ref):
-    print(str(sec) + chr(subsec) + " OK - Nemo transect indices extracted")
+    print(str(sec) + chr(subsec) + " OK - Gridded transect indices extracted")
 else:
-    print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from Nemo")
+    print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from Gridded")
 
 # -----------------------------------------------------------------------------#
 # %% ( 4b ) Transport velocity and depth calculations                            #
@@ -765,11 +765,11 @@ try:
         print(
             str(sec)
             + chr(subsec)
-            + " OK - Nemo Coast get_subset_as_xarray extracted expected array size and "
+            + " OK - Gridded Coast get_subset_as_xarray extracted expected array size and "
             + "extreme values"
         )
     else:
-        print(str(sec) + chr(subsec) + " X - Issue with Nemo Coast get_subset_as_xarray method")
+        print(str(sec) + chr(subsec) + " X - Issue with Gridded Coast get_subset_as_xarray method")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
@@ -789,7 +789,7 @@ try:
         print(
             str(sec)
             + chr(subsec)
-            + " OK - Nemo domain subset_indices_by_distance extracted expected "
+            + " OK - Gridded domain subset_indices_by_distance extracted expected "
             + "size of indices"
         )
     else:
@@ -797,7 +797,7 @@ try:
         print(
             str(sec)
             + chr(subsec)
-            + "X - Issue with indices extraction from Nemo domain "
+            + "X - Issue with indices extraction from Gridded domain "
             + "subset_indices_by_distance method"
         )
 except:
@@ -866,7 +866,7 @@ except:
 sec = sec + 1
 subsec = 96
 # This section is for testing and demonstrating the use of the Altimetry
-# object. First begin by reloading Nemo t-grid test data:
+# object. First begin by reloading Gridded t-grid test data:
 sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
 
@@ -1019,7 +1019,7 @@ sec = sec + 1
 subsec = 96
 
 # This section is for testing and demonstrating the use of the TideGauge
-# object. First begin by reloading Nemo t-grid test data:
+# object. First begin by reloading Gridded t-grid test data:
 sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
 
@@ -1651,7 +1651,7 @@ subsec = subsec + 1
 # <Introduction>
 
 try:
-    # First read some new NEMO data
+    # First read some new Gridded data
     nemo_t = coast.Gridded(
         fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
     )
