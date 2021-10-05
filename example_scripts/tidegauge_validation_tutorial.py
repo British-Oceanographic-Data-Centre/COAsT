@@ -1,9 +1,9 @@
-'''
+"""
 This script gives an overview of some of validation tools available when
 using the TidegaugeMultiple object in COAsT.
 
 For this a script, a premade netcdf file containing tide gauge data is used.
-'''
+"""
 #%% 1. Import necessary libraries
 import xarray as xr
 import numpy as np
@@ -17,8 +17,7 @@ fn_dat = "/Users/dbyrne/data/nemo/sossheig*"
 fn_tg = "/Users/dbyrne/data/tg_amm15.nc"
 
 #%% 3. Create gridded object and load data
-nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, 
-                     config="./config/example_nemo_grid_t.json")
+nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
 
 # Create a landmask array and put it into the nemo object.
 # Here, using the bottom_level == 0 variable from the domain file is enough.
@@ -26,7 +25,7 @@ nemo.dataset["landmask"] = nemo.dataset.bottom_level == 0
 
 # Rename depth_0 to be depth
 nemo.dataset = nemo.dataset.rename({"depth_0": "depth"})
-nemo.dataset = nemo.dataset[['ssh', 'landmask']]
+nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 
 
 #%% 4. Create TidegaugeMultiple object
@@ -36,10 +35,9 @@ obs = coast.TidegaugeMultiple()
 obs.dataset = xr.open_dataset(fn_tg)
 
 # Cut down data to be only in 2018 to match model data.
-start_date = datetime.datetime(2018,1,1)
-end_date = datetime.datetime(2018,12,31)
-obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, 
-                                                       end_date)
+start_date = datetime.datetime(2018, 1, 1)
+end_date = datetime.datetime(2018, 12, 31)
+obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)
 
 
 #%% 5. Interpolate model data onto obs locations
@@ -86,7 +84,7 @@ ntr_diff = ntr_obs.difference(ntr_mod)
 ssh_diff = obs.difference(model_timeseries)
 
 # We can then easily get mean errors, MAE and MSE
-mean_stats = ntr_diff.dataset.mean(dim='t_dim', skipna=True)
+mean_stats = ntr_diff.dataset.mean(dim="t_dim", skipna=True)
 
 #%% Threshold Statistics for Non-tidal residuals
 
@@ -95,5 +93,5 @@ mean_stats = ntr_diff.dataset.mean(dim='t_dim', skipna=True)
 # threshold provided. It will also count the numbers of daily and monthly
 # maxima over each threshold
 
-thresh_mod = ntr_mod.threshold_statistics(thresholds = np.arange(0,2,0.2))
-thresh_obs = ntr_obs.threshold_statistics(thresholds = np.arange(0,2,0.2))
+thresh_mod = ntr_mod.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
+thresh_obs = ntr_obs.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
