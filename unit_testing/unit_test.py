@@ -713,9 +713,9 @@ subsec = subsec + 1
 try:
     tran_t = coast.TransectT(nemo_t, (54, -15), (56, -12))
     tran_t.construct_pressure()
-    cksum1 = tran_t.data.density_zlevels.sum(dim=["t_dim", "r_dim", "depth_z_levels"]).item()
-    cksum2 = tran_t.data.pressure_h_zlevels.sum(dim=["t_dim", "r_dim", "depth_z_levels"]).item()
-    cksum3 = tran_t.data.pressure_s.sum(dim=["t_dim", "r_dim"]).item()
+    cksum1 = tran_t.data.density_zlevels.sum(dim=["t_dim", "r_dim", "depth_z_levels"]).compute().item()
+    cksum2 = tran_t.data.pressure_h_zlevels.sum(dim=["t_dim", "r_dim", "depth_z_levels"]).compute().item()
+    cksum3 = tran_t.data.pressure_s.sum(dim=["t_dim", "r_dim"]).compute().item()
     if np.allclose([cksum1, cksum2, cksum3], [23800545.87457855, 135536478.93335825, -285918.5625]):
         print(str(sec) + chr(subsec) + " OK - Transect density and pressure calculations as expected")
     else:
@@ -1486,7 +1486,7 @@ y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], [
 cont_t = coast.ContourT(nemo_t, y_ind, x_ind, 200)
 cont_t.construct_pressure(1027)
 if np.allclose(
-    (cont_t.data_contour.pressure_s + cont_t.data_contour.pressure_h_zlevels).sum().item(), 27490693.20181531
+    (cont_t.data_contour.pressure_s + cont_t.data_contour.pressure_h_zlevels).sum().compute().item(), 27490693.20181531
 ):
     print(str(sec) + chr(subsec) + " OK - Perturbation pressure calculation is as expected")
 else:
@@ -1551,7 +1551,7 @@ try:
 
     # Check ssh anomaly is reconstructed at each time point
     if np.allclose(ssh_reconstruction, ssh_anom, rtol=0.0001):
-        var_cksum = eofs.variance.sum(dim="mode").item()
+        var_cksum = eofs.variance.sum(dim="mode").compute().item()
         if np.isclose(var_cksum, 100):
             print(str(sec) + chr(subsec) + " OK - Original signal reconstructed from EOFs")
         else:
