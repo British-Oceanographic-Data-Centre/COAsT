@@ -110,9 +110,7 @@ subsec = 96  # Code for '`' (1 below 'a')
 subsec = subsec + 1
 
 try:
-    sci = coast.Gridded(
-        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=fn_config_t_grid
-    )
+    sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom), config=fn_config_t_grid)
 
     # Test the data has loaded
     sci_attrs_ref = dict(
@@ -266,9 +264,7 @@ subsec = subsec + 1
 
 try:
     file_names_amm7 = "nemo_data_T_grid*.nc"
-    amm7 = coast.Gridded(
-        dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=fn_config_t_grid, multiple=True
-    )
+    amm7 = coast.Gridded(dn_files + file_names_amm7, dn_files + fn_nemo_dom, config=fn_config_t_grid, multiple=True)
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset.time.size == 14:
@@ -288,9 +284,7 @@ subsec = subsec + 1
 # Nemo obejct and dataset.
 
 try:
-    harmonics = coast.Gridded(
-        dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid
-    )
+    harmonics = coast.Gridded(dn_files + fn_nemo_harmonics, dn_files + fn_nemo_harmonics_dom, config=fn_config_t_grid)
     constituents = ["K1", "M2", "S2", "K2"]
     harmonics_combined = harmonics.harmonics_combine(constituents)
 
@@ -2075,8 +2069,9 @@ try:
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
     from example_scripts import transect_tutorial  # This runs on example_files
     from example_scripts import contour_tutorial  # This runs on example_files
-    from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files unless it is on livljobs, then it is AMM60 data
-
+    from example_scripts import (
+        internal_tide_pycnocline_diagnostics,
+    )  # This runs on example_files unless it is on livljobs, then it is AMM60 data
 
     print(" ")
     print("  script output ends  ")
@@ -2086,26 +2081,32 @@ try:
 
     if example_script_flag:
         from example_scripts import amm15_example_plot
+
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
 
         subsec = subsec + 1
         from example_scripts import anchor_plots_of_nsea_wvel
+
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
 
         subsec = subsec + 1
         from example_scripts import blz_example_plot
+
         print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
 
         subsec = subsec + 1
         from example_scripts import seasia_r12_example_plot
+
         print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
 
         subsec = subsec + 1
         from example_scripts import wcssp_india_example_plot
+
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
 
-        subsec = subsec + 1 # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
+        subsec = subsec + 1  # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
         from example_scripts import internal_tide_pycnocline_diagnostics
+
         print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
