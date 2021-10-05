@@ -12,6 +12,7 @@
 			"deptht_0",
 			"tmask",
 			"bottom_level",
+			"mbathy",
 			"hbatt"
 		]
 	},
@@ -60,6 +61,7 @@
 			"tmask":"mask",
 			"deptht_0": "depth_0",
 			"bottom_level": "bottom_level",
+			"mbathy":"bottom_level",
 			"hbatt":"bathymetry"
 		}
 	},
