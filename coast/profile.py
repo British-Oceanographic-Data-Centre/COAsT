@@ -516,7 +516,7 @@ class Profile(Indexed):
 
         while start_ii < time_dim:
             end_ii = start_ii + time_chunks[count_ii]
-            print('{0}: {1} > {2}'.format(count_ii, start_ii, end_ii))
+            print("{0}: {1} > {2}".format(count_ii, start_ii, end_ii))
 
             # Determine which time indices lie in this chunk
             ind_in_chunk = np.logical_and(ind_t >= start_ii, ind_t < end_ii)
