@@ -104,7 +104,7 @@ subsec = 96  # Code for '`' (1 below 'a')
 # This section is for testing the loading and initialisation of Nemo objects.
 
 # -----------------------------------------------------------------------------#
-#%% ( 1a ) Load example Nemo data (Temperature, Salinity, SSH)                  #
+# %% ( 1a ) Load example Nemo data (Temperature, Salinity, SSH)                  #
 #                                                                             #
 
 subsec = subsec + 1
@@ -135,7 +135,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1b ) Load data from existing dataset                                      #
+# %% ( 1b ) Load data from existing dataset                                      #
 #                                                                             #
 
 subsec = subsec + 1
@@ -157,7 +157,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1c ) Set Nemo variable name                                               #
+# %% ( 1c ) Set Nemo variable name                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -173,7 +173,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1d ) Set Nemo grid attributes - dimension names                           #
+# %% ( 1d ) Set Nemo grid attributes - dimension names                           #
 #                                                                             #
 
 subsec = subsec + 1
@@ -186,7 +186,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1e ) Load only domain data in Nemo                                        #
+# %% ( 1e ) Load only domain data in Nemo                                        #
 #                                                                             #
 
 subsec = subsec + 1
@@ -207,7 +207,7 @@ else:
     print(str(sec) + chr(subsec) + " X - Nemo didn't load domain data correctly")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1f ) Calculate depth_0 for t,u,v,w,f grids                                #
+# %% ( 1f ) Calculate depth_0 for t,u,v,w,f grids                                #
 #                                                                             #
 
 subsec = subsec + 1
@@ -237,7 +237,7 @@ except ValueError as err:
     print(str(sec) + chr(subsec) + str(err))
 
 # -----------------------------------------------------------------------------#
-#%% ( 1g ) Load a subregion dataset with a full domain (AMM7)                   #
+# %% ( 1g ) Load a subregion dataset with a full domain (AMM7)                   #
 #                                                                             #
 
 subsec = subsec + 1
@@ -259,7 +259,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED. Test data in: {}.".format(fn_nemo_dat_subset))
 
 # -----------------------------------------------------------------------------#
-#%% ( 1h ) Load and combine (by time) multiple files  (AMM7)                    #
+# %% ( 1h ) Load and combine (by time) multiple files  (AMM7)                    #
 #                                                                             #
 
 subsec = subsec + 1
@@ -280,7 +280,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED. Test data in: {} on {}.".format(dn_files, file_names_amm7))
 
 # -----------------------------------------------------------------------------#
-#%% ( 1i ) Load and combine harmonics                                         #
+# %% ( 1i ) Load and combine harmonics                                         #
 #                                                                             #
 
 subsec = subsec + 1
@@ -306,7 +306,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1j ) Convert harmonics to a/g and back                                  #
+# %% ( 1j ) Convert harmonics to a/g and back                                  #
 #                                                                             #
 
 subsec = subsec + 1
@@ -329,7 +329,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 1k ) Compute e3 from SSH field                                      #
+# %% ( 1k ) Compute e3 from SSH field                                      #
 #
 subsec = subsec + 1
 try:
@@ -357,7 +357,7 @@ sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 2a ) Copying a Coast object                                               #
+# %% ( 2a ) Copying a Coast object                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -372,7 +372,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2b ) Coast __getitem__ returns variable                                   #
+# %% ( 2b ) Coast __getitem__ returns variable                                   #
 #                                                                             #
 
 subsec = subsec + 1
@@ -386,7 +386,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2c ) Renaming variables inside a Coast object                             #
+# %% ( 2c ) Renaming variables inside a Coast object                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -400,7 +400,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 2d ) day of the week function                                           #
+# %% ( 2d ) day of the week function                                           #
 #                                                                             #
 
 subsec = subsec + 1
@@ -424,7 +424,7 @@ sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 3a ) Computing a vertical spatial derivative                              #
+# %% ( 3a ) Computing a vertical spatial derivative                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -474,7 +474,7 @@ except:
     print(str(sec) + chr(subsec) + " X - setting derivative attributes failed ")
 
 # -----------------------------------------------------------------------------#
-#%% ( 3b ) Construct density                                                    #
+# %% ( 3b ) Construct density                                                    #
 #                                                                             #
 
 subsec = subsec + 1
@@ -496,7 +496,7 @@ except ValueError as err:
 densitycopy = nemo_t.dataset.density.sel(x_dim=xr.DataArray(xt, dims=["r_dim"]), y_dim=xr.DataArray(yt, dims=["r_dim"]))
 
 # -----------------------------------------------------------------------------#
-#%% ( 3c ) Construct pycnocline depth and thickness                             #
+# %% ( 3c ) Construct pycnocline depth and thickness                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -545,7 +545,7 @@ except:
     print(str(sec) + chr(subsec) + " X - computing pycnocline depth and thickness failed ")
 
 # -----------------------------------------------------------------------------#
-#%% ( 3d ) Plot pycnocline depth                                              #
+# %% ( 3d ) Plot pycnocline depth                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -566,7 +566,7 @@ sec = sec + 1
 subsec = 96
 
 # -----------------------------------------------------------------------------#
-#%% ( 4a ) Determining and extracting transect indices                          #
+# %% ( 4a ) Determining and extracting transect indices                          #
 #                                                                             #
 
 subsec = subsec + 1
@@ -663,7 +663,7 @@ else:
     print(str(sec) + chr(subsec) + " X - Issue with transect indices extraction from Nemo")
 
 # -----------------------------------------------------------------------------#
-#%% ( 4b ) Transport velocity and depth calculations                            #
+# %% ( 4b ) Transport velocity and depth calculations                            #
 #
 subsec = subsec + 1
 try:
@@ -684,7 +684,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
 # -----------------------------------------------------------------------------#
-#%% ( 4c ) Transport and velocity plotting                                      #
+# %% ( 4c ) Transport and velocity plotting                                      #
 #
 subsec = subsec + 1
 try:
@@ -707,7 +707,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
 # -----------------------------------------------------------------------------#
-#%% ( 4d ) Construct density and pressure along the transect                    #
+# %% ( 4d ) Construct density and pressure along the transect                    #
 #
 subsec = subsec + 1
 try:
@@ -724,7 +724,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
 # -----------------------------------------------------------------------------#
-#%% ( 4e ) Calculate the geostrophic flow across the transect                   #
+# %% ( 4e ) Calculate the geostrophic flow across the transect                   #
 #
 subsec = subsec + 1
 try:
@@ -748,7 +748,7 @@ except:
 sec = sec + 1
 subsec = 96
 # -----------------------------------------------------------------------------#
-#%% ( 5a ) Subsetting single variable                                           #
+# %% ( 5a ) Subsetting single variable                                           #
 #                                                                             #
 subsec = subsec + 1
 
@@ -774,7 +774,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 5b ) Indices by distance method                                           #
+# %% ( 5b ) Indices by distance method                                           #
 #                                                                             #
 
 subsec = subsec + 1
@@ -805,7 +805,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 5c ) Find nearest xy indices                                              #
+# %% ( 5c ) Find nearest xy indices                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -824,7 +824,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 5d ) Interpolate in space (nearest)                                       #
+# %% ( 5d ) Interpolate in space (nearest)                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -842,7 +842,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED")
 
 # -----------------------------------------------------------------------------#
-#%% ( 5e ) Interpolate in time                                                  #
+# %% ( 5e ) Interpolate in time                                                  #
 #                                                                             #
 
 subsec = subsec + 1
@@ -871,7 +871,7 @@ sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-gri
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6a ) Load example altimetry data                                          #
+# %% ( 6a ) Load example altimetry data                                          #
 #                                                                             #
 
 subsec = subsec + 1
@@ -899,7 +899,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6b ) Altimetry subsetting                                                 #
+# %% ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 
 subsec = subsec + 1
@@ -919,7 +919,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6c ) Interpolate model to altimetry                                       #
+# %% ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -942,7 +942,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6d ) Altimetry CRPS                                                       #
+# %% ( 6d ) Altimetry CRPS                                                       #
 #                                                                             #
 
 
@@ -967,7 +967,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6e ) Altimetry Stats methods                                              #
+# %% ( 6e ) Altimetry Stats methods                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -993,7 +993,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6f ) Altimetry quick_plot()                                               #
+# %% ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1024,7 +1024,7 @@ sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-gri
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 7a ) Load in GESLA tide gauge files from directory                      #
+# %% ( 7a ) Load in GESLA tide gauge files from directory                      #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1062,7 +1062,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7b ) Load in BODC tide gauge data                                       #
+# %% ( 7b ) Load in BODC tide gauge data                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1104,7 +1104,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7c ) Load in Environment Agency river gauge data from API               #
+# %% ( 7c ) Load in Environment Agency river gauge data from API               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1142,7 +1142,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7d ) TideGauge obs_operator                                             #
+# %% ( 7d ) TideGauge obs_operator                                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1169,7 +1169,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7e) TideGauge CRPS                                                      #
+# %% ( 7e) TideGauge CRPS                                                      #
 #                                                                             #
 subsec = subsec + 1
 # Compare modelled SSH to observed sea level using CRPS. This can be done
@@ -1191,7 +1191,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7f ) TideGauge Stats methods                                            #
+# %% ( 7f ) TideGauge Stats methods                                            #
 #                                                                             #
 subsec = subsec + 1
 # We can batch return the basic stats methods from TideGauge using basic_stats().
@@ -1214,7 +1214,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7g ) TideGauge Resample to hourly                                       #
+# %% ( 7g ) TideGauge Resample to hourly                                       #
 #                                                                             #
 subsec = subsec + 1
 # Lets resample the tide gauge data to be hourly.
@@ -1236,7 +1236,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7h ) Apply Doodson XO filter to hourly data                             #
+# %% ( 7h ) Apply Doodson XO filter to hourly data                             #
 #                                                                             #
 subsec = subsec + 1
 # Lets resample the tide gauge data to be hourly.
@@ -1257,7 +1257,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7i ) TideGauge Loading multiple TideGaugeS                              #
+# %% ( 7i ) TideGauge Loading multiple TideGaugeS                              #
 #                                                                             #
 subsec = subsec + 1
 # We can load multiple tide gauges into a list of TideGauge objects using the
@@ -1281,7 +1281,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7j ) TideGauge map plot (single)                                        #
+# %% ( 7j ) TideGauge map plot (single)                                        #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1296,7 +1296,7 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7k ) TideGauge map plot (single)                                        #
+# %% ( 7k ) TideGauge map plot (single)                                        #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1311,7 +1311,7 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7l ) TideGauge Time series plot                                         #
+# %% ( 7l ) TideGauge Time series plot                                         #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1327,7 +1327,7 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7m ) TideGauge method for tabulated data                                #
+# %% ( 7m ) TideGauge method for tabulated data                                #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1362,7 +1362,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-#%% ( 7n ) TideGauge method for finding extrema and troughs, compare neighbours#
+# %% ( 7n ) TideGauge method for finding extrema and troughs, compare neighbours#
 #                                                                             #
 subsec = subsec + 1
 
@@ -1400,7 +1400,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 7o ) TideGauge method for finding extrema and troughs, fit cubic spline #
+# %% ( 7o ) TideGauge method for finding extrema and troughs, fit cubic spline #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1449,7 +1449,7 @@ except:
 sec = sec + 1
 subsec = 96
 # -----------------------------------------------------------------------------#
-#%% ( 8a ) Extract isbath contour between two points and create contour object  #
+# %% ( 8a ) Extract isbath contour between two points and create contour object  #
 #                                                                             #
 subsec = subsec + 1
 nemo_f = Coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
@@ -1463,7 +1463,7 @@ if np.isclose(cont_f.y_ind.sum() + cont_f.y_ind.sum(), 190020) and np.isclose(
 else:
     print(str(sec) + chr(subsec) + " X - Isobath contour failed to extract correctly")
 # -----------------------------------------------------------------------------#
-#%% ( 8b ) Plot contour on map                                                  #
+# %% ( 8b ) Plot contour on map                                                  #
 #                                                                             #
 subsec = subsec + 1
 Coast.Contour.plot_contour(nemo_f, contour)
@@ -1477,7 +1477,7 @@ try:
 except OSError:
     print(str(sec) + chr(subsec) + " X - Contour plot did not save correctly")
 # -----------------------------------------------------------------------------#
-#%% ( 8c ) Calculate pressure along contour                                     #
+# %% ( 8c ) Calculate pressure along contour                                     #
 #                                                                             #
 subsec = subsec + 1
 nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
@@ -1492,7 +1492,7 @@ if np.allclose(
 else:
     print(str(sec) + chr(subsec) + " X - Perturbation pressure calculation is not as expected")
 # -----------------------------------------------------------------------------#
-#%% ( 8d ) Calculate flow across contour                                        #
+# %% ( 8d ) Calculate flow across contour                                        #
 #                                                                             #
 subsec = subsec + 1
 nemo_f = Coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
@@ -1510,7 +1510,7 @@ if np.allclose(
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
 # -----------------------------------------------------------------------------#
-#%% ( 8e ) Calculate pressure gradient driven flow across contour               #
+# %% ( 8e ) Calculate pressure gradient driven flow across contour               #
 #                                                                             #
 subsec = subsec + 1
 cont_f.calc_geostrophic_flow(nemo_t, config_u=fn_config_u_grid, config_v=fn_config_v_grid, ref_density=1027)
@@ -1527,7 +1527,7 @@ if np.allclose(
 else:
     print(str(sec) + chr(subsec) + " X - Cross-contour geostrophic flow calculations not as expected")
 
-#%%
+# %%
 """
 ###############################################################################
 ## ( 9 ) EOF module testing                                                 ##
@@ -1536,7 +1536,7 @@ else:
 sec = sec + 1
 subsec = 96
 
-#%%---------------------------------------------------------------------------#
+# %%---------------------------------------------------------------------------#
 # ( 9a ) Compute regular EOFs, temporal projections and variance explained   #
 #
 subsec = subsec + 1
@@ -1559,7 +1559,7 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.\n" + traceback.format_exc())
 
-#%%---------------------------------------------------------------------------#
+# %%---------------------------------------------------------------------------#
 # ( 9b ) Compute  HEOFs, temporal projections and variance explained   #
 #
 subsec = subsec + 1
@@ -1665,7 +1665,7 @@ try:
     print(str(sec) + chr(subsec) + " OK - Profiles temperature plot saved")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-#%%
+# %%
 """
 #################################################
 ## ( 11 ) PLOTTING UTILITY Methods             ##
@@ -1770,7 +1770,7 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-#%%
+# %%
 """
 #################################################
 ## ( 12 ) Stats Utility                        ##
@@ -1808,7 +1808,7 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-#%%
+# %%
 """
 #################################################
 ## ( 13 ) MaskMaker                           ##
@@ -1878,7 +1878,7 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-#%%
+# %%
 """
 #################################################
 ## ( 14 ) Climatology Methods                  ##
@@ -1926,7 +1926,7 @@ except AssertionError:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-#%%
+# %%
 """
 ###############################################################################
 ## ( N ) Example script testing                                              ##
@@ -1939,7 +1939,7 @@ print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
 #
 # -----------------------------------------------------------------------------#
-#%% ( Na ) Example script testing                                               #
+# %% ( Na ) Example script testing                                               #
 #                                                                             #
 subsec = subsec + 1
 # Test machine name (to check for file access) in order to test additional scripts.
@@ -1996,6 +1996,6 @@ try:
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
-#%% Close log file
+# %% Close log file
 #################################################
 log_file.close()

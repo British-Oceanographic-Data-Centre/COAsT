@@ -868,7 +868,7 @@ sci = Coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-gri
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6a ) Load example altimetry data                                          #
+# %% ( 6a ) Load example altimetry data                                          #
 #                                                                             #
 
 subsec = subsec + 1
@@ -896,7 +896,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6b ) Altimetry subsetting                                                 #
+# %% ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 
 subsec = subsec + 1
@@ -916,7 +916,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6c ) Interpolate model to altimetry                                       #
+# %% ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -939,7 +939,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6d ) Altimetry CRPS                                                       #
+# %% ( 6d ) Altimetry CRPS                                                       #
 #                                                                             #
 
 
@@ -964,7 +964,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6e ) Altimetry Stats methods                                              #
+# %% ( 6e ) Altimetry Stats methods                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -990,7 +990,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6f ) Altimetry quick_plot()                                               #
+# %% ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 
 subsec = subsec + 1
