@@ -56,7 +56,7 @@ import xarray.ufuncs as uf
 """
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
-coast.logging_util.setup_logging(stream=log_file, level=logging.INFO)
+coast.logging_util.setup_logging(stream=log_file, level=logging.DEBUG)
 ## Alternative logging levels
 # ..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 # ..., level=logging.INFO) # Confirmation that things are working as expected.
@@ -1947,6 +1947,8 @@ subsec = 96
 
 print(str(sec) + ". Example script testing")
 print("++++++++++++++++++++++++")
+print("  script output follows  ")
+print(" ")
 #
 # -----------------------------------------------------------------------------#
 # %% ( Na ) Example script testing                                               #
@@ -1966,6 +1968,9 @@ try:
     from example_scripts import internal_tide_pycnocline_diagnostics  # This runs on example_files unless it is on livljobs, then it is AMM60 data
 
 
+    print(" ")
+    print("  script output ends  ")
+    print("++++++++++++++++++++++++")
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec + 1
 
