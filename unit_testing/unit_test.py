@@ -1608,7 +1608,7 @@ except:
 
 # -----------------------------------------------------------------------------#
 # ( 10b ) Process EN4 data                                                     #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
@@ -1630,16 +1630,16 @@ except:
 
 # -----------------------------------------------------------------------------#
 # ( 10c ) Gridded obs_operaor                                                  #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
 try:
     # First read some new NEMO data
-    nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, 
-                           fn_domain=dn_files + fn_nemo_dom, 
-                           config=fn_config_t_grid)
-    nemo_t.dataset['landmask'] = nemo_t.dataset.bottom_level == 0
+    nemo_t = coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
+    )
+    nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
     nemo_profiles = processed.obs_operator(nemo_t)
     
     check1 = type(nemo_profiles) == coast.profile.Profile
@@ -1653,16 +1653,16 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 # -----------------------------------------------------------------------------#
 # ( 10d ) Vertical Interpolation                                               #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
 try:
     reference_depths = np.arange(0, 500, 2)
-    nemo_profiles.dataset = nemo_profiles.dataset.rename({'depth_0':'depth'})
+    nemo_profiles.dataset = nemo_profiles.dataset.rename({"depth_0": "depth"})
     model_interpolated = nemo_profiles.interpolate_vertical(processed)
 
     check1 = type(model_interpolated) == coast.profile.Profile
@@ -1675,10 +1675,10 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 # -----------------------------------------------------------------------------#
 # ( 10e ) Profile Differencing                                                 #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
@@ -1696,33 +1696,33 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 # -----------------------------------------------------------------------------#
 # ( 10f ) Regional Averaging                                                   #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
 try:
     # First let's make some masks to define regions of the model domain
     mm = coast.MaskMaker()
-    
+
     # Make some variables easier to access
     bath = nemo_t.dataset.bathymetry.values
     lon = nemo_t.dataset.longitude.values
     lat = nemo_t.dataset.latitude.values
-    
+
     mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
     mm_whole_domain = np.ones(lon.shape)
     mask_list = [mm_north_sea, mm_whole_domain]
     mask_names = ["North Sea", "Whole Domain"]
-    
+
     # Turn mask list into an xarray dataset
     mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
-    
+
     # Determine whether each profile is in each masked region or not
     mask_indices = model_interpolated.determine_mask_indices(mask_list)
-    
+
     # Do average differences for each region
     mask_means = difference.mask_means(mask_indices)
 
@@ -1735,10 +1735,10 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 # -----------------------------------------------------------------------------#
 # ( 10g ) Surface/Bottom Averaging                                             #
-#        
+#
 subsec = subsec + 1
 # <Introduction>
 
@@ -1747,10 +1747,10 @@ try:
     # Lets get surface values by averaging over the top 5m of data
     surface = 5
     model_profiles_surface = nemo_profiles.depth_means([0, surface])
-    
+
     # Lets get bottom values by averaging over the bottom 30m, except whether
     # depth is <100m, then average over the bottom 10m
-    model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf]) 
+    model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf])
 
     check1 = type(model_profiles_surface) == coast.profile.Profile
     check1 = type(model_profiles_bottom) == coast.profile.Profile
@@ -1763,7 +1763,7 @@ try:
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 #%%
 """
 #################################################
