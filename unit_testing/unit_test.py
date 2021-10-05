@@ -246,7 +246,9 @@ try:
 
     # checking all the coordinates mapped correctly to the dataset object
     if amm7.dataset._coord_names == {"depth_0", "latitude", "longitude", "time"}:
-        print(str(sec) + chr(subsec) + " OK - Gridded data subset loaded ", "with correct coords: " + fn_nemo_dat_subset)
+        print(
+            str(sec) + chr(subsec) + " OK - Gridded data subset loaded ", "with correct coords: " + fn_nemo_dat_subset
+        )
     else:
         print(
             str(sec) + chr(subsec) + " X - There is an issue with ",
