@@ -146,49 +146,47 @@ class Profile(Indexed):
     def depth_means(self, depth_bounds):
         """
         (04/10/2021)
-        Author: David Byrne      
+        Author: David Byrne
 
         INPUTS:
-         masks (Dataset) : 
+         masks (Dataset) :
 
         OUTPUTS:
-         
+
         """
 
         print("Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]), flush=True)
         ds = self.dataset
-        
+
         # We need to remove any time variables or the later .where() won't work
         var_list = list(ds.keys())
-        time_var_list = ['time']
+        time_var_list = ["time"]
         for vv in var_list:
-            if ds[vv].dtype in ['M8[ns]', 'timedelta64[ns]']:
+            if ds[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
                 time_var_list.append(vv)
-                
+
         time_vars = ds[time_var_list]
         ds = ds.drop(time_var_list)
-        
+
         layer_ind0 = ds.depth >= depth_bounds[0]
         layer_ind1 = ds.depth < depth_bounds[1]
         layer_ind = layer_ind0 * layer_ind1
         masked = ds.where(layer_ind, np.nan)
         meaned = masked.mean(dim="z_dim", skipna=True).load()
-        
+
         # Remerge time variables
         ds = xr.merge((meaned, time_vars))
-        
+
         return_prof = Profile()
         return_prof.dataset = ds
 
         return return_prof
 
-    def bottom_means(
-        self, layer_thickness, depth_thresholds=[np.inf]
-    ):
+    def bottom_means(self, layer_thickness, depth_thresholds=[np.inf]):
         """
         (04/10/2021)
-        Author: David Byrne   
-        
+        Author: David Byrne
+
         Averages profile data in some layer above the bathymetric depth. This
         routine requires there to be a 'bathymetry' variable in the Profile dataset.
         It can apply a constant averaging layer thickness across all profiles
@@ -197,20 +195,20 @@ class Profile(Indexed):
         bathymetry in very deep ocean but only 10m in the shallower ocean.
         If there is no data available in the layer specified (e.g. CTD cast not
         deep enough or model bathymetry wrong) then it will be NaN
-        
+
         To apply constant thickness, you only need to provide a value (in metre)
         for layer_thickness. For different thicknesses, you also need to give
         depth_thresholds. The last threshold must always be np.inf, i.e. all
         data below a specific bathymetry depth.
-        
+
         For example, to apply 10m to everywhere <100m, 50m to 100m -> 500m and
         100m elsewhere, use:
-            
+
             layer_thickness = [10, 50, 100]
             depth_thresholds = [100, 500, np.inf]
-            
+
         The bottom bound is always assumed to be 0.
-        
+
         *NOTE: If time related issues arise, then remove any time variables
         from the profile dataset before running this routine.
 
@@ -220,65 +218,65 @@ class Profile(Indexed):
 
         OUTPUTS:
          New profile object containing bottom averaged data.
-         
+
         """
-        
+
         # Extract bathymetry points
         ds = self.dataset
         bathy_pts = ds.bathymetry.values
-        
+
         # We need to remove any time variables or the later .where() won't work
         var_list = list(ds.keys())
-        time_var_list = ['time']
+        time_var_list = ["time"]
         for vv in var_list:
-            if ds[vv].dtype in ['M8[ns]', 'timedelta64[ns]']:
+            if ds[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
                 time_var_list.append(vv)
-                
+
         time_vars = ds[time_var_list]
         ds = ds.drop(time_var_list)
-        
+
         if depth_thresholds[-1] != np.inf:
-            raise ValueError('Please ensure the final element of depth_thresholds is np.inf')
-        
+            raise ValueError("Please ensure the final element of depth_thresholds is np.inf")
+
         # Convert to numpy arrays where necessary
         if np.isscalar(layer_thickness):
             layer_thickness = [layer_thickness]
-        
+
         depth_thresholds = np.array(depth_thresholds)
         layer_thickness = np.array(layer_thickness)
-        
+
         # Get depths, thresholds and thicknesses at each profile
-        prof_threshold = np.array( [np.sum(ii>depth_thresholds) for ii in bathy_pts] )
+        prof_threshold = np.array([np.sum(ii > depth_thresholds) for ii in bathy_pts])
         prof_thickness = layer_thickness[prof_threshold]
-        
+
         # Insert NaNs where not in the bottom
         try:
             bottom_ind = ds.depth >= (bathy_pts - prof_thickness)
         except:
             bottom_ind = ds.depth.transpose() >= (bathy_pts - prof_thickness)
         ds = ds.where(bottom_ind, np.nan)
-        
+
         # Average the remaining data
         ds = ds.mean(dim="z_dim", skipna=True).load()
-        
+
         # Remerge time variables
         ds = xr.merge((ds, time_vars))
-        
+
         return_prof = Profile()
         return_prof.dataset = ds
-        
+
         return return_prof
 
     def determine_mask_indices(self, masks):
         """
         (04/10/2021)
-        Author: David Byrne      
+        Author: David Byrne
 
         INPUTS:
-         masks (Dataset) : 
+         masks (Dataset) :
 
         OUTPUTS:
-         
+
         """
 
         ds = self.dataset
@@ -377,7 +375,7 @@ class Profile(Indexed):
         depth. This DataArray should contain the same number of profiles as
         this object and will map profiles in order for interpolation. If
         another profile object is passed, profiles will be mapped and
-        interpolated onto the other objects depth array.        
+        interpolated onto the other objects depth array.
 
         INPUTS:
          new_depth (array or dataArray) : new depths onto which to interpolate
@@ -410,7 +408,7 @@ class Profile(Indexed):
             # Select the current profile
             profile = ds.isel(profile=pp).rename({"depth": "z_dim"})
             profile = profile.dropna("z_dim")
-            profile = profile.set_coords('z_dim')
+            profile = profile.set_coords("z_dim")
 
             # Extract new depths for this profile
             if repeated_depth:
@@ -428,8 +426,7 @@ class Profile(Indexed):
             if count_ii == 0:
                 interpolated = interpolated_tmp
             else:
-                interpolated = xr.concat((interpolated, interpolated_tmp), 
-                                         dim="profile", coords="all")
+                interpolated = xr.concat((interpolated, interpolated_tmp), dim="profile", coords="all")
             count_ii = count_ii + 1
 
         # Create and format output dataset
@@ -578,9 +575,9 @@ class Profile(Indexed):
         mod_profiles["interp_lag"] = (["profile"], interp_lag)
 
         # Put x and y indices into dataset
-        mod_profiles["nearest_index_x"] = (['profile'], ind_x.values)
-        mod_profiles["nearest_index_y"] = (['profile'], ind_y.values)
-        mod_profiles["nearest_index_t"] = (['profile'], ind_t.values)
+        mod_profiles["nearest_index_x"] = (["profile"], ind_x.values)
+        mod_profiles["nearest_index_y"] = (["profile"], ind_y.values)
+        mod_profiles["nearest_index_t"] = (["profile"], ind_t.values)
 
         # Create return object and put dataset into it.
         return_prof = Profile()
