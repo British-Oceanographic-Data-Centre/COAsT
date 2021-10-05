@@ -79,10 +79,13 @@
     b. Compute HEOFs, projections and variance
     
 10. Profile Methods
-    a. Load EN4 data
-    b. Plot locations on map
-    c. Plot TS diagram
-    d. Plot temperature profile
+    a. Load En4 data
+    b. Process En4 data
+    c. Gridded obs_operator
+    d. Vertical Interpolation
+    e. Profile differencing
+    f. Regional averaging
+    g. Surface and Bottm averaging.
 
 11. Plotting Utility
     a. scatter_with_fit()
