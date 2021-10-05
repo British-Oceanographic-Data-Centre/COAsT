@@ -79,7 +79,7 @@ cont_t.construct_pressure(1027)
 #
 
 # Create the contour segement on f-points again
-                                                                             #
+#
 nemo_f = coast.Gridded(fn_domain=fn_nemo_dom, config=fn_config_f_grid)
 nemo_u = coast.Gridded(fn_data=fn_nemo_dat_u, fn_domain=fn_nemo_dom, config=fn_config_u_grid)
 nemo_v = coast.Gridded(fn_data=fn_nemo_dat_v, fn_domain=fn_nemo_dom, config=fn_config_v_grid)
