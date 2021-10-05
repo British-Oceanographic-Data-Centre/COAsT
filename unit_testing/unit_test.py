@@ -667,10 +667,16 @@ else:
 #
 subsec = subsec + 1
 try:
-    nemo_t = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="t-grid")
-    nemo_u = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="u-grid")
-    nemo_v = Coast.Nemo(fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, grid_ref="v-grid")
-    nemo_f = Coast.Nemo(fn_domain=dn_files + fn_nemo_dom, grid_ref="f-grid")
+    nemo_t = Coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_t_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_t_grid
+    )
+    nemo_u = Coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_u_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_u_grid
+    )
+    nemo_v = Coast.Gridded(
+        fn_data=dn_files + fn_nemo_grid_v_dat, fn_domain=dn_files + fn_nemo_dom, config=fn_config_v_grid
+    )
+    nemo_f = Coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_f_grid)
 
     tran_f = Coast.TransectF(nemo_f, (54, -15), (56, -12))
     tran_f.calc_flow_across_transect(nemo_u, nemo_v)
@@ -690,7 +696,7 @@ subsec = subsec + 1
 try:
     fig, ax = tran_f.plot_transect_on_map()
     ax.set_xlim([-20, 0])  # Problem: nice to make the land appear.
-    ax.set_ylim([45, 65])  #   But can not call plt.show() before adjustments are made...
+    ax.set_ylim([45, 65])  # But can not call plt.show() before adjustments are made...
     # fig.tight_layout()
     fig.savefig(dn_fig + "transect_map.png")
 
