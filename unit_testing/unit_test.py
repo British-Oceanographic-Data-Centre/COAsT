@@ -86,7 +86,7 @@ fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
 fn_nemo_harmonics = "coast_nemo_harmonics.nc"
 fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
 # EN4 profile data (NetCDF)
-fn_profile = dn_files + "EN4_example.nc"
+fn_profile = dn_files + "coast_example_EN4_201008.nc"
 fn_profile_config = "config/example_en4_profiles.json"
 fn_config_t_grid = path.join("./config", "example_nemo_grid_t.json")
 fn_config_f_grid = path.join("./config", "example_nemo_grid_f.json")
@@ -1588,12 +1588,134 @@ subsec = 96
 # -----------------------------------------------------------------------------#
 # ( 10a ) Load EN4 data                                                       #
 #                                                                             #
+subsec = subsec + 1
+# <Introduction>
 
+try:
+    profile = coast.Profile(fn_profile, config=fn_profile_config)
+    profile.dataset = profile.dataset.isel(profile=np.arange(0,profiles.dataset.dims['profile'], 10))
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# ( 10a ) Process EN4 data                                                     #
+# ( 10b ) Process EN4 data                                                     #
 #        
+subsec = subsec + 1
+# <Introduction>
 
+try:
+    processed = profile.process_en4()
+    processed.dataset.load()
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+# -----------------------------------------------------------------------------#
+# ( 10c ) Gridded obs_operaor                                                  #
+#        
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    # First read some new NEMO data
+    nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, 
+                           fn_domain=dn_files + fn_nemo_dom, 
+                           config=fn_config_t_grid)
+    nemo_t.dataset['landmask'] = nemo_t.dataset.bottom_level == 0
+    nemo_profiles = processed.obs_operator(nemo_t)
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+    
+# -----------------------------------------------------------------------------#
+# ( 10d ) Vertical Interpolation                                               #
+#        
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    reference_depths = np.arange(0, 500, 2)
+    nemo_profiles.dataset = nemo_profiles.dataset.rename({'depth_0':'depth'})
+    model_interpolated = nemo_profiles.interpolate_vertical(processed)
+
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+    
+# -----------------------------------------------------------------------------#
+# ( 10e ) Profile Differencing                                                 #
+#        
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    difference = processed.difference(model_interpolated)
+    difference.dataset.load()
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+    
+# -----------------------------------------------------------------------------#
+# ( 10f ) Regional Averaging                                                   #
+#        
+subsec = subsec + 1
+# <Introduction>
+
+try:
+    # First let's make some masks to define regions of the model domain
+    mm = coast.MaskMaker()
+    
+    # Make some variables easier to access
+    bath = nemo_t.dataset.bathymetry.values
+    lon = nemo_t.dataset.longitude.values
+    lat = nemo_t.dataset.latitude.values
+    
+    mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
+    mm_whole_domain = np.ones(lon.shape)
+    mask_list = [mm_north_sea, mm_whole_domain]
+    mask_names = ["North Sea", "Whole Domain"]
+    
+    # Turn mask list into an xarray dataset
+    mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
+    
+    # Determine whether each profile is in each masked region or not
+    mask_indices = model_interpolated.determine_mask_indices(mask_list)
+    
+    # Do average differences for each region
+    mask_means = difference.mask_means(mask_indices)
+
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+    
+# -----------------------------------------------------------------------------#
+# ( 10g ) Surface/Bottom Averaging                                             #
+#        
+subsec = subsec + 1
+# <Introduction>
+
+try:
+
+    # Lets get surface values by averaging over the top 5m of data
+    surface = 5
+    model_profiles_surface = nemo_profiles.depth_means([0, surface])
+    
+    # Lets get bottom values by averaging over the bottom 30m, except whether
+    # depth is <100m, then average over the bottom 10m
+    model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf]) 
+
+    print(str(sec) + chr(subsec) + " OK")
+
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+    
 #%%
 """
 #################################################

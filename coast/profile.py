@@ -309,6 +309,8 @@ class Profile(Indexed):
             mask = mask_indices.isel(dim_mask=mm).mask.values
             mask_ind = np.where(mask.astype(bool))[0]
             if len(mask_ind) < 1:
+                if mm == 0:
+                    ds_average = xr.Dataset()
                 continue
             mask_data = ds.isel(profile=mask_ind)
             ds_average_prof = mask_data.mean(dim="profile", skipna=True).compute()
@@ -514,7 +516,7 @@ class Profile(Indexed):
 
         while start_ii < time_dim:
             end_ii = start_ii + time_chunks[count_ii]
-            # print('{0}: {1} > {2}'.format(count_ii, start_ii, end_ii))
+            print('{0}: {1} > {2}'.format(count_ii, start_ii, end_ii))
 
             # Determine which time indices lie in this chunk
             ind_in_chunk = np.logical_and(ind_t >= start_ii, ind_t < end_ii)
@@ -523,6 +525,8 @@ class Profile(Indexed):
             if np.sum(ind_in_chunk) == 0:
                 start_ii = end_ii
                 count_ii = count_ii + 1
+                if count_ii == 0:
+                    mod_profiles = xr.Dataset()
                 continue
 
             # Pull out x,y and t indices
