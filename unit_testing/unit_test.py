@@ -1593,7 +1593,7 @@ subsec = subsec + 1
 
 try:
     profile = coast.Profile(fn_profile, config=fn_profile_config)
-    profile.dataset = profile.dataset.isel(profile=np.arange(0, profiles.dataset.dims["profile"], 10))
+    profile.dataset = profile.dataset.isel(profile=np.arange(0, profile.dataset.dims["profile"], 10))
     print(str(sec) + chr(subsec) + " OK")
 
 except:
