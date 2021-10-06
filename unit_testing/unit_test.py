@@ -1130,7 +1130,7 @@ try:
     check2 = len(eg.dataset.sea_level) > 0
     # eg.plot_timeseries()
 
-    # Alternatively extract the data for the last ndays, here for a specific
+    # Alternatively extract the data for the last n_days, here for a specific
     # (the default) station.
     eg.dataset = eg.read_ea_api_to_xarray(n_days=1, station_id="E70124")
     check3 = eg.dataset.site_name == "Liverpool"

@@ -599,11 +599,11 @@ class Tidegauge(Timeseries):
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
     def read_ea_api_to_xarray(
-        cls, ndays: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
+        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
     ):
         """
         load gauge data via environment.data.gov.uk EA API
-        Either loads last ndays, or from date_start:date_end
+        Either loads last n_days, or from date_start:date_end
 
         API Source:
         https://environment.data.gov.uk/flood-monitoring/doc/reference
@@ -614,7 +614,7 @@ class Tidegauge(Timeseries):
         stationId:str. The default stationId="E70124" is Liverpool.
 
         INPUTS:
-            ndays : int. Extact the last ndays from now.
+            n_days : int. Extact the last n_days from now.
             date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
             date_end : datetime
             stationId : int. Station id. Also referred to as stationReference in
@@ -624,7 +624,7 @@ class Tidegauge(Timeseries):
         """
         import requests, json
 
-        cls.ndays = ndays
+        cls.n_days = n_days
         cls.date_start = date_start
         cls.date_end = date_end
         cls.stationId = stationId  # EA id: stationReference
@@ -654,11 +654,11 @@ class Tidegauge(Timeseries):
         # %% Construct API request for data recovery
         info("load station data")
         if (cls.date_start == None) & (cls.date_end == None):
-            info(f"GETting ndays= {cls.ndays} of data")
+            info(f"GETting n_days= {cls.n_days} of data")
             url = (
                 htmlcall_stationId
                 + "since="
-                + (np.datetime64("now") - np.timedelta64(ndays, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
+                + (np.datetime64("now") - np.timedelta64(n_days, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
             )
             debug(f"url request: {url}")
         else:
