@@ -1,6 +1,5 @@
 from .coast import Coast
 from .coast import setup_dask_client
-from .nemo import Nemo
 from .transect import Transect, TransectF, TransectT
 from .observation import Observation
 from .tide_gauge import TideGauge
