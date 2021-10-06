@@ -9,7 +9,7 @@ import xarray as xr
 
 from . import general_utils, stats_util
 from .coast import Coast
-from .config import ConfigParser
+from .config_parser import ConfigParser
 from .logging_util import get_slug, debug, info, warn, error, warning
 import pandas as pd
 
