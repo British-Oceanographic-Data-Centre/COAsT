@@ -12,9 +12,9 @@ import coast
 import datetime
 
 #%% 2. Define paths
-fn_dom = "/Users/dbyrne/data/nemo/mesh_mask.nc"
-fn_dat = "/Users/dbyrne/data/nemo/sossheig*"
-fn_tg = "/Users/dbyrne/data/tg_amm15.nc"
+fn_dom = "/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc"
+fn_dat = "/Users/dbyrne/Projects/coast/workshops/07092021/data/sossheig*"
+fn_tg = "/Users/dbyrne/Projects/coast/workshops/07092021/data/tg_amm15.nc"
 
 #%% 3. Create gridded object and load data
 nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
