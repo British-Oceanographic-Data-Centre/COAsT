@@ -104,7 +104,7 @@ f, a = tidegauge.plot_timeseries(["sea_level", "sea_level_1H", "sea_level_1H_dx0
 
 date0 = datetime.datetime(2007, 1, 10)
 date1 = datetime.datetime(2007, 1, 12)
-tidegauge_list = coast.Tidegauge.create_multiple(fn_tidegauge_mult, date0, date1)
+tidegauge_list = coast.Tidegauge.create_multiple_tidegauge(fn_tidegauge_mult, date0, date1)
 
 # Now that we have tidegauge_list, we can plot the locations of all tide gauges
 # as follows:
