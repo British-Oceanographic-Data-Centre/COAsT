@@ -22,3 +22,4 @@ from .altimetry import Altimetry
 from .timeseries import Timeseries
 from .tidegauge import Tidegauge
 from .tidegauge_multiple import TidegaugeMultiple
+from .config_parser import ConfigParser

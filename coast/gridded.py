@@ -9,7 +9,7 @@ import xarray as xr
 
 from . import general_utils, stats_util
 from .coast import Coast
-from .config import ConfigParser
+from .config_parser import ConfigParser
 from .logging_util import get_slug, debug, info, warn, error, warning
 import pandas as pd
 
@@ -724,6 +724,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             # Add correction to e3u_0
             e3u_temp = e3u_temp + ds_dom.e3u_0[:, :, :-1]
             e3u_new = xr.zeros_like(e3t_new)
+            e3u_new = e3u_new.load()
             e3u_new[:, :, :, :-1] = e3u_temp
             e3u_new[:, :, :, -1] = ds_dom.e3u_0[:, :, -1]
             e3u_new["longitude"] = ds_dom.glamu
@@ -741,6 +742,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             e3v_temp = e3v_temp.where(e3v_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
             e3v_temp = e3v_temp + ds_dom.e3v_0[:, :-1, :]
             e3v_new = xr.zeros_like(e3t_new)
+            e3v_new = e3v_new.load()
             e3v_new[:, :, :-1, :] = e3v_temp
             e3v_new[:, :, -1, :] = ds_dom.e3v_0[:, -1, :]
             e3v_new["longitude"] = ds_dom.glamv
@@ -758,6 +760,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             e3f_temp = e3f_temp.where(e3f_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
             e3f_temp = e3f_temp + ds_dom.e3f_0[:, :-1, :]
             e3f_new = xr.zeros_like(e3t_new)
+            e3f_new = e3f_new.load()
             e3f_new[:, :, :-1, :] = e3f_temp
             e3f_new[:, :, -1, :] = ds_dom.e3f_0[:, -1, :]
             e3f_new["longitude"] = ds_dom.glamf
@@ -769,6 +772,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             # top levels correction same at e3t
             e3w_new = (ds_dom.e3w_0 + e3t_dt).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             # levels between top and bottom
+            e3w_new = e3w_new.load()
             e3w_new[dict(z_dim=slice(1, None))] = (
                 0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
             )

@@ -3,8 +3,8 @@ import json
 import os
 from pathlib import Path
 import pytest
-from coast.config import ConfigParser
-from coast.config.config_structure import (
+from coast.config_parser import ConfigParser
+from coast.config_structure import (
     ConfigTypes,
     ConfigKeys,
     GriddedConfig,
