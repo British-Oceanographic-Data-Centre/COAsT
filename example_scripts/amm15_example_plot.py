@@ -29,12 +29,9 @@ chunks = {
 
 sci_t.dataset.chunk(chunks)
 
-sci_t = coast.Nemo(dir_nam + fil_nam, dom_nam, grid_ref="t-grid", multiple=False, chunks=chunks)
-
 # create an empty w-grid object, to store stratification
 sci_w = coast.Gridded(fn_domain=dom_nam, config=config.replace("t_nemo", "w_nemo"))
-sci_w.dataset.chunk({"x_dim": 10, "y_dim": 10})  # TODO set in config json
-
+sci_w.dataset.chunk({"x_dim": 10, "y_dim": 10})  # Can reset after loading config json
 
 print("* Loaded ", config, " data")
 

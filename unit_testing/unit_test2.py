@@ -14,7 +14,7 @@ There are two accompaniment files to this unit testing script:
     - unit_test_contents: A list of sections and subsections.
     - unit_test_guidelines: Further guidelines to creating unit tests.
 Run:
-ipython: cd Coast; run unit_testing/unit_test.py  # I.e. from the git repo.
+ipython: cd COAsT; run unit_testing/unit_test.py  # I.e. from the git repo.
 Unit template:
 #-----------------------------------------------------------------------------#
 # ( ## ) Subsection title                                                     #
@@ -49,6 +49,10 @@ from socket import gethostname  # to get hostname
 import traceback
 import xarray.ufuncs as uf
 
+print("********")
+print("unit_test2.y IS ALMOST OBSOLETE NOW. MOST v2 CHANGES ARE MAPPED TO unit_test.py")
+print("THIS IS FOR REFERENCE, UNTIL IT IS (SOON) DELETED")
+print("********")
 """
 #################################################
 ## ( 0 ) Files, directories for unit testing   ##
@@ -67,7 +71,7 @@ coast.logging_util.setup_logging(stream=log_file, level=logging.INFO)
 dn_files = "./example_files/"
 
 if not os.path.isdir(dn_files):
-    print("please go download the examples file from https://linkedsystems.uk/erddap/files/Coast_example_files/")
+    print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
     dn_files = input("what is the path to the example files:\n")
     if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
@@ -83,7 +87,7 @@ fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
 fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
 fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
 fn_nemo_dat = "coast_example_nemo_data.nc"
-fn_nemo_dat_subset = "Coast_example_nemo_subset_data.nc"
+fn_nemo_dat_subset = "coast_example_nemo_subset_data.nc"
 fn_nemo_dom = "coast_example_nemo_domain.nc"
 fn_altimetry = "coast_example_altimetry_data.nc"
 fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
@@ -144,12 +148,12 @@ try:
     sci_load_file = coast.Gridded(config=fn_config_t_grid)
     sci_load_file.load(dn_files + fn_nemo_dat)
     if sci_load_ds.dataset.identical(sci_load_file.dataset):
-        print(str(sec) + chr(subsec) + " OK - Coast.load_dataset()")
+        print(str(sec) + chr(subsec) + " OK - coast.load_dataset()")
     else:
         print(
             str(sec)
             + chr(subsec)
-            + " X - Coast.load_dataset() ERROR - not identical to dataset loaded via Coast.load()"
+            + " X - coast.load_dataset() ERROR - not identical to dataset loaded via coast.load()"
         )
 except:
     print(str(sec) + chr(subsec) + " FAILED")
@@ -373,9 +377,9 @@ subsec = subsec + 1
 
 try:
     if sci.dataset["ssh"].equals(sci["ssh"]):
-        print(str(sec) + chr(subsec) + " OK - Coast.__getitem__ works correctly ")
+        print(str(sec) + chr(subsec) + " OK - coast.__getitem__ works correctly ")
     else:
-        print(str(sec) + chr(subsec) + " X - Problem with Coast.__getitem__ ")
+        print(str(sec) + chr(subsec) + " X - Problem with coast.__getitem__ ")
 except:
     print(str(sec) + chr(subsec) + " FAILED")
 
@@ -810,7 +814,7 @@ subsec = subsec + 1
 try:
     altimetry = coast.Altimetry(dn_files + fn_altimetry)
     ind = altimetry.subset_indices_lonlat_box([-10, 10], [45, 60])
-    altimetry_nwes = altimetry.isel(t_dim=ind)  # nwes = northwest europe shelf
+    altimetry_nwes = altimetry.isel(time=ind)  # nwes = northwest europe shelf
     ind_x, ind_y = general_utils.nearest_indices_2d(
         sci.dataset.longitude, sci.dataset.latitude, altimetry_nwes.dataset.longitude, altimetry_nwes.dataset.latitude
     )
@@ -868,7 +872,7 @@ sci = coast.Nemo(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, grid_ref="t-gri
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6a ) Load example altimetry data                                          #
+# %% ( 6a ) Load example altimetry data                                          #
 #                                                                             #
 
 subsec = subsec + 1
@@ -896,7 +900,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6b ) Altimetry subsetting                                                 #
+# %% ( 6b ) Altimetry subsetting                                                 #
 #                                                                             #
 
 subsec = subsec + 1
@@ -916,7 +920,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6c ) Interpolate model to altimetry                                       #
+# %% ( 6c ) Interpolate model to altimetry                                       #
 #                                                                             #
 
 subsec = subsec + 1
@@ -939,7 +943,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6d ) Altimetry CRPS                                                       #
+# %% ( 6d ) Altimetry CRPS                                                       #
 #                                                                             #
 
 
@@ -964,7 +968,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6e ) Altimetry Stats methods                                              #
+# %% ( 6e ) Altimetry Stats methods                                              #
 #                                                                             #
 
 subsec = subsec + 1
@@ -990,7 +994,7 @@ except:
 
 
 # -----------------------------------------------------------------------------#
-#%% ( 6f ) Altimetry quick_plot()                                               #
+# %% ( 6f ) Altimetry quick_plot()                                               #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1946,6 +1950,11 @@ try:
     from example_scripts import tidegauge_tutorial  # This runs on example_files
     from example_scripts import tidetable_tutorial  # This runs on example_files
     from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
+    from example_scripts import transect_tutorial  # This runs on example_files
+    from example_scripts import contour_tutorial  # This runs on example_files
+    from example_scripts import (
+        internal_tide_pycnocline_diagnostics,
+    )  # This runs on example_files unless it is on livljobs, then it is AMM60 data
 
     print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
     subsec = subsec + 1
@@ -1954,23 +1963,28 @@ try:
         from example_scripts import amm15_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
+
         subsec = subsec + 1
         from example_scripts import anchor_plots_of_nsea_wvel
 
         print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
+
         subsec = subsec + 1
         from example_scripts import blz_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
+
         subsec = subsec + 1
         from example_scripts import seasia_r12_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
+
         subsec = subsec + 1
         from example_scripts import wcssp_india_example_plot
 
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-        subsec = subsec + 1
+
+        subsec = subsec + 1  # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
         from example_scripts import internal_tide_pycnocline_diagnostics
 
         print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")

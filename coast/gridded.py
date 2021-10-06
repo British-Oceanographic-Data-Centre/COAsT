@@ -874,11 +874,11 @@ class Gridded(Coast):  # TODO Complete this docstring
         Modifies NEMO() dataset in place. New variables added.
         """
         if direction == "cart2polar":
-            a, g = general_utils.cart2polar(self.dataset[x_var], self.dataset[y_var], degrees=degrees)
+            a, g = general_utils.cartesian_to_polar(self.dataset[x_var], self.dataset[y_var], degrees=degrees)
             self.dataset[a_var] = a
             self.dataset[g_var] = g
         elif direction == "polar2cart":
-            x, y = general_utils.polar2cart(self.dataset[a_var], self.dataset[g_var], degrees=degrees)
+            x, y = general_utils.polar_to_cartesian(self.dataset[a_var], self.dataset[g_var], degrees=degrees)
             self.dataset[x_var] = x
             self.dataset[y_var] = y
         else:
