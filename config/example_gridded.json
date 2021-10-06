@@ -1,0 +1,114 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {},
+	"grid_ref": {
+		"t-grid": [
+			"glamt",
+			"gphit",
+			"e1t",
+			"e2t",
+			"e3t_0",
+			"deptht_0",
+			"tmask",
+			"bottom_level"
+		]
+	},
+	"dataset": {
+		"dimension_map": {
+			"ex1": "time_counter",
+			"ex2": "deptht",
+			"ex3": "depthu",
+			"ex4": "depthv",
+			"ex5": "y",
+			"ex6": "x",
+			"ex7": "x_grid_T",
+			"ex8": "y_grid_T"
+		},
+		"variable_map": {
+			"ex1": "time_counter",
+			"ex2": "votemper",
+			"ex3": "thetao",
+			"ex4": "temp",
+			"ex5": "toce",
+			"ex6": "so",
+			"ex7": "vosaline",
+			"ex8": "soce",
+			"ex9": "voce",
+			"ex10": "vomecrty",
+			"ex11": "uoce",
+			"ex12": "vozocrtx",
+			"ex13": "sossheig",
+			"ex14": "zos"
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
+	},
+	"domain": {
+		"dimension_map": {
+			"ex1": "t",
+			"ex2": "x",
+			"ex3": "y",
+			"ex4": "z"
+		},
+		"variable_map": {
+			"ex1": "time_counter",
+			"ex2": "glamt",
+			"ex3": "glamu",
+			"ex4": "glamv",
+			"ex5": "glamf",
+			"ex6": "gphit",
+			"ex7": "gphiu",
+			"ex8": "gphiv",
+			"ex9": "gphif",
+			"ex10": "e1t",
+			"ex11": "e1u",
+			"ex12": "e1v",
+			"ex13": "e1f",
+			"ex14": "e2t",
+			"ex15": "e2u",
+			"ex16": "e2v",
+			"ex17": "e2f",
+			"ex18": "ff_t",
+			"ex19": "ff_f",
+			"ex20": "e3t_0",
+			"ex21": "e3w_0",
+			"ex22": "e3u_0",
+			"ex23": "e3v_0",
+			"ex24": "e3f_0",
+			"ex25": "tmask",
+			"ex26": "depthf_0",
+			"ex27": "depthu_0",
+			"ex28": "depthv_0",
+			"ex29": "depthw_0",
+			"ex30": "deptht_0",
+			"ex31": "ln_sco",
+			"ex32": "bottom_level"
+		}
+	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
+	"processing_flags": [
+		"example_flag1",
+		"example_flag2"
+	]
+}

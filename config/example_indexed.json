@@ -1,0 +1,37 @@
+{
+	"type": "indexed",
+	"dimensionality": 3,
+	"chunks": {},
+	"dataset": {
+		"dimension_map": {
+			"ex1": "time_counter",
+			"ex2": "deptht",
+			"ex3": "depthu",
+			"ex4": "depthv",
+			"ex5": "y",
+			"ex6": "x",
+			"ex7": "x_grid_T",
+			"ex8": "y_grid_T"
+		},
+		"variable_map": {
+			"ex1": "time_counter",
+			"ex2": "votemper",
+			"ex3": "thetao",
+			"ex4": "temp",
+			"ex5": "toce",
+			"ex6": "so",
+			"ex7": "vosaline",
+			"ex8": "soce",
+			"ex9": "voce",
+			"ex10": "vomecrty",
+			"ex11": "uoce",
+			"ex12": "vozocrtx",
+			"ex13": "sossheig",
+			"ex14": "zos"
+		},
+		"coord_vars": []
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}

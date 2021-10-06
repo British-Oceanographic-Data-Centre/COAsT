@@ -25,24 +25,22 @@ The following demonstration would allow you to pass these data.
 """
 import coast
 import numpy as np
-import xarray as xr
-
 
 #%% Load and plot High and Low Water data
-print('load and plot HLW data')
-filnam = 'example_files/Gladstone_2020-10_HLW.txt'
+print("load and plot HLW data")
+filnam = "example_files/Gladstone_2020-10_HLW.txt"
 
 # Set the start and end dates
-date_start = np.datetime64('2020-10-12 23:59')
-date_end = np.datetime64('2020-10-14 00:01')
+date_start = np.datetime64("2020-10-12 23:59")
+date_end = np.datetime64("2020-10-14 00:01")
 
-# Initiate a TIDEGAUGE object, if a filename is passed it assumes it is a GESLA type object
-tg = coast.TIDEGAUGE()
+# Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
+tg = coast.Tidegauge()
 # specify the data read as a High Low Water dataset
-tg.dataset = tg.read_HLW_to_xarray(filnam, date_start, date_end)
+tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
 # Show dataset. If timezone is specified then it is presented as requested, otherwise uses UTC
-print("Try the TIDEGAUGE.show() method:")
-tg.show(timezone = 'Europe/London')
+print("Try the TideGauge.show() method:")
+tg.show(timezone="Europe/London")
 # Do a basic plot of these points
 tg.dataset.plot.scatter(x="time", y="sea_level")
 
@@ -50,35 +48,31 @@ tg.dataset.plot.scatter(x="time", y="sea_level")
 
 # There is a method to locate HLW events around an approximate date and time
 # First state the time of interest
-time_guess = np.datetime64('2020-10-13 12:48')
+time_guess = np.datetime64("2020-10-13 12:48")
 # Then recover all the HLW events in a +/- window, of specified size (iteger hrs)
 # The default winsize = 2 (hrs)
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='window', winsize=24 )
+HLW = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="window", winsize=24)
 
 # Alternatively recover the closest HLW event to the input timestamp
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_1' )
+HLW = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_1")
 
 # Or the nearest two events to the input timestamp
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_2' )
+HLW = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_2")
 
 # Extract the Low Tide value
-print("Try the TIDEGAUGE.get_tidetabletimes() methods:")
-print('LT:', HLW[ HLW.argmin() ].values, 'm at', HLW[ HLW.argmin() ].time.values )
+print("Try the TideGauge.get_tidetabletimes() methods:")
+print("LT:", HLW[HLW.argmin()].values, "m at", HLW[HLW.argmin()].time.values)
 
 # Extract the High Tide value
-print('HT:', HLW[ HLW.argmax() ].values, 'm at', HLW[ HLW.argmax() ].time.values )
+print("HT:", HLW[HLW.argmax()].values, "m at", HLW[HLW.argmax()].time.values)
 
 # Or use the the nearest High Tide method to get High Tide
-HT = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'), method='nearest_HW' )
-print('HT:', HT.values, 'm at', HT.time.values )
+HT = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW")
+print("HT:", HT.values, "m at", HT.time.values)
 
 # The get_tidetabletimes() method can take extra paremeters such as a window
 # size, an integer number of hours to seek either side of the guess.
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'),
-                            winsize=2,
-                            method='nearest_1' )
+HLW = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), winsize=2, method="nearest_1")
 
 
-HLW = tg.get_tidetabletimes( np.datetime64('2020-10-13 12:48'),
-                            winsize=1,
-                            method='nearest_1' )
+HLW = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), winsize=1, method="nearest_1")

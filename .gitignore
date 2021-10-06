@@ -20,3 +20,10 @@ unit_testing/*log
 *.pyc
 
 *.DS_Store
+
+.vscode
+# development ignores
+sandbox.py
+
+config/nemo_tst_gridded.json
+

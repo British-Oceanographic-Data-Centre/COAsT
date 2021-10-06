@@ -1,0 +1,75 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {},
+	"grid_ref": {
+		"u-grid": [
+			"glamu",
+			"gphiu",
+			"e1u",
+			"e2u",
+			"e3u_0",
+			"depthu_0",
+			"umask"
+		]
+	},
+	"dataset": {
+		"dimension_map": {
+			"time_counter": "t_dim",
+			"depthu": "z_dim",
+			"y": "y_dim",
+			"x": "x_dim"
+		},
+		"variable_map": {
+			"time_counter": "time",
+			"uoce": "u_velocity",
+			"vozocrtx": "u_velocity"
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
+	},
+	"domain": {
+		"dimension_map": {
+			"t": "t_dim0",
+			"x": "x_dim",
+			"y": "y_dim",
+			"z": "z_dim"
+		},
+		"variable_map": {
+			"time_counter": "time0",
+			"glamu": "longitude",
+			"gphiu": "latitude",
+			"e1u": "e1",
+			"e2u": "e2",
+			"e3u_0": "e3_0",
+			"depthu_0": "depth_0",
+			"bottom_level": "bottom_level",
+			"umask": "mask"
+		}
+	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
+	"processing_flags": [
+		"example_flag1",
+		"example_flag2"
+	]
+}
