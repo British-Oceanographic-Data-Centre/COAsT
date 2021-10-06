@@ -1268,7 +1268,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    tidegauge_list = coast.Tidegauge.create_multiple("./example_files/tide_gauges/l*", date0, date1)
+    tidegauge_list = coast.Tidegauge.create_multiple_tidegauge("./example_files/tide_gauges/l*", date0, date1)
 
     # TEST: Check length of list
     check1 = len(tidegauge_list) == 2
