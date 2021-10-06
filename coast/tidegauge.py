@@ -1283,10 +1283,10 @@ class Tidegauge(Timeseries):
 
         new_dataset = xr.Dataset()
         new_dataset.attrs = self.dataset.attrs
-        new_dataset[var_str + "_highs"] = ("time_highs", values_max)
-        new_dataset[var_str + "_lows"] = ("time_lows", -values_min)
-        new_dataset["time_highs"] = ("time_highs", time_max)
-        new_dataset["time_lows"] = ("time_lows", time_min)
+        new_dataset[var_str + "_highs"] = ("time_highs", values_max.data)
+        new_dataset[var_str + "_lows"] = ("time_lows", -values_min.data)
+        new_dataset["time_highs"] = ("time_highs", time_max.data)
+        new_dataset["time_lows"] = ("time_lows", time_min.data)
 
         new_object = Tidegauge()
         new_object.dataset = new_dataset
