@@ -712,7 +712,6 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # area averaged interpolation onto the u-grid to get e3u
         if np.any([e3u, e3f]):
-            print(list(ds_dom.keys()))
             e1e2u = ds_dom.e1u * ds_dom.e2u
             # interpolate onto u-grid
             e3u_temp = (
@@ -773,6 +772,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             # top levels correction same at e3t
             e3w_new = (ds_dom.e3w_0 + e3t_dt).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             # levels between top and bottom
+            e3w_new = e3w_new.load()
             e3w_new[dict(z_dim=slice(1, None))] = (
                 0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
             )
