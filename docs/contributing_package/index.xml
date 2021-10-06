@@ -277,8 +277,8 @@ and issue a new github release.&lt;/p>
 &lt;p>With the push to master Git Actions build the conda and pip packages and the
 package receives a zenodo update (&lt;a href="https://zenodo.org/account/settings/github/repository/British-Oceanographic-Data-Centre/COAsT">https://zenodo.org/account/settings/github/repository/British-Oceanographic-Data-Centre/COAsT&lt;/a>) and DOI.&lt;/p>
 &lt;h3 id="1-push-to-master">1. Push to master&lt;/h3>
-&lt;p>To update the master branch update only the &lt;strong>version&lt;/strong> of the package in the
-file &lt;em>setup.py&lt;/em> (or the conda building wont work). E.g. shown as 0.4.1 below:&lt;/p>
+&lt;p>Any push to master initiates the Git Actions to build and release the package. It is advisable then to prepare the release in develop and only ever pull into master from develop. (Pulling from master to develop could bring unexpected Git Actions to develop). In order for the package builds to work the version of the package must be unique. The &lt;strong>version&lt;/strong> of the package is set in
+file &lt;em>setup.py&lt;/em>. E.g. shown as 0.4.1 below:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">&lt;span style="color:#8f5902;font-style:italic"># setup.py&lt;/span>
 ...
 &lt;span style="color:#000">PACKAGE&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> SimpleNamespace&lt;span style="color:#ce5c00;font-weight:bold">(&lt;/span>**&lt;span style="color:#ce5c00;font-weight:bold">{&lt;/span>
