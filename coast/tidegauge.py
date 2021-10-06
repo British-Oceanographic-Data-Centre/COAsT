@@ -75,6 +75,10 @@ class Tidegauge(Timeseries):
         -> find_high_and_low_water(): Find maxima and minima of time series
     """
 
+    ##############################################################################
+    ###                ~ Initialisation and File Reading ~                     ###
+    ##############################################################################
+
     def __init__(self, file_path: str = None, date_start=None, date_end=None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
@@ -348,8 +352,8 @@ class Tidegauge(Timeseries):
         """
         debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
-            header_dict = cls.read_HLW_header(fn_hlw)
-            dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
+            header_dict = cls.read_hlw_header(fn_hlw)
+            dataset = cls.read_hlw_data(fn_hlw, header_dict, date_start, date_end)
             if header_dict["field"] == "TZ:UT(GMT)/BST":
                 debug("Read in as BST, stored as UTC")
             elif header_dict["field"] == "TZ:GMTonly":
@@ -365,7 +369,7 @@ class Tidegauge(Timeseries):
         return dataset
 
     @staticmethod
-    def read_HLW_header(filnam):
+    def read_hlw_header(filnam):
         """
         Reads header from a HWL file.
 
@@ -408,7 +412,7 @@ class Tidegauge(Timeseries):
         return header_dict
 
     @staticmethod
-    def read_HLW_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
+    def read_hlw_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -594,12 +598,12 @@ class Tidegauge(Timeseries):
 
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
-    def read_EA_API_to_xarray(
-        cls, ndays: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
+    def read_ea_api_to_xarray(
+        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, station_id="E70124"
     ):
         """
         load gauge data via environment.data.gov.uk EA API
-        Either loads last ndays, or from date_start:date_end
+        Either loads last n_days, or from date_start:date_end
 
         API Source:
         https://environment.data.gov.uk/flood-monitoring/doc/reference
@@ -607,32 +611,32 @@ class Tidegauge(Timeseries):
         Details of available tidal stations are recovered with:
         https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
         Recover the "stationReference" for the gauge of interest and pass as
-        stationId:str. The default stationId="E70124" is Liverpool.
+        station_id:str. The default station_id="E70124" is Liverpool.
 
         INPUTS:
-            ndays : int. Extact the last ndays from now.
+            n_days : int. Extact the last n_days from now.
             date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
             date_end : datetime
-            stationId : int. Station id. Also referred to as stationReference in
+            station_id : int. Station id. Also referred to as stationReference in
              EA API. Default value is for Liverpool.
         OUTPUT:
             sea_level, time : xr.Dataset
         """
         import requests, json
 
-        cls.ndays = ndays
+        cls.n_days = n_days
         cls.date_start = date_start
         cls.date_end = date_end
-        cls.stationId = stationId  # EA id: stationReference
+        cls.station_id = station_id  # EA id: stationReference
 
         # %% Obtain and process header information
         info("load station info")
-        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.stationId + ".json"
+        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.station_id + ".json"
         try:
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
         except ValueError:
-            debug(f"Failed request for station {cls.stationId}")
+            debug(f"Failed request for station {cls.station_id}")
             return
 
         try:
@@ -643,18 +647,18 @@ class Tidegauge(Timeseries):
             info(f"possible missing some header info: site_name,latitude,longitude")
         try:
             # Define url call with parameter from station info
-            htmlcall_stationId = header_dict["items"]["measures"]["@id"] + "/readings?"
+            htmlcall_station_id = header_dict["items"]["measures"]["@id"] + "/readings?"
         except:
             debug(f"problem defining the parameter to read")
 
         # %% Construct API request for data recovery
         info("load station data")
         if (cls.date_start == None) & (cls.date_end == None):
-            info(f"GETting ndays= {cls.ndays} of data")
+            info(f"GETting n_days= {cls.n_days} of data")
             url = (
-                htmlcall_stationId
+                htmlcall_station_id
                 + "since="
-                + (np.datetime64("now") - np.timedelta64(ndays, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
+                + (np.datetime64("now") - np.timedelta64(n_days, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
             )
             debug(f"url request: {url}")
         else:
@@ -663,7 +667,7 @@ class Tidegauge(Timeseries):
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime("%Y-%m-%d")
                 enddate = cls.date_end.item().strftime("%Y-%m-%d")
-                url = htmlcall_stationId + "startdate=" + startdate + "&enddate=" + enddate
+                url = htmlcall_station_id + "startdate=" + startdate + "&enddate=" + enddate
                 debug(f"url request: {url}")
 
             else:
@@ -1279,10 +1283,10 @@ class Tidegauge(Timeseries):
 
         new_dataset = xr.Dataset()
         new_dataset.attrs = self.dataset.attrs
-        new_dataset[var_str + "_highs"] = ("time_highs", values_max)
-        new_dataset[var_str + "_lows"] = ("time_lows", -values_min)
-        new_dataset["time_highs"] = ("time_highs", time_max)
-        new_dataset["time_lows"] = ("time_lows", time_min)
+        new_dataset[var_str + "_highs"] = ("time_highs", values_max.data)
+        new_dataset[var_str + "_lows"] = ("time_lows", -values_min.data)
+        new_dataset["time_highs"] = ("time_highs", time_max.data)
+        new_dataset["time_lows"] = ("time_lows", time_min.data)
 
         new_object = Tidegauge()
         new_object.dataset = new_dataset

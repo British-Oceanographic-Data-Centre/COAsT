@@ -1,7 +1,7 @@
 """
-This is a demonstration script for using the TideGauge object in the COAsT
+This is a demonstration script for using the Tidegauge object in the COAsT
 package. This object has strict data formatting requirements, which are
-outlined in TideGauge.py.
+outlined in Tidegauge.py.
 """
 
 # Begin by importing coast and other packages
@@ -23,10 +23,10 @@ fn_tidegauge_config = "./config/example_tidegauge.json"
 # We need to load in a NEMO object for doing NEMO things.
 nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_nemo_config)
 
-# And now we can load in our ALTIMETRY data. By default, TideGauge is set up
+# And now we can load in our ALTIMETRY data. By default, Tidegauge is set up
 # to read in GESLA ASCII files. However, if no path is supplied, then the
 # object's dataset will be initialised as None. Custom data can then be loaded
-# if desired, as long as it follows the data formatting for TideGauge. Here
+# if desired, as long as it follows the data formatting for Tidegauge. Here
 # we load data between two specified dates:
 date_0 = datetime.datetime(2007, 1, 10)
 date_1 = datetime.datetime(2007, 1, 16)
@@ -38,7 +38,7 @@ tidegauge = coast.Tidegauge(file_path=fn_tidegauge, date_start=date_0, date_end=
 tidegauge.obs_operator(nemo, mod_var_name="ssh", time_interp="nearest")
 
 # Doing this has created a new interpolated variable called interp_ssh and
-# saved it back into our TideGauge object. Take a look at tidegauge.dataset
+# saved it back into our Tidegauge object. Take a look at tidegauge.dataset
 # to see for yourself.
 #
 # Next we will compare this interpolated variable to an observed variable
@@ -48,7 +48,7 @@ tidegauge.obs_operator(nemo, mod_var_name="ssh", time_interp="nearest")
 stats = tidegauge.basic_stats("interp_ssh", "sea_level")
 
 # Take a look inside stats.dataset to see all of the new variables. When using
-# basic stats, the returned object is also an TideGauge object, so all of the
+# basic stats, the returned object is also an Tidegauge object, so all of the
 # same methods can be applied. Alternatively, if you want to save the new
 # metrics to the original altimetry object, set create_new_object = False.
 #
@@ -62,7 +62,7 @@ crps = tidegauge.crps(nemo, model_var_name="ssh", obs_var_name="sea_level", nh_r
 # to basic_stats, create_new_object can be set to false to save output to
 # the original tidegauge object.
 #
-# TideGauge has ready made quick plotting routines for viewing time series
+# Tidegauge has ready made quick plotting routines for viewing time series
 # and tide gauge location. To look at the tide gauge location:
 fig, ax = tidegauge.plot_on_map()
 
@@ -71,14 +71,14 @@ fig, ax = tidegauge.plot_timeseries("sea_level")
 
 # Note that start and end dates can also be specified for plot_timeseries().
 #
-# As stats and crps are also TideGauge objects, the same time series plotting
+# As stats and crps are also Tidegauge objects, the same time series plotting
 # functionality can be used:
 crps.plot_timeseries("crps")
 stats.plot_timeseries("absolute_error")
 
-# Lets do some analysis on just the data in TideGauge. We can attempt to remove
+# Lets do some analysis on just the data in Tidegauge. We can attempt to remove
 # the tidal signal using a Doodson x0 filter. To do this, we must first
-# resample the data to an hourly frequency. TideGauge.resample_mean() can do
+# resample the data to an hourly frequency. Tidegauge.resample_mean() can do
 # just this using averaging.
 tidegauge.resample_mean("sea_level", "1H")
 
@@ -96,19 +96,19 @@ tidegauge.apply_doodson_x0_filter("sea_level_1H")
 # by providing a list of variable names:
 f, a = tidegauge.plot_timeseries(["sea_level", "sea_level_1H", "sea_level_1H_dx0"])
 
-# Each TideGauge object only holds data for a single tidegauge. There is some
+# Each Tidegauge object only holds data for a single tidegauge. There is some
 # functionality for dealing with multiple gauges in COAsT. To load multiple
 # GESLA tidegauge files, we use the static method create_multiple_tidegauge().
 # This routine takes a list of files or a wildcard string and loads them all
-# into a list of TideGauge objects.
+# into a list of Tidegauge objects.
 
 date0 = datetime.datetime(2007, 1, 10)
 date1 = datetime.datetime(2007, 1, 12)
-tidegauge_list = coast.TideGauge.create_multiple(fn_tidegauge_mult, date0, date1)
+tidegauge_list = coast.Tidegauge.create_multiple_tidegauge(fn_tidegauge_mult, date0, date1)
 
 # Now that we have tidegauge_list, we can plot the locations of all tide gauges
 # as follows:
-fig, ax = coast.TideGauge.plot_on_map_multiple(tidegauge_list)
+fig, ax = coast.Tidegauge.plot_on_map_multiple(tidegauge_list)
 
 # To do analysis on multiple gauges, a simple looping script can be setup.
 # For example, to obtain basic stats:
@@ -118,20 +118,20 @@ for tg in tidegauge_list:
 
 # And now some of these new values can be plotted on a map, again using
 # plot_on_map_multiple:
-fig, ax = coast.TideGauge.plot_on_map_multiple(tidegauge_list, color_var_str="rmse")
+fig, ax = coast.Tidegauge.plot_on_map_multiple(tidegauge_list, color_var_str="rmse")
 
 
 #%% Alternatively load in data obtained using the Environment Agency (England)
 #  API. These are only accessible for the last 28 days. This does not require
 # an API key.
 #  Details of available tidal stations are recovered with:
-#  https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
+#  https://environment.data.gov.uk/flood-monitoring/id/stations?type=Tidegauge
 # Recover the "stationReference" for the gauge of interest and pass as
 # stationId:str. The default gauge is Liverpool: stationId="E70124"
 # Construct a recent 10 days period and extract these data
 date_start = np.datetime64("now") - np.timedelta64(20, "D")
 date_end = np.datetime64("now") - np.timedelta64(10, "D")
-eg = coast.TideGauge()
+eg = coast.Tidegauge()
 # Extract the data between explicit dates
 eg.dataset = eg.read_ea_api_to_xarray(date_start=date_start, date_end=date_end)
 eg.plot_timeseries()
@@ -148,7 +148,7 @@ eg.plot_timeseries()
 
 #%% Tide table extrema can be extracted from the timeseries
 #        Finds high and low water for a given variable.
-#        Returns in a new TideGauge object with similar data format to
+#        Returns in a new Tidegauge object with similar data format to
 #        a TIDETABLE.
 # There are two methods for extracting extrema. A neightbour comparison method,
 # (method="comp") and a cubic spline fitting method (method="cubic")
@@ -160,10 +160,10 @@ fn_bodc = "example_files/tide_gauges/LIV2010.txt"
 date_start = np.datetime64("2020-10-13 20:00")
 date_end = np.datetime64("2020-10-13 21:00")
 
-# Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA
+# Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA
 # type object
 del tg
-tg = coast.TideGauge()
+tg = coast.Tidegauge()
 tg.dataset = tg.read_bodc_to_xarray(fn_bodc, date_start, date_end)
 
 # Use comparison of neighbourhood method (method="comp" is assumed)
