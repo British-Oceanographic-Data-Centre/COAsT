@@ -712,6 +712,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # area averaged interpolation onto the u-grid to get e3u
         if np.any([e3u, e3f]):
+            print(list(ds_dom.keys()))
             e1e2u = ds_dom.e1u * ds_dom.e2u
             # interpolate onto u-grid
             e3u_temp = (
@@ -724,6 +725,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             # Add correction to e3u_0
             e3u_temp = e3u_temp + ds_dom.e3u_0[:, :, :-1]
             e3u_new = xr.zeros_like(e3t_new)
+            e3u_new = e3u_new.load()
             e3u_new[:, :, :, :-1] = e3u_temp
             e3u_new[:, :, :, -1] = ds_dom.e3u_0[:, :, -1]
             e3u_new["longitude"] = ds_dom.glamu
@@ -741,6 +743,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             e3v_temp = e3v_temp.where(e3v_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
             e3v_temp = e3v_temp + ds_dom.e3v_0[:, :-1, :]
             e3v_new = xr.zeros_like(e3t_new)
+            e3v_new = e3v_new.load()
             e3v_new[:, :, :-1, :] = e3v_temp
             e3v_new[:, :, -1, :] = ds_dom.e3v_0[:, -1, :]
             e3v_new["longitude"] = ds_dom.glamv
@@ -758,6 +761,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             e3f_temp = e3f_temp.where(e3f_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
             e3f_temp = e3f_temp + ds_dom.e3f_0[:, :-1, :]
             e3f_new = xr.zeros_like(e3t_new)
+            e3f_new = e3f_new.load()
             e3f_new[:, :, :-1, :] = e3f_temp
             e3f_new[:, :, -1, :] = ds_dom.e3f_0[:, -1, :]
             e3f_new["longitude"] = ds_dom.glamf
