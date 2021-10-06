@@ -599,7 +599,7 @@ class Tidegauge(Timeseries):
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
     def read_ea_api_to_xarray(
-        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
+        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, station_id="E70124"
     ):
         """
         load gauge data via environment.data.gov.uk EA API
@@ -611,13 +611,13 @@ class Tidegauge(Timeseries):
         Details of available tidal stations are recovered with:
         https://environment.data.gov.uk/flood-monitoring/id/stations?type=TideGauge
         Recover the "stationReference" for the gauge of interest and pass as
-        stationId:str. The default stationId="E70124" is Liverpool.
+        station_id:str. The default station_id="E70124" is Liverpool.
 
         INPUTS:
             n_days : int. Extact the last n_days from now.
             date_start : datetime. UTC format string "yyyy-MM-dd" E.g 2020-01-05
             date_end : datetime
-            stationId : int. Station id. Also referred to as stationReference in
+            station_id : int. Station id. Also referred to as stationReference in
              EA API. Default value is for Liverpool.
         OUTPUT:
             sea_level, time : xr.Dataset
@@ -627,16 +627,16 @@ class Tidegauge(Timeseries):
         cls.n_days = n_days
         cls.date_start = date_start
         cls.date_end = date_end
-        cls.stationId = stationId  # EA id: stationReference
+        cls.station_id = station_id  # EA id: stationReference
 
         # %% Obtain and process header information
         info("load station info")
-        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.stationId + ".json"
+        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.station_id + ".json"
         try:
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
         except ValueError:
-            debug(f"Failed request for station {cls.stationId}")
+            debug(f"Failed request for station {cls.station_id}")
             return
 
         try:
@@ -647,7 +647,7 @@ class Tidegauge(Timeseries):
             info(f"possible missing some header info: site_name,latitude,longitude")
         try:
             # Define url call with parameter from station info
-            htmlcall_stationId = header_dict["items"]["measures"]["@id"] + "/readings?"
+            htmlcall_station_id = header_dict["items"]["measures"]["@id"] + "/readings?"
         except:
             debug(f"problem defining the parameter to read")
 
@@ -656,7 +656,7 @@ class Tidegauge(Timeseries):
         if (cls.date_start == None) & (cls.date_end == None):
             info(f"GETting n_days= {cls.n_days} of data")
             url = (
-                htmlcall_stationId
+                htmlcall_station_id
                 + "since="
                 + (np.datetime64("now") - np.timedelta64(n_days, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
             )
@@ -667,7 +667,7 @@ class Tidegauge(Timeseries):
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime("%Y-%m-%d")
                 enddate = cls.date_end.item().strftime("%Y-%m-%d")
-                url = htmlcall_stationId + "startdate=" + startdate + "&enddate=" + enddate
+                url = htmlcall_station_id + "startdate=" + startdate + "&enddate=" + enddate
                 debug(f"url request: {url}")
 
             else:
