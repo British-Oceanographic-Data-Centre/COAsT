@@ -412,7 +412,7 @@ class Tidegauge(Timeseries):
         return header_dict
 
     @staticmethod
-    def read_HLW_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
+    def read_hlw_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
