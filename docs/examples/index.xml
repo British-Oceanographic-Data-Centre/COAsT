@@ -1,32 +1,33 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Examples</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/</link><description>Recent content in Examples on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Tue, 15 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: The NEMO class</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_nemo_class/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_nemo_class/</guid><description>
-&lt;p>This script is designed to be a brief introduction to the NEMO class including:&lt;/p>
-&lt;pre>&lt;code>1. Creation of a NEMO object
-2. Loading data into the NEMO object.
-3. Combining NEMO output and NEMO domain data.
-4. Interrogating the NEMO object.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Examples</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/</link><description>Recent content in Examples on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Tue, 15 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: The Gridded class</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</guid><description>
+&lt;p>This script is designed to be a brief introduction to the Gridded class including:&lt;/p>
+&lt;pre>&lt;code>1. Creation of a Gridded object
+2. Loading data into the Gridded object.
+3. Combining Gridded output and Gridded domain data.
+4. Interrogating the Gridded object.
 5. Basic manipulation ans subsetting
 6. Looking at the data with matplotlib
 &lt;/code>&lt;/pre>
-&lt;p>Up to date as of: 26/11/2020&lt;/p>
+&lt;p>Up to date as of: 05/10/2021&lt;/p>
 &lt;h3 id="loading-and-interrogating">Loading and Interrogating&lt;/h3>
-&lt;p>Begin by importing COAsT and define some file paths for NEMO output data and a NEMO domain&lt;/p>
+&lt;p>Begin by importing COAsT and define some file paths for NEMO output data and a NEMO domain, as an example of model data suitable for the Gridded object.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">datetime&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">numpy&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">np&lt;/span>
-&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_data.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can create a new NEMO object by simple calling &lt;code>coast.NEMO()&lt;/code>. By passing this a NEMO data file and NEMO domain file, COAsT will combine the two into a single xarray dataset within the NEMO object. Each individual NEMO object should be for a specified NEMO grid reference, which is also passed as an argument. By passing &lt;code>chunks = {}&lt;/code>, we switch on the Dask library.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">{})&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Our new NEMO object &lt;code>nemo_t&lt;/code> contains a variable called &lt;code>dataset&lt;/code>, which holds information on the two files we passed. Let&amp;rsquo;s have a look at this:&lt;/p>
+&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_data.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_t_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can create a new Gridded object by simple calling &lt;code>coast.Gridded()&lt;/code>. By passing this a NEMO data file and a NEMO domain file, COAsT will combine the two into a single xarray dataset within the Gridded object. Each individual Gridded object should be for a specified NEMO grid type, which is specified in a configuration file which is also passed as an argument. The Dask library is switched on by default, chunking can be specified in the configuration file.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_t_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Our new Gridded object &lt;code>nemo_t&lt;/code> contains a variable called &lt;code>dataset&lt;/code>, which holds information on the two files we passed. Let&amp;rsquo;s have a look at this:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>This is an xarray dataset, which has all the information on netCDF style structures. You can see dimensions, coordinates and data variables. At the moment, none of the actual data is loaded to memory and will remain that way until it needs to be accessed.&lt;/p>
-&lt;p>Along with temperature (which has been renamed from votemper) a number of other things have happen under the hood:&lt;/p>
-&lt;pre>&lt;code>1. The dimensions have been renamed to t_dim, x_dim, y_dim, z_dim
-2. The coordinates have been renamed to time, longitude, latitude and depth_0. These are the coordinates for this grid (the t-grid). Also depth_0 has been calculated as the 3D depth array at time zero.
-3. The variables e1, e2 and e3_0 have been created. These are the metrics for the t-grid in the x-dim, y-dim and z_dim (at time zero) directions.
+&lt;p>Along with &lt;code>temperature&lt;/code> (which has been renamed from &lt;code>votemper&lt;/code>) a number of other things have happen under the hood:&lt;/p>
+&lt;pre>&lt;code>1. The dimensions have been renamed to `t_dim`, `x_dim`, `y_dim`, `z_dim`
+2. The coordinates have been renamed to `time`, `longitude`, `latitude` and `depth_0`. These are the coordinates for this grid (the t-grid). Also `depth_0` has been calculated as the 3D depth array at time zero.
+3. The variables `e1`, `e2` and `e3_0` have been created. These are the metrics for the t-grid in the x-dim, y-dim and z_dim (at time zero) directions.
 &lt;/code>&lt;/pre>
-&lt;p>So we see that the NEMO class has standardised some variable names and created an object based on this discretisation grid by combining the appropriate grid information with all the variables on that grid.&lt;/p>
+&lt;p>So we see that the Gridded class has standardised some variable names and created an object based on this discretisation grid by combining the appropriate grid information with all the variables on that grid.&lt;/p>
 &lt;p>We can interact with this as an xarray Dataset object. So to extract a specific variable (say temperature):&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ssh&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span>
 &lt;span style="color:#000">ssh&lt;/span>
@@ -36,15 +37,15 @@
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Then lets plot up a single time snapshot of ssh using matplotlib:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">longitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">latitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="some-manipulation">Some Manipulation&lt;/h3>
-&lt;p>There are currently some basic subsetting routines for NEMO objects, to cut out specified regions of data. Fundamentally, this can be done using xarray&amp;rsquo;s &lt;code>isel&lt;/code> or &lt;code>sel&lt;/code> routines to index the data. In this case, the NEMO object will pass arguments straight through to &lt;code>xarray.isel&lt;/code>.&lt;/p>
+&lt;p>There are currently some basic subsetting routines for Gridded objects, to cut out specified regions of data. Fundamentally, this can be done using xarray&amp;rsquo;s &lt;code>isel&lt;/code> or &lt;code>sel&lt;/code> routines to index the data. In this case, the Gridded object will pass arguments straight through to &lt;code>xarray.isel&lt;/code>.&lt;/p>
 &lt;p>Lets get the indices of all model points within 111km km of (5W, 55N):&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ind_y&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">ind_x&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices_by_distance&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">centre_lon&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">5&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">centre_lat&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">55&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">radius&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">111&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">ind_x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">shape&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now create a new, smaller subsetted NEMO object by passing those indices to isel.&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now create a new, smaller subsetted Gridded object by passing those indices to isel.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t_subset&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_x&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_y&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">nemo_t_subset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Alternatively, &lt;code>xarray.isel&lt;/code> can be applied directly to the &lt;code>xarray.Dataset&lt;/code> object.&lt;/p>
-&lt;p>A longitude/latitude box of data can also be extracted using &lt;code>NEMO.subset_indices()&lt;/code>.&lt;/p></description></item><item><title>Docs: Observations</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/observations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/observations/</guid><description>
+&lt;p>A longitude/latitude box of data can also be extracted using &lt;code>Gridded.subset_indices()&lt;/code>.&lt;/p></description></item><item><title>Docs: Observations</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/observations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/observations/</guid><description>
 &lt;p>COAsT currently has two observation classes: &lt;code>ALTIMETRY&lt;/code> and &lt;code>TIDEGAUGE&lt;/code>. Each has it&amp;rsquo;s own methods and, crucially, their own data formatting requirements. Here, we take a look at both and then do some model comparison.&lt;/p>
 &lt;p>Import packages and define files paths:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
@@ -174,6 +175,204 @@ of the observed or derived quantities above. So to take a look at the
 &lt;/code>&lt;/pre>&lt;p>As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:&lt;/p>
 &lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
 fig, ax = stats.quick_plot('absolute_error')
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</guid><description>
+&lt;p>This is a demonstration script for using the CLIMATOLOGY object in the COAsT
+package. This object has methods for analysing climatological data. Further examples can be found in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/blob/master/example_scripts/climatology_example.py">COAsT github&lt;/a> repository.&lt;/p>
+&lt;h1 id="climatological-means">Climatological means&lt;/h1>
+&lt;p>This section shows and example of how to use the &lt;code>CLIMATOLOGY.make_climatology()&lt;/code> method to calculates mean over a given period of time. This method doesn&amp;rsquo;t take different years into account, unless using the &amp;lsquo;years&amp;rsquo; frequency. (See the &lt;a href="#multi-year-climatological-means">Multi-year climatological means&lt;/a> section for multi-yeared data.)&lt;/p>
+&lt;p>Begin by importing coast:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>And by defining some file paths for the data:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Path to a data file.&lt;/span>
+&lt;span style="color:#000">fn_nemo_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/path/to/Nemo/data.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Set path for domain file if required.&lt;/span>
+&lt;span style="color:#000">fn_nemo_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/path/to/domain/domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Read in data (This example uses NEMO data.)&lt;/span>
+&lt;span style="color:#000">nemo_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{})&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Calculate the climatology:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Optional (This specifies an output file path.)&lt;/span>
+&lt;span style="color:#000">fn_out&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/path/to/outputfile.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># String is appended to &amp;#34;time.&amp;#34; to create a valid xarray time period. (i.e. time.season, time.month...)&lt;/span>
+&lt;span style="color:#000">climatology_frequency&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;month&amp;#34;&lt;/span>
+&lt;span style="color:#000">clim&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">CLIMATOLOGY&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Not writing output to file:&lt;/span>
+&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Writing output to file (may require a large amount of memory.)&lt;/span>
+&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Below shows the structure of a dataset returned, containing 3 months worth of meaned data:&lt;/p>
+&lt;pre>&lt;code>&amp;lt;xarray.Dataset&amp;gt;
+Dimensions: (y_dim: 1345, x_dim: 1458, z_dim: 51, month: 3)
+Coordinates:
+nav_lat (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
+nav_lon (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
+deptht (z_dim) float32 3.038 9.367 16.1 ... 5.618e+03 5.822e+03
+* month (month) int64 1 2 3
+Dimensions without coordinates: y_dim, x_dim, z_dim
+Data variables:
+temperature (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
+ssh (month, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 1345, 1458), meta=np.ndarray&amp;gt;
+salinity (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
+&lt;/code>&lt;/pre>&lt;h1 id="multi-year-climatological-means">Multi-year climatological means&lt;/h1>
+&lt;p>This section shows an example of how to use the &lt;code>CLIMATOLOGY.multiyear_averages()&lt;/code> method to generate annual averages across specified periods of time. This method is designed to be compatible with multi-year datasets, but will work with single year datasets too.&lt;/p>
+&lt;p>Begin by importing coast and helpful coast utilities:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">from&lt;/span> &lt;span style="color:#000">coast&lt;/span> &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">seasons&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>And by defining some file paths for the data:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Path to a single or multiple NEMO files.&lt;/span>
+&lt;span style="color:#000">fn_nemo_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/Path/to/Nemo/*.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Set path for domain file if required.&lt;/span>
+&lt;span style="color:#000">fn_nemo_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/Path/to/domain/domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Read in multiyear data (This example uses NEMO data from multiple datafiles.)&lt;/span>
+&lt;span style="color:#000">nemo_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{})&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now calculate means of each season across multiple years for specified data:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">clim&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">CLIMATOLOGY&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Using seasons module to specify time period.&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># SPRING, SUMMER, AUTUMN, WINTER, ALL are valid values for seasons.&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">seasons&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ALL&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Or explicitly defining specific month periods.&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># A list of tuples defining start and end month integers. The start months should be in chronological order.&lt;/span>
+&lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">[(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">6&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">8&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">)]&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Specifies June -&amp;gt; August and December -&amp;gt; February for each year of data.&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Below shows the structure of a dataset returned from this method:&lt;/p>
+&lt;pre>&lt;code>&amp;lt;xarray.Dataset&amp;gt;
+Dimensions: (y_dim: 1345, x_dim: 1458, z_dim: 51, year_period: 3)
+Coordinates:
+nav_lat (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
+nav_lon (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
+deptht (z_dim) float32 3.038 9.367 ... 5.618e+03 5.822e+03
+* year_period (year_period) MultiIndex
+- year_period_level_0 (year_period) int64 2004 2005 2005
+- year_period_level_1 (year_period) object 'Dec-Feb' 'Mar-May' 'Dec-Feb'
+Dimensions without coordinates: y_dim, x_dim, z_dim
+Data variables:
+temperature (year_period, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
+ssh (year_period, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 1345, 1458), meta=np.ndarray&amp;gt;
+salinity (year_period, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
+done
+&lt;/code>&lt;/pre>&lt;p>Data can be accessed by selecting on the year-period MultiIndex:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Selecting salinity data variable based on year:&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2004&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;salinity&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Selecting salinity data variable based on year and period:&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2004&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;Dec-Feb&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;salinity&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Profile</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/profile/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/profile/</guid><description>
+&lt;p>The Profile object is able to store and manipulate depth profile data. This object is a
+child of the INDEXED object and has dimensions (&amp;lsquo;profile&amp;rsquo;,&amp;lsquo;t_dim&amp;rsquo;). Please ensure any
+variables in this objects dataset also adhere to this dimension order.&lt;/p>
+&lt;p>Below is a set of examples of how you can use a Profile object for validation of
+a Gridded object.&lt;/p>
+&lt;p>You may want to take bits and pieces from this script to use as you wish.&lt;/p>
+&lt;p>Many of these routines utilise xarray and Dask&amp;rsquo;s lazy loading and chunking
+capabilities. Not all of them do however. If working with very large datasets
+it is recommended that the resulting datasets are saved to file at every step
+and read into a new profile object, with new chunking, before continuing. This
+can be done easily by calling xarrays to_netcdf().&lt;/p>
+&lt;h3 id="1-setup">1. Setup&lt;/h3>
+&lt;p>First, Import some things to make this script work&lt;/p>
+&lt;pre>&lt;code>import coast
+import xarray as xr
+import numpy as np
+import coast.general_utils as general_utils
+import matplotlib.pyplot as plt
+&lt;/code>&lt;/pre>&lt;p>Define some file paths&lt;/p>
+&lt;pre>&lt;code>fn_dat = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/25hourm.grid_T_20180101.nc&amp;quot;
+fn_dom = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc&amp;quot;
+fn_en4 = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/EN.4*&amp;quot;
+&lt;/code>&lt;/pre>&lt;p>Create a Gridded object using your data and domain files.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=&amp;quot;./config/example_nemo_grid_t.json&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>Create a landmask array and put it into the nemo object.
+Here, using the bottom_level == 0 variable from the domain file is enough.&lt;/p>
+&lt;pre>&lt;code>nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
+nemo.dataset = nemo.dataset.rename({&amp;quot;depth_0&amp;quot;: &amp;quot;depth&amp;quot;})
+&lt;/code>&lt;/pre>&lt;h3 id="2-read-in-en4-data-and-subset-to-domain">2. Read in EN4 data and subset to domain&lt;/h3>
+&lt;p>Create a Profile object. Here we use EN4 data.&lt;/p>
+&lt;pre>&lt;code>profile = coast.Profile(fn_en4, multiple=True, config=&amp;quot;./config/example_en4_profiles.json&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>Do some processing of the EN4 data. Here, we cut out a box of the
+EN4 data for the region over out model domain. The process_en4()
+routine is called to handle quality control of the data.&lt;/p>
+&lt;p>Get indices of obs within a geographical box and index the profile&lt;/p>
+&lt;pre>&lt;code>ind = profile.subset_indices_lonlat_box([-25.47, 16.25], [44, 63.5])[0]
+profile = profile.isel(profile=ind)
+&lt;/code>&lt;/pre>&lt;h3 id="3-process-en4-data">3. Process EN4 data&lt;/h3>
+&lt;p>Create a new profile object called processed, containing the quality
+controlled data. NOTE: .compute() or .load() will need to be called on
+processed.dataset to access data&lt;/p>
+&lt;pre>&lt;code>processed = profile.process_en4()
+&lt;/code>&lt;/pre>&lt;p>At this point, you can continue is the dataset is small, or save this
+processed data to file using processed.dataset.to_netcdf(&lt;filename>)&lt;/p>
+&lt;h3 id="4-interpolate-gridded-object-to-profile-locations">4. Interpolate Gridded object to Profile locations&lt;/h3>
+&lt;p>Extract profiles from the model at nearest locations and times
+For this we use Profile.obs_operator().&lt;/p>
+&lt;pre>&lt;code>model_profiles = processed.obs_operator(nemo)
+&lt;/code>&lt;/pre>&lt;p>Inside this new profile object, there will be the extracted data and 5 new
+variables describing the spatial and time differences in the interpolation
+and the x, y and t indices used in the nearest neighbour.&lt;/p>
+&lt;p>Lets remove any points where the nearest neighbour was further than x km from
+the original point.&lt;/p>
+&lt;pre>&lt;code>too_far = 5
+keep_indices = model_profiles.dataset.interp_dist &amp;lt;= too_far
+model_profiles = model_profiles.isel(profile=keep_indices)
+processed = processed.isel(profile=keep_indices)
+&lt;/code>&lt;/pre>&lt;h3 id="5-interpolate-obs-and-gridded-onto-reference-depths">5. Interpolate Obs and Gridded onto Reference Depths&lt;/h3>
+&lt;p>Interpolate both model and observed profiles onto reference depths.&lt;/p>
+&lt;p>Define our reference depths&lt;/p>
+&lt;pre>&lt;code>reference_depths = np.arange(0, 500, 2)
+&lt;/code>&lt;/pre>&lt;p>Take just temperature for this example&lt;/p>
+&lt;pre>&lt;code>model_profiles.dataset = model_profiles.dataset[[&amp;quot;temperature&amp;quot;]]
+&lt;/code>&lt;/pre>&lt;p>Vertical interpolation of model profiles using interpolate_vertical().&lt;/p>
+&lt;pre>&lt;code>model_profiles_interp = model_profiles.interpolate_vertical(reference_depths, interp_method=&amp;quot;linear&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>Vertical interpolation of processed observations&lt;/p>
+&lt;pre>&lt;code>processed.dataset = processed.dataset[[&amp;quot;temperature&amp;quot;, &amp;quot;depth&amp;quot;]]
+processed_interp = processed.interpolate_vertical(reference_depths, interp_method=&amp;quot;linear&amp;quot;)
+&lt;/code>&lt;/pre>&lt;h3 id="6-calculate-errors--differences">6. Calculate Errors &amp;amp; Differences&lt;/h3>
+&lt;p>Data differences/errors. Now that we have our model and observed data on the same depths,
+we can do some differencing to get errors. We use the
+Profile.difference() routine, which will calculate differences,
+absolute differences and square differences&lt;/p>
+&lt;p>Calculate differences as obs minus model&lt;/p>
+&lt;pre>&lt;code>differences = processed_interp.difference(model_profiles_interp)
+&lt;/code>&lt;/pre>&lt;p>Load the differences to memory.&lt;/p>
+&lt;pre>&lt;code>differences.dataset.load()
+&lt;/code>&lt;/pre>&lt;h3 id="7-calculate-regional-average-errors">7. Calculate Regional Average Errors&lt;/h3>
+&lt;p>Average the differences into masked regions
+By averaging the differences into regions, we can get an idea of the
+errors or anomalies in, for example, the North Sea. For this we use
+the coast.Mask_maker() object as an aid&lt;/p>
+&lt;p>First let&amp;rsquo;s make some masks to define regions of the model domain&lt;/p>
+&lt;pre>&lt;code>mm = coast.MaskMaker()
+&lt;/code>&lt;/pre>&lt;p>Make some variables easier to access&lt;/p>
+&lt;pre>&lt;code>bath = nemo.dataset.bathymetry.values
+lon = nemo.dataset.longitude.values
+lat = nemo.dataset.latitude.values
+&lt;/code>&lt;/pre>&lt;p>Make a North Sea and Whole Domain mask&lt;/p>
+&lt;pre>&lt;code>mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
+mm_whole_domain = np.ones(lon.shape)
+mask_list = [mm_north_sea, mm_whole_domain]
+mask_names = [&amp;quot;North Sea&amp;quot;, &amp;quot;Whole Domain&amp;quot;]
+&lt;/code>&lt;/pre>&lt;p>Turn mask list into an xarray dataset&lt;/p>
+&lt;pre>&lt;code>mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
+&lt;/code>&lt;/pre>&lt;p>Determine whether each profile is in each masked region or not&lt;/p>
+&lt;pre>&lt;code>mask_indices = model_profiles_interp.determine_mask_indices(mask_list)
+&lt;/code>&lt;/pre>&lt;p>Do average differences for each region&lt;/p>
+&lt;pre>&lt;code>mask_means = differences.mask_means(mask_indices)
+&lt;/code>&lt;/pre>&lt;h3 id="8-calculate-surface-and-bottom-valueserrors">8. Calculate Surface and Bottom Values/Errors&lt;/h3>
+&lt;p>Surface and bottom averaging.
+We can use a couple of routines to get surface and bottom values
+for the profile data. This can be used to give us maps of e.g. SST.
+It also allows us to calculate more statistics such as the CRPS&lt;/p>
+&lt;p>Lets get surface values by averaging over the top 5m of data&lt;/p>
+&lt;pre>&lt;code>surface = 5
+model_profiles_surface = model_profiles.depth_means([0, surface])
+obs_profiles_surface = processed.depth_means([0, surface])
+&lt;/code>&lt;/pre>&lt;p>Get differences&lt;/p>
+&lt;pre>&lt;code>surface_errors = obs_profiles_surface.difference(model_profiles_surface)
+&lt;/code>&lt;/pre>&lt;p>Lets get bottom values by averaging over the bottom 30m, except whether
+depth is &amp;lt;100m, then average over the bottom 10m&lt;/p>
+&lt;pre>&lt;code>model_profiles_bottom = model_profiles.bottom_means([10, 30], [100, np.inf])
+obs_bathymetry = model_profiles.dataset[&amp;quot;bathymetry&amp;quot;].values
+processed.dataset[&amp;quot;bathymetry&amp;quot;] = ([&amp;quot;profile&amp;quot;], obs_bathymetry)
+obs_profiles_bottom = processed.bottom_means([10, 30], [100, np.inf])
+&lt;/code>&lt;/pre>&lt;p>Get differences&lt;/p>
+&lt;pre>&lt;code>bottom_errors = obs_profiles_bottom.difference(model_profiles_bottom)
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
 &lt;p>This is a demonstration script for using the TIDEGAUGE object in the COAsT
 package. This object has strict data formatting requirements, which are
@@ -252,9 +451,161 @@ tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
 &lt;/code>&lt;/pre>&lt;p>And now some of these new values can be plotted on a map, again using
 plot_on_map_multiple:&lt;/p>
 &lt;pre>&lt;code>fig, ax = TIDEGAUGE.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Transect subsetting</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 24 Nov 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: TidegaugeMultiple</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</guid><description>
+&lt;p>The TidegaugeMultiple object is for storing multiple tide gauge/time series datasets in one object.
+It has two dimensions: (&amp;lsquo;id&amp;rsquo;, &amp;lsquo;t_dim&amp;rsquo;) and is a child of the TIMESERIES and INDEXED objects.
+All timeseries in this object must lie on the same time dimension and indices. If not the case
+in your data, then it must be preprocessed before use with this object.&lt;/p>
+&lt;p>The Tidegauge object on the other hand, currently only stores one time series at a time. See
+the examples page for Tidegauge for more information. In the future, these objects will be
+combined.&lt;/p>
+&lt;p>The TidegaugeMultiple object contains multiple routines suitable for validation of SSH.
+Below are some examples of how to use this object for this purpose.&lt;/p>
+&lt;p>This script gives an overview of some of validation tools available when
+using the TidegaugeMultiple object in COAsT.&lt;/p>
+&lt;p>For this a script, a premade netcdf file containing tide gauge data is used.&lt;/p>
+&lt;h3 id="1-setup">1. Setup&lt;/h3>
+&lt;pre>&lt;code>import xarray as xr
+import numpy as np
+import matplotlib.pyplot as plt
+import coast
+import datetime
+&lt;/code>&lt;/pre>&lt;p>Define paths&lt;/p>
+&lt;pre>&lt;code>fn_dom = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc&amp;quot;
+fn_dat = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/sossheig*&amp;quot;
+fn_tg = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/tg_amm15.nc&amp;quot;
+&lt;/code>&lt;/pre>&lt;p>Create gridded object and load data&lt;/p>
+&lt;pre>&lt;code>nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=&amp;quot;./config/example_nemo_grid_t.json&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>Create a landmask array and put it into the nemo object.
+Here, using the bottom_level == 0 variable from the domain file is enough.&lt;/p>
+&lt;pre>&lt;code>nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
+&lt;/code>&lt;/pre>&lt;p>Rename depth_0 to be depth to work with routines expectations&lt;/p>
+&lt;pre>&lt;code>nemo.dataset = nemo.dataset.rename({&amp;quot;depth_0&amp;quot;: &amp;quot;depth&amp;quot;})
+nemo.dataset = nemo.dataset[[&amp;quot;ssh&amp;quot;, &amp;quot;landmask&amp;quot;]]
+&lt;/code>&lt;/pre>&lt;h3 id="2-create-tidegaugemultiple-object">2. Create TidegaugeMultiple object&lt;/h3>
+&lt;p>Create the object and then inset the netcdf dataset
+obs = coast.TidegaugeMultiple()
+obs.dataset = xr.open_dataset(fn_tg)&lt;/p>
+&lt;p>Cut down data to be only in 2018 to match model data.
+start_date = datetime.datetime(2018, 1, 1)
+end_date = datetime.datetime(2018, 12, 31)
+obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)&lt;/p>
+&lt;h3 id="3-interpolate-model-data-onto-obs-locations">3. Interpolate model data onto obs locations&lt;/h3>
+&lt;p>Obs_operator is used to extract time series from the model:&lt;/p>
+&lt;pre>&lt;code>model_timeseries = obs.obs_operator(nemo)
+&lt;/code>&lt;/pre>&lt;p>In this case, transpose the interpolated dataset so dimensions are
+in the correct order: (&amp;lsquo;id&amp;rsquo;,&amp;lsquo;t_dim&amp;rsquo;)&lt;/p>
+&lt;pre>&lt;code>model_timeseries.dataset = model_timeseries.dataset.transpose()
+&lt;/code>&lt;/pre>&lt;p>Process the data a little
+This routine searches for missing values in each dataset and applies them
+equally to each corresponding dataset&lt;/p>
+&lt;pre>&lt;code>obs, model_timeseries = obs.match_missing_values(model_timeseries)
+&lt;/code>&lt;/pre>&lt;p>Subtract means from all time series&lt;/p>
+&lt;pre>&lt;code>obs = obs.demean_timeseries()
+model_timeseries = model_timeseries.demean_timeseries()
+&lt;/code>&lt;/pre>&lt;p>Now you have equivalent and comparable sets of time series that can be
+easily compared.&lt;/p>
+&lt;h3 id="4-calculate-non-tidal-residuals">4. Calculate non tidal residuals&lt;/h3>
+&lt;p>First, do a harmonic analysis. This routine uses utide&lt;/p>
+&lt;pre>&lt;code>ha_mod = model_timeseries.harmonic_analysis_utide()
+ha_obs = obs.harmonic_analysis_utide()
+&lt;/code>&lt;/pre>&lt;p>Create new TidegaugeMultiple objects containign reconstructed tides&lt;/p>
+&lt;pre>&lt;code>tide_mod = model_timeseries.reconstruct_tide_utide(ha_mod)
+tide_obs = obs.reconstruct_tide_utide(ha_obs)
+&lt;/code>&lt;/pre>&lt;p>Get new TidegaugeMultiple objects containing non tidal residuals.&lt;/p>
+&lt;pre>&lt;code>ntr_mod = model_timeseries.calculate_residuals(tide_mod)
+ntr_obs = obs.calculate_residuals(tide_obs)
+&lt;/code>&lt;/pre>&lt;p>Other interesting applications here included only reconstructing specified
+tidal frequency bands and validating this.&lt;/p>
+&lt;h3 id="5-calculate-errors">5. Calculate errors&lt;/h3>
+&lt;p>The difference() routine will calculate differences, absolute_differences
+and squared differenced for all variables:&lt;/p>
+&lt;pre>&lt;code>ntr_diff = ntr_obs.difference(ntr_mod)
+ssh_diff = obs.difference(model_timeseries)
+&lt;/code>&lt;/pre>&lt;p>We can then easily get mean errors, MAE and MSE&lt;/p>
+&lt;pre>&lt;code>mean_stats = ntr_diff.dataset.mean(dim=&amp;quot;t_dim&amp;quot;, skipna=True)
+&lt;/code>&lt;/pre>&lt;h3 id="6-threshold-statistics-for-non-tidal-residuals">6. Threshold Statistics for Non-tidal residuals&lt;/h3>
+&lt;p>This is a simple extreme value analysis of whatever data you use.
+It will count the number of peaks and the total time spent over each
+threshold provided. It will also count the numbers of daily and monthly
+maxima over each threshold&lt;/p>
+&lt;pre>&lt;code>thresh_mod = ntr_mod.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
+thresh_obs = ntr_obs.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Contour subsetting</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/contour/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/contour/</guid><description>
+&lt;p>In this tutorial we take a look the following Isobath Contour Methods:&lt;/p>
+&lt;pre>&lt;code>1. Extract isbath contour between two points
+2. Plot contour on map
+3. Calculate pressure along contour
+4. Calculate flow across contour
+5. Calculate pressure gradient driven flow across contour
+&lt;/code>&lt;/pre>
+&lt;h2 id="create-a-contour-subset-of-the-example-dataset">Create a contour subset of the example dataset&lt;/h2>
+&lt;p>Load packages and define some file paths&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_T_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_U_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_V_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Configuration files describing the data files&lt;/span>
+&lt;span style="color:#000">fn_config_t_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_f_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_f.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_u_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_u.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_v_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_v.json&amp;#34;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>To extract isobath contour between two points and create contour object,
+first create a gridded object with the grid only.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_f_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then create a contour object on the 200m isobath&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">no_contours&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contours&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Extract the indices for the contour in a specified box&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contour&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contour_segment&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">50&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">60&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Extract the contour for the specified indices&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cont_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ContourF&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="plot-contour-on-map">Plot contour on map&lt;/h2>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">figure&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot_contour&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contour&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">show&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/contour/contour_hue570a722f944c923154955e8cddd377c_99532_600x700_fit_catmullrom_2.png" width="600" height="450">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;h2 id="calculate-pressure-along-contour">Calculate pressure along contour&lt;/h2>
+&lt;p>Repeat the above procedure but on t-points&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dat_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_t_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">no_contours&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contours&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contour&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contour_segment&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">50&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">60&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
+&lt;span style="color:#000">cont_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ContourT&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now construct pressure along this contour segment&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cont_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_pressure&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1027&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>This creates &lt;code>cont_t.data_contour.pressure_s&lt;/code> and &lt;code>cont_t.data_contour.pressure_h_zlevels&lt;/code> fields.&lt;/p>
+&lt;h2 id="calculate-flow-across-contour">Calculate flow across contour&lt;/h2>
+&lt;p>Create the contour segement on f-points again&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_f_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">nemo_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dat_u&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_u_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">nemo_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dat_v&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_v_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">no_contours&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contours&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contour&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Contour&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">get_contour_segment&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">contours&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">50&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">60&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
+&lt;span style="color:#000">cont_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ContourF&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">x_ind&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>To calculate the flow across the contour, pass u- and v- gridded velocity objects&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cont_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">calc_cross_contour_flow&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_u&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_v&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>This creates fields &lt;code>cont_f.data_cross_flow.normal_velocities&lt;/code> and
+&lt;code>cont_f.data_cross_flow.depth_integrated_normal_transport&lt;/code>&lt;/p>
+&lt;h2 id="calculate-pressure-gradient-driven-flow-across-contour">Calculate pressure gradient driven flow across contour&lt;/h2>
+&lt;p>The &amp;ldquo;calc_geostrophic_flow()&amp;rdquo; operates on f-grid objects and requires
+configuration files for the u- and v- grids&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cont_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">calc_geostrophic_flow&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config_u&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_u_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config_v&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_v_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">ref_density&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1027&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>This constructs:&lt;/p>
+&lt;pre>&lt;code> cont_f.data_cross_flow.normal_velocity_hpg
+cont_f.data_cross_flow.normal_velocity_spg
+cont_f.data_cross_flow.transport_across_AB_hpg
+cont_f.data_cross_flow.transport_across_AB_spg
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Transect subsetting</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/transect/</guid><description>
 &lt;p>In this tutorial we take a look at subsetting the model data along a transect (a custom straight line) and creating some bespoke diagnostics along it. We look at:&lt;/p>
-&lt;pre>&lt;code>1. Creating a TRANSECT object, defined between two points.
+&lt;pre>&lt;code>1. Creating a Transect object, defined between two points.
 2. Plotting data along a transect.
 3. Calculating flow normal to the transect
 &lt;/code>&lt;/pre>
@@ -263,27 +614,40 @@ plot_on_map_multiple:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
-&lt;span style="color:#000">fn_nemo_dat_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/nemo_data_T_grid.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dat_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/nemo_data_U_grid.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dat_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/nemo_data_V_grid.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_T_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_U_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_V_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Configuration files describing the data files&lt;/span>
+&lt;span style="color:#000">fn_config_t_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_f_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_f.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_u_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_u.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_v_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_v.json&amp;#34;&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Load data variables that are on the NEMO t-grid&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{}&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now create a transect between the points (54 N 15 W) and (56 N, 12 W) using the &lt;code>coast.Transect_t&lt;/code> object. This needs to be passed the corresponding NEMO object and transect end points. The model points closest to these coordinates will be selected as the transect end points.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">tran_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Transect_t&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">54&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">56&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_t_grid&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now create a transect between the points (54 N 15 W) and (56 N, 12 W) using the &lt;code>coast.TransectT&lt;/code> object. This needs to be passed the corresponding Gridded object and transect end points. The model points closest to these coordinates will be selected as the transect end points.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">tran_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">TransectT&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">54&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">56&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">tran_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>where &lt;code>r_dim&lt;/code> is the dimension along the transect. It is simple to plot a scalar such as temperature along the transect:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">temp_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">tran_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mean&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">temp_mean&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;depth_0&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">yincrease&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="flow-across-the-transect">Flow across the transect&lt;/h2>
-&lt;p>With NEMO’s staggared grid, the first step is to define the transect on the f-grid so that the velocity components are between f-points. We do not need any model data on the f-grid, just the grid information, so create a nemo f-grid object&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;f-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{}&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/transect/tran_example_1_huc0374360151990e29f4aab9b4a2c01d3_70302_600x700_fit_catmullrom_2.png" width="600" height="343">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;h2 id="flow-across-the-transect">Flow across the transect&lt;/h2>
+&lt;p>With NEMO’s staggered grid, the first step is to define the transect on the f-grid so that the velocity components are between f-points. We do not need any model data on the f-grid, just the grid information, so create a nemo f-grid object&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_f_grid&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>and a transect on the f-grid&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">tran_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Transect_f&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">54&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">56&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">tran_f&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">TransectF&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_f&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">54&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">56&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">tran_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>We also need the i- and j-components of velocity so (lazy) load the model data on the u- and v-grid grids&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_u&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;u-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{}&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;span style="color:#000">nemo_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_v&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;v-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{}&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_u&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_u&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_u_grid&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">nemo_v&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_v&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_v_grid&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Now we can calculate the flow across the transect with the method&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">tran_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">calc_flow_across_transect&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_u&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">nemo_v&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>The flow across the transect is stored in a new dataset where the variables are all defined at the points between f-points.&lt;/p>
@@ -291,34 +655,66 @@ plot_on_map_multiple:&lt;/p>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>For example, to plot the time averaged velocity across the transect, we can plot the ‘normal_velocities’ variable&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cross_velocity_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">tran_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_cross_tran_flow&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">normal_velocities&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mean&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">cross_velocity_mean&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">rolling&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">r_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mean&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">yincrease&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">y&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;depth_0&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">cbar_kwargs&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;label&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;m/s&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">})&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>or the volume transport across the transect, we can plot the ‘normal_transports’ variable&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/transect/tran_example_2_hua102100769c84e4cc18bb772644b2274_87906_600x700_fit_catmullrom_2.png" width="600" height="343">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;p>or the volume transport across the transect, we can plot the ‘normal_transports’ variable&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">cross_transport_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">tran_f&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_cross_tran_flow&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">normal_transports&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mean&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">cross_transport_mean&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">rolling&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">r_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mean&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ylabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;Sv&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Empirical Orthogonal Functions</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</link><pubDate>Wed, 25 Nov 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/transect/tran_example_3_hu4e9b9525b3f641ad4846499f81ec781c_69967_600x700_fit_catmullrom_2.png" width="600" height="343">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div></description></item><item><title>Docs: Empirical Orthogonal Functions</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</link><pubDate>Wed, 25 Nov 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</guid><description>
 &lt;p>Using COAsT to compute the Empirical Orthogonal Functions (EOFs) of your data.&lt;/p>
 &lt;h2 id="load-data-and-compute-eofs">Load data and compute EOFs&lt;/h2>
 &lt;p>Load packages and define some file paths&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
-&lt;span style="color:#000">fn_nemo_dat_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/nemo_data_T_grid.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/nemo_data_T_grid.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/COAsT_example_NEMO_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Load data variables that are on the NEMO t-grid&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{}&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dat_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_config&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>For a variable (or subset of a variable) with two spatial dimensions and one temporal dimension, i.e. (x,y,t), the EOFs, temporal projections and variance explained can be computed by calling the ‘eofs’ method, and passing in the ssh DataArray as an argument. For example, for the sea surface height field, we can do&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">eofs&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">compute_eofs&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>The method returns an xarray dataset that contains the EOFs, temporal projections and variance as DataArrays&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>The variance explained of the first four modes is&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">variance&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>And the EOFs and temporal projections can be quick plotted:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">EOF&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">col&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;mode&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">col_wrap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;longitude&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">y&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;latitude&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temporal_proj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">col&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;mode&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">col_wrap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>The more exotic hilbert complex EOFs can also be computed to investigate the propagation of variability, for example:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">heof_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">hilbert_eofs&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/eofs/eof_example_1_huc339f414da7e1446207bdd919fb234d4_194213_600x700_fit_catmullrom_2.png" width="600" height="514">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temporal_proj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">col&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;mode&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">col_wrap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/eofs/eof_example_2_hud12a330940735bfb3434238716024013_71478_600x700_fit_catmullrom_2.png" width="600" height="514">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;p>The more exotic hilbert complex EOFs can also be computed to investigate the propagation of variability, for example:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">heof_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">compute_hilbert_eofs&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ssh&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">heof_data&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>now with the modes expressed by their amplitude and phase, the spatial propagation of the variability can be examined through the EOF_phase.&lt;/p></description></item><item><title>Docs: Stratification diagnostics</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>now with the modes expressed by their amplitude and phase, the spatial propagation of the variability can be examined through the EOF_phase.&lt;/p></description></item><item><title>Docs: Stratification diagnostics</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/stratification/</guid><description>
 &lt;p>A demonstration of pycnocline depth and thickness diagnostics. The first and second depth moments of stratification are computed as proxies for pycnocline depth and thickness, suitable for a nearly two-layer fluid.&lt;/p>
 &lt;p>Note that in the AMM7 example data the plots are not particularly spectacular as the internal tide is poorly resolved at 7km.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
@@ -333,11 +729,13 @@ plot_on_map_multiple:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># set some paths&lt;/span>
 &lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;AMM7&amp;#39;&lt;/span>
 &lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/nemo_data_T_grid_Aug2015.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Create a NEMO object and load in the data:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{})&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>The stratification variables are computed as centred differences of the t-grid variables. These will become w-grid variables. So, create an empty w-grid object, to store stratification. Note how we do not pass a NEMO data object for this load.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;w-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/coast_example_nemo_domain.nc&amp;#39;&lt;/span>
+&lt;span style="color:#000">config_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">config_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_w.json&amp;#34;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Create a Gridded object and load in the data:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_t&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>The stratification variables are computed as centred differences of the t-grid variables. These will become w-grid variables. So, create an empty w-grid object, to store stratification. Note how we do not pass a NEMO data file for this load.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="subset-the-domain">Subset the Domain&lt;/h2>
 &lt;p>We are not interested in the whole doman so it is computationally efficient to subset the data for the region of interest. Here we will look at the North Sea between (51N: 62N) and (-4E:15E). We will great subset objects for both the t- and w-grids:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ind_2d&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
@@ -347,18 +745,25 @@ plot_on_map_multiple:&lt;/p>
 &lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="diagnostic-calculations-and-plotting">Diagnostic calculations and plotting&lt;/h2>
 &lt;p>We can use a COAsT method to construct the in-situ density:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_density&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">EOS&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;EOS10&amp;#39;&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_density&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">eos&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;EOS10&amp;#39;&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we construct stratification using a COAsT method to take the vertical derivative. Noting that the inputs are on t-pts and the outputs are on w-pt&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">differentiate&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;density&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;z_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_varstr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;rho_dz&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_obj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># --&amp;gt; sci_nwes_w.rho_dz&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">differentiate&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;density&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;z_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_var_str&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;rho_dz&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">out_obj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># --&amp;gt; sci_nwes_w.rho_dz&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>This has created a variable called &lt;code>nemo_nwes_w.rho_dz&lt;/code>.&lt;/p>
-&lt;p>We can now use the &lt;code>INTERNALTIDE&lt;/code> class to construct the first and second moments (over depth) of density. In the limit of an idealised two-layer fluid these converge to the depth and thickness of the interface. I.e. the pycnocline depth and thickness respectively.&lt;/p>
+&lt;p>We can now use the &lt;code>InternalTide&lt;/code> class to construct the first and second moments (over depth) of density. In the limit of an idealised two-layer fluid these converge to the depth and thickness of the interface. I.e. the pycnocline depth and thickness respectively.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#%% Create internal tide diagnostics object&lt;/span>
-&lt;span style="color:#000">IT&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">INTERNALTIDE&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_nwes_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">IT&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">InternalTide&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_nwes_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#%% Construct pycnocline variables: depth and thickness&lt;/span>
 &lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">construct_pycnocline_vars&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Finally we plot pycnocline variables (depth and thickness) using an INTERNALTIDES method:&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Finally we plot pycnocline variables (depth and thickness) using an InternalTide method:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">IT&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Export to netCDF</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/stratification/strat_1st_mom_hu2ed8891258e49ea755dd6f023fe99f6f_75991_600x700_fit_catmullrom_2.png" width="600" height="600">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div></description></item><item><title>Docs: Export to netCDF</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/export_netcdf/</guid><description>
 &lt;p>This is a demonstration for how to export intermediate data from COAsT
 to netCDF files for later analysis or storage.
 The tutorial showcases the &lt;code>xarray.to_netcdf()&lt;/code> method.
@@ -367,11 +772,12 @@ The tutorial showcases the &lt;code>xarray.to_netcdf()&lt;/code> method.
 &lt;p>Begin by importing coast and other packages&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>and by defining some file paths&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_data.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;./example_files/COAsT_example_NEMO_domain.nc&amp;#39;&lt;/span>
-&lt;span style="color:#000">ofile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#39;example_export_output.nc&amp;#39;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># The target filename for output&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_data.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_nemo_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">ofile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;example_export_output.nc&amp;#34;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># The target filename for output&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We need to load in a Gridded object to get started.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="export-to-netcdf">Export to netCDF&lt;/h2>
 &lt;p>We can export the &lt;strong>whole&lt;/strong> &lt;code>xr.DataSet&lt;/code> to a netCDF file&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;w&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">format&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;NETCDF4&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
@@ -397,30 +803,33 @@ Or load file as see that the xarray structure is preserved.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
 &lt;span style="color:#204a87">object&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#204a87">object&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">close&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># close file associated with this object&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
 &lt;p>Code functionality tests are written in
 &lt;code>unit_testing/unit_testing.py&lt;/code> in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/unit_testing">COAsT&lt;/a>
 repository, and therefore contain working examples of the package. These are written to verify the package functionality and to maintain operability following code updates.&lt;/p>
 &lt;p>At the time of writing these included:&lt;/p>
 &lt;h3 id="1-loading--initialisation">1. Loading &amp;amp; Initialisation&lt;/h3>
-&lt;pre>&lt;code>a. Loading NEMO data file
-b. Loading Altimetry file
-c. Load data from existing dataset
-d. Set NEMO variable name
-e. Set NEMO grid attribute - dimension names
-f. Load only Domain
-g. Calculate depth_0 for t,u,v,w,f grids
-h. Load NEMO that is a subregion in the domain file
-i. Multi load (over time) for NEMO files
+&lt;pre>&lt;code>a. Loading Gridded NEMO data file
+b. Load data from existing dataset
+c. Set Gridded variable name
+d. Set Gridded grid attribute - dimension names
+e. Load only Domain
+f. Calculate depth_0 for t,u,v,w,f grids
+g. Load a subregion dataset with a full domain (AMM7)
+h. Load and combine multiple files.
+i. Load and combine harmonics
+j. Convert harmonics to a/g and back
+k. Compute e3[t,u,v,f,w] from SSH
 &lt;/code>&lt;/pre>
 &lt;h3 id="2-general-utility-methods-in-coast">2. General Utility Methods in COAsT&lt;/h3>
 &lt;pre>&lt;code>a. Copying a COAsT object
-b. COAsT ``__getitem__`` returns variable
+b. COAsT __getitem__ returns variable
 c. Renaming variables inside a COAsT object
+d. day of the week function
 &lt;/code>&lt;/pre>
 &lt;h3 id="3-diagnostic-methods">3. Diagnostic Methods&lt;/h3>
 &lt;pre>&lt;code>a. Compute vertical spatial derivative
-b. Construct density method inside NEMO class
+b. Construct density method inside Gridded class
 c. Construct pycnocline depth and thickness
 d. Plot pycnocline depth
 &lt;/code>&lt;/pre>
@@ -428,27 +837,311 @@ d. Plot pycnocline depth
 &lt;pre>&lt;code>a. Determine and extract transect indices
 b. Transport velocity and depth calculations
 c. Transport and velocity plotting
-d. Contrust density on z-levels along the transect. Compare with item 3b.
+d. Construct density on z-levels along the transect. Compare with item 3b.
 e. Geostrophic velocity &amp;amp; transport calculations
 &lt;/code>&lt;/pre>
 &lt;h3 id="5-object-manipulation-eg-indexing-subsetting">5. Object Manipulation (e.g. indexing, subsetting)&lt;/h3>
 &lt;pre>&lt;code>a. Subsetting single variable
 b. Indices by distance
-c. Subsetting entire COAsT object and return as copy
-d. Find nearest xy indices
-e. ``NEMO.interpolate_in_space()``
-f. ``NEMO.interpolate_in_time()``
+c. Find nearest xy indices
+d. Gridded.interpolate_in_space()
+e. Gridded.interpolate_in_time()
 &lt;/code>&lt;/pre>
-&lt;h3 id="6-validation-methods">6. Validation Methods&lt;/h3>
-&lt;pre>&lt;code>a. Calculate single obs CRPS values using different methods
-b. CRPS map plot
-c. CRPS CDF plot
-d. Interpolate model to altimetry
+&lt;h3 id="6-altimetry-methods">6. Altimetry Methods&lt;/h3>
+&lt;pre>&lt;code>a. Load example data
+b. Subset altimetry data
+c. Interpolate model onto altimetry using obs_operator
+d. Calculate CRPS
+e. ALTIMETRY basic stats
+f. Altimetry plotting
 &lt;/code>&lt;/pre>
-&lt;h3 id="7-plotting-methods">7. Plotting Methods&lt;/h3>
-&lt;pre>&lt;code>a. Altimetry ``quick_plot()``
-b. Open, view and save tide gauge data from GESLA database
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Configuration Gallery</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configs_gallery/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configs_gallery/</guid><description>
+&lt;h3 id="7-tidegauge-methods">7. TIDEGAUGE Methods&lt;/h3>
+&lt;pre>&lt;code>a. Load GESLA data
+b. Load BODC data
+c. Load EA data via API
+d. TIDEGAUGE obs operator
+e. Tidegauge CRPS
+f. Tiudegauge basic stats
+g. Resample TIDEGAUGE
+h. Apply Doodson XO Filter to data
+i. Loading multiple tidegauges
+j. Plotting a single tidegauge location
+k. Plotting multiple tidegauge locations
+l. Tidegauge time series plot
+m. TIDEGAUGE method for tabulated data
+n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
+o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
+&lt;/code>&lt;/pre>
+&lt;h3 id="8-isobath-contour-methods">8. Isobath Contour Methods&lt;/h3>
+&lt;pre>&lt;code>a. Extract isbath contour between two points
+b. Plot contour on map
+c. Calculate pressure along contour
+d. Calculate flow across contour
+e. Calculate pressure gradient driven flow across contour
+&lt;/code>&lt;/pre>
+&lt;h3 id="9-eof-methods">9. EOF methods&lt;/h3>
+&lt;pre>&lt;code>a. Compute EOFs, projections and variance
+b. Compute HEOFs, projections and variance
+&lt;/code>&lt;/pre>
+&lt;h3 id="10-profile-methods">10. Profile Methods&lt;/h3>
+&lt;pre>&lt;code>a. Load En4 data
+b. Process En4 data
+c. Gridded obs_operator
+d. Vertical Interpolation
+e. Profile differencing
+f. Regional averaging
+g. Surface and Bottm averaging.
+&lt;/code>&lt;/pre>
+&lt;h3 id="11-plotting-utility">11. Plotting Utility&lt;/h3>
+&lt;pre>&lt;code>a. scatter_with_fit()
+b. create_geo_axes()
+c. determine_colorbar_extension()
+d. determine_clim_by_standard_deviation()
+&lt;/code>&lt;/pre>
+&lt;h3 id="12-stats-utility">12. Stats Utility&lt;/h3>
+&lt;pre>&lt;code>a. find_maxima()
+&lt;/code>&lt;/pre>
+&lt;h3 id="13-mask_masker">13. MASK_MASKER&lt;/h3>
+&lt;pre>&lt;code>a. Create mask by indices
+b. Create mask by lonlat
+&lt;/code>&lt;/pre>
+&lt;h3 id="14-climatology">14. CLIMATOLOGY&lt;/h3>
+&lt;pre>&lt;code>a. Create monthly and seasonal climatology, write to file
+&lt;/code>&lt;/pre>
+&lt;h3 id="n-example-script-testing">N. Example script testing&lt;/h3>
+&lt;pre>&lt;code>a. tutorials using example_files (E.g. altimetry and tidegauges, ...)
+b. tutorial on AMM15 data
+c. tutorial on AMM60 data
+d. tutorial on Belize data
+e. tutorial on SEAsia data
+f. tutorial on WCSSP-India data
+g. tutorial on internal tides
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Configuration files</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</link><pubDate>Tue, 07 Sep 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</guid><description>
+&lt;p>Configuration file code can be found in
+&lt;code>coast/config&lt;/code> within the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/coast/config">COAsT&lt;/a> github repository.
+This code is used internally within the package.&lt;/p>
+&lt;h2 id="configuration-file-usage">Configuration file usage&lt;/h2>
+&lt;p>Configuration files are passed into a COAsT class on the instantiation of a new object. For example the &lt;code>Gridded class&lt;/code> &lt;code>__init__&lt;/code> method takes an argument &lt;code>config&lt;/code>.
+This argument must be a String or Path object representing a path to the configuration file.
+E.g.&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">config_file&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># path to json config file&lt;/span>
+&lt;span style="color:#000">fn_nemo_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;coast_example_nemo_data.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_nemo_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;coast_example_nemo_domain.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">gridded_obj&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_file&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>For convenience, as indicated above, the path to the configuration file could be alternatively expressed as a path object. E.g.:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">from&lt;/span> &lt;span style="color:#000">pathlib&lt;/span> &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">Path&lt;/span>
+&lt;span style="color:#000">config_file&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">Path&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;path/to/config_file.json&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="configuration-file-structure">Configuration file structure&lt;/h2>
+&lt;p>Configuration files must follow a standard structure so that the &lt;code>ConfigParser&lt;/code> class can parse the file correctly.&lt;/p>
+&lt;p>Depending on the type of configuration file, there are a number of required keys:&lt;/p>
+&lt;h3 id="gridded-configuration">Gridded configuration&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Key&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>type&lt;/code>&lt;/td>
+&lt;td>A string value representing the type of configuration file. In the case of gridded config this will always be &amp;ldquo;gridded&amp;rdquo;.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dimensionality&lt;/code>&lt;/td>
+&lt;td>An integer value representing the number of dimensions within the data files.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>grid_ref&lt;/code>&lt;/td>
+&lt;td>A dictionary containing the type of grid, and a list of grid variables defining the mapping from the domain file to NEMO file.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>chunks&lt;/code>&lt;/td>
+&lt;td>A dictionary defining a dask &lt;a href="https://docs.dask.org/en/latest/array-chunks.html">chunk shape&lt;/a>, used when loading in data files. JSON doesn&amp;rsquo;t support integer keys, and so the dimensions name should be provided as the key instead. An empty dictionary will result in auto chunking. Rechunking can be applied subsequently with the standardised dimension names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dataset&lt;/code>&lt;/td>
+&lt;td>Parent key for holding configuration specific to the dataset files.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>domain&lt;/code>&lt;/td>
+&lt;td>Parent key for holding configuration specific to domain files. This is an &lt;strong>optional&lt;/strong> key depending on whether a domain file is required or not.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dimension_map&lt;/code>&lt;/td>
+&lt;td>Child key of dataset/domain. A dictionary defining the mappings between input data dimension names and the framework&amp;rsquo;s standardised dimension names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>variable_map&lt;/code>&lt;/td>
+&lt;td>Child key of dataset/domain. A dictionary defining the mappings between input data variable names and the framework&amp;rsquo;s standardised variable names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>keep_all_vars&lt;/code>&lt;/td>
+&lt;td>Optional child key of dataset/domain. If &amp;ldquo;True&amp;rdquo;, all variables from the input datafile will be carried over to the Gridded dataset. If &amp;ldquo;False&amp;rdquo;, only mapped variables will be carried over. &amp;ldquo;False&amp;rdquo; is assumed if the key is not present.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>coord_vars&lt;/code>&lt;/td>
+&lt;td>Child key of dataset. A list of dataset coordinate variables to apply once dataset is loaded.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>static_variables&lt;/code>&lt;/td>
+&lt;td>Parent key for holding configuration used for merging domain variables into the main dataset.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>not_grid_vars&lt;/code>&lt;/td>
+&lt;td>Child key of static_variables. A list of grid independant variables to pull across from the domain file.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>delete_vars&lt;/code>&lt;/td>
+&lt;td>Child key of static_variables. A list of variables to drop following the merge of domain and dataset.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>processing_flags&lt;/code>&lt;/td>
+&lt;td>A list of strings referring to any preliminary processing methods to be carried out on the data.&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="indexed-configuration">Indexed configuration&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Key&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>type&lt;/code>&lt;/td>
+&lt;td>A string value representing the type of configuration file. In the case of indexed config this will always be &amp;ldquo;indexed&amp;rdquo;.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dimensionality&lt;/code>&lt;/td>
+&lt;td>An integer value representing the number of dimensions within the data files.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>chunks&lt;/code>&lt;/td>
+&lt;td>A dictionary defining a dask &lt;a href="https://docs.dask.org/en/latest/array-chunks.html">chunk shape&lt;/a>, used when loading in data files. JSON doesn&amp;rsquo;t support integer keys, and so the dimensions name should be provided as the key instead. An empty dictionary will result in auto chunking. Rechunking can be applied subsequently with the standardised dimension names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dataset&lt;/code>&lt;/td>
+&lt;td>Parent key for holding configuration specific to the dataset files.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>dimension_map&lt;/code>&lt;/td>
+&lt;td>Child key of dataset. A dictionary defining the mappings between input data dimension names and the framework&amp;rsquo;s standardised dimension names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>variable_map&lt;/code>&lt;/td>
+&lt;td>Child key of dataset. A dictionary defining the mappings between input data variable names and the framework&amp;rsquo;s standardised variable names.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>keep_all_vars&lt;/code>&lt;/td>
+&lt;td>Optional child key of dataset/domain. If &amp;ldquo;True&amp;rdquo;, all variables from the input datafile will be carried over to the Indexed dataset. If &amp;ldquo;False&amp;rdquo;, only mapped variables will be carried over. &amp;ldquo;False&amp;rdquo; is assumed if the key is not present.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>coord_vars&lt;/code>&lt;/td>
+&lt;td>Child key of dataset. A list of dataset coordinate variables to apply once dataset is loaded.&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>processing_flags&lt;/code>&lt;/td>
+&lt;td>A list of strings referring to any preliminary processing methods to be carried out on the data.&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="example-configuration-file">Example configuration file&lt;/h3>
+&lt;p>Below is the template of a gridded configuration file:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-json" data-lang="json">&lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;type&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;gridded&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;dimensionality&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;chunks&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;time_counter&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;x&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;y&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;grid_ref&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;t-grid&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;glamt&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;gphit&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;e1t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;e2t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;e3t_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;deptht_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;tmask&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;bottom_level&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;hbatt&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;dataset&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;dimension_map&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;time_counter&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;t_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;deptht&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;z_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;y&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;x&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;x_grid_T&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;y_grid_T&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;variable_map&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;time_counter&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;time&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;votemper&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;thetao&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;temp&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;toce&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;so&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;salinity&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;vosaline&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;salinity&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;soce&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;salinity&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;sossheig&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;ssh&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;zos&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;ssh&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;coord_vars&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;longitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;latitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;time&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;depth_0&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;domain&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;dimension_map&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;t_dim0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;x&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;y&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;z&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;z_dim&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;variable_map&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;time_counter&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;time0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;glamt&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;longitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;gphit&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;latitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;e1t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;e1&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;e2t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;e2&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;e3t_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;e3_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;tmask&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;mask&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;deptht_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;depth_0&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;bottom_level&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;bottom_level&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;hbatt&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;bathymetry&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">}&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;static_variables&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;not_grid_vars&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;jpiglo&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;jpjglo&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;jpkglo&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;jperio&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;ln_zco&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;ln_zps&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;ln_sco&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;ln_isfcav&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">],&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;delete_vars&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;nav_lat&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;nav_lon&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;deptht&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#000;font-weight:bold">},&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">&amp;#34;processing_flags&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;example_flag1&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;example_flag2&amp;#34;&lt;/span>
+&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#000;font-weight:bold">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>Example configuration&lt;/strong> files can be found in the &lt;code>config/&lt;/code> directory within the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/config">COAsT&lt;/a> github repository.&lt;/p></description></item><item><title>Docs: Configuration Gallery</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configs_gallery/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configs_gallery/</guid><description>
 &lt;h1 id="amm15---15km-resolution-atlantic-margin-model">AMM15 - 1.5km resolution Atlantic Margin Model&lt;/h1>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#4e9a06">&amp;#34;&amp;#34;&amp;#34;
 &lt;/span>&lt;span style="color:#4e9a06">AMM15_example_plot.py
@@ -469,10 +1162,17 @@ b. Open, view and save tide gauge data from GESLA database
 &lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/projectsa/NEMO/gmaya/2013p2/&amp;#34;&lt;/span>
 &lt;span style="color:#000">fil_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;20130415_25hourm_grid_T.nc&amp;#34;&lt;/span>
 &lt;span style="color:#000">dom_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/projectsa/NEMO/gmaya/AMM15_GRID/amm15.mesh_mask.cs3x.nc&amp;#34;&lt;/span>
-&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
-&lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># , chunks=chunks)&lt;/span>
+&lt;span style="color:#000">chunks&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#4e9a06">&amp;#34;t_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000;font-weight:bold">}&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.&lt;/span>
+&lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">chunk&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># create an empty w-grid object, to store stratification&lt;/span>
-&lt;span style="color:#000">sci_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;w-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">sci_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">replace&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;t_nemo&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;w_nemo&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">))&lt;/span>
+&lt;span style="color:#000">sci_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">chunk&lt;/span>&lt;span style="color:#000;font-weight:bold">({&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">})&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Can reset after loading config json&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">print&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;* Loaded &amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">config&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#39; data&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#################################################&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#%% subset of data and domain ##&lt;/span>
@@ -522,8 +1222,8 @@ b. Open, view and save tide gauge data from GESLA database
 &lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/projectsa/COAsT/NEMO_example_data/MO_INDIA/&amp;#34;&lt;/span>
 &lt;span style="color:#000">fil_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;ind_1d_cat_20180101_20180105_25hourm_grid_T.nc&amp;#34;&lt;/span>
 &lt;span style="color:#000">dom_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;domain_cfg_wcssp.nc&amp;#34;&lt;/span>
-&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> \
-&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">config_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_t&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#%% Plot&lt;/span>
 &lt;span style="color:#000">fig&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">figure&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">longitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">latitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">t_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">z_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">))&lt;/span>
@@ -555,8 +1255,8 @@ b. Open, view and save tide gauge data from GESLA database
 &lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/projectsa/COAsT/NEMO_example_data/SEAsia_R12/&amp;#34;&lt;/span>
 &lt;span style="color:#000">fil_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;SEAsia_R12_5d_20120101_20121231_gridT.nc&amp;#34;&lt;/span>
 &lt;span style="color:#000">dom_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;domain_cfg_ORCA12_adj.nc&amp;#34;&lt;/span>
-&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">NEMO&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> \
-&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">grid_ref&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t-grid&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">config_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">sci_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fil_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dir_nam&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">dom_nam&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_t&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#%% Plot&lt;/span>
 &lt;span style="color:#000">fig&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">figure&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">longitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">latitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">sci_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">soce&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">t_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">z_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">))&lt;/span>
