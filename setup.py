@@ -33,6 +33,7 @@ PACKAGE = SimpleNamespace(
             "netCDF4>=1",
             "scipy>=1",
             "gsw==3.3.1",
+            "utide>=0.2",
             "scikit-learn>=0.2",
             "scikit-image>=0.15",
         ],
