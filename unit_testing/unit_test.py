@@ -1014,13 +1014,13 @@ plt.close("all")
 
 """
 #################################################
-## ( 7 ) TideGauge Methods                     ##
+## ( 7 ) Tidegauge Methods                     ##
 #################################################
 """
 sec = sec + 1
 subsec = 96
 
-# This section is for testing and demonstrating the use of the TideGauge
+# This section is for testing and demonstrating the use of the Tidegauge
 # object. First begin by reloading Gridded t-grid test data:
 sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
 
@@ -1038,7 +1038,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    lowestoft = coast.TideGauge(fn_tidegauge, date_start=date0, date_end=date1)
+    lowestoft = coast.Tidegauge(fn_tidegauge, date_start=date0, date_end=date1)
 
     # TEST: Define Attribute dictionary for comparison
     test_attrs = {
@@ -1076,9 +1076,9 @@ try:
     date_start = np.datetime64("2020-10-12 23:59")
     date_end = np.datetime64("2020-10-14 00:01")
 
-    # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA
+    # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA
     # type object
-    tg = coast.TideGauge()
+    tg = coast.Tidegauge()
     # specify the data read as a High Low Water dataset
     tg.dataset = tg.read_bodc_to_xarray(fn_tidegauge2, date_start, date_end)
     # tg.plot_timeseries()
@@ -1123,14 +1123,14 @@ subsec = subsec + 1
 try:
     date_start = np.datetime64("now") - np.timedelta64(20, "D")
     date_end = np.datetime64("now") - np.timedelta64(10, "D")
-    eg = coast.TideGauge()
+    eg = coast.Tidegauge()
     # Extract the data between explicit dates
     eg.dataset = eg.read_ea_api_to_xarray(date_start=date_start, date_end=date_end)
     check1 = eg.dataset.site_name == "Liverpool"
     check2 = len(eg.dataset.sea_level) > 0
     # eg.plot_timeseries()
 
-    # Alternatively extract the data for the last ndays, here for a specific
+    # Alternatively extract the data for the last n_days, here for a specific
     # (the default) station.
     eg.dataset = eg.read_ea_api_to_xarray(n_days=1, station_id="E70124")
     check3 = eg.dataset.site_name == "Liverpool"
@@ -1144,7 +1144,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7d ) TideGauge obs_operator                                             #
+# %% ( 7d ) Tidegauge obs_operator                                             #
 #                                                                             #
 
 subsec = subsec + 1
@@ -1171,7 +1171,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7e) TideGauge CRPS                                                      #
+# %% ( 7e) Tidegauge CRPS                                                      #
 #                                                                             #
 subsec = subsec + 1
 # Compare modelled SSH to observed sea level using CRPS. This can be done
@@ -1193,10 +1193,10 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7f ) TideGauge Stats methods                                            #
+# %% ( 7f ) Tidegauge Stats methods                                            #
 #                                                                             #
 subsec = subsec + 1
-# We can batch return the basic stats methods from TideGauge using basic_stats().
+# We can batch return the basic stats methods from Tidegauge using basic_stats().
 # We test all of the stats routines here by using this batch function.
 
 try:
@@ -1208,15 +1208,15 @@ try:
     # TEST: Check lengths and values
     check2 = stats.dataset.absolute_error.shape[0] == lowestoft.dataset.sea_level.shape[0]
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - Basic Stats for TideGauge")
+        print(str(sec) + chr(subsec) + " OK - Basic Stats for Tidegauge")
     else:
-        print(str(sec) + chr(subsec) + " X -  Basic Stats for TideGauge")
+        print(str(sec) + chr(subsec) + " X -  Basic Stats for Tidegauge")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7g ) TideGauge Resample to hourly                                       #
+# %% ( 7g ) Tidegauge Resample to hourly                                       #
 #                                                                             #
 subsec = subsec + 1
 # Lets resample the tide gauge data to be hourly.
@@ -1230,9 +1230,9 @@ try:
     # TEST: Check length
     check2 = np.ceil(lowestoft.dataset.time.shape[0] / 4) == lowestoft.dataset.time_1H.shape[0]
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - TideGauge resampled")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge resampled")
     else:
-        print(str(sec) + chr(subsec) + " X -  Resample TideGauge")
+        print(str(sec) + chr(subsec) + " X -  Resample Tidegauge")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
@@ -1251,24 +1251,24 @@ try:
     # TEST: Check there are number values in output
     check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dx0)
     if check1 and check2:
-        print(str(sec) + chr(subsec) + " OK - TideGauge doodson X0")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge doodson X0")
     else:
-        print(str(sec) + chr(subsec) + " X -  TideGauge doodson X0")
+        print(str(sec) + chr(subsec) + " X -  Tidegauge doodson X0")
 
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7i ) TideGauge Loading multiple TideGaugeS                              #
+# %% ( 7i ) Tidegauge Loading multiple TidegaugeS                              #
 #                                                                             #
 subsec = subsec + 1
-# We can load multiple tide gauges into a list of TideGauge objects using the
+# We can load multiple tide gauges into a list of Tidegauge objects using the
 # static method create_multiple_tidegauge.
 
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 12)
-    tidegauge_list = coast.TideGauge.create_multiple("./example_files/tide_gauges/l*", date0, date1)
+    tidegauge_list = coast.Tidegauge.create_multiple_tidegauge("./example_files/tide_gauges/l*", date0, date1)
 
     # TEST: Check length of list
     check1 = len(tidegauge_list) == 2
@@ -1283,7 +1283,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7j ) TideGauge map plot (single)                                        #
+# %% ( 7j ) Tidegauge map plot (single)                                        #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1298,13 +1298,13 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7k ) TideGauge map plot (single)                                        #
+# %% ( 7k ) Tidegauge map plot (single)                                        #
 #                                                                             #
 subsec = subsec + 1
 
 # Or we can plot up multiple from the list we loaded:
 try:
-    f, a = coast.TideGauge.plot_on_map_multiple(tidegauge_list)
+    f, a = coast.Tidegauge.plot_on_map_multiple(tidegauge_list)
     f.savefig(dn_fig + "tidegauge_multiple_map.png")
     print(str(sec) + chr(subsec) + " OK - Tide gauge multiple map plot saved")
 except:
@@ -1313,7 +1313,7 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7l ) TideGauge Time series plot                                         #
+# %% ( 7l ) Tidegauge Time series plot                                         #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1329,7 +1329,7 @@ except:
 plt.close("all")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7m ) TideGauge method for tabulated data                                #
+# %% ( 7m ) Tidegauge method for tabulated data                                #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1339,8 +1339,8 @@ try:
     date_start = np.datetime64("2020-10-11 07:59")
     date_end = np.datetime64("2020-10-20 20:21")
 
-    # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
-    tg = coast.TideGauge()
+    # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA type object
+    tg = coast.Tidegauge()
     tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
 
     check1 = len(tg.dataset.sea_level) == 37
@@ -1364,7 +1364,7 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # -----------------------------------------------------------------------------#
-# %% ( 7n ) TideGauge method for finding extrema and troughs, compare neighbours#
+# %% ( 7n ) Tidegauge method for finding extrema and troughs, compare neighbours#
 #                                                                             #
 subsec = subsec + 1
 
@@ -1372,7 +1372,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 10)
     date1 = datetime.datetime(2007, 1, 20)
-    lowestoft2 = coast.TideGauge(fn_tidegauge, date_start=date0, date_end=date1)
+    lowestoft2 = coast.Tidegauge(fn_tidegauge, date_start=date0, date_end=date1)
 
     # Use comparison of neighbourhood method (method="comp" is assumed)
     extrema_comp = lowestoft2.find_high_and_low_water("sea_level", distance=40)
@@ -1394,15 +1394,15 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1 and check2 and check3 and check4:
-        print(str(sec) + chr(subsec) + " OK - TideGauge local extrema found")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge local extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - TideGauge local extrema")
+        print(str(sec) + chr(subsec) + " X - Tidegauge local extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 
 # -----------------------------------------------------------------------------#
-# %% ( 7o ) TideGauge method for finding extrema and troughs, fit cubic spline #
+# %% ( 7o ) Tidegauge method for finding extrema and troughs, fit cubic spline #
 #                                                                             #
 subsec = subsec + 1
 
@@ -1412,9 +1412,9 @@ try:
     date_start = np.datetime64("2020-10-12 23:59")
     date_end = np.datetime64("2020-10-14 00:01")
 
-    # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA
+    # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA
     # type object
-    tg = coast.TideGauge()
+    tg = coast.Tidegauge()
     # specify the data read as a High Low Water dataset
     tg.dataset = tg.read_bodc_to_xarray(fn_tidegauge2, date_start, date_end)
 
@@ -1436,9 +1436,9 @@ try:
     f.savefig(dn_fig + "tidegauge_optima.png")
 
     if check1.all() and check2.all():
-        print(str(sec) + chr(subsec) + " OK - TideGauge cubic extrema found")
+        print(str(sec) + chr(subsec) + " OK - Tidegauge cubic extrema found")
     else:
-        print(str(sec) + chr(subsec) + " X - TideGauge cubic extrema")
+        print(str(sec) + chr(subsec) + " X - Tidegauge cubic extrema")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
@@ -1906,7 +1906,7 @@ subsec = subsec + 1
 try:
     date0 = datetime.datetime(2007, 1, 15)
     date1 = datetime.datetime(2007, 1, 16)
-    tg = coast.TideGauge(fn_tidegauge, date_start=date0, date_end=date1)
+    tg = coast.Tidegauge(fn_tidegauge, date_start=date0, date_end=date1)
 
     tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method="comp")
     check1 = np.isclose((tt.values[0] - np.datetime64("2007-01-15T00:15:00")) / np.timedelta64(1, "s"), 0)
