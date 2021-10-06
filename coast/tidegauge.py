@@ -75,6 +75,10 @@ class Tidegauge(Timeseries):
         -> find_high_and_low_water(): Find maxima and minima of time series
     """
 
+    ##############################################################################
+    ###                ~ Initialisation and File Reading ~                     ###
+    ##############################################################################
+
     def __init__(self, file_path: str = None, date_start=None, date_end=None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
@@ -348,8 +352,8 @@ class Tidegauge(Timeseries):
         """
         debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}')  # TODO Maybe include start/end dates
         try:
-            header_dict = cls.read_HLW_header(fn_hlw)
-            dataset = cls.read_HLW_data(fn_hlw, header_dict, date_start, date_end)
+            header_dict = cls.read_hlw_header(fn_hlw)
+            dataset = cls.read_hlw_data(fn_hlw, header_dict, date_start, date_end)
             if header_dict["field"] == "TZ:UT(GMT)/BST":
                 debug("Read in as BST, stored as UTC")
             elif header_dict["field"] == "TZ:GMTonly":
@@ -365,7 +369,7 @@ class Tidegauge(Timeseries):
         return dataset
 
     @staticmethod
-    def read_HLW_header(filnam):
+    def read_hlw_header(filnam):
         """
         Reads header from a HWL file.
 
@@ -594,7 +598,7 @@ class Tidegauge(Timeseries):
 
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
-    def read_EA_API_to_xarray(
+    def read_ea_api_to_xarray(
         cls, ndays: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, stationId="E70124"
     ):
         """
