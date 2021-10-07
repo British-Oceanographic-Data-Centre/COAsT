@@ -257,22 +257,23 @@ conventions.&lt;/p></description></item><item><title>Docs: Observations</title><
 &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">nanmean&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">crps&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">crps&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
 &lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
-&lt;p>Here we give a short tutorial of how to use the ALTIMETRY object for reading data and
+&lt;p>Here we give a short tutorial of how to use the Altimetry object for reading data and
 comparing to NEMO data.&lt;/p>
 &lt;p>Begin by importing coast and other packages&lt;/p>
 &lt;pre>&lt;code>import coast
 &lt;/code>&lt;/pre>&lt;p>And by defining some file paths. There are the example files that can be obtained with
 the COAsT package:&lt;/p>
-&lt;pre>&lt;code>fn_nemo_dat = './example_files/COAsT_example_NEMO_data.nc'
-fn_nemo_dom = './example_files/COAsT_example_NEMO_domain.nc'
+&lt;pre>&lt;code>fn_nemo_dat = &amp;quot;./example_files/COAsT_example_NEMO_data.nc&amp;quot;
+fn_nemo_dom = &amp;quot;./example_files/COAsT_example_NEMO_domain.nc&amp;quot;
+fn_config_t_grid = &amp;quot;./config/example_nemo_grid_t.json&amp;quot;
 fn_altimetry = './example_files/COAsT_example_altimetry_data.nc'
-&lt;/code>&lt;/pre>&lt;p>We need to load in a NEMO object for doing NEMO things.&lt;/p>
-&lt;pre>&lt;code>nemo = coast.NEMO(fn_nemo_dat, fn_nemo_dom, grid_ref='t-grid')
-&lt;/code>&lt;/pre>&lt;p>And now we can load in our ALTIMETRY data. By default, ALTIMETRY is set up
+&lt;/code>&lt;/pre>&lt;p>We need to load in a Gridded object for doing things with NEMO data.&lt;/p>
+&lt;pre>&lt;code>nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
+&lt;/code>&lt;/pre>&lt;p>And now we can load in our Altimetry data. By default, Altimetry is set up
 to read in CMEMS netCDF files. However, if no path is supplied, then the
 object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
-if desired, as long as it follows the data formatting for ALTIMETRY.&lt;/p>
-&lt;pre>&lt;code>altimetry = coast.ALTIMETRY(fn_altimetry)
+if desired, as long as it follows the data formatting for Altimetry.&lt;/p>
+&lt;pre>&lt;code>altimetry = coast.Altimetry(fn_altimetry, config=&amp;quot;./config/example_altimetry.json&amp;quot;)
 &lt;/code>&lt;/pre>&lt;p>Before going any further, lets just cut out the bit of the altimetry that
 is over the model domain. This can be done using subset_indices_lonlat_box
 to find relevant indices and then isel to extract them. The data has also
@@ -285,7 +286,7 @@ variable to the same time and geographical space as the altimetry. This is
 done using the obs_operator() method:&lt;/p>
 &lt;pre>&lt;code>altimetry.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
 &lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
-saved it back into our ALTIMETRY object. Take a look at altimetry.dataset
+saved it back into our Altimetry object. Take a look at altimetry.dataset
 to see for yourself.&lt;/p>
 &lt;p>Next we will compare this interpolated variable to an observed variable
 using some basic metrics. The basic_stats() routine can be used for this,
@@ -305,11 +306,11 @@ obs_var_name = 'sla_filtered', nh_radius = 20)
 &lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
 to basic_stats, create_new_object can be set to false to save output to
 the original altimetry object.&lt;/p>
-&lt;p>ALTIMETRY has a ready built quick_plot() routine for taking a look at any
+&lt;p>Altimetry has a ready built quick_plot() routine for taking a look at any
 of the observed or derived quantities above. So to take a look at the
 &amp;lsquo;sla_filtered&amp;rsquo; variable:&lt;/p>
 &lt;pre>&lt;code>fig, ax = altimetry.quick_plot('sla_filtered')
-&lt;/code>&lt;/pre>&lt;p>As stats and crps are also ALTIMETRY objects, quick_plot() can also be used:&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>As stats and crps are also Altimetry objects, quick_plot() can also be used:&lt;/p>
 &lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
 fig, ax = stats.quick_plot('absolute_error')
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
