@@ -661,7 +661,7 @@ plot_on_map_multiple:&lt;/p>
 &lt;pre>&lt;code>fig, ax = Tidegauge.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
 &lt;/code>&lt;/pre></description></item><item><title>Docs: TidegaugeMultiple</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</guid><description>
 &lt;p>The TidegaugeMultiple object is for storing multiple tide gauge/time series datasets in one object.
-It has two dimensions: (&amp;lsquo;id&amp;rsquo;, &amp;lsquo;t_dim&amp;rsquo;) and is a child of the TIMESERIES and INDEXED objects.
+It has two dimensions: (&amp;lsquo;id&amp;rsquo;, &amp;lsquo;t_dim&amp;rsquo;) and is a child of the Timeseries and Indexed objects.
 All timeseries in this object must lie on the same time dimension and indices. If not the case
 in your data, then it must be preprocessed before use with this object.&lt;/p>
 &lt;p>The Tidegauge object on the other hand, currently only stores one time series at a time. See
@@ -691,14 +691,14 @@ Here, using the bottom_level == 0 variable from the domain file is enough.&lt;/p
 &lt;pre>&lt;code>nemo.dataset = nemo.dataset.rename({&amp;quot;depth_0&amp;quot;: &amp;quot;depth&amp;quot;})
 nemo.dataset = nemo.dataset[[&amp;quot;ssh&amp;quot;, &amp;quot;landmask&amp;quot;]]
 &lt;/code>&lt;/pre>&lt;h3 id="2-create-tidegaugemultiple-object">2. Create TidegaugeMultiple object&lt;/h3>
-&lt;p>Create the object and then inset the netcdf dataset
-obs = coast.TidegaugeMultiple()
-obs.dataset = xr.open_dataset(fn_tg)&lt;/p>
-&lt;p>Cut down data to be only in 2018 to match model data.
-start_date = datetime.datetime(2018, 1, 1)
+&lt;p>Create the object and then inset the netcdf dataset&lt;/p>
+&lt;pre>&lt;code>obs = coast.TidegaugeMultiple()
+obs.dataset = xr.open_dataset(fn_tg)
+&lt;/code>&lt;/pre>&lt;p>Cut down data to be only in 2018 to match model data.&lt;/p>
+&lt;pre>&lt;code>start_date = datetime.datetime(2018, 1, 1)
 end_date = datetime.datetime(2018, 12, 31)
-obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)&lt;/p>
-&lt;h3 id="3-interpolate-model-data-onto-obs-locations">3. Interpolate model data onto obs locations&lt;/h3>
+obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)
+&lt;/code>&lt;/pre>&lt;h3 id="3-interpolate-model-data-onto-obs-locations">3. Interpolate model data onto obs locations&lt;/h3>
 &lt;p>Obs_operator is used to extract time series from the model:&lt;/p>
 &lt;pre>&lt;code>model_timeseries = obs.obs_operator(nemo)
 &lt;/code>&lt;/pre>&lt;p>In this case, transpose the interpolated dataset so dimensions are
