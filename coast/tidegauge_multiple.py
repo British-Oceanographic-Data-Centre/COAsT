@@ -308,6 +308,8 @@ class TidegaugeMultiple:
         return tg_out
 
     def difference(self, other, absolute_diff=True, square_diff=True):
+        '''
+        '''
 
         differenced = self.dataset - other.dataset
         diff_vars = list(differenced.keys())
