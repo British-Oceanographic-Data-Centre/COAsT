@@ -225,10 +225,10 @@ class TidegaugeMultiple:
         for vv in var_list:
 
             empty_thresh = np.zeros((n_port, n_thresholds)) * np.nan
-            ds_thresh["peak_count_" + vv] = (["id", "threshold"], np.array( empty_thresh))
-            ds_thresh["time_over_threshold_" + vv] = (["id", "threshold"], np.array( empty_thresh))
-            ds_thresh["dailymax_count_" + vv] = (["id", "threshold"], np.array( empty_thresh))
-            ds_thresh["monthlymax_count_" + vv] = (["id", "threshold"], np.array( empty_thresh))
+            ds_thresh["peak_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["time_over_threshold_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["dailymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["monthlymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
 
             for pp in range(n_port):
 
