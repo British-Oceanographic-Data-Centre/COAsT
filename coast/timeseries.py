@@ -11,27 +11,25 @@ class Timeseries(Indexed):
     pass
 
     def obs_operator(self, gridded, time_interp="nearest"):
-        """ 
+        """
         Maps a gridded object time series locations.
-        
-        
+
+
         """
         gridded = gridded.dataset
         ds = self.dataset
 
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
-        
+
         # Determine if landmask is available
-        if 'landmask' in list(gridded.keys()):
+        if "landmask" in list(gridded.keys()):
             landmask = gridded.landmask
         else:
             landmask = None
-            
-            
+
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, 
-            mask=landmask
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=landmask
         )
 
         # Extract spatial time series
@@ -61,8 +59,7 @@ class Timeseries(Indexed):
         tg_out = Tidegauge()
         tg_out.dataset = extracted
         return tg_out
-    
-    
+
     def plot_on_map(self):
         """
         Show the location of a tidegauge on a map.
