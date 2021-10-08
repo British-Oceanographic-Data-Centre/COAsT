@@ -12,6 +12,7 @@ from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error, info
 from typing import Union
 from pathlib import Path
+import xarray.ufuncs as uf
 
 
 class Tidegauge(Timeseries):
@@ -121,7 +122,7 @@ class Tidegauge(Timeseries):
     @classmethod
     def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
         """
-        For reading from a single GESLA2 (Format version 3.0) file into an
+        For reading from a GESLA2 (Format version 3.0) file(s) into an
         xarray dataset. Formatting according to Woodworth et al. (2017).
         Website: https://www.gesla.org/
         If no data lies between the specified dates, a dataset is still created
@@ -129,7 +130,7 @@ class Tidegauge(Timeseries):
         be empty.
         Parameters
         ----------
-        fn_gesla (str) : path to gesla tide gauge file
+        fn_gesla (str) : path to gesla tide gauge file, list of files or a glob
         date_start (datetime) : start date for returning data
         date_end (datetime) : end date for returning data
 
@@ -138,20 +139,32 @@ class Tidegauge(Timeseries):
         xarray.Dataset object.
         """
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(cls)}')  # TODO Maybe include start/end dates
-        try:
-            header_dict = cls.read_gesla_header_v3(fn_gesla)
-            dataset = cls.read_gesla_data_v3(fn_gesla, date_start, date_end)
-        except:
-            raise Exception("Problem reading GESLA file: " + fn_gesla)
-        # Attributes
-        dataset["longitude"] = header_dict["longitude"]
-        dataset["latitude"] = header_dict["latitude"]
-        del header_dict["longitude"]
-        del header_dict["latitude"]
+        
+        # See if its a file list input, or a glob
+        if type(fn_gesla) is not list:
+            file_list = glob.glob(fn_gesla)
+            
+        ds_list = []
+        # Loop over files and put resulting dataset into an output list
+        for fn in file_list:
+            try:
+                header_dict = cls.read_gesla_header_v3(fn)
+                dataset = cls.read_gesla_data_v3(fn, date_start, date_end)
+            except:
+                raise Exception("Problem reading GESLA file: " + fn)
+            # Attributes
+            dataset["longitude"] = header_dict["longitude"]
+            dataset["latitude"] = header_dict["latitude"]
+            del header_dict["longitude"]
+            del header_dict["latitude"]
+            dataset.attrs = header_dict
+            ds_list.append(dataset)
+            
+        # If there is only one file, then just return the dataset, not a list
+        if len(file_list) == 1:
+            ds_list = ds_list[0]
 
-        dataset.attrs = header_dict
-
-        return dataset
+        return ds_list
 
     @staticmethod
     def read_gesla_header_v3(fn_gesla):
@@ -234,7 +247,7 @@ class Tidegauge(Timeseries):
         debug(f'Reading GESLA data from "{fn_gesla}"')
         dataset = xr.Dataset()
         time = []
-        sea_level = []
+        ssh = []
         qc_flags = []
         # Open file and loop until EOF
         with open(fn_gesla) as file:
@@ -245,7 +258,7 @@ class Tidegauge(Timeseries):
                     working_line = line.split()
                     if working_line[0] != "#":
                         time.append(working_line[0] + " " + working_line[1])
-                        sea_level.append(float(working_line[2]))
+                        ssh.append(float(working_line[2]))
                         qc_flags.append(int(working_line[3]))
 
                 line_count = line_count + 1
@@ -264,63 +277,21 @@ class Tidegauge(Timeseries):
             date_end = np.datetime64(date_end)
             end_index = np.argmax(time > date_end)
         time = time[start_index:end_index]
-        sea_level = sea_level[start_index:end_index]
+        ssh = ssh[start_index:end_index]
         qc_flags = qc_flags[start_index:end_index]
 
         # Set null values to nan
-        sea_level = np.array(sea_level)
+        ssh = np.array(ssh)
         qc_flags = np.array(qc_flags)
-        sea_level[qc_flags == 5] = np.nan
+        ssh[qc_flags == 5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["sea_level"] = xr.DataArray(sea_level, dims=["time"])
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"])
-        dataset = dataset.assign_coords(time=("time", time))
+        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims('id')
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims('id')
+        dataset = dataset.assign_coords(time=("t_dim", time))
 
         # Assign local dataset to object-scope dataset
         return dataset
-
-    @classmethod
-    def create_multiple_tidegauge(cls, file_list, date_start=None, date_end=None, config: Union[Path, str] = None):
-        """
-        Reads multiple GESLA tide gauge files from file_list (can include
-        wildcards) and return them in a list. date_start and date_end should
-        be datetime like objects. For a lot of files/data, this may take a
-        while.
-
-        Example usage:
-        --------------
-            # Read all data in directory in January 1990
-            date0 = datetime.datetime(1990,1,1)
-            date1 = datetime.datetime(1990,2,1)
-            tg = coast.TIDEGAUGE('gesla_directory/*', date0, date1)
-        Returns
-        -------
-        List of TIDEGAUGE objects.
-        """
-        # If single string is given then put into a single element list
-        if type(file_list) is str:
-            file_list = [file_list]
-
-        # Check file_list for wildcards and make list of files to read
-        file_to_read = []
-        for file in file_list:
-            if "*" in file:
-                wildcard_list = glob.glob(file)
-                file_to_read = file_to_read + wildcard_list
-            else:
-                file_to_read.append(file)
-
-        # Loop over files to read and read them into datasets
-        tidegauge_list = []
-        for file in file_to_read:
-            try:
-                new_object = Tidegauge(file, date_start, date_end, config)
-                tidegauge_list.append(new_object)
-            except FileNotFoundError as fne:
-                Warning(str(fne))
-
-        return tidegauge_list
 
     ############ tide table methods (HLW) #########################################
     @classmethod
@@ -433,7 +404,7 @@ class Tidegauge(Timeseries):
         debug(f'Reading HLW data from "{filnam}"')
         dataset = xr.Dataset()
         time = []
-        sea_level = []
+        ssh = []
 
         if header_dict["field"] == "TZ:UT(GMT)/BST":
             localtime_flag = True
@@ -455,7 +426,7 @@ class Tidegauge(Timeseries):
                             time.append(np.datetime64(datetime_obj.astimezone()))
                         else:
                             time.append(np.datetime64(datetime_obj))
-                        sea_level.append(float(working_line[2]))
+                        ssh.append(float(working_line[2]))
                 line_count = line_count + 1
             debug(f'Read done, close file "{filnam}"')
 
@@ -473,10 +444,10 @@ class Tidegauge(Timeseries):
             end_index = np.argmax(time > date_end)
             debug(f"date_end: {date_end}. end_index: {end_index}")
         time = time[start_index:end_index]
-        sea_level = sea_level[start_index:end_index]
-        debug(f"sea_level: {sea_level}")
+        ssh = ssh[start_index:end_index]
+        debug(f"ssh: {ssh}")
         # Assign arrays to Dataset
-        dataset["sea_level"] = xr.DataArray(sea_level, dims=["time"])
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
         dataset = dataset.assign_coords(time=("time", time))
         # Assign local dataset to object-scope dataset
         return dataset
@@ -488,25 +459,25 @@ class Tidegauge(Timeseries):
         """
         # debug(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
         if timezone == None:
-            for i in range(len(self.dataset.sea_level)):
+            for i in range(len(self.dataset.ssh)):
                 #               debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (UTC):",
                     general_utils.dayoweek(self.dataset.time[i].values),
                     np.datetime_as_string(self.dataset.time[i], unit="m"),
                     "height:",
-                    self.dataset.sea_level[i].values,
+                    self.dataset.ssh[i].values,
                     "m",
                 )
         else:  # display timezone aware times
-            for i in range(len(self.dataset.sea_level)):
+            for i in range(len(self.dataset.ssh)):
                 #               debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (" + timezone + "):",
                     general_utils.day_of_week(self.dataset.time[i].values),
                     np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
-                    self.dataset.sea_level[i].values,
+                    self.dataset.ssh[i].values,
                     "m",
                 )
 
@@ -514,7 +485,7 @@ class Tidegauge(Timeseries):
         self,
         time_guess: np.datetime64 = None,
         time_var: str = "time",
-        measure_var: str = "sea_level",
+        measure_var: str = "ssh",
         method: str = "window",
         winsize=None,
     ):
@@ -524,7 +495,7 @@ class Tidegauge(Timeseries):
         time_guess : np.datetime64 or datetime
                 assumes utc
         time_var : name of time variable [default: 'time']
-        measure_var : name of sea_level variable [default: 'sea_level']
+        measure_var : name of ssh variable [default: 'ssh']
 
         method =
             window:  +/- hours window size, winsize, (int) return values in that window
@@ -534,7 +505,7 @@ class Tidegauge(Timeseries):
             nearest_HW: return nearest High Water event (computed as the max of `nearest_2`), if in winsize [default:None]
 
         returns: xr.DataArray( measure_var, coords=time_var)
-            E.g. sea_level (m), time (utc)
+            E.g. ssh (m), time (utc)
             If value is not found, it returns a NaN with time value as the
             guess value.
 
@@ -561,9 +532,9 @@ class Tidegauge(Timeseries):
             date_end = time_guess + np.timedelta64(winsize, "h")
             end_index = np.argmax(self.dataset[time_var].values > date_end)
 
-            sea_level = self.dataset[measure_var][start_index:end_index]
+            ssh = self.dataset[measure_var][start_index:end_index]
 
-            return sea_level
+            return ssh
 
         elif method == "nearest_1":
             dt = np.abs(self.dataset[time_var] - time_guess)
@@ -589,7 +560,7 @@ class Tidegauge(Timeseries):
 
         elif method == "nearest_HW":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            # return self.dataset.sea_level[ index[np.argmax( self.dataset.sea_level[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
+            # return self.dataset.ssh[ index[np.argmax( self.dataset.ssh[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
             nearest_2 = self.dataset[measure_var][index[0 : 1 + 1]]  # , self.dataset.time[index[0:1+1]]
             return nearest_2[nearest_2.argmax()]
 
@@ -620,7 +591,7 @@ class Tidegauge(Timeseries):
             station_id : int. Station id. Also referred to as stationReference in
              EA API. Default value is for Liverpool.
         OUTPUT:
-            sea_level, time : xr.Dataset
+            ssh, time : xr.Dataset
         """
         import requests, json
 
@@ -685,17 +656,17 @@ class Tidegauge(Timeseries):
         # %% Process timeseries data
         dataset = xr.Dataset()
         time = []
-        sea_level = []
+        ssh = []
         nvals = len(request["items"])
         time = np.array([np.datetime64(request["items"][i]["dateTime"]) for i in range(nvals)])
-        sea_level = np.array([request["items"][i]["value"] for i in range(nvals)])
+        ssh = np.array([request["items"][i]["value"] for i in range(nvals)])
 
         # %% Assign arrays to Dataset
-        dataset["sea_level"] = xr.DataArray(sea_level, dims=["time"])
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
         dataset = dataset.assign_coords(time=("time", time))
         dataset.attrs = header_dict
         debug(f"EA API request headers: {header_dict}")
-        # debug(f"EA API request 1st time: {time[0]} and value: {sea_level[0]}")
+        # debug(f"EA API request 1st time: {time[0]} and value: {ssh[0]}")
 
         # Assign local dataset to object-scope dataset
         return dataset
@@ -818,7 +789,7 @@ class Tidegauge(Timeseries):
         debug(f'Reading BODC data from "{fn_bodc}"')
         dataset = xr.Dataset()
         time = []
-        sea_level = []
+        ssh = []
         qc_flags = []
         residual = []
         # Open file and loop until EOF
@@ -830,24 +801,24 @@ class Tidegauge(Timeseries):
                     try:
                         working_line = line.split()
                         time_str = working_line[1] + " " + working_line[2]  # Empty lines cause trouble
-                        sea_level_str = working_line[3]
+                        ssh_str = working_line[3]
                         residual_str = working_line[4]
-                        if sea_level_str[-1].isalpha():
-                            qc_flag_str = sea_level_str[-1]
-                            sea_level_str = sea_level_str.replace(qc_flag_str, "")
+                        if ssh_str[-1].isalpha():
+                            qc_flag_str = ssh_str[-1]
+                            ssh_str = ssh_str.replace(qc_flag_str, "")
                             residual_str = residual_str.replace(qc_flag_str, "")
                         elif residual_str[-1].isalpha():  # sometimes residual has a
                             # flag when elevation does not
                             qc_flag_str = residual_str[-1]
-                            sea_level_str = sea_level_str.replace(qc_flag_str, "")
+                            ssh_str = ssh_str.replace(qc_flag_str, "")
                             residual_str = residual_str.replace(qc_flag_str, "")
                         else:
                             qc_flag_str = ""
                         # debug(line_count-header_length, residual_str, float(residual_str))
-                        # debug(working_line, sea_level_str, qc_flag_str)
+                        # debug(working_line, ssh_str, qc_flag_str)
                         time.append(time_str)
                         qc_flags.append(qc_flag_str)
-                        sea_level.append(float(sea_level_str))
+                        ssh.append(float(ssh_str))
                         residual.append(float(residual_str))
                     except:
                         debug(f"{file} probably empty line at end. Breaks split()")
@@ -867,16 +838,16 @@ class Tidegauge(Timeseries):
             date_end = np.datetime64(date_end)
             end_index = np.argmax(time > date_end)
         time = time[start_index:end_index]
-        sea_level = sea_level[start_index:end_index]
+        ssh = ssh[start_index:end_index]
         qc_flags = qc_flags[start_index:end_index]
 
         # Set null values to nan
-        sea_level = np.array(sea_level)
+        ssh = np.array(ssh)
         qc_flags = np.array(qc_flags)
-        # sea_level[qc_flags==5] = np.nan
+        # ssh[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["sea_level"] = xr.DataArray(sea_level, dims=["time"])
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
         dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"])
         dataset = dataset.assign_coords(time=("time", time))
 
@@ -887,68 +858,15 @@ class Tidegauge(Timeseries):
     ###                ~            Plotting             ~                     ###
     ##############################################################################
 
-    def plot_on_map(self):
-        """
-        Show the location of a tidegauge on a map.
-
-        Example usage:
-        --------------
-        # For a TIDEGAUGE object tg
-        tg.plot_map()
-
-        """
-
-        debug(f"Plotting tide gauge locations for {get_slug(self)}")
-
-        title = "Location: " + self.dataset.attrs["site_name"]
-        X = self.dataset.longitude
-        Y = self.dataset.latitude
-        fig, ax = plot_util.geo_scatter(X, Y, title=title)
-        ax.set_xlim((X - 10, X + 10))
-        ax.set_ylim((Y - 10, Y + 10))
-        return fig, ax
-
-    @classmethod
-    def plot_on_map_multiple(cls, tidegauge_list, color_var_str=None):
-        """
-        Show the location of a tidegauge on a map.
-
-        Example usage:
-        --------------
-        # For a TIDEGAUGE object tg
-        tg.plot_map()
-
-        """
-
-        debug(f"Plotting tide gauge locations for {get_slug(cls)}")
-
-        X = []
-        Y = []
-        C = []
-        for tg in tidegauge_list:
-            X.append(tg.dataset.longitude)
-            Y.append(tg.dataset.latitude)
-            if color_var_str is not None:
-                C.append(tg.dataset[color_var_str].values)
-
-        title = ""
-        if color_var_str is None:
-            fig, ax = plot_util.geo_scatter(X, Y, title=title)
-        else:
-            fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
-
-        ax.set_xlim((min(X) - 10, max(X) + 10))
-        ax.set_ylim((min(Y) - 10, max(Y) + 10))
-        return fig, ax
-
-    def plot_timeseries(self, var_list=["sea_level"], date_start=None, date_end=None, plot_line=False):
+    def plot_timeseries(self, id, var_list=["ssh"], date_start=None, 
+                        date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
         ----------
         date_start (datetime) : Start date for plotting
         date_end (datetime) : End date for plotting
-        var_list  (str)  : List of variables to plot. Default: just sea_level
+        var_list  (str)  : List of variables to plot. Default: just ssh
         plot_line (bool) : If true, draw line between markers
 
         Returns
@@ -997,56 +915,11 @@ class Tidegauge(Timeseries):
     ###                ~        Model Comparison         ~                     ###
     ##############################################################################
 
-    def obs_operator(self, model, mod_var_name: str, time_interp="nearest", model_mask=None):
-        """
-        Interpolates a model array (specified using a model object and variable
-        string) to TIDEGAUGE location and times. Takes the nearest model grid
-        cell to the tide gauge.
-
-        Parameters
-        ----------
-        model : MODEL object (e.g. NEMO)
-        model_var_name (str) : Name of variable (inside MODEL) to interpolate.
-        time_interp (str) : type of scipy time interpolation (e.g. linear)
-        model_mask : Mask to apply to model data in geographical interpolation
-                     of model. For example, use to ignore land points.
-                     If None, no mask is applied. If 'bathy', model variable
-                     (bathymetry==0) is used. Custom 2D mask arrays can be
-                     supplied.
-
-        Returns
-        -------
-        Saves interpolated array to TIDEGAUGE.dataset
-        """
-        # Determine mask
-        if model_mask == "bathy":
-            model_mask = model.dataset.bathymetry.values == 0
-
-        # Get data arrays
-        mod_var_array = model.dataset[mod_var_name]
-
-        # Depth interpolation -> for now just take 0 index
-        if "z_dim" in mod_var_array.dims:
-            mod_var_array = mod_var_array.isel(z_dim=0).squeeze()
-
-        # Cast lat/lon to numpy arrays
-        obs_lon = np.array([self.dataset.longitude])
-        obs_lat = np.array([self.dataset.latitude])
-
-        interpolated = model.interpolate_in_space(mod_var_array, obs_lon, obs_lat, mask=model_mask)
-
-        interpolated = model.interpolate_in_time(interpolated, self.dataset.time)
-
-        # Store interpolated array in dataset
-        new_var_name = "interp_" + mod_var_name
-        self.dataset[new_var_name] = interpolated.drop(["longitude", "latitude"])
-        return
-
     def crps(
         self,
         model_object,
         model_var_name,
-        obs_var_name: str = "sea_level",
+        obs_var_name: str = "ssh",
         nh_radius: float = 20,
         time_interp: str = "linear",
         create_new_obj=True,
@@ -1076,8 +949,8 @@ class Tidegauge(Timeseries):
 
         Example Useage
         -------
-        # Compare modelled 'sossheig' with 'sea_level' using CRPS
-        crps = altimetry.crps(nemo, 'sossheig', 'sea_level')
+        # Compare modelled 'sossheig' with 'ssh' using CRPS
+        crps = altimetry.crps(nemo, 'sossheig', 'ssh')
         """
 
         mod_var = model_object.dataset[model_var_name]
@@ -1103,15 +976,37 @@ class Tidegauge(Timeseries):
             self.dataset["crps"] = (("time"), crps_list)
             self.dataset["crps_n_model_pts"] = (("time"), n_model_pts)
 
-    def difference(self, var_str0: str, var_str1: str, date0=None, date1=None):
-        """Difference two variables defined by var_str0 and var_str1 between
-        two dates date0 and date1. Returns xr.DataArray"""
-        var0 = self.dataset[var_str0]
-        var1 = self.dataset[var_str1]
-        var0 = general_utils.data_array_time_slice(var0, date0, date1).values
-        var1 = general_utils.data_array_time_slice(var1, date0, date1).values
-        diff = var0 - var1
-        return xr.DataArray(diff, dims="time", name="error", coords={"time": self.dataset.time})
+    def difference(self, other, absolute_diff=True, square_diff=True):
+
+        differenced = self.dataset - other.dataset
+        diff_vars = list(differenced.keys())
+        save_coords = list(self.dataset.coords.keys())
+
+        for vv in diff_vars:
+            differenced = differenced.rename({vv: "diff_" + vv})
+
+        if absolute_diff:
+            abs_tmp = uf.fabs(differenced)
+            diff_vars = list(abs_tmp.keys())
+            for vv in diff_vars:
+                abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
+        else:
+            abs_tmp = xr.Dataset()
+
+        if square_diff:
+            sq_tmp = uf.square(differenced)
+            diff_vars = list(sq_tmp.keys())
+            for vv in diff_vars:
+                sq_tmp = sq_tmp.rename({vv: "square_" + vv})
+        else:
+            sq_tmp = xr.Dataset()
+
+        differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
+
+        return_differenced = TidegaugeMultiple()
+        return_differenced.dataset = differenced
+
+        return return_differenced
 
     def absolute_error(self, var_str0, var_str1, date0=None, date1=None):
         """Absolute difference two variables defined by var_str0 and var_str1
@@ -1292,3 +1187,6 @@ class Tidegauge(Timeseries):
         new_object.dataset = new_dataset
 
         return new_object
+
+    def demean_timeseries(self):
+        return self.dataset - self.dataset.mean(dim="t_dim")
