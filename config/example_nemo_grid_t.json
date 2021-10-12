@@ -1,7 +1,7 @@
 {
 	"type": "gridded",
 	"dimensionality": 3,
-	"chunks": {"time_counter":2},
+	"chunks": {"time_counter":10},
 	"grid_ref": {
 		"t-grid": [
 			"glamt",
