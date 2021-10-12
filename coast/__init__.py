@@ -23,3 +23,7 @@ from .timeseries import Timeseries
 from .tidegauge import Tidegauge
 from .tidegauge_multiple import TidegaugeMultiple
 from .config_parser import ConfigParser
+
+# Set default for logging level when coast is imported
+import logging
+logging_util.setup_logging(level=logging.CRITICAL)
