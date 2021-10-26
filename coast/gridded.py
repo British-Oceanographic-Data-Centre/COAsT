@@ -382,7 +382,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, eos="EOS10"):
+    def construct_density(self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False):
 
         """
             Constructs the in-situ density using the salinity, temperture and
@@ -439,28 +439,78 @@ class Gridded(Coast):  # TODO Complete this docstring
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
             # Absolute Pressure
-            pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
-            # Absolute Salinity
-            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
-            sal_absolute = np.ma.masked_less(sal_absolute, 0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
-            # In-situ density
-            density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+            if pot_dens:
+             pressure_absolute = 0. #calculate potential density
+            else: 
+             pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
+            if not rhobar: #calculate full depth
+                # Absolute Salinity
+                if not  CT_AS: # abs salinity not provided 
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided 
+                    sal_absolute = np.ma.masked_invalid(sal)                    
+                sal_absolute = np.ma.masked_less(sal_absolute, 0)
+                # Conservative Temperature
+                if not  CT_AS: # conservative temp not provided               
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else: # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+                    
+                # In-situ density
+               
+                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                new_var_name="density"
+                coords = {
+                    "depth_0": (("z_dim", "y_dim", "x_dim"), self.dataset.depth_0.values),
+                    "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
+                    "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
+                }
+                dims = ["z_dim", "y_dim", "x_dim"]                
 
-            coords = {
-                "depth_0": (("z_dim", "y_dim", "x_dim"), self.dataset.depth_0.values),
-                "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
-                "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
-            }
-            dims = ["z_dim", "y_dim", "x_dim"]
-            attributes = {"units": "kg / m^3", "standard name": "In-situ density"}
+            else: #calculate with depth integrated T S
+                # prepare coordinate variables
+                if np.size(Zd_mask)==0:
+                 DZ= self.dataset.e3_0.to_masked_array()
+                else:
+                 DZ= self.dataset.e3_0.to_masked_array() * Zd_mask
+                DP=np.sum(DZ,axis = 0)
+                #DP=np.repeat(DP[np.newaxis,:,:],shape_ds[1],axis=0)
+                
+                DZ = np.repeat(DZ[np.newaxis,:,:,:],shape_ds[0], axis=0)
+                DP = np.repeat(DP[np.newaxis,:,:],shape_ds[0], axis=0)
 
+                # Absolute Salinity
+                if not  CT_AS: # abs salinity not provided                                
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:    # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+                
+                sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0)*DZ,axis=1)/DP
+
+                # Conservative Temperature
+                if not  CT_AS: # Conservative temperature not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else: # conservative temp provided 
+                    temp_conservative = np.ma.masked_invalid(temp)
+                 
+                temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0)*DZ,axis=1)/DP
+                # In-situ density
+                
+                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+
+                new_var_name="density_bar"
+                coords = {
+                    "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
+                    "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
+                }
+                dims = ["y_dim", "x_dim"]            
+                
+            attributes = {"units": "kg / m^3", "standard name": "In-situ density (from depth integrated T and S)"}
             if shape_ds[0] != 1:
                 coords["time"] = (("t_dim"), self.dataset.time.values)
                 dims.insert(0, "t_dim")
 
-            self.dataset["density"] = xr.DataArray(np.squeeze(density), coords=coords, dims=dims, attrs=attributes)
+            self.dataset[new_var_name] = xr.DataArray(np.squeeze(density), coords=coords, dims=dims, attrs=attributes)
 
         except AttributeError as err:
             error(err)
