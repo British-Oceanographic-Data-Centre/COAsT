@@ -29,7 +29,7 @@ PACKAGE = SimpleNamespace(
             "dask>=2",
             "dask[complete]>=2",
             "xarray>=0.19",
-            "matplotlib==3.2.1",
+            "matplotlib>=3.4.3",
             "netCDF4>=1",
             "scipy>=1",
             "gsw==3.3.1",
