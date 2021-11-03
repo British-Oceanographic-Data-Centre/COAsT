@@ -6,7 +6,7 @@ from types import SimpleNamespace
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "0.5.0",
+        "version": "1.2.7",
         "description": "This is the Coast Ocean Assessment Tool",
         "url": "https://www.bodc.ac.uk",
         "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
@@ -28,11 +28,12 @@ PACKAGE = SimpleNamespace(
             "numpy>=1.16",
             "dask>=2",
             "dask[complete]>=2",
-            "xarray~=0.19.0",
-            "matplotlib==3.2.1",
+            "xarray>=0.19",
+            "matplotlib>=3.4.3",
             "netCDF4>=1",
             "scipy>=1",
             "gsw==3.3.1",
+            "utide>=0.2",
             "scikit-learn>=0.2",
             "scikit-image>=0.15",
         ],

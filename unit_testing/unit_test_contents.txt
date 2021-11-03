@@ -4,17 +4,17 @@
 0. Files, directories for unit testing
 
 1. Loading & Initialisation
-    a. Loading NEMO data file
+    a. Loading Gridded NEMO data file
     b. Load data from existing dataset
-    c. Set NEMO variable name
-    d. Set NEMO grid attribute - dimension names
+    c. Set Gridded variable name
+    d. Set Gridded grid attribute - dimension names
     e. Load only Domain
     f. Calculate depth_0 for t,u,v,w,f grids
     g. Load a subregion dataset with a full domain (AMM7)
     h. Load and combine multiple files.
-    i. Load and combine harmonics 
-    j. Convert harmonics to a/g and back 
-    k. Compute e3[t,u,v,f,w] from SSH 
+    i. Load and combine harmonics
+    j. Convert harmonics to a/g and back
+    k. Compute e3[t,u,v,f,w] from SSH
 
 2. General Utility Methods in COAsT
     a. Copying a COAsT object
@@ -24,7 +24,7 @@
 
 3. Diagnostic Methods
     a. Compute vertical spatial derivative
-    b. Construct density method inside NEMO class
+    b. Construct density method inside Gridded class
     c. Construct pycnocline depth and thickness
     d. Plot pycnocline depth
 
@@ -32,15 +32,15 @@
     a. Determine and extract transect indices
     b. Transport velocity and depth calculations
     c. Transport and velocity plotting
-    d. Contrust density on z-levels along the transect. Compare with item 3b.
+    d. Construct density on z-levels along the transect. Compare with item 3b.
     e. Geostrophic velocity & transport calculations
 
 5. Object Manipulation (e.g. indexing, subsetting)
     a. Subsetting single variable
     b. Indices by distance
     c. Find nearest xy indices
-    d. NEMO.interpolate_in_space()
-    e. NEMO.interpolate_in_time()
+    d. Gridded.interpolate_in_space()
+    e. Gridded.interpolate_in_time()
 
 6. Altimetry Methods
     a. Load example data
@@ -77,22 +77,25 @@
 9. EOF methods
     a. Compute EOFs, projections and variance
     b. Compute HEOFs, projections and variance
-    
+
 10. Profile Methods
-    a. Load EN4 data
-    b. Plot locations on map
-    c. Plot TS diagram
-    d. Plot temperature profile
+    a. Load En4 data
+    b. Process En4 data
+    c. Gridded obs_operator
+    d. Vertical Interpolation
+    e. Profile differencing
+    f. Regional averaging
+    g. Surface and Bottm averaging.
 
 11. Plotting Utility
     a. scatter_with_fit()
     b. create_geo_axes()
     c. determine_colorbar_extension()
     d. determine_clim_by_standard_deviation()
-    
+
 12. Stats Utility
     a. find_maxima()
-    
+
 13. MASK_MASKER
     a. Create mask by indices
     b. Create mask by lonlat

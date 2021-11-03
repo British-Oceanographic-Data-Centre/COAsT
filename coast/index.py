@@ -1,12 +1,12 @@
 """Index class."""
 from dask import array
 from dask.distributed import Client
-from .config import config_parser
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 from ast import literal_eval
 from .coast import Coast
+from .config_parser import ConfigParser
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
@@ -30,7 +30,7 @@ class Indexed(Coast):
         self.keep_all_vars = False
 
         if config:
-            self.json_config = config_parser.ConfigParser(config)
+            self.json_config = ConfigParser(config)
             self.chunks = self.json_config.config.chunks
             self.dim_mapping = self.json_config.config.dataset.dimension_map
             self.var_mapping = self.json_config.config.dataset.variable_map

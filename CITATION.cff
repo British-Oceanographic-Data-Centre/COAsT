@@ -1,0 +1,37 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Polton
+    given-names: Jeff A.
+    orcid: https://orcid.org/0000-0003-0131-5250
+
+  - family-names: Byrne
+    given-names: David
+
+  - family-names: Wise
+    given-names: Anthony
+
+  - family-names: Holt
+    given-names: Jason
+
+  - family-names: Gardner
+    given-names: Thomas
+
+  - family-names: Cazaly
+    given-names: Matthew
+
+  - family-names: Hearn
+    given-names: Malcolm
+
+  - family-names: Jennings
+    given-names: Rob
+
+  - family-names: Lượng
+    given-names: Quyen
+
+  - family-names: Lock
+    given-names: Stephen
+
+title: British-Oceanographic-Data-Centre/COAsT: v1.2.7
+version: v1.2.7
+date-released: 2021-11-02
