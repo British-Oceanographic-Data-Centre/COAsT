@@ -235,7 +235,7 @@ plt.legend(lines, labels, loc="lower right")
 title_str = (
     sci_nwes_t.dataset["time"].mean(dim="t_dim").dt.strftime("%b %Y: ").values
     + sci_nwes_t.dataset.pea.attrs['standard name']
-    + " ("
+    + " log_{10}("
     + sci_nwes_t.dataset.pea.attrs['units']
     + ")"
 )
@@ -256,7 +256,30 @@ try:
         sci_t.dataset["e3t"] = sci_t.dataset.e3_0.expand_dims( dim=sci_t.dataset["t_dim"].sizes)
 
     pea_aw = coast.pot_energy_anom( sci_t )
-    plt.pcolormesh( pea_aw[-1,:,:]); plt.colorbar(); plt.show()
-    plt.pcolormesh( np.log10(pea_aw[-1,:,:])); plt.clim([-1,3]); plt.colorbar(); plt.show()
+
 except:
     print("Probably did not have the seawater package?")
+
+
+#%% Plot different methods differences to be understood
+# Note that there some differences to be understood
+  
+    fig = plt.figure()
+    plt.rcParams["figure.figsize"] = (8.0, 8.0)
+
+    ax = fig.add_subplot(211)
+    #plt.pcolormesh( pea_aw[-1,:,:]); plt.colorbar(); plt.show()
+    plt.pcolormesh( np.log10(pea_aw[-1,:,:]))
+    plt.clim([-1,3])
+    plt.colorbar()
+    plt.title('anwise log(PEA)')
+
+    ax = fig.add_subplot(212)
+    #plt.pcolormesh( pea_aw[-1,:,:]); plt.colorbar(); plt.show()
+    plt.pcolormesh( np.log10(sci_nwes_t.dataset.pea[-1,:,:]))
+    plt.clim([-1,3])
+    plt.colorbar()
+    plt.title('jelt log(PEA)')
+    plt.show()
+
+
