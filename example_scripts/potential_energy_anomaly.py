@@ -70,6 +70,17 @@ except:
 print("* Loaded ", config, " data")
 
 #################################################
+#%% subset of data and domain ##
+#################################################
+# Pick out a North Sea subdomain
+
+#print("* Extract North Sea subdomain")
+#ind_sci = sci_t.subset_indices([51, -4], [62, 15])
+#sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
+print("* Extract whole domain")
+sci_nwes_t = sci_t
+
+#################################################
 #%% Sort out bathymetry
 try:
     if sci_nwes_t.dataset['bathymetry'] is None:
@@ -83,16 +94,6 @@ except:
         print('Problem sorting out bathymetry')
 
 #################################################
-#%% subset of data and domain ##
-#################################################
-# Pick out a North Sea subdomain
-
-#print("* Extract North Sea subdomain")
-#ind_sci = sci_t.subset_indices([51, -4], [62, 15])
-#sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
-print("* Extract whole domain")
-sci_nwes_t = sci_t
-
 #%% Apply masks to temperature and salinity
 if config == "AMM60":
     sci_nwes_t.dataset["temperature"] = sci_nwes_t.dataset.temperature.where(
