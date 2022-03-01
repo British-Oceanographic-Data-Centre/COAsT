@@ -11,7 +11,7 @@ from typing import Union
 from pathlib import Path
 import xarray.ufuncs as uf
 import pandas as pd
-
+from scipy import interpolate
 
 class Profile(Indexed):
     """
@@ -402,16 +402,26 @@ class Profile(Indexed):
 
         ds = self.dataset
         n_prof = ds.dims["profile"]
-
+         
+        # Get variable names on z_dim dimension
+        zvars = []
+        notzvars = []
+        for items in ds.keys():
+            if "z_dim" in ds[items].dims:
+                zvars.append(items)
+            else:
+                notzvars.append(items)
+        
         # Now loop over profiles and interpolate model onto obs.
         count_ii = 0
         for pp in range(0, n_prof):
-
+            print('{0} / {1}'.format(pp, n_prof))
+            
             # Select the current profile
-            profile = ds.isel(profile=pp).rename({"depth": "z_dim"})
-            profile = profile.dropna("z_dim")
-            profile = profile.set_coords("z_dim")
-
+            profile = ds.isel(profile=pp)#.rename({"depth": "z_dim"})
+            #profile = profile.dropna("z_dim")
+            #profile = profile.set_coords("depth")
+            
             # Extract new depths for this profile
             if repeated_depth:
                 new_depth_prof = new_depth
@@ -419,10 +429,21 @@ class Profile(Indexed):
                 new_depth_prof = new_depth.isel(profile=pp).values
 
             # Do the interpolation and rename dimensions/vars back to normal
-            interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
-
-            interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
-            interpolated_tmp = interpolated_tmp.reset_coords(["depth"])
+            interpolated_tmp = profile[notzvars]
+            
+            for vv in zvars:
+                if vv == "depth":
+                    continue
+                interpx = profile.depth.values
+                interpy = profile[vv].values
+                interp_func = interpolate.interp1d(interpx, interpy, bounds_error=False, fill_value=np.nan)
+                vv_interp = interp_func(new_depth_prof)
+                interpolated_tmp[vv] = ("z_dim", vv_interp)
+                
+            #interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
+          
+            #interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
+            #interpolated_tmp = interpolated_tmp.reset_coords(["depth"])
 
             # If not first iteration, concat this interpolated profile
             if count_ii == 0:
@@ -432,6 +453,7 @@ class Profile(Indexed):
             count_ii = count_ii + 1
 
         # Create and format output dataset
+        interpolated["depth"] = (["z_dim"], new_depth_prof)
         interpolated = interpolated.set_coords(["depth"])
         return_interpolated = Profile()
         return_interpolated.dataset = interpolated
