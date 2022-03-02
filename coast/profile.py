@@ -436,7 +436,8 @@ class Profile(Indexed):
                     continue
                 interpx = profile.depth.values
                 interpy = profile[vv].values
-                interp_func = interpolate.interp1d(interpx, interpy, bounds_error=False, fill_value=np.nan)
+                interp_func = interpolate.interp1d(interpx, interpy, bounds_error=False, 
+                                                   kind=interp_method, fill_value=np.nan)
                 vv_interp = interp_func(new_depth_prof)
                 interpolated_tmp[vv] = ("z_dim", vv_interp)
                 
