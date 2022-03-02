@@ -139,3 +139,43 @@ class MaskMaker:
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~xr.ufuncs.isnan(bath))
         return mask
+
+    @classmethod
+    def region_def_south_north_sea(longitude, latitude, bath):
+        vertices_lon = [-.67, -.67, 9, 9, 7.57, 7.57]
+        vertices_lat = [54.08, 51, 51, 56, 56, 54.08]
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
+                                      longitude, latitude,
+                                      vertices_lon, vertices_lat)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
+        return mask
+    
+    @classmethod
+    def region_def_off_shelf(longitude, latitude, bath):
+        vertices_lon = [10, 10, -5, -10, 0, 0, -20, -20]
+        vertices_lat = [65, 60, 59, 52.5, 47.5, 45, 40, 63]
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
+                                      longitude, latitude,
+                                      vertices_lon, vertices_lat)
+        mask = mask * (bath>200) * (bath>0) * (~xr.ufuncs.isnan(bath))
+        return mask
+
+    @classmethod
+    def region_def_irish_sea(longitude, latitude, bath):
+        vertices_lon = [-5, -7.6, -7.5, -4.1, 0, -2.6]
+        vertices_lat = [56.4, 55, 52, 50.7, 51.5, 55.3]
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
+                                      longitude, latitude,
+                                      vertices_lon, vertices_lat)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
+        return mask
+
+    @classmethod
+    def region_def_kattegat(longitude, latitude, bath):
+        vertices_lon = [9, 9, 13, 13]
+        vertices_lat = [60, 52.5, 52.5, 60]
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape),
+                                      longitude, latitude,
+                                      vertices_lon, vertices_lat)
+        mask = mask * (bath<200) * (bath>0) * (~xr.ufuncs.isnan(bath))
+        return mask
