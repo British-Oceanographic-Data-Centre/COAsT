@@ -407,6 +407,7 @@ class Profile(Indexed):
         zvars = []
         notzvars = []
         for items in ds.keys():
+            print(items)
             if "z_dim" in ds[items].dims:
                 zvars.append(items)
             else:
@@ -434,12 +435,15 @@ class Profile(Indexed):
             for vv in zvars:
                 if vv == "depth":
                     continue
+                print(vv)
                 interpx = profile.depth.values
                 interpy = profile[vv].values
                 interp_func = interpolate.interp1d(interpx, interpy, bounds_error=False, 
                                                    kind=interp_method, fill_value=np.nan)
                 vv_interp = interp_func(new_depth_prof)
                 interpolated_tmp[vv] = ("z_dim", vv_interp)
+                
+            interpolated_tmp["depth"] = ("z_dim", new_depth_prof)
                 
             #interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
           
@@ -454,7 +458,6 @@ class Profile(Indexed):
             count_ii = count_ii + 1
 
         # Create and format output dataset
-        interpolated["depth"] = (["z_dim"], new_depth_prof)
         interpolated = interpolated.set_coords(["depth"])
         return_interpolated = Profile()
         return_interpolated.dataset = interpolated
