@@ -2,7 +2,7 @@
 from .index import Indexed
 import numpy as np
 import xarray as xr
-from . import general_utils, plot_util
+from . import general_utils, plot_util, Gridded
 import matplotlib.pyplot as plt
 import glob
 import datetime
@@ -772,3 +772,85 @@ class Profile(Indexed):
         qc_integers_both = list(set(qc_integers_both))
 
         return qc_integers_tem, qc_integers_sal, qc_integers_both
+    
+    def average_into_grid_boxes(self, grid_lon, grid_lat, min_datapoints = 1,
+                                season = None, var_modifier = ''):
+        """
+        Takes the contents of this Profile() object and averages each variables
+        into geographical grid boxes. At the moment, this expects there to be
+        no vertical dimension (z_dim), so make sure to slice the data out you
+        want first using isel, Profile.depth_means() or Profile.bottom_means().
+
+        INPUTS
+         grid_lon (array)     : 1d array of longitudes
+         grid_lat (array)     : 1d array of latitude
+         min_datapoints (int) : Minimum N of datapoints at which to average
+                                into box. Will return Nan in boxes with smaller N.
+                                NOTE this routine will also return the variable
+                                grid_N, which tells you how many points were
+                                averaged into each box.
+
+        OUTPUTS
+         COAsT Gridded object containing averaged data.
+        """
+        
+        # Get the dataset in this object
+        ds = self.dataset
+        
+        # Get a list of variables in this dataset
+        vars_in = [items for items in ds.keys()]
+        vars_out = [vv + '{0}'.format(var_modifier) for vv in vars_in]
+        
+        # Get output dimensions and create 2D longitude and latitude arrays
+        n_r = len(grid_lat)
+        n_c = len(grid_lon)
+        lon2, lat2 = np.meshgrid(grid_lon, grid_lat)
+        
+        # Create empty output dataset
+        ds_out = xr.Dataset( coords = dict(
+                                longitude = (['y_dim','x_dim'], lon2),
+                                latitude = (['y_dim', 'x_dim'], lat2)))
+        
+        # Loop over variables and create empty placeholders
+        for vv in vars_out:
+            ds_out[vv] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
+            
+        # Grid_N is the count ineach box
+        ds_out['grid_N{0}'.format(var_modifier)] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
+        
+        # Extract season if needed
+        if season is not None:
+            season_array = general_utils.determine_season(ds.time)
+            s_ind = season_array == season
+            ds = ds.isel(profile=s_ind)
+        
+        # Loop over every box (slow??)
+        for rr in range(n_r-1):
+            for cc in range(n_c-1):
+                
+                # Get box bounds for easier understanding
+                lon_min = grid_lon[cc]
+                lon_max = grid_lon[cc+1]
+                lat_min = grid_lat[rr]
+                lat_max = grid_lat[rr+1]
+                
+                # Get profiles inside this box
+                condition1 = np.logical_and(ds.longitude >= lon_min, ds.longitude < lon_max) 
+                condition2 = np.logical_and(ds.latitude >= lat_min, ds.latitude < lat_max)
+                prof_ind = np.logical_and(condition1, condition2)
+                
+                # Only average if N > min_datapoints
+                if np.sum(prof_ind) > min_datapoints:
+                    for vv in range(len(vars_in)):
+                        vv_in = vars_in[vv]
+                        vv_out = vars_out[vv]
+                        ds_out[vv_out][rr,cc] = np.nanmean( ds[vv_in].isel(profile=prof_ind))
+                
+                # Store N in own variable
+                ds_out['grid_N{0}'.format(var_modifier)][rr,cc] = np.sum(prof_ind)
+
+        # Create and populate output dataset
+        gridded_out = Gridded()
+        gridded_out.dataset = ds_out
+
+        return gridded_out

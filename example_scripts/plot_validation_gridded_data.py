@@ -22,14 +22,16 @@ run_name = "test"
 
 # List of analysis output files. Profiles from each will be plotted
 # on each axis of the plot
-fn_list = ["/Users/dbyrne/transfer/surface_data_test.nc",
-           "/Users/dbyrne/transfer/surface_data_test.nc",]
+fn_list = ["/Users/dbyrne/transfer/surface_data_gridded_test.nc",
+           "/Users/dbyrne/transfer/surface_data_gridded_test.nc",]
 
 # Filename for the output
-fn_out = "/Users/dbyrne/transfer/surface_errors_{0}.png".format(run_name)
+fn_out = "/Users/dbyrne/transfer/surface_gridded_errors_{0}.png".format(run_name)
 
 #%% General Plot Settings
 var_name = "diff_temperature"     # Variable name in analysis file to plot
+                                  # If you used var modified to make gridded data
+                                  # then this is where to select season etc.
 save_plot = False
 
 # Subplot axes settings
@@ -55,10 +57,6 @@ title_fontweight = "bold"                  # Fontweight to use for title
 dataset_names = ["CO9p0", "CO9p0", "CO9p0"]         # Names to use for labelling plots
 subtitle_fontsize = 11                     # Fontsize for dataset subtitles
 subtitle_fontweight = "normal"             # Fontweight for dataset subtitles
-
-# Season opts
-select_season = True    # Only plot data from specified season
-season_str = 'DJF'      # DJF, MAM, JJA or SON
 
 
 #%% Read and plotdata
@@ -87,15 +85,10 @@ for ii in range(n_ax):
     ds = ds_list[ii]
     
     # Select season if required
-    if select_season:
-        seasons = coast.general_utils.determine_season(ds.time)
-        s_ind = seasons == season_str
-        ds = ds.isel(profile = s_ind)
         
     # Scatter and set title
-    sc = a_flat[ii].scatter(ds.longitude, ds.latitude, c=ds, s=marker_size, 
-                       cmap = cmap, vmin = clim[0], vmax = clim[1],
-                       linewidths=0)
+    pc = a_flat[ii].pcolormesh(ds.longitude, ds.latitude, ds, cmap = cmap, 
+                               vmin = clim[0], vmax = clim[1],)
     a_flat[ii].set_title(dataset_names[ii], fontsize = subtitle_fontsize,
                          fontweight = subtitle_fontweight)
     
@@ -126,7 +119,7 @@ elif 'min' in extend_cbar:
 else:
     extend = 'neither'
 cbar_ax = f.add_axes([(1 - fig_pad[2] + fig_pad[2]*0.15), .15, .025, .7])
-f.colorbar(sc, cax = cbar_ax, extend=extend)
+f.colorbar(pc, cax = cbar_ax, extend=extend)
 
 # Save plot maybe
 if save_plot: 
