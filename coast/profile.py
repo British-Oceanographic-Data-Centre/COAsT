@@ -789,6 +789,11 @@ class Profile(Indexed):
                                 NOTE this routine will also return the variable
                                 grid_N, which tells you how many points were
                                 averaged into each box.
+        season (str)          : 'DJF','MAM','JJA' or 'SON'. Will only average
+                                data from specified season.
+        var_modifier (str)    : Suffix to add to all averaged variables in the
+                                output dataset. For example you may want to add
+                                _DJF to all vars if restricting only to winter.
 
         OUTPUTS
          COAsT Gridded object containing averaged data.
@@ -802,9 +807,11 @@ class Profile(Indexed):
         vars_out = [vv + '{0}'.format(var_modifier) for vv in vars_in]
         
         # Get output dimensions and create 2D longitude and latitude arrays
-        n_r = len(grid_lat)
-        n_c = len(grid_lon)
-        lon2, lat2 = np.meshgrid(grid_lon, grid_lat)
+        n_r = len(grid_lat) - 1
+        n_c = len(grid_lon) - 1
+        lon_mids = (grid_lon[1:] + grid_lon[:-1])/2
+        lat_mids = (grid_lat[1:] + grid_lat[:-1])/2
+        lon2, lat2 = np.meshgrid(lon_mids, lat_mids)
         
         # Create empty output dataset
         ds_out = xr.Dataset( coords = dict(
