@@ -3,19 +3,29 @@ import numpy as np
 import sklearn.neighbors as nb
 import pandas as pd
 
+
 def determine_season(t):
-    '''
-    Determine season (or array of seasons) from a time (Datetime or xarray) 
+    """
+    Determine season (or array of seasons) from a time (Datetime or xarray)
     object. Put in an array of times, get out an array of seasons.
-    '''
-    season_dict = {12:'DJF', 1:'DJF', 2:'DJF',
-                   3:'MAM', 4:'MAM', 5:'MAM',
-                   6:'JJA', 7:'JJA', 8:'JJA',
-                   9:'SON', 10:'SON', 11:'SON'}
+    """
+    season_dict = {
+        12: "DJF",
+        1: "DJF",
+        2: "DJF",
+        3: "MAM",
+        4: "MAM",
+        5: "MAM",
+        6: "JJA",
+        7: "JJA",
+        8: "JJA",
+        9: "SON",
+        10: "SON",
+        11: "SON",
+    }
     pd_month = pd.to_datetime(t).month
     pd_season = [season_dict[pp] for pp in pd_month]
     return np.array(pd_season)
-    
 
 
 def subset_indices_by_distance_balltree(longitude, latitude, centre_lon, centre_lat, radius: float, mask=None):
@@ -141,7 +151,7 @@ def cartesian_to_polar(x, y, degrees=True):
     # Conversion of cartesian to polar coordinate system
     # Output theta is in radians
     """
-    r = np.sqrt(x ** 2 + y ** 2)
+    r = np.sqrt(x**2 + y**2)
     theta = np.arctan2(y, x)
     if degrees:
         theta = np.rad2deg(theta)
