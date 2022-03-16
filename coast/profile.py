@@ -833,7 +833,6 @@ class Profile(Indexed):
         # Loop over every box (slow??)
         for rr in range(n_r - 1):
             for cc in range(n_c - 1):
-
                 # Get box bounds for easier understanding
                 lon_min = grid_lon[cc]
                 lon_max = grid_lon[cc + 1]
@@ -850,7 +849,8 @@ class Profile(Indexed):
                     for vv in range(len(vars_in)):
                         vv_in = vars_in[vv]
                         vv_out = vars_out[vv]
-                        ds_out[vv_out][rr, cc] = np.nanmean(ds[vv_in].isel(profile=prof_ind))
+                        ds_out[vv_out][rr, cc] = ds[vv_in].isel(profile=prof_ind).mean()
+                        #ds_out[vv_out][rr, cc] = np.nanmean(ds[vv_in].isel(profile=prof_ind))
 
                 # Store N in own variable
                 ds_out["grid_N{0}".format(var_modifier)][rr, cc] = np.sum(prof_ind)
