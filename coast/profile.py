@@ -821,7 +821,6 @@ class Profile(Indexed):
         # Loop over variables and create empty placeholders
         for vv in vars_out:
             ds_out[vv] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
-            
         # Grid_N is the count ineach box
         ds_out['grid_N{0}'.format(var_modifier)] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
         
