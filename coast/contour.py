@@ -223,8 +223,8 @@ class Contour:
             x_ind = np.asarray(x_ind)
             # When replacing diagonal segments in the contour, pick the path that is
             # closest to the contour isobath depth
-            option1 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
-            option0 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
+            option1 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
+            option0 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
             add_new_y_point = xr.where(option1 <= option0, 1, 0)
 
             spacing = np.abs(np.diff(y_ind)) + np.abs(np.diff(x_ind))

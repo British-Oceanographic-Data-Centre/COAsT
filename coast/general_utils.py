@@ -165,18 +165,18 @@ def calculate_haversine_distance(lon1, lat1, lon2, lat2):
     """
 
     # Convert to radians for calculations
-    lon1 = np.ufuncs.deg2rad(lon1)
-    lat1 = np.ufuncs.deg2rad(lat1)
-    lon2 = np.ufuncs.deg2rad(lon2)
-    lat2 = np.ufuncs.deg2rad(lat2)
+    lon1 = np.deg2rad(lon1)
+    lat1 = np.deg2rad(lat1)
+    lon2 = np.deg2rad(lon2)
+    lat2 = np.deg2rad(lat2)
 
     # Latitude and longitude differences
     dlat = (lat2 - lat1) / 2
     dlon = (lon2 - lon1) / 2
 
     # Haversine function.
-    distance = np.ufuncs.sin(dlat) ** 2 + np.ufuncs.cos(lat1) * np.ufuncs.cos(lat2) * np.ufuncs.sin(dlon) ** 2
-    distance = 2 * 6371.007176 * np.ufuncs.arcsin(np.ufuncs.sqrt(distance))
+    distance = np.sin(dlat) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon) ** 2
+    distance = 2 * 6371.007176 * np.arcsin(np.sqrt(distance))
 
     return distance
 
