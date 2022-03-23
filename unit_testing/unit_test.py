@@ -2065,10 +2065,9 @@ try:
     xesmf_ready = xs = coast.xesmf_convert(sci)
     check_grid = xesmf_ready.input_grid
     check_data = xesmf_ready.input_data
-    check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values )
-    check2 = np.array_equal(check_data.temperature[0,0].values, 
-                            sci.dataset.temperature[0,0].values, equal_nan=True)
-    
+    check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values)
+    check2 = np.array_equal(check_data.temperature[0, 0].values, sci.dataset.temperature[0, 0].values, equal_nan=True)
+
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - xesmf_convert with single gridded obj")
     else:
@@ -2078,7 +2077,7 @@ except AssertionError:
     print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 #%%
 # -----------------------------------------------------------------------------#
 # ( 15b ) Passing two gridded object                                          #
@@ -2091,9 +2090,9 @@ try:
     xesmf_ready = xs = coast.xesmf_convert(sci, sci)
     check_grid0 = xesmf_ready.input_grid
     check_grid1 = xesmf_ready.input_data
-    check1 = np.array_equal(check_grid0.lat.values, sci.dataset.latitude.values )
-    check2 = np.array_equal(check_grid1.lat.values, sci.dataset.latitude.values )
-    
+    check1 = np.array_equal(check_grid0.lat.values, sci.dataset.latitude.values)
+    check2 = np.array_equal(check_grid1.lat.values, sci.dataset.latitude.values)
+
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - xesmf_convert with single gridded obj")
     else:
@@ -2103,7 +2102,7 @@ except AssertionError:
     print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
-    
+
 #%%
 # -----------------------------------------------------------------------------#
 # ( 15c ) Convert back to gridded object                                       #
@@ -2118,9 +2117,8 @@ try:
     check_grid1 = xesmf_ready.output_grid
     gridded_again = xesmf_ready.to_gridded(xesmf_ready.input_data)
     check1 = np.array_equal(sci.dataset.latitude, gridded_again.dataset.latitude)
-    check2 = np.array_equal(sci.dataset.temperature[0,0], gridded_again.dataset.temperature[0,0],
-                            equal_nan=True)
-    
+    check2 = np.array_equal(sci.dataset.temperature[0, 0], gridded_again.dataset.temperature[0, 0], equal_nan=True)
+
     if check1 and check2:
         print(str(sec) + chr(subsec) + " OK - xesmf_convert to_gridded()")
     else:
