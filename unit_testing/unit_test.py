@@ -1662,7 +1662,7 @@ try:
 
     check1 = type(nemo_profiles) == coast.profile.Profile
     check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
-    check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+    check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 151.4443554515237)
 
     if check1 and check2 and check3:
         print(str(sec) + chr(subsec) + " OK")
