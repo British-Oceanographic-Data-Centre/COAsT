@@ -889,4 +889,3 @@ class Gridded(Coast):  # TODO Complete this docstring
             print("Unknown direction setting. Choose cart2polar or polar2cart")
 
         return
-        
