@@ -70,10 +70,10 @@ if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
 
 dn_fig = "unit_testing/figures/"
-#BGC for nemo
+# BGC for nemo
 fn_nemo_dat = "coast_example_SEAsia_BGC_1990.nc"
-fn_nemo_dom_BGC = "coast_example_domain_SEAsia.nc" 
-#BGC for SEAsia
+fn_nemo_dom_BGC = "coast_example_domain_SEAsia.nc"
+# BGC for SEAsia
 fn_nemo_config_BGC_grid = path.join("./config", "example_nemo_BGC.json")
 
 sec = 1
@@ -92,8 +92,10 @@ subsec = 96  # Code for '`' (1 below 'a')
 subsec = subsec + 1
 
 try:
-    sci_BGC = coast.Gridded(path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom_BGC), config=fn_nemo_config_BGC_grid)
- 
+    sci_BGC = coast.Gridded(
+        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom_BGC), config=fn_nemo_config_BGC_grid
+    )
+
     # Test the data has loaded
     sci_BGC_attrs_ref = dict(
         [
@@ -105,7 +107,7 @@ try:
             ("uuid", "701bb916-558d-4ee8-9cf6-89454c7bc99f"),
         ]
     )
-   
+
     # checking is LHS is a subset of RHS
     if sci_BGC_attrs_ref.items() <= sci_BGC.dataset.attrs.items():
         print(str(sec) + chr(subsec) + " OK - nemo BGC data loaded: " + fn_nemo_dat)
@@ -159,7 +161,7 @@ except:
 # %% ( 1d ) BGC Set Gridded grid attributes - dimension names                           #
 #                                                                             #
 
-subsec = subsec + 1                                                                   #
+subsec = subsec + 1  #
 
 try:
     if sci_BGC.dataset.DIC.dims == ("t_dim", "z_dim", "y_dim", "x_dim"):
@@ -179,7 +181,7 @@ subsec = subsec + 1
 pass_test = False
 nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom_BGC, config=fn_nemo_config_BGC_grid)
 
-if nemo_f.dataset._coord_names == {'depth_0', 'latitude', 'longitude'}:
+if nemo_f.dataset._coord_names == {"depth_0", "latitude", "longitude"}:
     var_name_list = []
     for var_name in nemo_f.dataset.data_vars:
         var_name_list.append(var_name)
@@ -198,13 +200,19 @@ else:
 subsec = subsec + 1
 try:
     fig = plt.figure()
-    plt.pcolormesh(sci_BGC.dataset.longitude, sci_BGC.dataset.latitude, sci_BGC.dataset.DIC.isel(t_dim=0).isel(z_dim=0), 
-                       cmap='RdYlBu_r', vmin = 1600, vmax = 2080) 
+    plt.pcolormesh(
+        sci_BGC.dataset.longitude,
+        sci_BGC.dataset.latitude,
+        sci_BGC.dataset.DIC.isel(t_dim=0).isel(z_dim=0),
+        cmap="RdYlBu_r",
+        vmin=1600,
+        vmax=2080,
+    )
     plt.colorbar()
-    plt.title('DIC, mmol/m^3')
+    plt.title("DIC, mmol/m^3")
     plt.xlabel("longitude")
     plt.ylabel("latitude")
-    plt.show() 
+    plt.show()
     fig.savefig("SEAsia_DIC_surface.png")
     print(str(sec) + chr(subsec) + " OK - DIC at surface plot saved")
 except:
