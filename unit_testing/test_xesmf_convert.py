@@ -30,8 +30,8 @@ class test_xesmf_convert(unittest.TestCase):
             check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values )
             check2 = np.array_equal(check_data.temperature[0,0].values, 
                                     sci.dataset.temperature[0,0].values, equal_nan=True)
-            self.assertTrue(check1, "Yes")
-            self.assertTrue(check2, "Yes")
+            self.assertTrue(check1, "Test")
+            self.assertTrue(check2, "Test")
         
         # Convert for two files
         with self.subTest("xesmf_convert for two gridded obj"):
@@ -41,8 +41,8 @@ class test_xesmf_convert(unittest.TestCase):
             check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values )
             check2 = np.array_equal(check_data.temperature[0,0].values, 
                                     sci.dataset.temperature[0,0].values, equal_nan=True)
-            self.assertTrue(check1, "Yes")
-            self.assertTrue(check2, "Yes")
+            self.assertTrue(check1, "Test")
+            self.assertTrue(check2, "Test")
             
     # OR putting subtests in their own routines::
     def test_xesmf_convert_for_one_object(self):
@@ -57,8 +57,9 @@ class test_xesmf_convert(unittest.TestCase):
         check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values )
         check2 = np.array_equal(check_data.temperature[0,0].values, 
                                 sci.dataset.temperature[0,0].values, equal_nan=True)
-        self.assertTrue(check1, "Yes")
-        self.assertTrue(check2, "Yes")
+        check1 = False
+        self.assertTrue(check1, "Test")
+        self.assertTrue(check2, "Test")
             
     def test_xesmf_convert_for_two_objects(self):
         
@@ -71,6 +72,6 @@ class test_xesmf_convert(unittest.TestCase):
         check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values )
         check2 = np.array_equal(check_data.temperature[0,0].values, 
                                 sci.dataset.temperature[0,0].values, equal_nan=True)
-        self.assertTrue(check1, "Yes")
-        self.assertTrue(check2, "Yes")
+        self.assertTrue(check1, "Test")
+        self.assertTrue(check2, "Test")
         
