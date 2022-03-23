@@ -4,8 +4,8 @@ import numpy as np
 import os.path as path
 
 # File names to use for this testing module
-dn_files = "../example_files/"
-dn_config = "../config"
+dn_files = "./example_files/"
+dn_config = "./config"
 fn_nemo_dat = path.join(dn_files, "coast_example_nemo_data.nc")
 fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
 fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
@@ -20,7 +20,7 @@ class test_xesmf_convert(unittest.TestCase):
     def test_basic_conversion_to_xesmf(self):
 
         # Read data files
-        sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
+        sci = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
 
         # Convert for single file
         with self.subTest("xesmf_convert for single gridded obj"):
@@ -50,7 +50,7 @@ class test_xesmf_convert(unittest.TestCase):
     def test_xesmf_convert_for_one_object(self):
 
         # Read data files
-        sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
+        sci = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
 
         # Convert for single file
         xesmf_ready = coast.xesmf_convert(sci)
@@ -67,7 +67,7 @@ class test_xesmf_convert(unittest.TestCase):
     def test_xesmf_convert_for_two_objects(self):
 
         # Read data files
-        sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
+        sci = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
 
         xesmf_ready = coast.xesmf_convert(sci, sci)
         check_grid = xesmf_ready.input_grid
