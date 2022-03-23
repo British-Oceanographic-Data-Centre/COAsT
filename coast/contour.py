@@ -897,10 +897,14 @@ class ContourT(Contour):
             z_levels = z_levels[:active_z_levels]
 
         # Absolute Pressure (depth must be negative)
-        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude.values))
+        pressure_absolute = np.ma.masked_invalid(
+            gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude.values)
+        )
         # Absolute Salinity
         salinity_absolute = np.ma.masked_invalid(
-            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data_contour.longitude.values, self.data_contour.latitude.values)
+            gsw.SA_from_SP(
+                salinity_z, pressure_absolute, self.data_contour.longitude.values, self.data_contour.latitude.values
+            )
         )
         salinity_absolute = np.ma.masked_less(salinity_absolute, 0)
         # Conservative Temperature
