@@ -78,8 +78,8 @@ class TidegaugeMultiple:
             ssh_self = ssh_self.transpose()
 
         if np.isnan(fill_value):
-            ind_self = uf.isnan(ssh_self)
-            ind_other = uf.isnan(ssh_other)
+            ind_self = np.isnan(ssh_self)
+            ind_other = np.isnan(ssh_other)
         else:
             ind_self = ssh_self == fill_value
             ind_other = ssh_other == fill_value
@@ -379,7 +379,7 @@ class TidegaugeMultiple:
             differenced = differenced.rename({vv: "diff_" + vv})
 
         if absolute_diff:
-            abs_tmp = uf.fabs(differenced)
+            abs_tmp = np.fabs(differenced)
             diff_vars = list(abs_tmp.keys())
             for vv in diff_vars:
                 abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
@@ -387,7 +387,7 @@ class TidegaugeMultiple:
             abs_tmp = xr.Dataset()
 
         if square_diff:
-            sq_tmp = uf.square(differenced)
+            sq_tmp = np.square(differenced)
             diff_vars = list(sq_tmp.keys())
             for vv in diff_vars:
                 sq_tmp = sq_tmp.rename({vv: "square_" + vv})

@@ -223,8 +223,8 @@ class Contour:
             x_ind = np.asarray(x_ind)
             # When replacing diagonal segments in the contour, pick the path that is
             # closest to the contour isobath depth
-            option1 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
-            option0 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
+            option1 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
+            option0 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
             add_new_y_point = xr.where(option1 <= option0, 1, 0)
 
             spacing = np.abs(np.diff(y_ind)) + np.abs(np.diff(x_ind))
@@ -897,10 +897,14 @@ class ContourT(Contour):
             z_levels = z_levels[:active_z_levels]
 
         # Absolute Pressure (depth must be negative)
-        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude))
+        pressure_absolute = np.ma.masked_invalid(
+            gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude.values)
+        )
         # Absolute Salinity
         salinity_absolute = np.ma.masked_invalid(
-            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data_contour.longitude, self.data_contour.latitude)
+            gsw.SA_from_SP(
+                salinity_z, pressure_absolute, self.data_contour.longitude.values, self.data_contour.latitude.values
+            )
         )
         salinity_absolute = np.ma.masked_less(salinity_absolute, 0)
         # Conservative Temperature
