@@ -452,6 +452,14 @@ class ContourF(Contour):
             tmp_var[:, :, dr_e] = v_var.data[:, :, dr_e + 1]
             tmp_var[:, :, dr_w] = v_var.data[:, :, dr_w]
             self.data_cross_flow[var] = tmp_var[:, :, :-1]
+            
+    def _update_cross_flow_latlon(self, var, u_var, v_var, dr_n, dr_s, dr_e, dr_w ):
+        tmp_var = xr.full_like(u_var, np.nan)
+        tmp_var[dr_n] = u_var.data[dr_n + 1]
+        tmp_var[dr_s] = u_var.data[dr_s]
+        tmp_var[dr_e] = v_var.data[dr_e + 1]
+        tmp_var[dr_w] = v_var.data[dr_w]
+        self.data_cross_flow.assign_coords({var: tmp_var[:-1]})
 
     @staticmethod
     def _pressure_gradient_fpoint2(ds_t, ds_t_j1, ds_t_i1, ds_t_j1i1, r_ind, velocity_component):
@@ -720,12 +728,18 @@ class ContourF(Contour):
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
         u_ds = Gridded(fn_domain=self.filename_domain, config=config_u).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
         v_ds = Gridded(fn_domain=self.filename_domain, config=config_v).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        self._update_cross_flow_vars(
-            "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
+        self._update_cross_flow_latlon(
+            "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3]
         )
-        self._update_cross_flow_vars(
-            "latitude", u_ds.latitude, v_ds.latitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
+        self._update_cross_flow_latlon(
+            "latitude", u_ds.latitude, v_ds.latitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3]
         )
+        #self._update_cross_flow_vars(
+        #    "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
+        #)
+        #self._update_cross_flow_vars(
+        #    "latitude", u_ds.latitude, v_ds.latitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
+        #)
         self._update_cross_flow_vars("e1", u_ds.e1, v_ds.e1, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
         self._update_cross_flow_vars("e2", u_ds.e2, v_ds.e2, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
         self.data_cross_flow["latitude"].attrs = {
