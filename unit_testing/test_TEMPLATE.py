@@ -15,11 +15,8 @@ import unittest
 import numpy as np
 import os.path as path
 
-# FILE NAMES to use for this testing module
-# dn_files = "<directory>"
-# dn_config = "<directory>"
-# fn_nemo_dat = path.join(dn_files, <file_name>)
-# fn_config_t_grid = path.join(dn_config, <file_name>)
+# IMPORT THIS TO HAVE ACCESS TO EXAMPLE FILE PATHS:
+import unit_test_files as files
 
 # Define a testing class. Absolutely fine to have one or multiple per file.
 # Each class must inherit unittest.TestCase

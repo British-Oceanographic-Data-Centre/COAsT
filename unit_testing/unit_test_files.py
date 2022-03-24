@@ -12,10 +12,11 @@ For example:
 
 import os.path as path
     
-# Directories
-dn_files = "../example_files/"
-dn_config = "../config"
-dn_fig = "./figures/"
+# All directories relative to unit_testing diretory
+dn_files = "./example_files/"    # Example data directory
+dn_config = "./config"           # Example config file directory
+dn_fig = "./unit_testing/figures/"             # Figure saving directory
+dn_scripts = "./example_scripts" # Example scripts directory
 
 # Data files
 fn_nemo_grid_t_dat_summer = path.join(dn_files, "nemo_data_T_grid_Aug2015.nc")
