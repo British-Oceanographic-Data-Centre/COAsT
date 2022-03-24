@@ -4,6 +4,7 @@ Please save this file with a name starting with "test_".
 TestCase classes have a whole bunch of methods available to them. Some of them
 are showcased below. You can also add your own methods to them. Anything you
 want tested by the unit testing system should start with "test_".
+
 For more info on assert test cases, see:
     https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertTrue
 '''
@@ -14,11 +15,8 @@ import unittest
 import numpy as np
 import os.path as path
 
-# FILE NAMES to use for this testing module
-# dn_files = "<directory>"
-# dn_config = "<directory>"
-# fn_nemo_dat = path.join(dn_files, <file_name>)
-# fn_config_t_grid = path.join(dn_config, <file_name>)
+# IMPORT THIS TO HAVE ACCESS TO EXAMPLE FILE PATHS:
+import unit_test_files as files
 
 # Define a testing class. Absolutely fine to have one or multiple per file.
 # Each class must inherit unittest.TestCase
@@ -72,3 +70,4 @@ class test_TEMPLATE(unittest.TestCase):
         with self.subTest("Third subtest"):
             c =  50000000
             self.assertAlmostEqual(a, c, msg="0 is not almost equal to 50000000")
+
