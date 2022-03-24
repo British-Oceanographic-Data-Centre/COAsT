@@ -55,8 +55,8 @@ import xarray.ufuncs as uf
 #################################################
 """
 ## Initialise logging and save to log file
-#log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
-#coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
+# log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
+# coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 ## Alternative logging levels
 # ..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 # ..., level=logging.INFO) # Confirmation that things are working as expected.
@@ -1574,7 +1574,7 @@ try:
     heofs = coast.compute_hilbert_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (
-        (heofs.EOF_amp * heofs.temporal_amp * uf.exp(1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase)))
+        (heofs.EOF_amp * heofs.temporal_amp * np.exp(1j * np.radians(heofs.EOF_phase + heofs.temporal_phase)))
         .sum(dim="mode")
         .real.sum(dim=["x_dim", "y_dim"])
     )
