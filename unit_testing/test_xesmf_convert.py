@@ -2,13 +2,7 @@ import coast
 import unittest
 import numpy as np
 import os.path as path
-
-# File names to use for this testing module
-dn_files = "../example_files/"
-dn_config = "../config"
-fn_nemo_dat = path.join(dn_files, "coast_example_nemo_data.nc")
-fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
-fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
+import unit_test_files as files
 
 # Single unit test. Can contain multiple test methods and subTests.
 class test_xesmf_convert(unittest.TestCase):
@@ -20,7 +14,8 @@ class test_xesmf_convert(unittest.TestCase):
     def test_basic_conversion_to_xesmf(self):
 
         # Read data files
-        sci = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
+                            config=files.fn_config_t_grid)
 
         # Convert for single file
         with self.subTest("xesmf_convert for single gridded obj"):

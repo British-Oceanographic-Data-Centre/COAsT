@@ -4,6 +4,7 @@ import coast
 import sys
 sys.path.append("./unit_testing")
 import os.path as path
+import logging
 
 # Import tests to test (I have only written one for now. This is a module)
 from test_TEMPLATE                import test_TEMPLATE
@@ -25,28 +26,38 @@ from test_maskmaker_methods       import test_maskmaker_methods
 from test_climatology             import test_climatology
 from test_example_scripts         import test_example_scripts
 
-# Create suite - this is a collection of tests, defined by classes
-suite = unittest.TestSuite()
+# Open log file
+log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
+coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 
+# Test list -- comment out ones you don't want maybe
+tests_to_do = [
+               #test_TEMPLATE,
+               test_xesmf_convert,
+               test_gridded_initialisation,
+               test_general_utils,
+               test_gridded_harmonics,
+               test_diagnostic_methods,
+               test_transect_methods,
+               test_object_manipulation,
+               test_altimetry_methods,
+               test_tidegauge_methods,
+               test_eof_methods,
+               test_isobath_contour_methods,
+               test_profile_methods,
+               test_plot_utilities,
+               test_stats_utilities,
+               test_maskmaker_methods,
+               test_climatology,
+               test_example_scripts,
+               ]
+
+# Create suite - this is a collection of tests, defined by classes
 # Add tests to test to the suite -- Add in a line for each suite
 #suite.addTest(unittest.makeSuite(test_TEMPLATE))
-#suite.addTest(unittest.makeSuite( test_xesmf_convert ))
-#suite.addTest(unittest.makeSuite( test_gridded_initialisation ))
-#suite.addTest(unittest.makeSuite( test_general_utils ))
-#suite.addTest(unittest.makeSuite( test_gridded_harmonics ))
-#suite.addTest(unittest.makeSuite( test_diagnostic_methods ))
-#suite.addTest(unittest.makeSuite( test_transect_methods ))
-#suite.addTest(unittest.makeSuite( test_object_manipulation ))
-#suite.addTest(unittest.makeSuite( test_altimetry_methods ))
-#suite.addTest(unittest.makeSuite( test_tidegauge_methods ))
-#suite.addTest(unittest.makeSuite( test_eof_methods ))
-#suite.addTest(unittest.makeSuite( test_isobath_contour_methods ))
-#suite.addTest(unittest.makeSuite( test_profile_methods ))
-#suite.addTest(unittest.makeSuite( test_plot_utilities ))
-#suite.addTest(unittest.makeSuite( test_stats_utilities ))
-#suite.addTest(unittest.makeSuite( test_maskmaker_methods ))
-#suite.addTest(unittest.makeSuite( test_climatology ))
-suite.addTest(unittest.makeSuite( test_example_scripts ))
+suite = unittest.TestSuite()
+for test in tests_to_do:
+    suite.addTest(unittest.makeSuite( test ))
 
 # Run test suite. Some different verbosity options available here.
 unittest.TextTestRunner(verbosity=2).run(suite)

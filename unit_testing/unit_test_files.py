@@ -9,7 +9,6 @@ For example:
     get_dom = unit_test_files.fn_nemo_dom
 '''
 
-
 import os.path as path
     
 # All directories relative to unit_testing diretory
@@ -17,6 +16,13 @@ dn_files = "./example_files/"    # Example data directory
 dn_config = "./config"           # Example config file directory
 dn_fig = "./unit_testing/figures/"             # Figure saving directory
 dn_scripts = "./example_scripts" # Example scripts directory
+
+# Check dn_files directory
+if not path.isdir(dn_files):
+    print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
+    dn_files = input("what is the path to the example files:\n")
+    if not path.isdir(dn_files):
+        print(f"location f{dn_files} cannot be found")
 
 # Data files
 fn_nemo_grid_t_dat_summer = path.join(dn_files, "nemo_data_T_grid_Aug2015.nc")
