@@ -12,6 +12,7 @@ from test_gridded_harmonics import test_gridded_harmonics
 from test_general_utils import test_general_utils
 from test_diagnostic_methods import test_diagnostic_methods
 from test_transect_methods import test_transect_methods
+import test_xesmf_convert
 
 # Create suite - this is a collection of tests, defined by classes
 suite = unittest.TestSuite()
@@ -27,3 +28,8 @@ suite.addTest(unittest.makeSuite(test_transect_methods))
 
 # Run test suite. Some different verbosity options available here.
 unittest.TextTestRunner(verbosity=2).run(suite)
+suite.addTest(unittest.makeSuite(test_xesmf_convert.test_xesmf_convert))
+# suite.addTest(...etc)
+
+# Run test suite. Some different verbosity options available here.
+unittest.TextTestRunner(verbosity=3).run(suite)

@@ -1570,7 +1570,7 @@ try:
     heofs = coast.compute_hilbert_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (
-        (heofs.EOF_amp * heofs.temporal_amp * uf.exp(1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase)))
+        (heofs.EOF_amp * heofs.temporal_amp * np.exp(1j * np.radians(heofs.EOF_phase + heofs.temporal_phase)))
         .sum(dim="mode")
         .real.sum(dim=["x_dim", "y_dim"])
     )

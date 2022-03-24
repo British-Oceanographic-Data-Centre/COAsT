@@ -1022,10 +1022,10 @@ class TransectT(Transect):
             z_levels = z_levels[:active_z_levels]
 
         # Absolute Pressure (depth must be negative)
-        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data.latitude))
+        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data.latitude.values))
         # Absolute Salinity
         salinity_absolute = np.ma.masked_invalid(
-            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data.longitude, self.data.latitude)
+            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data.longitude.values, self.data.latitude.values)
         )
         salinity_absolute = np.ma.masked_less(salinity_absolute, 0)
         # Conservative Temperature
