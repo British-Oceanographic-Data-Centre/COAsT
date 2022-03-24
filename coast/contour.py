@@ -963,9 +963,9 @@ class ContourT(Contour):
         """
         Function that will calculate the flow along the contour and store this data
         within Contour_t.data_along_flow, which is an xarray.Dataset. Specifically
-        Contour_t.velocities are the velocities along the contour with dimensions
+        Contour_t.data_along_flow.velocities are the velocities along the contour with dimensions
         (t_dim, z_dim, r_dim), where r_dim is the dimension along the contour.
-        Contour_t.transport are the velocities along the contour multiplied by the 
+        Contour_t.data_along_flow.transport are the velocities along the contour multiplied by the 
         thickness of the cell (velocity * e3) with dimensions 
         (t_dim, z_dim, r_dim).
         
@@ -1081,6 +1081,92 @@ class ContourT(Contour):
             "standard_name":"Longitude at the along contour velocity grid points"
         }
         self.data_along_flow = self.data_along_flow.squeeze()
+    
+    def calc_along_contour_flow_2d(self, gridded_u: Coast, gridded_v: Coast):
+        """
+        Function that will calculate the 2d flow (no vertical dimension
+        along the contour and store this data within Contour_t.data_along_flow, 
+        which is an xarray.Dataset. Contour_t.data_along_flow.velocities are 
+        the velocities along the contour with dimensions (t_dim, r_dim), 
+        where r_dim is the dimension along the contour. e3 and
+        e3_0 are interpreted to be the water column thicknesses and 
+        are included in the dataset as Contour_t.data_along_flow.e3 and
+        Contour_t.data_along_flow.e3_0
+        
+        Parameters
+        ----------
+        gridded_u : Coast
+            The nemo object containing the model data on the u-grid.
+        gridded_v : Coast
+            The nemo object containing the model data on the v-grid.
+
+        Returns
+        -------
+        None.
+
+        """      
+        
+        # subset the u and v datasets 
+        da_y_ind = xr.DataArray( self.y_ind, dims=["r_dim"] )
+        da_x_ind = xr.DataArray( self.x_ind, dims=["r_dim"] )
+        u_ds = nemo_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
+        v_ds = nemo_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
+           
+        # If time dimension is missing it can throw off the indexing so expand dims        
+        if "t_dim" not in u_ds.dims:
+            u_ds["u_velocity"] = u_ds.u_velocity.expand_dims("t_dim", axis=0)
+        if "t_dim" not in v_ds.dims:
+            v_ds["v_velocity"] = v_ds.v_velocity.expand_dims("t_dim", axis=0)
+                    
+        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+        dr_n = dr_n[~np.isnan(dr_n)].astype(int)
+        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+        dr_s = dr_s[~np.isnan(dr_s)].astype(int)
+        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_e = dr_e[~np.isnan(dr_e)].astype(int)
+        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_w = dr_w[~np.isnan(dr_w)].astype(int)
+        
+        # Note that subsetting the dataset first instead of subsetting each array seperately,
+        # as we do here, is neater but significantly slower.
+        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)        
+        tmp_velocities[:, dr_n] = v_ds.v_velocity.data[:, dr_n]
+        tmp_velocities[:, dr_s] = -v_ds.v_velocity.data[:, dr_s + 1]
+        tmp_velocities[:, dr_e] = u_ds.u_velocity.data[:, dr_e]
+        tmp_velocities[:, dr_w] = -u_ds.u_velocity.data[:, dr_w + 1]
+        self.data_flow["velocities"] = tmp_velocities[:, :-1]
+        self.data_flow["velocities"].attrs = {"units":"m/s", "standard_name":"along-contour velocities"}
+  
+        # Store the length of contour segement between t-points
+        tmp_e4 = xr.full_like(u_ds.e1, np.nan)  
+        tmp_e4[dr_n] = v_ds.e2.data[dr_n]
+        tmp_e4[dr_s] = v_ds.e2.data[dr_s + 1]
+        tmp_e4[dr_e] = u_ds.e1.data[dr_e]
+        tmp_e4[dr_w] = u_ds.e1.data[dr_w + 1]
+        self.data_flow["e4"] = tmp_e4[:-1]
+        self.data_flow["e4"].attrs = {
+            "units":"m",
+            "standard_name":"length of contour segment at the along-contour velocity grid points"
+        }
+
+        self._update_flow_vars("longitude", u_ds.longitude, v_ds.longitude, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_flow_vars("latitude", u_ds.latitude, v_ds.latitude, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)    
+        
+        if ("e3" in u_ds.data_vars) and ("e3" in v_ds.data_vars):
+            self._update_flow_vars("e3", u_ds.e3, v_ds.e3, dr_n, dr_s, dr_e, dr_w, 1)
+        if ("e3_0" in u_ds.data_vars) and ("e3_0" in v_ds.data_vars):
+            self._update_flow_vars("e3_0", u_ds.e3_0, v_ds.e3_0, dr_n, dr_s, dr_e, dr_w, 0)             
+        
+        self.data_flow["latitude"].attrs = {
+            "standard_name":"Latitude at the along-contour velocity grid points"
+        }
+        self.data_flow["longitude"].attrs = {
+            "standard_name":"Longitude at the along contour velocity grid points"
+        }
+        self.data_flow = self.data_flow.squeeze()
         
     def _update_flow_vars(self, var, u_var,v_var, dr_n, dr_s, dr_e, dr_w, pos):
         """ This method will pull variable data at specific points along the contour

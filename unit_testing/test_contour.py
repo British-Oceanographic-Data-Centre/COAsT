@@ -60,41 +60,14 @@ class test_contour_methods(unittest.TestCase):
         # calculate flow along contour
         cont_t.calc_along_contour_flow(nemo_u, nemo_v)
         
-        if np.allclose(
-            (cont_f.data_cross_flow.normal_velocities + cont_f.data_cross_flow.depth_integrated_normal_transport).sum(),
-            -1152.3771,
-        ):
-            print(str(sec) + chr(subsec) + " OK - Cross-contour flow calculations as expected")
-        else:
-            print(str(sec) + chr(subsec) + " X - Cross-contour flow calculations not as expected")
-    
+        with self.subTest("Check on velocities"):
+            a = (cont_t.data_along_flow.velocities 
+                 * cont_t.data_along_flow.e3 
+                 * cont_t.data_along_flow.e4).sum().values
+            self.assertTrue(np.isclose(a, 116660850), "velocities checksum: " + str(a) + ", should be 116660850" )
 
-    def test_successful_method(self):
-        # Test things. Use assert methods from unittest. Some true tests:
-        self.assertTrue(1==1, "Will not see this.")
-        self.assertEqual(1,1, "Will not see this.")
-        self.assertIsNone(None, "Will not see this.")
-        
-        
-    def test_bad_method(self):
-       # Test things. Use assert methods from unittest. This will fail
-        self.assertTrue(1==2, "1 does not equal 2")
-        self.assertEqual(1,2, "1 does not equal 2.")
-        self.assertIsNone(1, "1 does not none.")
-        
-    def test_with_subtests(self):
-        # Sometimes you might want to do a test within a parameter loop or
-        # a bunch of sequential tests (so you don't have to read data 
-        # repeatedly). Subtest can be used for this as follows:
-            
-        with self.subTest("First subtest."):
-            a = 1
-            self.assertEqual(a,1,"Will not see this.")
-            
-        with self.subTest("Second subtest"):
-            b = 1
-            self.assertEqual(a,b, "will not see this")
-            
-        with self.subTest("Third subtest"):
-            c =  50000000
-            self.assertAlmostEqual(a, c, msg="0 is not almost equal to 50000000")
+        with self.subTest("Check on transport"):
+            a = (cont_t.data_along_flow.transport  
+                 * cont_t.data_along_flow.e4).sum().values
+            self.assertTrue(np.isclose(a, 116660850), "transports checksum: " + str(a) + ", should be 116660850" )
+    
