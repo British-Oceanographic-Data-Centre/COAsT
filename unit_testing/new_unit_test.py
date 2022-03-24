@@ -13,7 +13,7 @@ from test_TEMPLATE import test_TEMPLATE
 #from test_diagnostic_methods import test_diagnostic_methods
 #from test_transect_methods import test_transect_methods
 #import test_xesmf_convert
-from test_contour import test_contour_methods
+from test_contour import test_ContourT_methods
 
 # Create suite - this is a collection of tests, defined by classes
 suite = unittest.TestSuite()
@@ -26,7 +26,7 @@ suite = unittest.TestSuite()
 #suite.addTest(unittest.makeSuite(test_general_utils))
 #suite.addTest(unittest.makeSuite(test_diagnostic_methods))
 #suite.addTest(unittest.makeSuite(test_transect_methods))
-suite.addTest(unittest.makeSuite(test_contour_methods))
+suite.addTest(unittest.makeSuite(test_ContourT_methods))
 
 # Run test suite. Some different verbosity options available here.
 unittest.TextTestRunner(verbosity=2).run(suite)

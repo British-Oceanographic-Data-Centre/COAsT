@@ -27,47 +27,44 @@ fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
 
 # Define a testing class. Absolutely fine to have one or multiple per file.
 # Each class must inherit unittest.TestCase
-class test_contour_methods(unittest.TestCase):
+class test_ContourT_methods(unittest.TestCase):
     
     def setUp(self):
-        # This is called at the beginning of every test_ method. Optional.
-        return
-    
-    def tearDown(self):
-        # This is called at the end of every test_ method. Optional.
-        return
-    
-    @classmethod
-    def setUpClass(cls):
-        # This is called at the beginning of every test CLASS. Optional
-        return
-    
-    @classmethod
-    def tearDownClass(cls):
-        # This is called at the end of every test CLASS. Optional.
-        return
-    
+        # This is called at the beginning of every test_ method.
+        # load gridded data
+        self.nemo_t = coast.Gridded(fn_domain = fn_nemo_dom, config = fn_config_t_grid)
+        self.nemo_u = coast.Gridded(fn_nemo_grid_u_dat, fn_nemo_dom, config = fn_config_u_grid)
+        self.nemo_v = coast.Gridded(fn_nemo_grid_v_dat, fn_nemo_dom, config = fn_config_v_grid)
+        # create contour dataset along 200 m isobath
+        contours, no_contours = coast.Contour.get_contours(self.nemo_t, 200)
+        y_ind, x_ind, contour = coast.Contour.get_contour_segment(self.nemo_t, contours[0], [50, -10], [60, 3])
+        self.cont_t = coast.ContourT(self.nemo_t, y_ind, x_ind, 200)
+           
     # TEST METHODS  
     def test_along_contour_flow(self):
-        # load gridded data
-        nemo_t = coast.Gridded(fn_domain = fn_nemo_dom, config = fn_config_t_grid)
-        nemo_u = coast.Gridded(fn_nemo_grid_u_dat, fn_nemo_dom, config = fn_config_u_grid)
-        nemo_v = coast.Gridded(fn_nemo_grid_v_dat, fn_nemo_dom, config = fn_config_v_grid)
-        # create contour dataset along 200 m isobath
-        contours, no_contours = coast.Contour.get_contours(nemo_t, 200)
-        y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_t, contours[0], [50, -10], [60, 3])
-        cont_t = coast.ContourT(nemo_t, y_ind, x_ind, 200)
         # calculate flow along contour
-        cont_t.calc_along_contour_flow(nemo_u, nemo_v)
+        self.cont_t.calc_along_contour_flow(self.nemo_u, self.nemo_v)
         
         with self.subTest("Check on velocities"):
-            a = (cont_t.data_along_flow.velocities 
-                 * cont_t.data_along_flow.e3 
-                 * cont_t.data_along_flow.e4).sum().values
-            self.assertTrue(np.isclose(a, 116660850), "velocities checksum: " + str(a) + ", should be 116660850" )
+            cksum = (self.cont_t.data_along_flow.velocities 
+                 * self.cont_t.data_along_flow.e3 
+                 * self.cont_t.data_along_flow.e4).sum().values
+            self.assertTrue(np.isclose(cksum, 116660850), "velocities checksum: " + str(cksum) + ", should be 116660850" )
 
         with self.subTest("Check on transport"):
-            a = (cont_t.data_along_flow.transport  
-                 * cont_t.data_along_flow.e4).sum().values
-            self.assertTrue(np.isclose(a, 116660850), "transports checksum: " + str(a) + ", should be 116660850" )
+            cksum = (self.cont_t.data_along_flow.transport  
+                 * self.cont_t.data_along_flow.e4).sum().values
+            self.assertTrue(np.isclose(cksum, 116660850), "transports checksum: " + str(cksum) + ", should be 116660850" )
+    
+    def test_along_contour_2d_flow(self):
+        # calculate flow along contour
+        self.nemo_u.dataset = self.nemo_u.dataset.isel(z_dim = 0).squeeze()
+        self.nemo_v.dataset = self.nemo_v.dataset.isel(z_dim = 0).squeeze()
+        self.cont_t.calc_along_contour_flow_2d(self.nemo_u, self.nemo_v)
+        
+        cksum = (self.cont_t.data_along_flow.velocities 
+                 * self.cont_t.data_along_flow.e3_0 
+                 * self.cont_t.data_along_flow.e4).sum().values
+        self.assertTrue(np.isclose(cksum, 293910.94), "velocities checksum: " + str(cksum) + ", should be 293910.94" )
+
     
