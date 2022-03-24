@@ -13,6 +13,7 @@ from test_general_utils import test_general_utils
 from test_diagnostic_methods import test_diagnostic_methods
 from test_transect_methods import test_transect_methods
 from test_object_manipulation import test_object_manipulation
+from test_altimetry_methods import test_altimetry_methods
 
 # Create suite - this is a collection of tests, defined by classes
 suite = unittest.TestSuite()
@@ -25,7 +26,8 @@ suite = unittest.TestSuite()
 #suite.addTest(unittest.makeSuite(test_gridded_harmonics))
 #suite.addTest(unittest.makeSuite(test_diagnostic_methods))
 #suite.addTest(unittest.makeSuite(test_transect_methods))
-suite.addTest(unittest.makeSuite(test_object_manipulation))
+#suite.addTest(unittest.makeSuite(test_object_manipulation))
+suite.addTest(unittest.makeSuite(test_altimetry_methods))
 
 # Run test suite. Some different verbosity options available here.
 unittest.TextTestRunner(verbosity=2).run(suite)
