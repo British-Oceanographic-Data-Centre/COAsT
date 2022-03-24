@@ -1634,7 +1634,7 @@ try:
     processed = profile.process_en4()
     processed.dataset.load()
 
-    check1 = type(processed) == coast.profile.Profile
+    check1 = type(processed) == coast.Profile
     check2 = np.isnan(processed.dataset.temperature.values[0, 0])
     check3 = processed.dataset.dims["profile"] == 111
 
@@ -1660,9 +1660,9 @@ try:
     nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
     nemo_profiles = processed.obs_operator(nemo_t)
 
-    check1 = type(nemo_profiles) == coast.profile.Profile
+    check1 = type(nemo_profiles) == coast.Profile
     check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
-    check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+    check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 151.4443554515237)
 
     if check1 and check2 and check3:
         print(str(sec) + chr(subsec) + " OK")
@@ -1683,7 +1683,7 @@ try:
     nemo_profiles.dataset = nemo_profiles.dataset.rename({"depth_0": "depth"})
     model_interpolated = nemo_profiles.interpolate_vertical(processed)
 
-    check1 = type(model_interpolated) == coast.profile.Profile
+    check1 = type(model_interpolated) == coast.Profile
     check2 = nemo_profiles.dataset.temperature.values[0, 0] == np.float32(1.7324219)
 
     if check1 and check2:
@@ -1704,7 +1704,7 @@ try:
     difference = processed.difference(model_interpolated)
     difference.dataset.load()
 
-    check1 = type(difference) == coast.profile.Profile
+    check1 = type(difference) == coast.Profile
     check2 = difference.dataset.diff_temperature.values[0, 2] == np.float32(1.1402345)
 
     if check1 and check2:
@@ -1770,8 +1770,8 @@ try:
     # depth is <100m, then average over the bottom 10m
     model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf])
 
-    check1 = type(model_profiles_surface) == coast.profile.Profile
-    check1 = type(model_profiles_bottom) == coast.profile.Profile
+    check1 = type(model_profiles_surface) == coast.Profile
+    check1 = type(model_profiles_bottom) == coast.Profile
     check3 = model_profiles_surface.dataset.temperature.values[0] == np.float32(1.7500391)
 
     if check1 and check2 and check3:
