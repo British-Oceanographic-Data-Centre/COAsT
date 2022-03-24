@@ -813,6 +813,7 @@ class ContourT(Contour):
 
     def __init__(self, gridded_t: Coast, y_ind, x_ind, depth):
         super().__init__(gridded_t, y_ind, x_ind, depth)
+        self.data_along_flow = xr.Dataset()
 
     def construct_pressure(self, ref_density=None, z_levels=None, extrapolate=False):
         """
