@@ -13,6 +13,7 @@ from . import plot_util
 from . import crps_util
 from .index import Indexed
 from .profile import Profile
+from .profile_WOD import Profile_WOD
 from .track import Track
 from .lagrangian import Lagrangian
 from .oceanparcels import Oceanparcels
