@@ -4,51 +4,25 @@
 
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
-from coast import general_utils
 import unittest
 import numpy as np
-import os.path as path
 import xarray as xr
 import matplotlib.pyplot as plt
-
-# FILE NAMES to use for this testing module
-dn_files = "../example_files/"
-dn_config = "../config"
-dn_fig = "./figures/"
-
-fn_nemo_grid_t_dat_summer = "nemo_data_T_grid_Aug2015.nc"
-fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
-fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
-fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat = "coast_example_nemo_data.nc"
-fn_nemo_dat_subset = "coast_example_nemo_subset_data.nc"
-fn_nemo_dom = "coast_example_nemo_domain.nc"
-fn_altimetry = "coast_example_altimetry_data.nc"
-fn_tidegauge = dn_files + "tide_gauges/lowestoft-p024-uk-bodc"
-fn_tidegauge2 = dn_files + "tide_gauges/LIV2010.txt"
-fn_nemo_harmonics = "coast_nemo_harmonics.nc"
-fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
-fn_profile = dn_files + "coast_example_EN4_201008.nc"
-fn_profile_config = "config/example_en4_profiles.json"
-fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
-fn_config_f_grid = path.join(dn_config, "example_nemo_grid_f.json")
-fn_config_u_grid = path.join(dn_config, "example_nemo_grid_u.json")
-fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
-fn_config_w_grid = path.join(dn_config, "example_nemo_grid_w.json")
+import unit_test_files as files
 
 class test_diagnostic_methods(unittest.TestCase):
     
     def test_compute_vertical_spatial_derivative(self):
-        nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, 
-                               fn_domain=dn_files + fn_nemo_dom, 
-                               config=fn_config_t_grid)
-        nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, 
-                               config=fn_config_w_grid)
+        nemo_t = coast.Gridded(fn_data = files.fn_nemo_grid_t_dat, 
+                               fn_domain = files.fn_nemo_dom, 
+                               config = files.fn_config_t_grid)
+        nemo_w = coast.Gridded(fn_domain=files.fn_nemo_dom, 
+                               config=files.fn_config_w_grid)
 
         log_str = ""
         # Compute dT/dz
         nemo_w_1 = nemo_t.differentiate("temperature", 
-                                        config_path=fn_config_w_grid, 
+                                        config_path=files.fn_config_w_grid, 
                                         dim="z_dim")
         if nemo_w_1 is None:  # Test whether object was returned
             log_str += "No object returned\n"
@@ -67,7 +41,7 @@ class test_diagnostic_methods(unittest.TestCase):
             log_str += "Did not write correct attributes\n"
         # Test auto-naming derivative. Again test expected attributes.
         nemo_w_3 = nemo_t.differentiate("temperature", dim="z_dim", 
-                                        config_path=fn_config_w_grid)
+                                        config_path=files.fn_config_w_grid)
         if not nemo_w_3.dataset.temperature_dz.attrs == {"units": "degC/m",
                                                          "standard_name": "temperature_dz"}:
             log_str += "Problem with auto-naming derivative field\n"
@@ -77,7 +51,7 @@ class test_diagnostic_methods(unittest.TestCase):
         nemo_t.dataset["depth4D"], _ = xr.broadcast(nemo_t.dataset["depth_0"], 
                                                     nemo_t.dataset["temperature"])
         nemo_w_4 = nemo_t.differentiate("depth4D", dim="z_dim", out_var_str="dzdz", 
-                                        config_path=fn_config_w_grid)
+                                        config_path=files.fn_config_w_grid)
         if not np.isclose(
             nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).max(), -1
         ) or not np.isclose(nemo_w_4.dataset.dzdz.isel(z_dim=slice(1, nemo_w_4.dataset.dzdz.sizes["z_dim"])).min(), -1):
@@ -87,9 +61,9 @@ class test_diagnostic_methods(unittest.TestCase):
         self.assertTrue(check1, msg='check1')
         
     def test_contruct_density(self):
-        nemo_t = coast.Gridded(fn_data=dn_files + fn_nemo_grid_t_dat, 
-                               fn_domain=dn_files + fn_nemo_dom, 
-                               config=fn_config_t_grid)
+        nemo_t = coast.Gridded(fn_data=files.fn_nemo_grid_t_dat, 
+                               fn_domain=files.fn_nemo_dom, 
+                               config=files.fn_config_t_grid)
         nemo_t.construct_density()
         yt, xt, length_of_line = nemo_t.transect_indices([54, -15], [56, -12])
 
@@ -103,11 +77,11 @@ class test_diagnostic_methods(unittest.TestCase):
     def test_construct_pycnocline_depth_and_thickness(self):
         nemo_t = None
         nemo_w = None
-        nemo_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat_summer, 
-                               dn_files + fn_nemo_dom, config=fn_config_t_grid)
+        nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer, 
+                               files.fn_nemo_dom, config=files.fn_config_t_grid)
         # create an empty w-grid object, to store stratification
-        nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, 
-                               config=fn_config_w_grid)
+        nemo_w = coast.Gridded(fn_domain=files.fn_nemo_dom, 
+                               config=files.fn_config_w_grid)
 
         with self.subTest("Construct pycnocline depth"):
             log_str = ""
@@ -150,7 +124,7 @@ class test_diagnostic_methods(unittest.TestCase):
         with self.subTest("Plot pycnocline depth"):
             fig, ax = IT.quick_plot("strat_1st_mom_masked")
             fig.tight_layout()
-            fig.savefig(dn_fig + "strat_1st_mom.png")
+            fig.savefig(files.dn_fig + "strat_1st_mom.png")
             plt.close('all')
         
         

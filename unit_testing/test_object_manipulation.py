@@ -9,23 +9,7 @@ import unittest
 import numpy as np
 import os.path as path
 import xarray as xr
-
-# FILE NAMES to use for this testing module
-dn_files = "../example_files/"
-fn_nemo_dat = path.join(dn_files, "coast_example_nemo_data.nc")
-fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
-fn_nemo_grid_t_dat = "nemo_data_T_grid.nc"
-fn_nemo_grid_u_dat = "nemo_data_U_grid.nc"
-fn_nemo_grid_v_dat = "nemo_data_V_grid.nc"
-fn_nemo_dat_subset = "coast_example_nemo_subset_data.nc"
-fn_altimetry = "coast_example_altimetry_data.nc"
-
-dn_config = "../config"
-fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
-fn_config_f_grid = path.join(dn_config, "example_nemo_grid_f.json")
-fn_config_u_grid = path.join(dn_config, "example_nemo_grid_u.json")
-fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
-fn_config_w_grid = path.join(dn_config, "example_nemo_grid_w.json")
+import unit_test_files as files
 
 class test_object_manipulation(unittest.TestCase):
     
@@ -108,9 +92,8 @@ class test_object_manipulation(unittest.TestCase):
             99,
             98,
         ]
-        sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), 
-                            path.join(dn_files, fn_nemo_dom), 
-                            config=fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
+                            config=files.fn_config_t_grid)
         data_t = sci.get_subset_as_xarray("temperature", xt_ref, yt_ref)
 
         # Test shape and exteme values
@@ -123,9 +106,8 @@ class test_object_manipulation(unittest.TestCase):
         self.assertTrue(check3, 'check3')
         
     def test_indices_by_distance(self):
-        sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), 
-                            path.join(dn_files, fn_nemo_dom), 
-                            config=fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
+                            config=files.fn_config_t_grid)
         ind = sci.subset_indices_by_distance(0, 51, 111)
 
         # Test size of indices array
@@ -134,12 +116,11 @@ class test_object_manipulation(unittest.TestCase):
         
     def test_interpolation_to_altimetry(self):
         
-        sci = coast.Gridded(path.join(dn_files, fn_nemo_dat), 
-                            path.join(dn_files, fn_nemo_dom), 
-                            config=fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
+                            config=files.fn_config_t_grid)
         
         with self.subTest("Find nearest xy indices"):
-            altimetry = coast.Altimetry(dn_files + fn_altimetry)
+            altimetry = coast.Altimetry(files.fn_altimetry)
             ind = altimetry.subset_indices_lonlat_box([-10, 10], [45, 60])
             altimetry_nwes = altimetry.isel(time=ind)  # nwes = northwest europe shelf
             ind_x, ind_y = general_utils.nearest_indices_2d(

@@ -1,3 +1,15 @@
+'''
+Files definitions to use for unit testing.
+
+You can easily use any of these files in a test class by importing this file.
+For example:
+    
+    import unit_test_files
+    
+    get_dom = unit_test_files.fn_nemo_dom
+'''
+
+
 import os.path as path
     
 # Directories
@@ -12,9 +24,12 @@ fn_nemo_grid_u_dat = path.join(dn_files,"nemo_data_U_grid.nc")
 fn_nemo_grid_v_dat = path.join(dn_files,"nemo_data_V_grid.nc")
 fn_nemo_dat        = path.join(dn_files,"coast_example_nemo_data.nc")
 fn_nemo_dat_subset = path.join(dn_files,"coast_example_nemo_subset_data.nc")
+file_names_amm7    = path.join(dn_files, "nemo_data_T_grid*.nc")
 fn_altimetry       = path.join(dn_files,"coast_example_altimetry_data.nc")
 fn_tidegauge       = path.join(dn_files, "tide_gauges/lowestoft-p024-uk-bodc")
 fn_tidegauge2         = path.join(dn_files, "tide_gauges/LIV2010.txt")
+fn_multiple_tidegauge = path.join(dn_files, "tide_gauges/l*")
+fn_gladstone          = path.join(dn_files, "Gladstone_2020-10_HLW.txt")
 fn_nemo_harmonics     = path.join(dn_files,"coast_nemo_harmonics.nc")
 fn_nemo_harmonics_dom = path.join(dn_files,"coast_nemo_harmonics_dom.nc")
 fn_profile            = path.join(dn_files,"coast_example_EN4_201008.nc")

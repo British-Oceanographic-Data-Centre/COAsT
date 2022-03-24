@@ -6,28 +6,15 @@
 import coast
 import unittest
 import numpy as np
-import os.path as path
-import xarray as xr
-
-# FILE NAMES to use for this testing module
-dn_files = "../example_files/"
-fn_nemo_harmonics = "coast_nemo_harmonics.nc"
-fn_nemo_harmonics_dom = "coast_nemo_harmonics_dom.nc"
-
-dn_config = "../config"
-fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
-fn_config_f_grid = path.join(dn_config, "example_nemo_grid_f.json")
-fn_config_u_grid = path.join(dn_config, "example_nemo_grid_u.json")
-fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
-fn_config_w_grid = path.join(dn_config, "example_nemo_grid_w.json")
+import unit_test_files as files
 
 class test_gridded_harmonics(unittest.TestCase):
     
     def test_combine_and_convert_harmonics(self):
         
-        harmonics = coast.Gridded(dn_files + fn_nemo_harmonics, 
-                                  dn_files + fn_nemo_harmonics_dom, 
-                                  config=fn_config_t_grid)
+        harmonics = coast.Gridded(files.fn_nemo_harmonics, 
+                                  files.fn_nemo_harmonics_dom, 
+                                  config=files.fn_config_t_grid)
         
         with self.subTest("test_combine_harmonics"):
             constituents = ["K1", "M2", "S2", "K2"]
