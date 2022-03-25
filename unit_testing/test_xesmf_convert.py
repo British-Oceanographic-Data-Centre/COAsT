@@ -14,8 +14,7 @@ class test_xesmf_convert(unittest.TestCase):
     def test_basic_conversion_to_xesmf(self):
 
         # Read data files
-        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
-                            config=files.fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
 
         # Convert for single file
         with self.subTest("xesmf_convert for single gridded obj"):
@@ -40,4 +39,3 @@ class test_xesmf_convert(unittest.TestCase):
             )
             self.assertTrue(check1, "Test")
             self.assertTrue(check2, "Test")
-
