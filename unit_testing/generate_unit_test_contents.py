@@ -80,13 +80,13 @@ with open(fn_contents, "w") as file:
         test_name = test.__name__
         file.write("{0}. {1}\n".format(test_count, test_name))
         method_count = 97
-        
+
         # Loop over methods in module. If begins with 'test_' then write to file
         for method in dir(test):
             if method[:5] != "test_":
                 continue
-            file.write("      {0}. {1}\n".format(chr(method_count),method[5:]))
-            method_count = method_count+1
+            file.write("      {0}. {1}\n".format(chr(method_count), method[5:]))
+            method_count = method_count + 1
         file.write("\n")
         test_count = test_count + 1
 print("Written modules and methods to: \n \n")
