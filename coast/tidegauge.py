@@ -452,7 +452,7 @@ class Tidegauge(Timeseries):
                         # Read time as datetime.datetime because it can handle local timezone easily AND the unusual date format
                         datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
                         if localtime_flag == True:
-                            bst_obj = pytz.timezone('Europe/London')
+                            bst_obj = pytz.timezone("Europe/London")
                             time.append(np.datetime64(bst_obj.localize(datetime_obj).astimezone(pytz.utc)))
                         else:
                             time.append(np.datetime64(datetime_obj))
