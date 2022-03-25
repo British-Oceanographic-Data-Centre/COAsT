@@ -63,7 +63,7 @@ class test_isobath_contour_methods(unittest.TestCase):
         )
         self.assertTrue(check1, "check1")
 
-    def test_calculate_preddure_gradient_griven_flow(self):
+    def test_calculate_pressure_gradient_griven_flow(self):
         nemo_t = coast.Gridded(
             fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
         )

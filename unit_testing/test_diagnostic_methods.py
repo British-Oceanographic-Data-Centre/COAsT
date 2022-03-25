@@ -51,7 +51,7 @@ class test_diagnostic_methods(unittest.TestCase):
         check1 = log_str == ""
         self.assertTrue(check1, msg="check1")
 
-    def test_contruct_density(self):
+    def test_construct_density(self):
         nemo_t = coast.Gridded(
             fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
         )
