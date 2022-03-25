@@ -411,8 +411,7 @@ class ContourF(Contour):
             }
 
         self._update_cross_flow_vars("depth_0", u_ds.depth_0, v_ds.depth_0, dr_n, dr_s, dr_e, dr_w, 1)
-        self._update_cross_flow_vars("longitude", u_ds.longitude, v_ds.longitude, dr_n, dr_s, dr_e, dr_w, 0)
-        self._update_cross_flow_vars("latitude", u_ds.latitude, v_ds.latitude, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_cross_flow_latlon(u_ds, v_ds, dr_n, dr_s, dr_e, dr_w)
         self._update_cross_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_cross_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_cross_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)
@@ -422,17 +421,12 @@ class ContourF(Contour):
         self.data_cross_flow["depth_0"].attrs = {
             "standard_name": "Depth at time zero on the contour-normal velocity grid points"
         }
-        self.data_cross_flow["latitude"].attrs = {
-            "standard_name": "Latitude at the contour-normal velocity grid points"
-        }
-        self.data_cross_flow["longitude"].attrs = {
-            "standard_name": "Longitude at the contour-normal velocity grid points"
-        }
+
         self.data_cross_flow = self.data_cross_flow.squeeze()
 
     def _update_cross_flow_vars(self, var, u_var, v_var, dr_n, dr_s, dr_e, dr_w, pos):
         """This method will pull variable data at specific points along the contour
-        from the u and v grid datasets and put them into the data_cross_flow dataset"""
+        from the u and v grid datasets and put them into the self.data_cross_flow dataset"""
         tmp_var = xr.full_like(u_var, np.nan)
         if pos == 0:
             tmp_var[dr_n] = u_var.data[dr_n + 1]
@@ -453,13 +447,20 @@ class ContourF(Contour):
             tmp_var[:, :, dr_w] = v_var.data[:, :, dr_w]
             self.data_cross_flow[var] = tmp_var[:, :, :-1]
             
-    def _update_cross_flow_latlon(self, var, u_var, v_var, dr_n, dr_s, dr_e, dr_w ):
-        tmp_var = xr.full_like(u_var, np.nan)
-        tmp_var[dr_n] = u_var.data[dr_n + 1]
-        tmp_var[dr_s] = u_var.data[dr_s]
-        tmp_var[dr_e] = v_var.data[dr_e + 1]
-        tmp_var[dr_w] = v_var.data[dr_w]
-        self.data_cross_flow.assign_coords({var: tmp_var[:-1]})
+    def _update_cross_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w ):
+        """This method will pull the latitude and longitude data at specific points along the 
+        contour from the u and v grid datasets and put them into the self.data_cross_flow dataset"""
+        for var in ["longitude", "latitude"]:
+            tmp_var = xr.full_like(ds_u[var], np.nan)
+            tmp_var[dr_n] = ds_u[var].data[dr_n + 1]
+            tmp_var[dr_s] = ds_u[var].data[dr_s]
+            tmp_var[dr_e] = ds_v[var].data[dr_e + 1]
+            tmp_var[dr_w] = ds_v[var].data[dr_w]
+            tmp_var.attrs = {
+                "standard_name": var.capitalize() + " at the contour-normal velocity grid points"
+            }
+            self.data_cross_flow.assign_coords({var: tmp_var[:-1]})
+
 
     @staticmethod
     def _pressure_gradient_fpoint2(ds_t, ds_t_j1, ds_t_i1, ds_t_j1i1, r_ind, velocity_component):
@@ -728,28 +729,10 @@ class ContourF(Contour):
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
         u_ds = Gridded(fn_domain=self.filename_domain, config=config_u).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
         v_ds = Gridded(fn_domain=self.filename_domain, config=config_v).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        self._update_cross_flow_latlon(
-            "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3]
-        )
-        self._update_cross_flow_latlon(
-            "latitude", u_ds.latitude, v_ds.latitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3]
-        )
-        #self._update_cross_flow_vars(
-        #    "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
-        #)
-        #self._update_cross_flow_vars(
-        #    "latitude", u_ds.latitude, v_ds.latitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
-        #)
+        
+        self._update_cross_flow_latlon(u_ds, v_ds, dr_list[0], dr_list[1], dr_list[2], dr_list[3])
         self._update_cross_flow_vars("e1", u_ds.e1, v_ds.e1, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
         self._update_cross_flow_vars("e2", u_ds.e2, v_ds.e2, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
-        self.data_cross_flow["latitude"].attrs = {
-            "standard_name": "Latitude at \
-                the contour-normal velocity grid points"
-        }
-        self.data_cross_flow["longitude"].attrs = {
-            "standard_name": "Longitude at \
-                the contour-normal velocity grid points"
-        }
 
         # DataArray attributes
         coords_hpg = {
@@ -1077,8 +1060,7 @@ class ContourT(Contour):
             }
                                 
         self._update_flow_vars("depth_0", u_ds.depth_0, v_ds.depth_0, dr_n,dr_s, dr_e,dr_w, 1)
-        self._update_flow_vars("longitude", u_ds.longitude, v_ds.longitude, dr_n, dr_s, dr_e, dr_w, 0)
-        self._update_flow_vars("latitude", u_ds.latitude, v_ds.latitude, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_along_flow_latlon(u_ds, v_ds, dr_n, dr_s, dr_e, dr_w)
         self._update_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)       
@@ -1088,12 +1070,7 @@ class ContourT(Contour):
         self.data_along_flow["depth_0"].attrs = {
             "standard_name":"Depth at time zero on the along contour velocity grid points"
         }
-        self.data_along_flow["latitude"].attrs = {
-            "standard_name":"Latitude at the along contour velocity grid points"
-        }
-        self.data_along_flow["longitude"].attrs = {
-            "standard_name":"Longitude at the along contour velocity grid points"
-        }
+        
         self.data_along_flow = self.data_along_flow.squeeze()
     
     def calc_along_contour_flow_2d(self, gridded_u: Coast, gridded_v: Coast):
@@ -1163,8 +1140,7 @@ class ContourT(Contour):
             "standard_name":"length of contour segment at the along-contour velocity grid points"
         }
 
-        self._update_flow_vars("longitude", u_ds.longitude, v_ds.longitude, dr_n, dr_s, dr_e, dr_w, 0)
-        self._update_flow_vars("latitude", u_ds.latitude, v_ds.latitude, dr_n, dr_s, dr_e, dr_w, 0)
+        self._update_along_flow_latlon(u_ds, v_ds, dr_n, dr_s, dr_e, dr_w)
         self._update_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)    
@@ -1174,17 +1150,11 @@ class ContourT(Contour):
         if ("e3_0" in u_ds.data_vars) and ("e3_0" in v_ds.data_vars):
             self._update_flow_vars("e3_0", u_ds.e3_0, v_ds.e3_0, dr_n, dr_s, dr_e, dr_w, 0)             
         
-        self.data_along_flow["latitude"].attrs = {
-            "standard_name":"Latitude at the along-contour velocity grid points"
-        }
-        self.data_along_flow["longitude"].attrs = {
-            "standard_name":"Longitude at the along contour velocity grid points"
-        }
         self.data_along_flow = self.data_along_flow.squeeze()
         
     def _update_flow_vars(self, var, u_var,v_var, dr_n, dr_s, dr_e, dr_w, pos):
         """ This method will pull variable data at specific points along the contour
-        from the u and v grid datasets and put them into the data_along_flow dataset"""
+        from the u and v grid datasets and put them into the self.data_along_flow dataset"""
         tmp_var = xr.full_like(u_var, np.nan) 
         if pos==0:
             tmp_var[dr_n] = v_var.data[dr_n]
@@ -1204,3 +1174,17 @@ class ContourT(Contour):
             tmp_var[:, :, dr_e] = u_var.data[:, :, dr_e]
             tmp_var[:, :, dr_w] = u_var.data[:, :, dr_w + 1]   
             self.data_along_flow[var] = tmp_var[:, :, :-1]
+    
+    def _update_along_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w ):
+        """ This method will pull latitude and longitude data at specific points along the 
+        contour from the u and v grid datasets and put them into the self.data_along_flow dataset"""
+        for var in ["longitude", "latitude"]:
+            tmp_var = xr.full_like(ds_u[var], np.nan)
+            tmp_var[dr_n] = ds_u[var].data[dr_n]
+            tmp_var[dr_s] = ds_u[var].data[dr_s + 1]
+            tmp_var[dr_e] = ds_v[var].data[dr_e]
+            tmp_var[dr_w] = ds_v[var].data[dr_w + 1]
+            tmp_var.attrs = {
+                "standard_name": var.capitalize() + " at the along-contour velocity grid points"
+            }
+            self.data_along_flow.assign_coords({var: tmp_var[:-1]})
