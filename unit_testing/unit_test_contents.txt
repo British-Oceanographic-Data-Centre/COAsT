@@ -1,96 +1,96 @@
      UNIT TEST CONTENTS FILE TEST    
 
- test_xesmf_convert
-      test_basic_conversion_to_xesmf
+1. test_xesmf_convert
+      a. basic_conversion_to_xesmf
 
- test_gridded_initialisation
-      test_gridded_calculate_depth0_for_tuvwf
-      test_gridded_compute_e3_from_ssh
-      test_gridded_load_dimensions_correctly_renamed
-      test_gridded_load_domain_only
-      test_gridded_load_multiple
-      test_gridded_load_of_data_and_domain
-      test_gridded_load_of_data_only
-      test_gridded_load_subregion_with_domain
-      test_gridded_load_variables_correctly_renamed
+2. test_gridded_initialisation
+      a. gridded_calculate_depth0_for_tuvwf
+      b. gridded_compute_e3_from_ssh
+      c. gridded_load_dimensions_correctly_renamed
+      d. gridded_load_domain_only
+      e. gridded_load_multiple
+      f. gridded_load_of_data_and_domain
+      g. gridded_load_of_data_only
+      h. gridded_load_subregion_with_domain
+      i. gridded_load_variables_correctly_renamed
 
- test_general_utils
-      test_coast_variable_renaming
-      test_copy_coast_object
-      test_day_of_week
-      test_getitem
+3. test_general_utils
+      a. coast_variable_renaming
+      b. copy_coast_object
+      c. day_of_week
+      d. getitem
 
- test_gridded_harmonics
-      test_combine_and_convert_harmonics
+4. test_gridded_harmonics
+      a. combine_and_convert_harmonics
 
- test_diagnostic_methods
-      test_compute_vertical_spatial_derivative
-      test_construct_pycnocline_depth_and_thickness
-      test_contruct_density
+5. test_diagnostic_methods
+      a. compute_vertical_spatial_derivative
+      b. construct_pycnocline_depth_and_thickness
+      c. contruct_density
 
- test_transect_methods
-      test_calculate_transport_velocity_and_depth
-      test_cross_transect_geostrophic_flow
-      test_determine_extract_transect_indices
-      test_transect_density_and_pressure
+6. test_transect_methods
+      a. calculate_transport_velocity_and_depth
+      b. cross_transect_geostrophic_flow
+      c. determine_extract_transect_indices
+      d. transect_density_and_pressure
 
- test_object_manipulation
-      test_indices_by_distance
-      test_interpolation_to_altimetry
-      test_subset_single_variable
+7. test_object_manipulation
+      a. indices_by_distance
+      b. interpolation_to_altimetry
+      c. subset_single_variable
 
- test_altimetry_methods
-      test_altimetry_load_subset_and_comparison
+8. test_altimetry_methods
+      a. altimetry_load_subset_and_comparison
 
- test_tidegauge_methods
-      test_load_multiple_tidegauge
-      test_read_gesla_and_compare_to_model
-      test_tidegauge_cubic_spline_extrema
-      test_tidegauge_finding_extrema
-      test_tidegauge_for_tabulated_data
-      test_tidegauge_resample_and_apply_doodsonx0
+9. test_tidegauge_methods
+      a. load_multiple_tidegauge
+      b. read_gesla_and_compare_to_model
+      c. tidegauge_cubic_spline_extrema
+      d. tidegauge_finding_extrema
+      e. tidegauge_for_tabulated_data
+      f. tidegauge_resample_and_apply_doodsonx0
 
- test_eof_methods
-      test_compute_heofs
-      test_compute_regular_eof
+10. test_eof_methods
+      a. compute_heofs
+      b. compute_regular_eof
 
- test_isobath_contour_methods
-      test_calculate_flow_across_contour
-      test_calculate_preddure_gradient_griven_flow
-      test_calculate_pressure_along_contour
-      test_extract_isobath_contour_between_two_points
+11. test_isobath_contour_methods
+      a. calculate_flow_across_contour
+      b. calculate_preddure_gradient_griven_flow
+      c. calculate_pressure_along_contour
+      d. extract_isobath_contour_between_two_points
 
- test_profile_methods
-      test_compare_processed_profile_with_model
-      test_load_process_and_compare_profile_data
+12. test_profile_methods
+      a. compare_processed_profile_with_model
+      b. load_process_and_compare_profile_data
 
- test_plot_utilities
-      test_determine_clim_by_stdev
-      test_determine_colorbar_extension
-      test_geo_axes
-      test_scatter_with_fit
+13. test_plot_utilities
+      a. determine_clim_by_stdev
+      b. determine_colorbar_extension
+      c. geo_axes
+      d. scatter_with_fit
 
- test_stats_utilities
-      test_find_maxima
+14. test_stats_utilities
+      a. find_maxima
 
- test_maskmaker_methods
-      test_fill_polygon_by_index
-      test_fill_polygon_by_lonlat
+15. test_maskmaker_methods
+      a. fill_polygon_by_index
+      b. fill_polygon_by_lonlat
 
- test_climatology
-      test_monthly_and_seasonal_climatology
+16. test_climatology
+      a. monthly_and_seasonal_climatology
 
- test_example_scripts
-      test_altimetry_tutorial
-      test_amm15_example_plot
-      test_anchor_plots_of_nsea_wvel
-      test_blz_example_plot
-      test_contour_tutorial
-      test_export_to_netcdf_tutorial
-      test_internal_tide_pycnocline_diagnostics
-      test_seasia_r12_example_plot
-      test_tidegauge_tutorial
-      test_tidetable_tutorial
-      test_transect_tutorial
-      test_wcssp_india_example_plot
+17. test_example_scripts
+      a. altimetry_tutorial
+      b. amm15_example_plot
+      c. anchor_plots_of_nsea_wvel
+      d. blz_example_plot
+      e. contour_tutorial
+      f. export_to_netcdf_tutorial
+      g. internal_tide_pycnocline_diagnostics
+      h. seasia_r12_example_plot
+      i. tidegauge_tutorial
+      j. tidetable_tutorial
+      k. transect_tutorial
+      l. wcssp_india_example_plot
 

@@ -64,6 +64,9 @@ tests_to_do = [
 # Auto generate contents file. Define output file:
 fn_contents = "./unit_testing/unit_test_contents.txt"
 
+# Initialize counters
+test_count = 1
+
 # Open output file
 with open(fn_contents, 'w') as file:
     
@@ -74,14 +77,17 @@ with open(fn_contents, 'w') as file:
     # Loop over tests in tests_to_do and get name of module as string
     for test in tests_to_do:
         test_name = test.__name__
-        file.write(" {0}\n".format(test_name))
+        file.write("{0}. {1}\n".format(test_count, test_name))
+        method_count = 97
         
         # Loop over methods in module. If begins with 'test_' then write to file
         for method in dir(test):
             if method[:5] != 'test_':
                 continue
-            file.write("      {0}\n".format(method))
+            file.write("      {0}. {1}\n".format(chr(method_count),method[5:]))
+            method_count = method_count+1
         file.write("\n")
+        test_count = test_count + 1
             
 print("Written modules and methods to: \n \n")
 print("{0}".format(fn_contents))
