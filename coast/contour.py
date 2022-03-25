@@ -446,9 +446,9 @@ class ContourF(Contour):
             tmp_var[:, :, dr_e] = v_var.data[:, :, dr_e + 1]
             tmp_var[:, :, dr_w] = v_var.data[:, :, dr_w]
             self.data_cross_flow[var] = tmp_var[:, :, :-1]
-            
-    def _update_cross_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w ):
-        """This method will pull the latitude and longitude data at specific points along the 
+
+    def _update_cross_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w):
+        """This method will pull the latitude and longitude data at specific points along the
         contour from the u and v grid datasets and put them into the self.data_cross_flow dataset"""
         for var in ["longitude", "latitude"]:
             tmp_var = xr.full_like(ds_u[var], np.nan)
@@ -456,11 +456,8 @@ class ContourF(Contour):
             tmp_var[dr_s] = ds_u[var].data[dr_s]
             tmp_var[dr_e] = ds_v[var].data[dr_e + 1]
             tmp_var[dr_w] = ds_v[var].data[dr_w]
-            tmp_var.attrs = {
-                "standard_name": var.capitalize() + " at the contour-normal velocity grid points"
-            }
+            tmp_var.attrs = {"standard_name": var.capitalize() + " at the contour-normal velocity grid points"}
             self.data_cross_flow.assign_coords({var: tmp_var[:-1]})
-
 
     @staticmethod
     def _pressure_gradient_fpoint2(ds_t, ds_t_j1, ds_t_i1, ds_t_j1i1, r_ind, velocity_component):
@@ -729,7 +726,7 @@ class ContourF(Contour):
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
         u_ds = Gridded(fn_domain=self.filename_domain, config=config_u).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
         v_ds = Gridded(fn_domain=self.filename_domain, config=config_v).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        
+
         self._update_cross_flow_latlon(u_ds, v_ds, dr_list[0], dr_list[1], dr_list[2], dr_list[3])
         self._update_cross_flow_vars("e1", u_ds.e1, v_ds.e1, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
         self._update_cross_flow_vars("e2", u_ds.e2, v_ds.e2, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0)
@@ -955,19 +952,19 @@ class ContourT(Contour):
             "units": "kg m^{-1} s^{-2}",
             "standard_name": "Surface perturbation pressure",
         }
-        
+
     def calc_along_contour_flow(self, gridded_u: Coast, gridded_v: Coast):
         """
         Function that will calculate the flow along the contour and store this data
         within Contour_t.data_along_flow, which is an xarray.Dataset. Specifically
         Contour_t.data_along_flow.velocities are the velocities along the contour with dimensions
         (t_dim, z_dim, r_dim), where r_dim is the dimension along the contour.
-        Contour_t.data_along_flow.transport are the velocities along the contour multiplied by the 
-        thickness of the cell (velocity * e3) with dimensions 
+        Contour_t.data_along_flow.transport are the velocities along the contour multiplied by the
+        thickness of the cell (velocity * e3) with dimensions
         (t_dim, z_dim, r_dim).
-        
-        If the time dependent cell thicknesses (e3) on the u and v grids are 
-        present in the gridded_u and gridded_v datasets they will be used, if they 
+
+        If the time dependent cell thicknesses (e3) on the u and v grids are
+        present in the gridded_u and gridded_v datasets they will be used, if they
         are not then the initial cell thicknesses (e3_0) will be used.
 
         Parameters
@@ -981,31 +978,31 @@ class ContourT(Contour):
         -------
         None.
 
-        """      
+        """
         # compute transports flag; set to false if suitable e3 not found
         compute_transports = True
-        
-        # subset the u and v datasets 
+
+        # subset the u and v datasets
         da_y_ind = xr.DataArray(self.y_ind, dims=["r_dim"])
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
-        u_ds = gridded_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-        v_ds = gridded_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-                
+        u_ds = gridded_u.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        v_ds = gridded_v.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+
         # use time varying if e3 is present, if not default to e3_0
         if "e3" not in u_ds.data_vars:
             if "e3_0" not in u_ds.data_vars:
                 warn("e3 not found, transports will not be calculated")
                 compute_transports = False
             else:
-                u_ds["e3"] = u_ds.e3_0.broadcast_like(u_ds.u_velocity) 
+                u_ds["e3"] = u_ds.e3_0.broadcast_like(u_ds.u_velocity)
         if "e3" not in v_ds.data_vars:
             if "e3_0" not in v_ds.data_vars:
                 warn("e3 not found, transports will not be calculated")
                 compute_transports = False
             else:
-                v_ds["e3"] = v_ds.e3_0.broadcast_like(v_ds.v_velocity)  
-           
-        # If time dimension is missing it can throw off the indexing so expand dims        
+                v_ds["e3"] = v_ds.e3_0.broadcast_like(v_ds.v_velocity)
+
+        # If time dimension is missing it can throw off the indexing so expand dims
         if "t_dim" not in u_ds.dims:
             u_ds["u_velocity"] = u_ds.u_velocity.expand_dims("t_dim", axis=0)
             if compute_transports:
@@ -1014,76 +1011,73 @@ class ContourT(Contour):
             v_ds["v_velocity"] = v_ds.v_velocity.expand_dims("t_dim", axis=0)
             if compute_transports:
                 v_ds["e3"] = v_ds.e3.expand_dims("t_dim", axis=0)
-                    
-        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+
+        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, u_ds.r_dim.size - 1), np.nan)
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
-        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, u_ds.r_dim.size - 1), np.nan)
         dr_s = dr_s[~np.isnan(dr_s)].astype(int)
-        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, v_ds.r_dim.size - 1), np.nan)
         dr_e = dr_e[~np.isnan(dr_e)].astype(int)
-        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, v_ds.r_dim.size - 1), np.nan)
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
-        
-        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)        
-        tmp_velocities[:, :, dr_n] =  v_ds.v_velocity.data[:, :, dr_n]
+
+        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)
+        tmp_velocities[:, :, dr_n] = v_ds.v_velocity.data[:, :, dr_n]
         tmp_velocities[:, :, dr_s] = -v_ds.v_velocity.data[:, :, dr_s + 1]
-        tmp_velocities[:, :, dr_e] =  u_ds.u_velocity.data[:, :, dr_e]
+        tmp_velocities[:, :, dr_e] = u_ds.u_velocity.data[:, :, dr_e]
         tmp_velocities[:, :, dr_w] = -u_ds.u_velocity.data[:, :, dr_w + 1]
         self.data_along_flow["velocities"] = tmp_velocities[:, :, :-1]
-        self.data_along_flow["velocities"].attrs = {
-            "units":"m/s",
-            "standard_name":"contour-tangent velocities"
-        }
-  
+        self.data_along_flow["velocities"].attrs = {"units": "m/s", "standard_name": "contour-tangent velocities"}
+
         # Store the length of contour segement between t-points
-        tmp_e4 = xr.full_like(u_ds.e1, np.nan)  
+        tmp_e4 = xr.full_like(u_ds.e1, np.nan)
         tmp_e4[dr_n] = v_ds.e2.data[dr_n]
         tmp_e4[dr_s] = v_ds.e2.data[dr_s + 1]
         tmp_e4[dr_e] = u_ds.e1.data[dr_e]
         tmp_e4[dr_w] = u_ds.e1.data[dr_w + 1]
         self.data_along_flow["e4"] = tmp_e4[:-1]
         self.data_along_flow["e4"].attrs = {
-            "units":"m",
-            "standard_name":"length of contour segment at the along-contour velocity grid points"
+            "units": "m",
+            "standard_name": "length of contour segment at the along-contour velocity grid points",
         }
 
-        if compute_transports:    
-            tmp_transport = xr.full_like(u_ds.u_velocity, np.nan)  
-            tmp_transport[:, :, dr_n] =  v_ds.v_velocity.data[:, :, dr_n] * v_ds.e3.data[:, :, dr_n]                                     
+        if compute_transports:
+            tmp_transport = xr.full_like(u_ds.u_velocity, np.nan)
+            tmp_transport[:, :, dr_n] = v_ds.v_velocity.data[:, :, dr_n] * v_ds.e3.data[:, :, dr_n]
             tmp_transport[:, :, dr_s] = -v_ds.v_velocity.data[:, :, dr_s + 1] * v_ds.e3.data[:, :, dr_s + 1]
-            tmp_transport[:, :, dr_e] =  u_ds.u_velocity.data[:, :, dr_e] * u_ds.e3.data[:, :, dr_e]
+            tmp_transport[:, :, dr_e] = u_ds.u_velocity.data[:, :, dr_e] * u_ds.e3.data[:, :, dr_e]
             tmp_transport[:, :, dr_w] = -u_ds.u_velocity.data[:, :, dr_w + 1] * u_ds.e3.data[:, :, dr_w + 1]
             self.data_along_flow["transport"] = tmp_transport[:, :, :-1]
             self.data_along_flow["transport"].attrs = {
-                "units":"m^2/s",
-                "standard_name":"along-contour transport (v * e3)"
+                "units": "m^2/s",
+                "standard_name": "along-contour transport (v * e3)",
             }
-                                
-        self._update_flow_vars("depth_0", u_ds.depth_0, v_ds.depth_0, dr_n,dr_s, dr_e,dr_w, 1)
+
+        self._update_flow_vars("depth_0", u_ds.depth_0, v_ds.depth_0, dr_n, dr_s, dr_e, dr_w, 1)
         self._update_along_flow_latlon(u_ds, v_ds, dr_n, dr_s, dr_e, dr_w)
         self._update_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
-        self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)       
+        self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)
         if compute_transports:
             self._update_flow_vars("e3", u_ds.e3, v_ds.e3, dr_n, dr_s, dr_e, dr_w, 2)
-        
+
         self.data_along_flow["depth_0"].attrs = {
-            "standard_name":"Depth at time zero on the along contour velocity grid points"
+            "standard_name": "Depth at time zero on the along contour velocity grid points"
         }
-        
+
         self.data_along_flow = self.data_along_flow.squeeze()
-    
+
     def calc_along_contour_flow_2d(self, gridded_u: Coast, gridded_v: Coast):
         """
         Function that will calculate the 2d flow (no vertical dimension
-        along the contour and store this data within Contour_t.data_along_flow, 
-        which is an xarray.Dataset. Contour_t.data_along_flow.velocities are 
-        the velocities along the contour with dimensions (t_dim, r_dim), 
+        along the contour and store this data within Contour_t.data_along_flow,
+        which is an xarray.Dataset. Contour_t.data_along_flow.velocities are
+        the velocities along the contour with dimensions (t_dim, r_dim),
         where r_dim is the dimension along the contour. e3 and
-        e3_0 are interpreted to be the water column thicknesses and 
+        e3_0 are interpreted to be the water column thicknesses and
         are included in the dataset as Contour_t.data_along_flow.e3 and
         Contour_t.data_along_flow.e3_0
-        
+
         Parameters
         ----------
         gridded_u : Coast
@@ -1095,88 +1089,88 @@ class ContourT(Contour):
         -------
         None.
 
-        """      
-        
-        # subset the u and v datasets 
-        da_y_ind = xr.DataArray( self.y_ind, dims=["r_dim"] )
-        da_x_ind = xr.DataArray( self.x_ind, dims=["r_dim"] )
-        u_ds = gridded_u.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-        v_ds = gridded_v.dataset.isel(y_dim = da_y_ind, x_dim = da_x_ind)
-           
-        # If time dimension is missing it can throw off the indexing so expand dims        
+        """
+
+        # subset the u and v datasets
+        da_y_ind = xr.DataArray(self.y_ind, dims=["r_dim"])
+        da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
+        u_ds = gridded_u.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+        v_ds = gridded_v.dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
+
+        # If time dimension is missing it can throw off the indexing so expand dims
         if "t_dim" not in u_ds.dims:
             u_ds["u_velocity"] = u_ds.u_velocity.expand_dims("t_dim", axis=0)
         if "t_dim" not in v_ds.dims:
             v_ds["v_velocity"] = v_ds.v_velocity.expand_dims("t_dim", axis=0)
-                    
-        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+
+        dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, u_ds.r_dim.size - 1), np.nan)
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
-        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, u_ds.r_dim.size - 1), np.nan )
+        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, u_ds.r_dim.size - 1), np.nan)
         dr_s = dr_s[~np.isnan(dr_s)].astype(int)
-        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, v_ds.r_dim.size - 1), np.nan)
         dr_e = dr_e[~np.isnan(dr_e)].astype(int)
-        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, v_ds.r_dim.size - 1), np.nan )
+        dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, v_ds.r_dim.size - 1), np.nan)
         dr_w = dr_w[~np.isnan(dr_w)].astype(int)
-        
+
         # Note that subsetting the dataset first instead of subsetting each array seperately,
         # as we do here, is neater but significantly slower.
-        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)        
+        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)
         tmp_velocities[:, dr_n] = v_ds.v_velocity.data[:, dr_n]
         tmp_velocities[:, dr_s] = -v_ds.v_velocity.data[:, dr_s + 1]
         tmp_velocities[:, dr_e] = u_ds.u_velocity.data[:, dr_e]
         tmp_velocities[:, dr_w] = -u_ds.u_velocity.data[:, dr_w + 1]
         self.data_along_flow["velocities"] = tmp_velocities[:, :-1]
-        self.data_along_flow["velocities"].attrs = {"units":"m/s", "standard_name":"along-contour velocities"}
-  
+        self.data_along_flow["velocities"].attrs = {"units": "m/s", "standard_name": "along-contour velocities"}
+
         # Store the length of contour segement between t-points
-        tmp_e4 = xr.full_like(u_ds.e1, np.nan)  
+        tmp_e4 = xr.full_like(u_ds.e1, np.nan)
         tmp_e4[dr_n] = v_ds.e2.data[dr_n]
         tmp_e4[dr_s] = v_ds.e2.data[dr_s + 1]
         tmp_e4[dr_e] = u_ds.e1.data[dr_e]
         tmp_e4[dr_w] = u_ds.e1.data[dr_w + 1]
         self.data_along_flow["e4"] = tmp_e4[:-1]
         self.data_along_flow["e4"].attrs = {
-            "units":"m",
-            "standard_name":"length of contour segment at the along-contour velocity grid points"
+            "units": "m",
+            "standard_name": "length of contour segment at the along-contour velocity grid points",
         }
 
         self._update_along_flow_latlon(u_ds, v_ds, dr_n, dr_s, dr_e, dr_w)
         self._update_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
-        self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)    
-        
+        self._update_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)
+
         if ("e3" in u_ds.data_vars) and ("e3" in v_ds.data_vars):
             self._update_flow_vars("e3", u_ds.e3, v_ds.e3, dr_n, dr_s, dr_e, dr_w, 1)
         if ("e3_0" in u_ds.data_vars) and ("e3_0" in v_ds.data_vars):
-            self._update_flow_vars("e3_0", u_ds.e3_0, v_ds.e3_0, dr_n, dr_s, dr_e, dr_w, 0)             
-        
+            self._update_flow_vars("e3_0", u_ds.e3_0, v_ds.e3_0, dr_n, dr_s, dr_e, dr_w, 0)
+
         self.data_along_flow = self.data_along_flow.squeeze()
-        
-    def _update_flow_vars(self, var, u_var,v_var, dr_n, dr_s, dr_e, dr_w, pos):
-        """ This method will pull variable data at specific points along the contour
+
+    def _update_flow_vars(self, var, u_var, v_var, dr_n, dr_s, dr_e, dr_w, pos):
+        """This method will pull variable data at specific points along the contour
         from the u and v grid datasets and put them into the self.data_along_flow dataset"""
-        tmp_var = xr.full_like(u_var, np.nan) 
-        if pos==0:
+        tmp_var = xr.full_like(u_var, np.nan)
+        if pos == 0:
             tmp_var[dr_n] = v_var.data[dr_n]
             tmp_var[dr_s] = v_var.data[dr_s + 1]
             tmp_var[dr_e] = u_var.data[dr_e]
-            tmp_var[dr_w] = u_var.data[dr_w + 1] 
+            tmp_var[dr_w] = u_var.data[dr_w + 1]
             self.data_along_flow[var] = tmp_var[:-1]
-        elif pos==1:         
+        elif pos == 1:
             tmp_var[:, dr_n] = v_var.data[:, dr_n]
             tmp_var[:, dr_s] = v_var.data[:, dr_s + 1]
             tmp_var[:, dr_e] = u_var.data[:, dr_e]
-            tmp_var[:, dr_w] = u_var.data[:, dr_w + 1]  
+            tmp_var[:, dr_w] = u_var.data[:, dr_w + 1]
             self.data_along_flow[var] = tmp_var[:, :-1]
-        elif pos==2:         
+        elif pos == 2:
             tmp_var[:, :, dr_n] = v_var.data[:, :, dr_n]
             tmp_var[:, :, dr_s] = v_var.data[:, :, dr_s + 1]
             tmp_var[:, :, dr_e] = u_var.data[:, :, dr_e]
-            tmp_var[:, :, dr_w] = u_var.data[:, :, dr_w + 1]   
+            tmp_var[:, :, dr_w] = u_var.data[:, :, dr_w + 1]
             self.data_along_flow[var] = tmp_var[:, :, :-1]
-    
-    def _update_along_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w ):
-        """ This method will pull latitude and longitude data at specific points along the 
+
+    def _update_along_flow_latlon(self, ds_u, ds_v, dr_n, dr_s, dr_e, dr_w):
+        """This method will pull latitude and longitude data at specific points along the
         contour from the u and v grid datasets and put them into the self.data_along_flow dataset"""
         for var in ["longitude", "latitude"]:
             tmp_var = xr.full_like(ds_u[var], np.nan)
@@ -1184,7 +1178,5 @@ class ContourT(Contour):
             tmp_var[dr_s] = ds_u[var].data[dr_s + 1]
             tmp_var[dr_e] = ds_v[var].data[dr_e]
             tmp_var[dr_w] = ds_v[var].data[dr_w + 1]
-            tmp_var.attrs = {
-                "standard_name": var.capitalize() + " at the along-contour velocity grid points"
-            }
+            tmp_var.attrs = {"standard_name": var.capitalize() + " at the along-contour velocity grid points"}
             self.data_along_flow.assign_coords({var: tmp_var[:-1]})
