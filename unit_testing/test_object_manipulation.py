@@ -1,6 +1,6 @@
-'''
+"""
 
-'''
+"""
 
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
@@ -11,8 +11,8 @@ import os.path as path
 import xarray as xr
 import unit_test_files as files
 
+
 class test_object_manipulation(unittest.TestCase):
-    
     def test_subset_single_variable(self):
         yt_ref = [
             164,
@@ -92,61 +92,55 @@ class test_object_manipulation(unittest.TestCase):
             99,
             98,
         ]
-        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
-                            config=files.fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         data_t = sci.get_subset_as_xarray("temperature", xt_ref, yt_ref)
 
         # Test shape and exteme values
-        check1 = (np.shape(data_t) == (51, 37))
-        check2 =  (np.nanmin(data_t) - 11.267578 < 1e-6)
-        check3 =  (np.nanmax(data_t) - 11.834961 < 1e-6)
-    
-        self.assertTrue(check1, 'check1')
-        self.assertTrue(check2, 'check2')
-        self.assertTrue(check3, 'check3')
-        
+        check1 = np.shape(data_t) == (51, 37)
+        check2 = np.nanmin(data_t) - 11.267578 < 1e-6
+        check3 = np.nanmax(data_t) - 11.834961 < 1e-6
+
+        self.assertTrue(check1, "check1")
+        self.assertTrue(check2, "check2")
+        self.assertTrue(check3, "check3")
+
     def test_indices_by_distance(self):
-        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
-                            config=files.fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         ind = sci.subset_indices_by_distance(0, 51, 111)
 
         # Test size of indices array
         check1 = np.shape(ind) == (2, 674)
-        self.assertTrue(check1, 'check1')
-        
+        self.assertTrue(check1, "check1")
+
     def test_interpolation_to_altimetry(self):
-        
-        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
-                            config=files.fn_config_t_grid)
-        
+
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
+
         with self.subTest("Find nearest xy indices"):
             altimetry = coast.Altimetry(files.fn_altimetry)
             ind = altimetry.subset_indices_lonlat_box([-10, 10], [45, 60])
             altimetry_nwes = altimetry.isel(time=ind)  # nwes = northwest europe shelf
             ind_x, ind_y = general_utils.nearest_indices_2d(
-                sci.dataset.longitude, sci.dataset.latitude, 
-                altimetry_nwes.dataset.longitude, altimetry_nwes.dataset.latitude
+                sci.dataset.longitude,
+                sci.dataset.latitude,
+                altimetry_nwes.dataset.longitude,
+                altimetry_nwes.dataset.latitude,
             )
             check1 = ind_x.shape == altimetry_nwes.dataset.longitude.shape
-            self.assertTrue(check1, 'check1')
-        
+            self.assertTrue(check1, "check1")
+
         with self.subTest("Interpolate in space"):
             interp_lon = np.array(altimetry_nwes.dataset.longitude).flatten()
             interp_lat = np.array(altimetry_nwes.dataset.latitude).flatten()
-            interpolated = sci.interpolate_in_space(sci.dataset.ssh, 
-                                                    interp_lon, interp_lat)
-        
+            interpolated = sci.interpolate_in_space(sci.dataset.ssh, interp_lon, interp_lat)
+
             # Check that output array longitude has same shape as altimetry
             check1 = interpolated.longitude.shape == altimetry_nwes.dataset.longitude.shape
-            self.assertTrue(check1, 'check1')
-            
+            self.assertTrue(check1, "check1")
+
         with self.subTest("Interpolate in time"):
             interpolated = sci.interpolate_in_time(interpolated, altimetry_nwes.dataset.time)
 
             # Check time in interpolated object has same shape
             check1 = interpolated.time.shape == altimetry_nwes.dataset.time.shape
-            self.assertTrue(check1, 'check1')
-        
-        
-    
-
+            self.assertTrue(check1, "check1")
