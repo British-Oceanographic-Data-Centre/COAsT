@@ -14,7 +14,7 @@ class test_contour_f_methods(unittest.TestCase):
     
     def test_extract_isobath_contour_between_two_points(self):
         
-	with self.subTest("Extract contour"):
+        with self.subTest("Extract contour"):
             nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid)
             contours, no_contours = coast.Contour.get_contours(nemo_f, 200)
             y_ind, x_ind, contour = coast.Contour.get_contour_segment(nemo_f, contours[0], [50, -10], [60, 3])
