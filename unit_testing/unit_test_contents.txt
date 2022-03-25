@@ -1,113 +1,96 @@
-|    Unit Testing Contents                                                    |
-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+     UNIT TEST CONTENTS FILE TEST    
 
-0. Files, directories for unit testing
+ test_xesmf_convert
+      test_basic_conversion_to_xesmf
 
-1. Loading & Initialisation
-    a. Loading Gridded NEMO data file
-    b. Load data from existing dataset
-    c. Set Gridded variable name
-    d. Set Gridded grid attribute - dimension names
-    e. Load only Domain
-    f. Calculate depth_0 for t,u,v,w,f grids
-    g. Load a subregion dataset with a full domain (AMM7)
-    h. Load and combine multiple files.
-    i. Load and combine harmonics
-    j. Convert harmonics to a/g and back
-    k. Compute e3[t,u,v,f,w] from SSH
+ test_gridded_initialisation
+      test_gridded_calculate_depth0_for_tuvwf
+      test_gridded_compute_e3_from_ssh
+      test_gridded_load_dimensions_correctly_renamed
+      test_gridded_load_domain_only
+      test_gridded_load_multiple
+      test_gridded_load_of_data_and_domain
+      test_gridded_load_of_data_only
+      test_gridded_load_subregion_with_domain
+      test_gridded_load_variables_correctly_renamed
 
-2. General Utility Methods in COAsT
-    a. Copying a COAsT object
-    b. COAsT __getitem__ returns variable
-    c. Renaming variables inside a COAsT object
-    d. day of the week function
+ test_general_utils
+      test_coast_variable_renaming
+      test_copy_coast_object
+      test_day_of_week
+      test_getitem
 
-3. Diagnostic Methods
-    a. Compute vertical spatial derivative
-    b. Construct density method inside Gridded class
-    c. Construct pycnocline depth and thickness
-    d. Plot pycnocline depth
+ test_gridded_harmonics
+      test_combine_and_convert_harmonics
 
-4. Transect Methods
-    a. Determine and extract transect indices
-    b. Transport velocity and depth calculations
-    c. Transport and velocity plotting
-    d. Construct density on z-levels along the transect. Compare with item 3b.
-    e. Geostrophic velocity & transport calculations
+ test_diagnostic_methods
+      test_compute_vertical_spatial_derivative
+      test_construct_pycnocline_depth_and_thickness
+      test_contruct_density
 
-5. Object Manipulation (e.g. indexing, subsetting)
-    a. Subsetting single variable
-    b. Indices by distance
-    c. Find nearest xy indices
-    d. Gridded.interpolate_in_space()
-    e. Gridded.interpolate_in_time()
+ test_transect_methods
+      test_calculate_transport_velocity_and_depth
+      test_cross_transect_geostrophic_flow
+      test_determine_extract_transect_indices
+      test_transect_density_and_pressure
 
-6. Altimetry Methods
-    a. Load example data
-    b. Subset altimetry data
-    c. Interpolate model onto altimetry using obs_operator
-    d. Calculate CRPS
-    e. ALTIMETRY basic stats
-    f. Altimetry plotting
+ test_object_manipulation
+      test_indices_by_distance
+      test_interpolation_to_altimetry
+      test_subset_single_variable
 
-7. TIDEGAUGE Methods
-    a. Load GESLA data
-    b. Load BODC data
-    c. Load EA data via API
-    d. TIDEGAUGE obs operator
-    e. Tidegauge CRPS
-    f. Tiudegauge basic stats
-    g. Resample TIDEGAUGE
-    h. Apply Doodson XO Filter to data
-    i. Loading multiple tidegauges
-    j. Plotting a single tidegauge location
-    k. Plotting multiple tidegauge locations
-    l. Tidegauge time series plot
-    m. TIDEGAUGE method for tabulated data
-    n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
-    o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
+ test_altimetry_methods
+      test_altimetry_load_subset_and_comparison
 
-8. Isobath Contour Methods
-    a. Extract isbath contour between two points
-    b. Plot contour on map
-    c. Calculate pressure along contour
-    d. Calculate flow across contour
-    e. Calculate pressure gradient driven flow across contour
+ test_tidegauge_methods
+      test_load_multiple_tidegauge
+      test_read_gesla_and_compare_to_model
+      test_tidegauge_cubic_spline_extrema
+      test_tidegauge_finding_extrema
+      test_tidegauge_for_tabulated_data
+      test_tidegauge_resample_and_apply_doodsonx0
 
-9. EOF methods
-    a. Compute EOFs, projections and variance
-    b. Compute HEOFs, projections and variance
+ test_eof_methods
+      test_compute_heofs
+      test_compute_regular_eof
 
-10. Profile Methods
-    a. Load En4 data
-    b. Process En4 data
-    c. Gridded obs_operator
-    d. Vertical Interpolation
-    e. Profile differencing
-    f. Regional averaging
-    g. Surface and Bottm averaging.
+ test_isobath_contour_methods
+      test_calculate_flow_across_contour
+      test_calculate_preddure_gradient_griven_flow
+      test_calculate_pressure_along_contour
+      test_extract_isobath_contour_between_two_points
 
-11. Plotting Utility
-    a. scatter_with_fit()
-    b. create_geo_axes()
-    c. determine_colorbar_extension()
-    d. determine_clim_by_standard_deviation()
+ test_profile_methods
+      test_compare_processed_profile_with_model
+      test_load_process_and_compare_profile_data
 
-12. Stats Utility
-    a. find_maxima()
+ test_plot_utilities
+      test_determine_clim_by_stdev
+      test_determine_colorbar_extension
+      test_geo_axes
+      test_scatter_with_fit
 
-13. MASK_MASKER
-    a. Create mask by indices
-    b. Create mask by lonlat
+ test_stats_utilities
+      test_find_maxima
 
-14. CLIMATOLOGY
-    a. Create monthly and seasonal climatology, write to file
+ test_maskmaker_methods
+      test_fill_polygon_by_index
+      test_fill_polygon_by_lonlat
 
-N. Example script testing
-    a. tutorials using example_files (altimetry and tidegauges)
-    b. tutorial on AMM15 data
-    c. tutorial on AMM60 data
-    d. tutorial on Belize data
-    e. tutorial on SEAsia data
-    f. tutorial on WCSSP-India data
-    g. tutorial on internal tides
+ test_climatology
+      test_monthly_and_seasonal_climatology
+
+ test_example_scripts
+      test_altimetry_tutorial
+      test_amm15_example_plot
+      test_anchor_plots_of_nsea_wvel
+      test_blz_example_plot
+      test_contour_tutorial
+      test_export_to_netcdf_tutorial
+      test_internal_tide_pycnocline_diagnostics
+      test_seasia_r12_example_plot
+      test_tidegauge_tutorial
+      test_tidetable_tutorial
+      test_transect_tutorial
+      test_wcssp_india_example_plot
+
