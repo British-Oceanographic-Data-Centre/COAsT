@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 #################################################
 #%%  Loading  data
 #################################################
-path_examples = "/scratch/accord/COAST/coast_demo/COAsT_example_files/EXTRA_examples/"  ## data local
+path_examples = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"  ## data local
 
 fn_SEAsia_domain = path_examples + "coast_example_domain_SEAsia.nc"
 fn_SEAsia_config_BGC = path_examples + "example_nemo_BGC.json"
