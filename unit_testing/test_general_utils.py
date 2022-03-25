@@ -35,7 +35,7 @@ class test_general_utils(unittest.TestCase):
         check1 = general_utils.day_of_week(np.datetime64("2020-10-16")) == "Fri"
         self.assertTrue(check1, msg="check1")
 
-    def test_BST_to_GMT(self):
+    def test_bst_to_gmt(self):
         time_str = "11/10/2020 12:00"
         datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
         bst_obj = pytz.timezone('Europe/London')
