@@ -57,7 +57,7 @@ class test_profile_methods(unittest.TestCase):
         
             check1 = type(nemo_profiles) == coast.profile.Profile
             check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
-            check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+            check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 151.4443554515237)
             
             self.assertTrue(check1, 'check1')
             self.assertTrue(check2, 'check2')
@@ -69,7 +69,7 @@ class test_profile_methods(unittest.TestCase):
             model_interpolated = nemo_profiles.interpolate_vertical(processed)
         
             check1 = type(model_interpolated) == coast.profile.Profile
-            check2 = nemo_profiles.dataset.temperature.values[0, 0] == np.float32(1.7324219)
+            check2 = np.isclose(nemo_profiles.dataset.temperature.values[0, 0], np.float32(1.7324219))
             self.assertTrue(check1, 'check1')
             self.assertTrue(check2, 'check2')
             
@@ -78,7 +78,7 @@ class test_profile_methods(unittest.TestCase):
             difference.dataset.load()
         
             check1 = type(difference) == coast.profile.Profile
-            check2 = difference.dataset.diff_temperature.values[0, 2] == np.float32(1.1402345)
+            check2 = np.isclose(difference.dataset.diff_temperature.values[0, 2], np.float32(1.1402345))
             self.assertTrue(check1, 'check1')
             self.assertTrue(check2, 'check2')
             
@@ -104,7 +104,7 @@ class test_profile_methods(unittest.TestCase):
             # Do average differences for each region
             mask_means = difference.mask_means(mask_indices)
              
-            check1 = mask_means.average_diff_temperature.values[0] == np.float32(-0.78869253)
+            check1 = np.isclose(mask_means.average_diff_temperature.values[0], np.float32(-0.78869253))
             self.assertTrue(check1, 'check1')
             
         with self.subTest("Surface/Bottom averaging"):
@@ -117,7 +117,7 @@ class test_profile_methods(unittest.TestCase):
         
             check1 = type(model_profiles_surface) == coast.profile.Profile
             check1 = type(model_profiles_bottom) == coast.profile.Profile
-            check3 = model_profiles_surface.dataset.temperature.values[0] == np.float32(1.7500391)
+            check3 = np.isclose(model_profiles_surface.dataset.temperature.values[0], np.float32(1.7500391))
             self.assertTrue(check1, 'check1')
             self.assertTrue(check2, 'check2')
             self.assertTrue(check3, 'check3')
