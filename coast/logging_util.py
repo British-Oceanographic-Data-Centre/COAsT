@@ -9,7 +9,7 @@ import traceback
 DEFAULT_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
 
-def get_logger(name: str = None, level: int = logging.DEBUG):
+def get_logger(name: str = None, level: int = logging.CRITICAL):
     logger = logging.getLogger(name=name)
     logger.setLevel(level)
     return logger
@@ -25,7 +25,7 @@ def create_handler(logger: logging.Logger, stream: io.TextIOWrapper = sys.stdout
 
 def setup_logging(
     name: str = None,
-    level: int = logging.DEBUG,
+    level: int = logging.CRITICAL,
     stream: io.TextIOWrapper = sys.stdout,
     format_string: str = DEFAULT_FORMAT,
 ):

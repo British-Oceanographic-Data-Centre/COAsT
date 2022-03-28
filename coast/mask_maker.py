@@ -10,6 +10,21 @@ class MaskMaker:
         return
 
     @staticmethod
+    def make_mask_dataset(longitude, latitude, mask_list):
+        if type(mask_list) is not list:
+            mask_list = [mask_list]
+        gridded_mask = xr.Dataset()
+        gridded_mask["longitude"] = (["y_dim", "x_dim"], longitude)
+        gridded_mask["latitude"] = (["y_dim", "x_dim"], latitude)
+        n_masks = len(mask_list)
+        nr, nc = mask_list[0].shape
+        all_masks = np.zeros((n_masks, nr, nc))
+        gridded_mask["mask"] = (["dim_mask", "y_dim", "x_dim"], all_masks)
+        for mm in np.arange(n_masks):
+            gridded_mask["mask"][mm] = mask_list[mm]
+        return gridded_mask
+
+    @staticmethod
     def fill_polygon_by_index(array_to_fill, vertices_r, vertices_c, fill_value=1, additive=False):
         """
         Draws and fills a polygon onto an existing numpy array based on array
@@ -83,7 +98,7 @@ class MaskMaker:
         vertices_lat = [56.93, 54.09, 54.09, 56, 56, 57.859, 57.859, 58.121, 58.121, 58.59, 58.59, 60.5, 60.5]
 
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
-        mask = mask * (bath < 200) * (bath > 0) * (~xr.ufuncs.isnan(bath))
+        mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
 
     @classmethod
@@ -96,7 +111,7 @@ class MaskMaker:
         vertices_lon = [-4, -9.5, -1, 3.171, 3.171, -3.76, -3.76, -12, -12, -12, -4]
         vertices_lat = [50.5, 52.71, 60.5, 60.45, 63.3, 63.3, 60.45, 60.45, 55.28, 48, 48]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
-        mask = mask * (bath < 200) * (bath > 0) * (~xr.ufuncs.isnan(bath))
+        mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
 
     @classmethod
@@ -109,7 +124,7 @@ class MaskMaker:
         vertices_lon = [10.65, 1.12, 1.12, 10.65]
         vertices_lat = [61.83, 61.83, 48, 48]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
-        mask = mask * (bath > 200) * (bath > 0) * (~xr.ufuncs.isnan(bath))
+        mask = mask * (bath > 200) * (bath > 0) * (~np.isnan(bath))
         return mask
 
     @classmethod
@@ -122,5 +137,5 @@ class MaskMaker:
         vertices_lon = [7.57, 7.57, -0.67, -2, -3.99, -3.99, -3.5, 12, 14]
         vertices_lat = [56, 54.08, 54.08, 50.7, 50.7, 48.8, 48, 48, 56]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
-        mask = mask * (bath < 200) * (bath > 0) * (~xr.ufuncs.isnan(bath))
+        mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
