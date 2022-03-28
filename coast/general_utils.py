@@ -126,7 +126,7 @@ def cartesian_to_polar(x, y, degrees=True):
     # Conversion of cartesian to polar coordinate system
     # Output theta is in radians
     """
-    r = np.sqrt(x ** 2 + y ** 2)
+    r = np.sqrt(x**2 + y**2)
     theta = np.arctan2(y, x)
     if degrees:
         theta = np.rad2deg(theta)
