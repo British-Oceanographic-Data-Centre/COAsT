@@ -100,7 +100,7 @@ class CDF:
         debug(f"Calculating {get_slug(self)} CRPS, compare against {xa}")
 
         def calc(alpha, beta, p):
-            return alpha * p**2 + beta * (1 - p) ** 2
+            return alpha * p ** 2 + beta * (1 - p) ** 2
 
         crps_sum = 0
         sample = np.array(self.sample).flatten()
@@ -153,7 +153,7 @@ class CDF:
         debug(f"Calculating {get_slug(self)} fast CRPS, compare against {xa}")
 
         def calc(alpha, beta, p):
-            return alpha * p**2 + beta * (1 - p) ** 2
+            return alpha * p ** 2 + beta * (1 - p) ** 2
 
         xa = float(xa)
         crps_sum = 0
@@ -180,7 +180,7 @@ class CDF:
         beta[tmp_logic] = tmp[tmp_logic]
 
         p = np.arange(1, sample_size) / sample_size
-        c = alpha * p**2 + beta * (1 - p) ** 2
+        c = alpha * p ** 2 + beta * (1 - p) ** 2
         crps_sum = np.sum(c)
 
         # Intervals 0 and N, where p = 0 and 1 respectively

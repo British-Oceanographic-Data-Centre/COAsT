@@ -201,13 +201,13 @@ def _compute(signal, full_matrices, active_ind, number_points):
 
     # Calculate variance explained
     if full_matrices:
-        variance_explained = 100.0 * (d**2 / np.sum(d**2))
+        variance_explained = 100.0 * (d ** 2 / np.sum(d ** 2))
     else:
         Inv = p.dot(np.dot(np.diag(d), q))  # PDQ
         var1 = np.sum(np.var(Inv, axis=1, ddof=1))
         var2 = np.sum(np.var(signal, axis=1, ddof=1))
         mult = var1 / var2
-        variance_explained = 100.0 * mult * (d**2 / np.sum(d**2))
+        variance_explained = 100.0 * mult * (d ** 2 / np.sum(d ** 2))
 
     # Extract EOF projections
     projections = np.transpose(q) * d
