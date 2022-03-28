@@ -68,9 +68,9 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         Parameters
         ----------
         gridded_t : xr.Dataset
-            Gridded object on t-points.
+            Gridded object on t-points
         gridded_w : xr.Dataset, optional
-            Gridded object on w-points.
+            Gridded object on w-points
         strat_thres: float - Optional
             limiting stratification (rho_dz < 0) to trigger masking of mixed waters
 
