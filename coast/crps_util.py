@@ -30,7 +30,7 @@ def crps_empirical(sample, obs):
     """
 
     def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
-        return alpha * p**2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
+        return alpha * p ** 2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     xa = float(obs)
     crps_integral = 0
@@ -61,7 +61,7 @@ def crps_empirical(sample, obs):
     beta[tmp_logic] = tmp[tmp_logic]
 
     p = np.arange(1, sample_size) / sample_size
-    c = alpha * p**2 + beta * (1 - p) ** 2
+    c = alpha * p ** 2 + beta * (1 - p) ** 2
     crps_integral = np.sum(c)
 
     # Intervals 0 and N, where p = 0 and 1 respectively
@@ -90,7 +90,7 @@ def crps_empirical_loop(sample, obs):
     """
 
     def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
-        return alpha * p**2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
+        return alpha * p ** 2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     crps_integral = 0
     sample = np.array(sample)
