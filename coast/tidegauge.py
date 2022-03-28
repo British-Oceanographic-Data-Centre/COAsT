@@ -139,11 +139,11 @@ class Tidegauge(Timeseries):
         xarray.Dataset object.
         """
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(cls)}')  # TODO Maybe include start/end dates
-        
+
         # See if its a file list input, or a glob
         if type(fn_gesla) is not list:
             file_list = glob.glob(fn_gesla)
-            
+
         ds_list = []
         # Loop over files and put resulting dataset into an output list
         for fn in file_list:
@@ -159,7 +159,7 @@ class Tidegauge(Timeseries):
             del header_dict["latitude"]
             dataset.attrs = header_dict
             ds_list.append(dataset)
-            
+
         # If there is only one file, then just return the dataset, not a list
         if len(file_list) == 1:
             ds_list = ds_list[0]
@@ -286,8 +286,8 @@ class Tidegauge(Timeseries):
         ssh[qc_flags == 5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims('id')
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims('id')
+        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims("id")
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims("id")
         dataset = dataset.assign_coords(time=("t_dim", time))
 
         # Assign local dataset to object-scope dataset
@@ -858,8 +858,7 @@ class Tidegauge(Timeseries):
     ###                ~            Plotting             ~                     ###
     ##############################################################################
 
-    def plot_timeseries(self, id, var_list=["ssh"], date_start=None, 
-                        date_end=None, plot_line=False):
+    def plot_timeseries(self, id, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
