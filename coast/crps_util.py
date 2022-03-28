@@ -30,7 +30,7 @@ def crps_empirical(sample, obs):
     """
 
     def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
-        return alpha * p**2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
+        return alpha * p ** 2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     xa = float(obs)
     crps_integral = 0
