@@ -7,6 +7,8 @@ import coast
 from coast import general_utils
 import unittest
 import numpy as np
+import pytz
+import datetime
 import unit_test_files as files
 
 
@@ -31,4 +33,13 @@ class test_general_utils(unittest.TestCase):
 
     def test_day_of_week(self):
         check1 = general_utils.day_of_week(np.datetime64("2020-10-16")) == "Fri"
+        self.assertTrue(check1, msg="check1")
+
+    def test_bst_to_gmt(self):
+        time_str = "11/10/2020 12:00"
+        datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
+        bst_obj = pytz.timezone("Europe/London")
+        check1 = np.datetime64(bst_obj.localize(datetime_obj).astimezone(pytz.utc)) == np.datetime64(
+            "2020-10-11T11:00:00"
+        )
         self.assertTrue(check1, msg="check1")
