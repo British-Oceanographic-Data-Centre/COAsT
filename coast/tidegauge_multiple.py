@@ -78,8 +78,8 @@ class TidegaugeMultiple:
             ssh_self = ssh_self.transpose()
 
         if np.isnan(fill_value):
-            ind_self = uf.isnan(ssh_self)
-            ind_other = uf.isnan(ssh_other)
+            ind_self = np.isnan(ssh_self)
+            ind_other = np.isnan(ssh_other)
         else:
             ind_self = ssh_self == fill_value
             ind_other = ssh_other == fill_value
@@ -146,7 +146,6 @@ class TidegaugeMultiple:
                 continue
 
             if (n_time - number_of_nan) < min_datapoints:
-                print(sum(~np.isnan(ssh.values)))
                 analyses.append([])
                 continue
 
@@ -167,7 +166,14 @@ class TidegaugeMultiple:
         return analyses
 
     def reconstruct_tide_utide(self, utide_solution_list, constit=None):
-        """ """
+        """
+        Use the time information inside this object to construct a tidal time
+        series using a list of utide analysis objects. This list can be obtained
+        using harmonic_analysis_utide(). Specify constituents to use in the
+        reconstruction by passing a list of strings such as 'M2' to the constit
+        argument. This won't work if a specified constituent is not present in
+        the analysis.
+        """
 
         ds = self.dataset
         n_port = ds.dims["id"]
@@ -196,6 +202,13 @@ class TidegaugeMultiple:
         return tg_return
 
     def calculate_residuals(self, tg_tide, apply_filter=True, window_length=25, polyorder=3):
+        """
+        Calculate non tidal residuals using the Total water level in THIS object
+        and the tide data in another object. This assumes that this object
+        contains a 'ssh' variable and the tide object contains a 'ssh_tide'
+        variable. This tide variable can be constructed using e.g.
+        reconstruct_tide_utide().
+        """
 
         # NTR: Calculate non tidal residuals
         ntr = self.dataset.ssh - tg_tide.dataset.ssh_tide
@@ -214,6 +227,29 @@ class TidegaugeMultiple:
         return tg_return
 
     def threshold_statistics(self, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
+        """
+        Do some threshold statistics for all variables with a time dimension
+        inside this tidegauge_multiple object. Specifically, this routine will
+        calculate:
+
+                peak_count          : The number of indepedent peaks over
+                                      each specified threshold. Independent peaks
+                                      are defined using the peak_separation
+                                      argument. This is the number of datapoints
+                                      either side of a peak within which data
+                                      is ommited for further peak search.
+                time_over_threshold : The total time spent over each threshold
+                                      This is NOT an integral, but simple a count
+                                      of all points over threshold.
+                dailymax_count      : A count of the number of daily maxima over
+                                      each threshold
+                monthlymax_count    : A count of the number of monthly maxima
+                                      over each threshold.
+
+        Output is a xarray dataset containing analysed variables. The name of
+        each analysis variable is constructed using the original variable name
+        and one of the above analysis categories.
+        """
 
         ds = self.dataset
         ds_thresh = xr.Dataset(ds[list(ds.coords.keys())])
@@ -225,14 +261,12 @@ class TidegaugeMultiple:
         for vv in var_list:
 
             empty_thresh = np.zeros((n_port, n_thresholds)) * np.nan
-            ds_thresh["peak_count_" + vv] = (["id", "threshold"], empty_thresh)
-            ds_thresh["time_over_threshold_" + vv] = (["id", "threshold"], empty_thresh)
-            ds_thresh["dailymax_count_" + vv] = (["id", "threshold"], empty_thresh)
-            ds_thresh["monthlymax_count_" + vv] = (["id", "threshold"], empty_thresh)
+            ds_thresh["peak_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["time_over_threshold_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["dailymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["monthlymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
 
             for pp in range(n_port):
-
-                print(pp)
 
                 # Identify NTR peaks for threshold analysis
                 data_pp = ds[vv].isel(id=pp)
@@ -267,10 +301,23 @@ class TidegaugeMultiple:
         return ds_thresh
 
     def demean_timeseries(self):
+        """
+        Subtract time means from all variables within this tidegauge_multiple
+        object. This is done independently for each id location.
+        """
         return self.dataset - self.dataset.mean(dim="t_dim")
 
     def obs_operator(self, gridded, time_interp="nearest"):
-        """ """
+        """
+        Regrids a Gridded object onto a tidegauge_multiple object. A nearest
+        neighbour interpolation is done for spatial interpolation and time
+        interpolation can be specified using the time_interp argument. This
+        takes any scipy interpolation string. If Gridded object contains a
+        landmask variables, then the nearest WET point is taken for each tide
+        gauge.
+
+        Output is a new tidegauge_multiple object containing interpolated data.
+        """
 
         gridded = gridded.dataset
         ds = self.dataset
@@ -310,6 +357,19 @@ class TidegaugeMultiple:
         return tg_out
 
     def difference(self, other, absolute_diff=True, square_diff=True):
+        """
+        Calculates differences between two tide gauge objects. Will calculate
+        differences, absolute differences and square differences between all
+        common variables within each object. Each object should have the same
+        sized dimensions. When calling this routine, the differencing is done
+        as follows:
+
+            dataset1.difference(dataset2)
+
+        This will do dataset1 - dataset2.
+
+        Output is a new tidegauge object containing differenced variables.
+        """
 
         differenced = self.dataset - other.dataset
         diff_vars = list(differenced.keys())
@@ -319,7 +379,7 @@ class TidegaugeMultiple:
             differenced = differenced.rename({vv: "diff_" + vv})
 
         if absolute_diff:
-            abs_tmp = uf.fabs(differenced)
+            abs_tmp = np.fabs(differenced)
             diff_vars = list(abs_tmp.keys())
             for vv in diff_vars:
                 abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
@@ -327,7 +387,7 @@ class TidegaugeMultiple:
             abs_tmp = xr.Dataset()
 
         if square_diff:
-            sq_tmp = uf.square(differenced)
+            sq_tmp = np.square(differenced)
             diff_vars = list(sq_tmp.keys())
             for vv in diff_vars:
                 sq_tmp = sq_tmp.rename({vv: "square_" + vv})

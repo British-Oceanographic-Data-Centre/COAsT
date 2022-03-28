@@ -223,8 +223,8 @@ class Contour:
             x_ind = np.asarray(x_ind)
             # When replacing diagonal segments in the contour, pick the path that is
             # closest to the contour isobath depth
-            option1 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
-            option0 = uf.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
+            option1 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind + 1), xr.DataArray(x_ind)] - self.depth)
+            option0 = np.fabs(dataset.bathymetry[xr.DataArray(y_ind), xr.DataArray(x_ind + 1)] - self.depth)
             add_new_y_point = xr.where(option1 <= option0, 1, 0)
 
             spacing = np.abs(np.diff(y_ind)) + np.abs(np.diff(x_ind))
@@ -362,32 +362,46 @@ class ContourF(Contour):
 
         # Note that subsetting the dataset first instead of subsetting each array seperately,
         # as we do here, is neater but significantly slower.
-        self.data_cross_flow["normal_velocities"] = xr.full_like(u_ds.u_velocity, np.nan)
-        self.data_cross_flow["normal_velocities"][:, :, dr_n] = u_ds.u_velocity.data[:, :, dr_n + 1]
-        self.data_cross_flow["normal_velocities"][:, :, dr_s] = -u_ds.u_velocity.data[:, :, dr_s]
-        self.data_cross_flow["normal_velocities"][:, :, dr_e] = -v_ds.v_velocity.data[:, :, dr_e + 1]
-        self.data_cross_flow["normal_velocities"][:, :, dr_w] = v_ds.v_velocity.data[:, :, dr_w]
+        tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)
+        tmp_velocities[:, :, dr_n] = u_ds.u_velocity.data[:, :, dr_n + 1]
+        tmp_velocities[:, :, dr_s] = -u_ds.u_velocity.data[:, :, dr_s]
+        tmp_velocities[:, :, dr_e] = -v_ds.v_velocity.data[:, :, dr_e + 1]
+        tmp_velocities[:, :, dr_w] = v_ds.v_velocity.data[:, :, dr_w]
+        self.data_cross_flow["normal_velocities"] = tmp_velocities[:, :, :-1]
         self.data_cross_flow["normal_velocities"].attrs = {"units": "m/s", "standard_name": "contour-normal velocities"}
 
+        # Store the length of the contour segement (calling it e4) on the cross-contour velocity grid
+        tmp_e4 = xr.full_like(u_ds.e1, np.nan)
+        tmp_e4[dr_n] = u_ds.e2.data[dr_n + 1]
+        tmp_e4[dr_s] = u_ds.e2.data[dr_s]
+        tmp_e4[dr_e] = v_ds.e1.data[dr_e + 1]
+        tmp_e4[dr_w] = v_ds.e1.data[dr_w]
+        self.data_cross_flow["e4"] = tmp_e4[:-1]
+        self.data_cross_flow["e4"].attrs = {
+            "units": "m",
+            "standard_name": "length of contour segment at the cross-contour velocity grid points",
+        }
+
         if compute_transports:
-            self.data_cross_flow["normal_transport"] = xr.full_like(u_ds.u_velocity, np.nan)
-            self.data_cross_flow["normal_transport"][:, :, dr_n] = (
+            # calculate the transport across the contour
+            tmp_transport = xr.full_like(u_ds.u_velocity, np.nan)
+            tmp_transport[:, :, dr_n] = (
                 u_ds.u_velocity.data[:, :, dr_n + 1] * u_ds.e2.data[dr_n + 1] * u_ds.e3.data[:, :, dr_n + 1]
             )
-            self.data_cross_flow["normal_transport"][:, :, dr_s] = (
+            tmp_transport[:, :, dr_s] = (
                 -u_ds.u_velocity.data[:, :, dr_s] * u_ds.e2.data[dr_s] * u_ds.e3.data[:, :, dr_s]
             )
-            self.data_cross_flow["normal_transport"][:, :, dr_e] = (
+            tmp_transport[:, :, dr_e] = (
                 -v_ds.v_velocity.data[:, :, dr_e + 1] * v_ds.e1.data[dr_e + 1] * v_ds.e3.data[:, :, dr_e + 1]
             )
-            self.data_cross_flow["normal_transport"][:, :, dr_w] = (
-                v_ds.v_velocity.data[:, :, dr_w] * v_ds.e1.data[dr_w] * v_ds.e3.data[:, :, dr_w]
-            )
+            tmp_transport[:, :, dr_w] = v_ds.v_velocity.data[:, :, dr_w] * v_ds.e1.data[dr_w] * v_ds.e3.data[:, :, dr_w]
+            self.data_cross_flow["normal_transport"] = tmp_transport[:, :, :-1]
             self.data_cross_flow["normal_transport"].attrs = {
                 "units": "m^3/s",
                 "standard_name": "contour-normal volume transport",
             }
 
+            # calculate the depth integrated transport across the contour
             self.data_cross_flow["depth_integrated_normal_transport"] = (
                 self.data_cross_flow.normal_transport.sum(dim="z_dim") / 1000000.0
             )
@@ -399,11 +413,9 @@ class ContourF(Contour):
         self._update_cross_flow_vars("depth_0", u_ds.depth_0, v_ds.depth_0, dr_n, dr_s, dr_e, dr_w, 1)
         self._update_cross_flow_vars("longitude", u_ds.longitude, v_ds.longitude, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_cross_flow_vars("latitude", u_ds.latitude, v_ds.latitude, dr_n, dr_s, dr_e, dr_w, 0)
-        self.data_cross_flow["e1"] = xr.full_like(self.data_contour.e1, np.nan)
+        self._update_cross_flow_vars("bathymetry", u_ds.bathymetry, v_ds.bathymetry, dr_n, dr_s, dr_e, dr_w, 0)
         self._update_cross_flow_vars("e1", u_ds.e1, v_ds.e1, dr_n, dr_s, dr_e, dr_w, 0)
-        self.data_cross_flow["e2"] = xr.full_like(self.data_contour.e2, np.nan)
         self._update_cross_flow_vars("e2", u_ds.e2, v_ds.e2, dr_n, dr_s, dr_e, dr_w, 0)
-        self.data_cross_flow["e3"] = xr.full_like(self.data_cross_flow.normal_velocities, np.nan)
         if compute_transports:
             self._update_cross_flow_vars("e3", u_ds.e3, v_ds.e3, dr_n, dr_s, dr_e, dr_w, 2)
 
@@ -421,24 +433,25 @@ class ContourF(Contour):
     def _update_cross_flow_vars(self, var, u_var, v_var, dr_n, dr_s, dr_e, dr_w, pos):
         """This method will pull variable data at specific points along the contour
         from the u and v grid datasets and put them into the data_cross_flow dataset"""
+        tmp_var = xr.full_like(u_var, np.nan)
         if pos == 0:
-            self.data_cross_flow[var][dr_n] = u_var.data[dr_n + 1]
-            self.data_cross_flow[var][dr_s] = u_var.data[dr_s]
-            self.data_cross_flow[var][dr_e] = v_var.data[dr_e + 1]
-            self.data_cross_flow[var][dr_w] = v_var.data[dr_w]
-            self.data_cross_flow[var][-1] = np.nan
+            tmp_var[dr_n] = u_var.data[dr_n + 1]
+            tmp_var[dr_s] = u_var.data[dr_s]
+            tmp_var[dr_e] = v_var.data[dr_e + 1]
+            tmp_var[dr_w] = v_var.data[dr_w]
+            self.data_cross_flow[var] = tmp_var[:-1]
         elif pos == 1:
-            self.data_cross_flow[var][:, dr_n] = u_var.data[:, dr_n + 1]
-            self.data_cross_flow[var][:, dr_s] = u_var.data[:, dr_s]
-            self.data_cross_flow[var][:, dr_e] = v_var.data[:, dr_e + 1]
-            self.data_cross_flow[var][:, dr_w] = v_var.data[:, dr_w]
-            self.data_cross_flow[var][:, -1] = np.nan
+            tmp_var[:, dr_n] = u_var.data[:, dr_n + 1]
+            tmp_var[:, dr_s] = u_var.data[:, dr_s]
+            tmp_var[:, dr_e] = v_var.data[:, dr_e + 1]
+            tmp_var[:, dr_w] = v_var.data[:, dr_w]
+            self.data_cross_flow[var] = tmp_var[:, :-1]
         elif pos == 2:
-            self.data_cross_flow[var][:, :, dr_n] = u_var.data[:, :, dr_n + 1]
-            self.data_cross_flow[var][:, :, dr_s] = u_var.data[:, :, dr_s]
-            self.data_cross_flow[var][:, :, dr_e] = v_var.data[:, :, dr_e + 1]
-            self.data_cross_flow[var][:, :, dr_w] = v_var.data[:, :, dr_w]
-            self.data_cross_flow[var][:, :, -1] = np.nan
+            tmp_var[:, :, dr_n] = u_var.data[:, :, dr_n + 1]
+            tmp_var[:, :, dr_s] = u_var.data[:, :, dr_s]
+            tmp_var[:, :, dr_e] = v_var.data[:, :, dr_e + 1]
+            tmp_var[:, :, dr_w] = v_var.data[:, :, dr_w]
+            self.data_cross_flow[var] = tmp_var[:, :, :-1]
 
     @staticmethod
     def _pressure_gradient_fpoint2(ds_t, ds_t_j1, ds_t_i1, ds_t_j1i1, r_ind, velocity_component):
@@ -707,10 +720,6 @@ class ContourF(Contour):
         da_x_ind = xr.DataArray(self.x_ind, dims=["r_dim"])
         u_ds = Gridded(fn_domain=self.filename_domain, config=config_u).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
         v_ds = Gridded(fn_domain=self.filename_domain, config=config_v).dataset.isel(y_dim=da_y_ind, x_dim=da_x_ind)
-        self.data_cross_flow["e1"] = xr.full_like(self.data_contour.e1, np.nan)
-        self.data_cross_flow["e2"] = xr.full_like(self.data_contour.e2, np.nan)
-        self.data_cross_flow["latitude"] = xr.full_like(self.data_contour.latitude, np.nan)
-        self.data_cross_flow["longitude"] = xr.full_like(self.data_contour.longitude, np.nan)
         self._update_cross_flow_vars(
             "longitude", u_ds.longitude, v_ds.longitude, dr_list[0], dr_list[1], dr_list[2], dr_list[3], 0
         )
@@ -760,20 +769,22 @@ class ContourF(Contour):
 
         # Add DataArrays  to dataset
         self.data_cross_flow["normal_velocity_hpg"] = xr.DataArray(
-            np.squeeze(normal_velocity_hpg), coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg
+            np.squeeze(normal_velocity_hpg[:, :, :-1]), coords=coords_hpg, dims=dims_hpg, attrs=attributes_hpg
         )
         self.data_cross_flow["normal_velocity_spg"] = xr.DataArray(
-            np.squeeze(normal_velocity_spg), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
+            np.squeeze(normal_velocity_spg[:, :-1]), coords=coords_spg, dims=dims_spg, attrs=attributes_spg
         )
         self.data_cross_flow["transport_across_AB_hpg"] = (
-            (self.data_cross_flow.normal_velocity_hpg.fillna(0).integrate(coord="depth_z_levels")) * e_horiz / 1000000
+            (self.data_cross_flow.normal_velocity_hpg.fillna(0).integrate(coord="depth_z_levels"))
+            * e_horiz[:, :-1]
+            / 1000000
         )
         self.data_cross_flow.transport_across_AB_hpg.attrs = {
             "units": "Sv",
             "standard_name": "volume transport across transect due to the hydrostatic pressure gradient",
         }
         self.data_cross_flow["transport_across_AB_spg"] = (
-            self.data_cross_flow.normal_velocity_spg * h * e_horiz / 1000000
+            self.data_cross_flow.normal_velocity_spg * h[:-1] * e_horiz[:, :-1] / 1000000
         )
         self.data_cross_flow.transport_across_AB_spg.attrs = {
             "units": "Sv",
@@ -897,10 +908,14 @@ class ContourT(Contour):
             z_levels = z_levels[:active_z_levels]
 
         # Absolute Pressure (depth must be negative)
-        pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude))
+        pressure_absolute = np.ma.masked_invalid(
+            gsw.p_from_z(-z_levels[:, np.newaxis], self.data_contour.latitude.values)
+        )
         # Absolute Salinity
         salinity_absolute = np.ma.masked_invalid(
-            gsw.SA_from_SP(salinity_z, pressure_absolute, self.data_contour.longitude, self.data_contour.latitude)
+            gsw.SA_from_SP(
+                salinity_z, pressure_absolute, self.data_contour.longitude.values, self.data_contour.latitude.values
+            )
         )
         salinity_absolute = np.ma.masked_less(salinity_absolute, 0)
         # Conservative Temperature

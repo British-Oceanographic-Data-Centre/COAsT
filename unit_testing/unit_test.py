@@ -56,7 +56,7 @@ import xarray.ufuncs as uf
 """
 ## Initialise logging and save to log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
-coast.logging_util.setup_logging(stream=log_file, level=logging.DEBUG)
+coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 ## Alternative logging levels
 # ..., level=logging.DEBUG) # Detailed information, typically of interest only when diagnosing problems.
 # ..., level=logging.INFO) # Confirmation that things are working as expected.
@@ -1574,7 +1574,7 @@ try:
     heofs = coast.compute_hilbert_eofs(nemo_t.dataset.ssh)
 
     ssh_reconstruction = (
-        (heofs.EOF_amp * heofs.temporal_amp * uf.exp(1j * uf.radians(heofs.EOF_phase + heofs.temporal_phase)))
+        (heofs.EOF_amp * heofs.temporal_amp * np.exp(1j * np.radians(heofs.EOF_phase + heofs.temporal_phase)))
         .sum(dim="mode")
         .real.sum(dim=["x_dim", "y_dim"])
     )
@@ -1634,7 +1634,7 @@ try:
     processed = profile.process_en4()
     processed.dataset.load()
 
-    check1 = type(processed) == coast.profile.Profile
+    check1 = type(processed) == coast.Profile
     check2 = np.isnan(processed.dataset.temperature.values[0, 0])
     check3 = processed.dataset.dims["profile"] == 111
 
@@ -1660,9 +1660,9 @@ try:
     nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
     nemo_profiles = processed.obs_operator(nemo_t)
 
-    check1 = type(nemo_profiles) == coast.profile.Profile
+    check1 = type(nemo_profiles) == coast.Profile
     check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
-    check3 = nemo_profiles.dataset.interp_dist.values[0] == 151.4443554515237
+    check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 151.4443554515237)
 
     if check1 and check2 and check3:
         print(str(sec) + chr(subsec) + " OK")
@@ -1683,7 +1683,7 @@ try:
     nemo_profiles.dataset = nemo_profiles.dataset.rename({"depth_0": "depth"})
     model_interpolated = nemo_profiles.interpolate_vertical(processed)
 
-    check1 = type(model_interpolated) == coast.profile.Profile
+    check1 = type(model_interpolated) == coast.Profile
     check2 = nemo_profiles.dataset.temperature.values[0, 0] == np.float32(1.7324219)
 
     if check1 and check2:
@@ -1704,7 +1704,7 @@ try:
     difference = processed.difference(model_interpolated)
     difference.dataset.load()
 
-    check1 = type(difference) == coast.profile.Profile
+    check1 = type(difference) == coast.Profile
     check2 = difference.dataset.diff_temperature.values[0, 2] == np.float32(1.1402345)
 
     if check1 and check2:
@@ -1770,8 +1770,8 @@ try:
     # depth is <100m, then average over the bottom 10m
     model_profiles_bottom = nemo_profiles.bottom_means([10, 30], [100, np.inf])
 
-    check1 = type(model_profiles_surface) == coast.profile.Profile
-    check1 = type(model_profiles_bottom) == coast.profile.Profile
+    check1 = type(model_profiles_surface) == coast.Profile
+    check1 = type(model_profiles_bottom) == coast.Profile
     check3 = model_profiles_surface.dataset.temperature.values[0] == np.float32(1.7500391)
 
     if check1 and check2 and check3:
@@ -2039,6 +2039,93 @@ try:
 
 except AssertionError:
     print(str(sec) + chr(subsec) + " X - Problem with computing climatology when dataset has missing values")
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+# %%
+"""
+#################################################
+## ( 15 ) XESMF Interface                      ##
+#################################################
+"""
+sec = sec + 1
+subsec = 96
+
+sci = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom, config=fn_config_t_grid)
+
+#%%
+# -----------------------------------------------------------------------------#
+# ( 15a ) Passing a single gridded object                                     #
+#                                                                             #
+
+subsec = subsec + 1
+
+try:
+
+    xesmf_ready = xs = coast.xesmf_convert(sci)
+    check_grid = xesmf_ready.input_grid
+    check_data = xesmf_ready.input_data
+    check1 = np.array_equal(check_grid.lat.values, sci.dataset.latitude.values)
+    check2 = np.array_equal(check_data.temperature[0, 0].values, sci.dataset.temperature[0, 0].values, equal_nan=True)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - xesmf_convert with single gridded obj")
+    else:
+        print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj ")
+
+except AssertionError:
+    print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj")
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+#%%
+# -----------------------------------------------------------------------------#
+# ( 15b ) Passing two gridded object                                          #
+#                                                                             #
+
+subsec = subsec + 1
+
+try:
+
+    xesmf_ready = xs = coast.xesmf_convert(sci, sci)
+    check_grid0 = xesmf_ready.input_grid
+    check_grid1 = xesmf_ready.input_data
+    check1 = np.array_equal(check_grid0.lat.values, sci.dataset.latitude.values)
+    check2 = np.array_equal(check_grid1.lat.values, sci.dataset.latitude.values)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - xesmf_convert with single gridded obj")
+    else:
+        print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj ")
+
+except AssertionError:
+    print(str(sec) + chr(subsec) + " X - xesmf_convert with single gridded obj")
+except:
+    print(str(sec) + chr(subsec) + " FAILED.")
+
+#%%
+# -----------------------------------------------------------------------------#
+# ( 15c ) Convert back to gridded object                                       #
+#                                                                             #
+
+subsec = subsec + 1
+
+try:
+
+    xesmf_ready = xs = coast.xesmf_convert(sci, sci)
+    check_grid0 = xesmf_ready.input_grid
+    check_grid1 = xesmf_ready.output_grid
+    gridded_again = xesmf_ready.to_gridded(xesmf_ready.input_data)
+    check1 = np.array_equal(sci.dataset.latitude, gridded_again.dataset.latitude)
+    check2 = np.array_equal(sci.dataset.temperature[0, 0], gridded_again.dataset.temperature[0, 0], equal_nan=True)
+
+    if check1 and check2:
+        print(str(sec) + chr(subsec) + " OK - xesmf_convert to_gridded()")
+    else:
+        print(str(sec) + chr(subsec) + " X - xesmf_convert to_gridded() ")
+
+except AssertionError:
+    print(str(sec) + chr(subsec) + " X - xesmf_convert to_gridded()")
 except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
