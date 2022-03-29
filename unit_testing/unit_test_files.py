@@ -40,12 +40,15 @@ fn_gladstone = path.join(dn_files, "Gladstone_2020-10_HLW.txt")
 fn_nemo_harmonics = path.join(dn_files, "coast_nemo_harmonics.nc")
 fn_nemo_harmonics_dom = path.join(dn_files, "coast_nemo_harmonics_dom.nc")
 fn_profile = path.join(dn_files, "coast_example_EN4_201008.nc")
+fn_WOD = path.join(dn_files, "WOD_example_ragged_standard_level.nc")
+
 
 # Domain files
 fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
 
 # Configuration files
 fn_profile_config = path.join(dn_config, "example_en4_profiles.json")
+fn_WOD_config = path.join(dn_config, "example_WOD_profiles.json")
 fn_altimetry_config = path.join(dn_config, "example_altimetry.json")
 fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
 fn_config_f_grid = path.join(dn_config, "example_nemo_grid_f.json")

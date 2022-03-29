@@ -94,3 +94,7 @@
       k. transect_tutorial
       l. wcssp_india_example_plot
 
+18. test_WOD_read_data
+      a. load_WOD
+      b. reshape_WOD
+

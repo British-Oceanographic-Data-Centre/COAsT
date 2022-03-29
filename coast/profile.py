@@ -82,6 +82,16 @@ class Profile(Indexed):
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim="N_PROF")
 
+    def read_WOD(self, fn_WOD, chunks: dict = {}) -> None:
+        """Reads a single WOD netCDF files into the COAsT profile data structure.
+
+        Args:
+            fn_WOD (str): path to data file
+            chunks (dict): chunks
+        """
+        self.dataset = xr.open_dataset(fn_WOD, chunks=chunks)
+        self.apply_config_mappings()
+        
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):

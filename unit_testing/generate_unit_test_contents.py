@@ -35,6 +35,7 @@ from test_stats_utilities import test_stats_utilities
 from test_maskmaker_methods import test_maskmaker_methods
 from test_climatology import test_climatology
 from test_example_scripts import test_example_scripts
+from test_WOD_read_data import test_WOD_read_data
 
 # Open log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
@@ -60,6 +61,7 @@ tests_to_do = [
     test_maskmaker_methods,
     test_climatology,
     test_example_scripts,
+    test_WOD_read_data,
 ]
 
 # Auto generate contents file. Define output file:
