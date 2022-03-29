@@ -43,7 +43,7 @@ class Tidegauge(Timeseries):
         -> __init__: Can be initialised with a GESLA file or empty.
         -> obs_operator: Interpolates model data to time series locations
            and times (not yet implemented).
-        -> read_gesla_to_xarray_v3: Reads a format version 3.0
+        -> read_gesla_v3: Reads a format version 3.0
            GESLA file to an xarray Dataset.
         -> read_gesla_header_v3: Reads the header of a version 3
            GESLA file.
@@ -76,11 +76,7 @@ class Tidegauge(Timeseries):
         -> find_high_and_low_water(): Find maxima and minima of time series
     """
 
-    ##############################################################################
-    ###                ~ Initialisation and File Reading ~                     ###
-    ##############################################################################
-
-    def __init__(self, file_path: str = None, date_start=None, date_end=None, config: Union[Path, str] = None):
+    def __init__(self, dataset = None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
         reading GESLA data from a directory between two datetime objects.
@@ -110,17 +106,17 @@ class Tidegauge(Timeseries):
         super().__init__(config)
 
         # If file list is supplied, read files from directory
-        if file_path is None:
-            self.dataset = None
-        else:
-            self.dataset = self.read_gesla_to_xarray_v3(file_path, date_start, date_end)
+        if dataset is not None:
+            self.dataset = dataset
             self.apply_config_mappings()
+        else:
+            self.dataset = None
+            
 
         print(f"{get_slug(self)} initialised")
 
-    ############ tide gauge methods ##############################################
-    @classmethod
-    def read_gesla_to_xarray_v3(cls, fn_gesla, date_start=None, date_end=None):
+    ############ tide gauge methods ###########################################
+    def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
         """
         For reading from a GESLA2 (Format version 3.0) file(s) into an
         xarray dataset. Formatting according to Woodworth et al. (2017).
@@ -136,20 +132,27 @@ class Tidegauge(Timeseries):
 
         Returns
         -------
-        xarray.Dataset object.
+        Creates xarray.dataset within tidegauge object containing loaded data.
+        If multiple files are provided then instead returns a list of NEW
+        tidegauge objects.
         """
-        debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(cls)}')  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')  
+        # TODO Maybe include start/end dates
 
         # See if its a file list input, or a glob
         if type(fn_gesla) is not list:
             file_list = glob.glob(fn_gesla)
+            
+        multiple=False
+        if len(file_list) > 1:
+            multiple=True
 
         ds_list = []
         # Loop over files and put resulting dataset into an output list
         for fn in file_list:
             try:
-                header_dict = cls.read_gesla_header_v3(fn)
-                dataset = cls.read_gesla_data_v3(fn, date_start, date_end)
+                header_dict = self._read_gesla_header_v3(fn)
+                dataset = self._read_gesla_data_v3(fn, date_start, date_end)
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
@@ -158,16 +161,23 @@ class Tidegauge(Timeseries):
             del header_dict["longitude"]
             del header_dict["latitude"]
             dataset.attrs = header_dict
-            ds_list.append(dataset)
+            
+            # Create tidegauge object, save dataset and append to list
+            if multiple:
+                tg_tmp = Tidegauge()
+                tg_tmp.dataset = dataset
+                tg_tmp.apply_config_mappings()
+                ds_list.append(tg_tmp)
 
         # If there is only one file, then just return the dataset, not a list
-        if len(file_list) == 1:
-            ds_list = ds_list[0]
+        if multiple:
+            return ds_list
+        else:
+            self.dataset = dataset
+            self.apply_config_mappings()
 
-        return ds_list
-
-    @staticmethod
-    def read_gesla_header_v3(fn_gesla):
+    @classmethod
+    def _read_gesla_header_v3(cls, fn_gesla):
         """
         Reads header from a GESLA file (format version 3.0).
 
@@ -227,8 +237,9 @@ class Tidegauge(Timeseries):
         }
         return header_dict
 
-    @staticmethod
-    def read_gesla_data_v3(fn_gesla, date_start=None, date_end=None, header_length: int = 32):
+    @classmethod
+    def _read_gesla_data_v3(cls, fn_gesla, date_start=None, 
+                            date_end=None, header_length: int = 32):
         """
         Reads observation data from a GESLA file (format version 3.0).
 
@@ -293,9 +304,8 @@ class Tidegauge(Timeseries):
         # Assign local dataset to object-scope dataset
         return dataset
 
-    ############ tide table methods (HLW) #########################################
-    @classmethod
-    def read_hlw_to_xarray(cls, fn_hlw, date_start=None, date_end=None):
+    ### tide table methods (HLW) 
+    def read_hlw(self, fn_hlw, date_start=None, date_end=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
         xarray dataset. File contains high water and low water heights and times
@@ -321,10 +331,11 @@ class Tidegauge(Timeseries):
         -------
         xarray.Dataset object.
         """
-        debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(cls)}')  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(self)}')  
+        # TODO Maybe include start/end dates
         try:
-            header_dict = cls.read_hlw_header(fn_hlw)
-            dataset = cls.read_hlw_data(fn_hlw, header_dict, date_start, date_end)
+            header_dict = self._read_hlw_header(fn_hlw)
+            dataset = self._read_hlw_data(fn_hlw, header_dict, date_start, date_end)
             if header_dict["field"] == "TZ:UT(GMT)/BST":
                 debug("Read in as BST, stored as UTC")
             elif header_dict["field"] == "TZ:GMTonly":
@@ -336,16 +347,16 @@ class Tidegauge(Timeseries):
             raise Exception("Problem reading HLW file: " + fn_hlw)
 
         dataset.attrs = header_dict
+        self.dataset = dataset
+        self.apply_config_mappings()
 
-        return dataset
-
-    @staticmethod
-    def read_hlw_header(filnam):
+    @classmethod
+    def _read_hlw_header(cls, filnam):
         """
         Reads header from a HWL file.
 
         The data takes the form:
-        LIVERPOOL (GLADSTONE DOCK)    TZ: UT(GMT)/BST     Units: METRES    Datum: Chart Datum
+        LIVERPOOL (GLADSTONE DOCK) TZ: UT(GMT)/BST Units: METRES Datum: Chart Datum
         01/10/2020  06:29    1.65
         01/10/2020  11:54    9.01
         01/10/2020  18:36    1.87
@@ -379,11 +390,13 @@ class Tidegauge(Timeseries):
         debug(f'Read done, close file "{filnam}"')
         fid.close()
         # Put all header info into an attributes dictionary
-        header_dict = {"site_name": site_name, "field": field, "units": units, "datum": datum}
+        header_dict = {"site_name": site_name, "field": field, 
+                       "units": units, "datum": datum}
         return header_dict
 
-    @staticmethod
-    def read_hlw_data(filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
+    @classmethod
+    def _read_hlw_data(cls, filnam, header_dict, date_start=None, 
+                       date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -447,7 +460,7 @@ class Tidegauge(Timeseries):
         ssh = ssh[start_index:end_index]
         debug(f"ssh: {ssh}")
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id")
         dataset = dataset.assign_coords(time=("time", time))
         # Assign local dataset to object-scope dataset
         return dataset
@@ -475,7 +488,8 @@ class Tidegauge(Timeseries):
                 debug(
                     "time (" + timezone + "):",
                     general_utils.day_of_week(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
+                    np.datetime_as_string(self.dataset.time[i], unit="m", 
+                                          timezone=pytz.timezone(timezone)),
                     "height:",
                     self.dataset.ssh[i].values,
                     "m",
@@ -532,9 +546,9 @@ class Tidegauge(Timeseries):
             date_end = time_guess + np.timedelta64(winsize, "h")
             end_index = np.argmax(self.dataset[time_var].values > date_end)
 
-            ssh = self.dataset[measure_var][start_index:end_index]
+            ssh = self.dataset[measure_var].isel(time=slice(start_index,end_index))
 
-            return ssh
+            return ssh[0]
 
         elif method == "nearest_1":
             dt = np.abs(self.dataset[time_var] - time_guess)
@@ -543,7 +557,7 @@ class Tidegauge(Timeseries):
                 if np.timedelta64(dt[index[0]].values, "m").astype("int") <= 60 * winsize:  # compare in minutes
                     debug(f"dt:{np.timedelta64(dt[index[0]].values, 'm').astype('int')}")
                     debug(f"winsize:{winsize}")
-                    return self.dataset[measure_var][index[0]]
+                    return self.dataset[measure_var].isel(time=index[0])
                 else:
                     # return a NaN in an xr.Dataset
                     # The rather odd trailing zero is to remove the array layer
@@ -551,18 +565,18 @@ class Tidegauge(Timeseries):
                     # alternative for a return object
                     return xr.DataArray([np.NaN], dims=(time_var), coords={time_var: [time_guess]})[0]
             else:  # give the closest without window search truncation
-                return self.dataset[measure_var][index[0]]
+                return self.dataset[measure_var].isel(time=index[0])
 
         elif method == "nearest_2":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            nearest_2 = self.dataset[measure_var][index[0 : 1 + 1]]  # , self.dataset.time[index[0:1+1]]
-            return nearest_2
+            nearest_2 = self.dataset[measure_var].isel(time=index[0 : 1 + 1])  # , self.dataset.time[index[0:1+1]]
+            return nearest_2[0]
 
         elif method == "nearest_HW":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
             # return self.dataset.ssh[ index[np.argmax( self.dataset.ssh[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
-            nearest_2 = self.dataset[measure_var][index[0 : 1 + 1]]  # , self.dataset.time[index[0:1+1]]
-            return nearest_2[nearest_2.argmax()]
+            nearest_2 = self.dataset[measure_var].isel(time=index[0 : 1 + 1])  # , self.dataset.time[index[0:1+1]]
+            return nearest_2.isel(time=nearest_2.argmax())
 
         else:
             debug("Not expecting that option / method")
@@ -600,7 +614,7 @@ class Tidegauge(Timeseries):
         cls.date_end = date_end
         cls.station_id = station_id  # EA id: stationReference
 
-        # %% Obtain and process header information
+        # Obtain and process header information
         info("load station info")
         url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.station_id + ".json"
         try:
@@ -622,7 +636,7 @@ class Tidegauge(Timeseries):
         except:
             debug(f"problem defining the parameter to read")
 
-        # %% Construct API request for data recovery
+        # Construct API request for data recovery
         info("load station data")
         if (cls.date_start == None) & (cls.date_end == None):
             info(f"GETting n_days= {cls.n_days} of data")
@@ -644,7 +658,7 @@ class Tidegauge(Timeseries):
             else:
                 debug("Expecting date_start and date_end as datetime objects")
 
-        # %% Get the data
+        # Get the data
         try:
             request_raw = requests.get(url)
             request = json.loads(request_raw.content)
@@ -653,7 +667,7 @@ class Tidegauge(Timeseries):
             debug(f"Failed request: {request_raw}")
             return
 
-        # %% Process timeseries data
+        # Process timeseries data
         dataset = xr.Dataset()
         time = []
         ssh = []
@@ -661,7 +675,7 @@ class Tidegauge(Timeseries):
         time = np.array([np.datetime64(request["items"][i]["dateTime"]) for i in range(nvals)])
         ssh = np.array([request["items"][i]["value"] for i in range(nvals)])
 
-        # %% Assign arrays to Dataset
+        # Assign arrays to Dataset
         dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
         dataset = dataset.assign_coords(time=("time", time))
         dataset.attrs = header_dict
@@ -671,9 +685,8 @@ class Tidegauge(Timeseries):
         # Assign local dataset to object-scope dataset
         return dataset
 
-    ############ BODC tide gauge methods ##############################################
-    @classmethod
-    def read_bodc_to_xarray(cls, fn_bodc, date_start=None, date_end=None):
+    ############ BODC tide gauge methods ######################################
+    def read_bodc(self, fn_bodc, date_start=None, date_end=None):
         """
         For reading from a single BODC (processed) file into an
         xarray dataset.
@@ -694,7 +707,8 @@ class Tidegauge(Timeseries):
             End Date:          31AUG2020-23.45.00
             Contributor:       National Oceanography Centre, Liverpool
             Datum information: The data refer to Admiralty Chart Datum (ACD)
-            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum) of the water body by bubbler tide gauge (second sensor)
+            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum) 
+            of the water body by bubbler tide gauge (second sensor)
               Cycle    Date      Time    ASLVBG02   Residual
              Number yyyy mm dd hh mi ssf         f          f
                  1) 2020/08/01 00:00:00     5.354M     0.265M
@@ -714,10 +728,11 @@ class Tidegauge(Timeseries):
         -------
         xarray.Dataset object.
         """
-        debug(f'Reading "{fn_bodc}" as a BODC file with {get_slug(cls)}')  # TODO Maybe include start/end dates
+        debug(f'Reading "{fn_bodc}" as a BODC file with {get_slug(self)}')  
+        # TODO Maybe include start/end dates
         try:
-            header_dict = cls.read_bodc_header(fn_bodc)
-            dataset = cls.read_bodc_data(fn_bodc, date_start, date_end)
+            header_dict = self._read_bodc_header(fn_bodc)
+            dataset = self._read_bodc_data(fn_bodc, date_start, date_end)
         except:
             raise Exception("Problem reading BODC file: " + fn_bodc)
         # Attributes
@@ -727,11 +742,10 @@ class Tidegauge(Timeseries):
         del header_dict["latitude"]
 
         dataset.attrs = header_dict
-
-        return dataset
+        self.dataset = dataset
 
     @staticmethod
-    def read_bodc_header(fn_bodc):
+    def _read_bodc_header(fn_bodc):
         """
         Reads header from a BODC file (format version 3.0).
 
@@ -770,7 +784,7 @@ class Tidegauge(Timeseries):
         return header_dict
 
     @staticmethod
-    def read_bodc_data(fn_bodc, date_start=None, date_end=None, header_length: int = 11):
+    def _read_bodc_data(fn_bodc, date_start=None, date_end=None, header_length: int = 11):
         """
         Reads observation data from a BODC file.
 
@@ -847,8 +861,8 @@ class Tidegauge(Timeseries):
         # ssh[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"])
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"])
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims('id')
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims('id')
         dataset = dataset.assign_coords(time=("time", time))
 
         # Assign local dataset to object-scope dataset
@@ -908,6 +922,56 @@ class Tidegauge(Timeseries):
         plt.xlabel("Date")
         plt.title("Site: " + self.dataset.site_name)
 
+        return fig, ax
+    
+    def plot_on_map(self):
+        """
+        Show the location of a tidegauge on a map.
+        Example usage:
+        --------------
+        # For a TIDEGAUGE object tg
+        tg.plot_map()
+        """
+    
+        debug(f"Plotting tide gauge locations for {get_slug(self)}")
+    
+        title = "Location: " + self.dataset.attrs["site_name"]
+        X = self.dataset.longitude
+        Y = self.dataset.latitude
+        fig, ax = plot_util.geo_scatter(X, Y, title=title)
+        ax.set_xlim((X - 10, X + 10))
+        ax.set_ylim((Y - 10, Y + 10))
+        return fig, ax
+    
+    @classmethod
+    def plot_on_map_multiple(cls, tidegauge_list, color_var_str=None):
+        """
+        Show the location of a tidegauge on a map.
+        Example usage:
+        --------------
+        # For a TIDEGAUGE object tg
+        tg.plot_map()
+        """
+    
+        debug(f"Plotting tide gauge locations for {get_slug(cls)}")
+    
+        X = []
+        Y = []
+        C = []
+        for tg in tidegauge_list:
+            X.append(tg.dataset.longitude)
+            Y.append(tg.dataset.latitude)
+            if color_var_str is not None:
+                C.append(tg.dataset[color_var_str].values)
+    
+        title = ""
+        if color_var_str is None:
+            fig, ax = plot_util.geo_scatter(X, Y, title=title)
+        else:
+            fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
+    
+        ax.set_xlim((min(X) - 10, max(X) + 10))
+        ax.set_ylim((min(Y) - 10, max(Y) + 10))
         return fig, ax
 
     ##############################################################################
@@ -1002,7 +1066,7 @@ class Tidegauge(Timeseries):
 
         differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
 
-        return_differenced = TidegaugeMultiple()
+        return_differenced = Tidegauge()
         return_differenced.dataset = differenced
 
         return return_differenced
@@ -1156,7 +1220,8 @@ class Tidegauge(Timeseries):
         """
         Finds high and low water for a given variable.
         Returns in a new TIDEGAUGE object with similar data format to
-        a TIDETABLE.
+        a TIDETABLE. If this Tidegauge object contains more than one location
+        (id > 1) then a list of Tidegauges will be returned.
 
         Methods:
         'comp' :: Find maxima by comparison with neighbouring values.
@@ -1169,23 +1234,45 @@ class Tidegauge(Timeseries):
                   methods include linear interpolation or refinements.
         """
 
-        x = self.dataset.time
-        y = self.dataset[var_str]
+        dataset = self.dataset
 
-        time_max, values_max = stats_util.find_maxima(x, y, method=method, **kwargs)
-        time_min, values_min = stats_util.find_maxima(x, -y, method=method, **kwargs)
+        if 'id' in dataset.dims:
+            n_id = dataset.dims['id']
+        else:
+            n_id = 1
+            dataset = dataset.expand_dims('id')
 
-        new_dataset = xr.Dataset()
-        new_dataset.attrs = self.dataset.attrs
-        new_dataset[var_str + "_highs"] = ("time_highs", values_max.data)
-        new_dataset[var_str + "_lows"] = ("time_lows", -values_min.data)
-        new_dataset["time_highs"] = ("time_highs", time_max.data)
-        new_dataset["time_lows"] = ("time_lows", time_min.data)
-
-        new_object = Tidegauge()
-        new_object.dataset = new_dataset
-
-        return new_object
+        tg_list = []
+        # Loop over id dimension
+        for ii in range(n_id):
+            # Get x and y for input to find_maxima
+            
+            x = dataset.isel(id=ii).time.values
+            y = dataset.isel(id=ii)[var_str].values
+    
+            # Get time and values of maxima and minima
+            time_max, values_max = stats_util.find_maxima(x, y, method=method, 
+                                                          **kwargs)
+            time_min, values_min = stats_util.find_maxima(x, -y, method=method, 
+                                                          **kwargs)
+            # Place the above values into a brand new dataset for this id index
+            new_dataset = xr.Dataset()
+            new_dataset.attrs = dataset.attrs
+            new_dataset[var_str + "_highs"] = ("time_highs", values_max)
+            new_dataset[var_str + "_lows"] = ("time_lows", -values_min)
+            new_dataset["time_highs"] = ("time_highs", time_max)
+            new_dataset["time_lows"] = ("time_lows", time_min)
+    
+            # Place dataset into a new Tidegauge object and append to output
+            new_object = Tidegauge()
+            new_object.dataset = new_dataset
+            tg_list.append(new_object)
+            
+        # If only 1 index, return just a Tidegauge object, else return list.
+        if n_id == 1:
+            return new_object
+        else:
+            return tg_list
 
     def demean_timeseries(self):
         return self.dataset - self.dataset.mean(dim="t_dim")

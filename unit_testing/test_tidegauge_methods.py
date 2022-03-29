@@ -1,7 +1,3 @@
-"""
-
-"""
-
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
 import unittest
@@ -113,19 +109,22 @@ class test_tidegauge_methods(unittest.TestCase):
         with self.subTest("Load multiple gauge"):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
-            lowestoft = coast.Tidegauge(files.fn_tidegauge, date_start=date0, date_end=date1)
-            tidegauge_list = coast.Tidegauge.create_multiple_tidegauge(files.fn_multiple_tidegauge, date0, date1)
+            lowestoft = coast.Tidegauge()
+            lowestoft.read_gesla_v3(files.fn_tidegauge, date0, date1)
+            multi_tg = coast.Tidegauge()
+            tg_list = multi_tg.read_gesla_v3(files.fn_multiple_tidegauge, 
+                                             date_start=date0, date_end=date1)
 
             # TEST: Check length of list
-            check1 = len(tidegauge_list) == 2
+            check1 = len(tg_list) == 2
             # TEST: Check lowestoft matches
-            check2 = all(tidegauge_list[1].dataset == lowestoft.dataset)
+            check2 = all(tg_list[1].dataset == lowestoft.dataset)
 
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
         with self.subTest("Plot multiple gauge"):
-            f, a = coast.Tidegauge.plot_on_map_multiple(tidegauge_list)
+            f, a = coast.Tidegauge.plot_on_map_multiple(tg_list)
             f.savefig(files.dn_fig + "tidegauge_multiple_map.png")
             plt.close("all")
 
@@ -135,9 +134,9 @@ class test_tidegauge_methods(unittest.TestCase):
 
         # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA type object
         tg = coast.Tidegauge()
-        tg.dataset = tg.read_hlw_to_xarray(files.fn_gladstone, date_start, date_end)
+        tg.read_hlw(files.fn_gladstone, date_start, date_end)
 
-        check1 = len(tg.dataset.sea_level) == 37
+        check1 = len(tg.dataset.ssh) == 37
         check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
         check3 = tg.get_tide_table_times(
             np.datetime64("2020-10-13 12:48"), method="nearest_1"
@@ -161,13 +160,15 @@ class test_tidegauge_methods(unittest.TestCase):
         with self.subTest("Find extrema"):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 20)
-            lowestoft2 = coast.Tidegauge(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft2 = coast.Tidegauge()
+            lowestoft2.read_gesla_v3(files.fn_tidegauge, 
+                                     date_start=date0, date_end=date1)
 
             # Use comparison of neighbourhood method (method="comp" is assumed)
-            extrema_comp = lowestoft2.find_high_and_low_water("sea_level", distance=40)
+            extrema_comp = lowestoft2.find_high_and_low_water("ssh", distance=40)
             # Check actual maximum/minimum is in output dataset
-            check1 = np.nanmax(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_highs
-            check2 = np.nanmin(lowestoft2.dataset.sea_level) in extrema_comp.dataset.sea_level_lows
+            check1 = np.nanmax(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_highs
+            check2 = np.nanmin(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_lows
             # Check new time dimensions have correct length (hardcoded here)
             check3 = len(extrema_comp.dataset.time_highs) == 19
             check4 = len(extrema_comp.dataset.time_lows) == 18
@@ -180,9 +181,11 @@ class test_tidegauge_methods(unittest.TestCase):
         with self.subTest("Plot extrema"):
             # Attempt a plot
             f = plt.figure()
-            plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.sea_level)
-            plt.scatter(extrema_comp.dataset.time_highs.values, extrema_comp.dataset.sea_level_highs, marker="o", c="g")
-            plt.scatter(extrema_comp.dataset.time_lows.values, extrema_comp.dataset.sea_level_lows, marker="o", c="r")
+            plt.plot(lowestoft2.dataset.time, lowestoft2.dataset.ssh[0])
+            plt.scatter(extrema_comp.dataset.time_highs.values, 
+                        extrema_comp.dataset.ssh_highs, marker="o", c="g")
+            plt.scatter(extrema_comp.dataset.time_lows.values, 
+                        extrema_comp.dataset.ssh_lows, marker="o", c="r")
 
             plt.legend(["Time Series", "Maxima", "Minima"])
             plt.title("Tide Gauge Optima at Lowestoft")
@@ -195,27 +198,29 @@ class test_tidegauge_methods(unittest.TestCase):
             date_start = np.datetime64("2020-10-12 23:59")
             date_end = np.datetime64("2020-10-14 00:01")
 
-            # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA
-            # type object
+            # Initiate a Tidegauge object, if a filename is passed 
+            # it assumes it is a GESLA  type object
             tg = coast.Tidegauge()
             # specify the data read as a High Low Water dataset
-            tg.dataset = tg.read_bodc_to_xarray(files.fn_tidegauge2, date_start, date_end)
+            tg.read_bodc(files.fn_tidegauge2, date_start, date_end)
 
             # Use cubic spline fitting method
-            extrema_cubc = tg.find_high_and_low_water("sea_level", method="cubic")
+            extrema_cubc = tg.find_high_and_low_water("ssh", method="cubic")
 
             # Check actual maximum/minimum is in output dataset
-            check1 = np.isclose(extrema_cubc.dataset.sea_level_highs, [7.77432795, 7.91244559]).all()
-            check2 = np.isclose(extrema_cubc.dataset.sea_level_lows, [2.63479458, 2.54599355]).all()
+            check1 = np.isclose(extrema_cubc.dataset.ssh_highs, [7.774, 7.91]).all()
+            check2 = np.isclose(extrema_cubc.dataset.ssh_lows, [2.636, 2.547]).all()
 
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
         with self.subTest("Attempt plot"):
             f = plt.figure()
-            plt.plot(tg.dataset.time, tg.dataset.sea_level)
-            plt.scatter(extrema_cubc.dataset.time_highs.values, extrema_cubc.dataset.sea_level_highs, marker="o", c="g")
-            plt.scatter(extrema_cubc.dataset.time_lows.values, extrema_cubc.dataset.sea_level_lows, marker="o", c="r")
+            plt.plot(tg.dataset.time, tg.dataset.ssh[0])
+            plt.scatter(extrema_cubc.dataset.time_highs.values, 
+                        extrema_cubc.dataset.ssh_highs, marker="o", c="g")
+            plt.scatter(extrema_cubc.dataset.time_lows.values, 
+                        extrema_cubc.dataset.ssh_lows, marker="o", c="r")
 
             plt.legend(["Time Series", "Maxima", "Minima"])
             plt.title("Tide Gauge Optima at Gladstone, fitted cubic spline")

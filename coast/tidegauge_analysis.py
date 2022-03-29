@@ -1,20 +1,12 @@
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
-import pandas as pd
-import glob
-import re
-import pytz
-import sklearn.metrics as metrics
-from . import general_utils, plot_util, crps_util, stats_util
-from .logging_util import get_slug, debug, error, info
-import xarray.ufuncs as uf
+from . import Tidegauge, general_utils
 import matplotlib.dates as mdates
 import utide as ut
 import scipy.signal as signal
 
 
-class TidegaugeMultiple:
+class TidegaugeAnalysis:
     """
     This is an object for storage and manipulation of multiple tide gauges
     in a single dataset. This may require some processing of the observations
@@ -41,7 +33,7 @@ class TidegaugeMultiple:
     should also be used for quality control/data rejection.
     """
 
-    def init():
+    def __init__():
         return
 
     ##############################################################################
@@ -56,7 +48,8 @@ class TidegaugeMultiple:
     ###                ~            Analysis             ~                     ###
     ##############################################################################
 
-    def match_missing_values(self, other, fill_value=np.nan):
+    @classmethod
+    def match_missing_values(cls, tidegauge1, tidegauge2, fill_value=np.nan):
         """
         Will match any missing values between two tidegauge_multiple datasets.
         Where missing values (defined by fill_value) are found in either dataset
@@ -66,34 +59,28 @@ class TidegaugeMultiple:
         masked.
         """
 
-        ds_self = self.dataset
-        ds_other = other.dataset
+        ds1 = tidegauge1.dataset
+        ds2 = tidegauge2.dataset
 
-        ssh_self = ds_self.ssh
-        ssh_other = ds_other.ssh
+        ssh1 = ds1.ssh
+        ssh2 = ds2.ssh
 
-        if ssh_other.dims[0] == "t_dim":
-            ssh_other = ssh_other.transpose()
-        if ssh_self.dims[0] == "t_dim":
-            ssh_self = ssh_self.transpose()
+        if ssh2.dims[0] == "t_dim":
+            ssh2 = ssh2.transpose()
+        if ssh1.dims[0] == "t_dim":
+            ssh1 = ssh1.transpose()
 
         if np.isnan(fill_value):
-            ind_self = np.isnan(ssh_self)
-            ind_other = np.isnan(ssh_other)
+            ind1 = np.isnan(ssh1)
+            ind2 = np.isnan(ssh2)
         else:
-            ind_self = ssh_self == fill_value
-            ind_other = ssh_other == fill_value
+            ind1 = ssh1 == fill_value
+            ind2 = ssh2 == fill_value
 
-        ds_self["ssh"] = ssh_self.where(~ind_other)
-        ds_other["ssh"] = ssh_other.where(~ind_self)
+        ds1["ssh"] = ssh1.where(~ind2)
+        ds2["ssh"] = ssh2.where(~ind1)
 
-        tg_self = TidegaugeMultiple()
-        tg_other = TidegaugeMultiple()
-
-        tg_self.dataset = ds_self
-        tg_other.dataset = ds_other
-
-        return tg_self, tg_other
+        return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
 
     def harmonic_analysis_utide(
         self, min_datapoints=1000, nodal=False, trend=False, method="ols", conf_int="linear", Rayleigh_min=0.95
@@ -196,7 +183,7 @@ class TidegaugeMultiple:
             reconstructed[pp] = tide
 
         coords["ssh_tide"] = (["id", "t_dim"], reconstructed)
-        tg_return = TidegaugeMultiple()
+        tg_return = Tidegauge()
         tg_return.dataset = coords
 
         return tg_return
@@ -222,7 +209,7 @@ class TidegaugeMultiple:
         coords = xr.Dataset(self.dataset[list(self.dataset.coords.keys())])
         coords["ntr"] = ntr
 
-        tg_return = TidegaugeMultiple()
+        tg_return = Tidegauge()
         tg_return.dataset = coords
         return tg_return
 
@@ -352,7 +339,7 @@ class TidegaugeMultiple:
         extracted["interp_dist"] = interp_dist
         extracted = extracted.rename_vars({"t_dim": "time"})
 
-        tg_out = TidegaugeMultiple()
+        tg_out = Tidegauge()
         tg_out.dataset = extracted
         return tg_out
 
@@ -396,7 +383,7 @@ class TidegaugeMultiple:
 
         differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
 
-        return_differenced = TidegaugeMultiple()
+        return_differenced = Tidegauge()
         return_differenced.dataset = differenced
 
         return return_differenced
