@@ -1,7 +1,7 @@
 numpy>=1.22
-dask>=2022
-dask[complete]>=2022
-xarray>=2022
+dask>=2022.3.0
+dask[complete]>=2022.3.0
+xarray>=2022.3.0
 matplotlib>=3.5.1
 netCDF4>=1.5.8
 scipy>=1.8.0
