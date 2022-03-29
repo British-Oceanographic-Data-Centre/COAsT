@@ -4,7 +4,7 @@ from . import Tidegauge, general_utils
 import matplotlib.dates as mdates
 import utide as ut
 import scipy.signal as signal
-
+from coast import stats_util, crps_util
 
 class TidegaugeAnalysis:
     """
@@ -33,7 +33,7 @@ class TidegaugeAnalysis:
     should also be used for quality control/data rejection.
     """
 
-    def __init__():
+    def __init__(self):
         return
 
     @classmethod
@@ -71,7 +71,7 @@ class TidegaugeAnalysis:
         return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
 
     @classmethod
-    def harmonic_analysis_utide(cls, dataset, var_name = 'ssh', 
+    def harmonic_analysis_utide(cls, tidegauge, var_name = 'ssh', 
                                 min_datapoints=1000, nodal=False, trend=False, 
                                 method="ols", conf_int="linear", 
                                 Rayleigh_min=0.95
@@ -103,7 +103,7 @@ class TidegaugeAnalysis:
          A list of utide structures from the solve() routine. If a location
          is omitted, it will contain [] for it's entry.
         """
-        ds = dataset
+        ds = tidegauge.dataset
         n_port = ds.dims["id"]
         n_time = ds.dims["t_dim"]
         # Harmonic analysis datenums
@@ -208,7 +208,7 @@ class TidegaugeAnalysis:
         return tg_return
 
     @classmethod
-    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), 
+    def threshold_statistics(cls, tidegauge, thresholds=np.arange(-0.4, 2, 0.1), 
                              peak_separation=12):
         """
         Do some threshold statistics for all variables with a time dimension
@@ -234,7 +234,7 @@ class TidegaugeAnalysis:
         and one of the above analysis categories.
         """
 
-        ds = dataset
+        ds = tidegauge.dataset
         ds_thresh = xr.Dataset(ds[list(ds.coords.keys())])
         ds_thresh["threshold"] = ("threshold", thresholds)
         var_list = list(ds.keys())
@@ -283,15 +283,17 @@ class TidegaugeAnalysis:
 
         return ds_thresh
 
-    def demean_timeseries(self):
+    @staticmethod
+    def demean_timeseries(tidegauge):
         """
         Subtract time means from all variables within this tidegauge_multiple
         object. This is done independently for each id location.
         """
-        return self.dataset - self.dataset.mean(dim="t_dim")
+        demeaned =tidegauge.dataset - tidegauge.dataset.mean(dim="t_dim")
+        return Tidegauge(dataset = demeaned)
 
     @classmethod
-    def difference(cls, dataset1, dataset2, 
+    def difference(cls, tidegauge1, tidegauge2, 
                    absolute_diff=True, square_diff=True):
         """
         Calculates differences between two tide gauge objects. Will calculate
@@ -306,6 +308,9 @@ class TidegaugeAnalysis:
 
         Output is a new tidegauge object containing differenced variables.
         """
+
+        dataset1 = tidegauge1.dataset
+        dataset2 = tidegauge2.dataset
 
         differenced = dataset1 - dataset2
         diff_vars = list(differenced.keys())
@@ -337,3 +342,191 @@ class TidegaugeAnalysis:
         return_differenced.dataset = differenced
 
         return return_differenced
+    
+    @staticmethod
+    def find_high_and_low_water(tidegauge, var_str, method="comp", **kwargs):
+        """
+        Finds high and low water for a given variable.
+        Returns in a new TIDEGAUGE object with similar data format to
+        a TIDETABLE. If this Tidegauge object contains more than one location
+        (id > 1) then a list of Tidegauges will be returned.
+
+        Methods:
+        'comp' :: Find maxima by comparison with neighbouring values.
+                  Uses scipy.signal.find_peaks. **kwargs passed to this routine
+                  will be passed to scipy.signal.find_peaks.
+        'cubic':: Find the maxima using the roots of cubic spline.
+                  Uses scipy.interpolate.InterpolatedUnivariateSpline
+                  and scipy.signal.argrelmax. **kwargs are not activated.
+        NOTE: Currently only the 'comp' and 'cubic' methods implemented. Future
+                  methods include linear interpolation or refinements.
+        """
+
+        dataset = tidegauge.dataset
+        
+        if 'id' in dataset.dims:
+            n_id = dataset.dims['id']
+        else:
+            n_id = 1
+            dataset = dataset.expand_dims('id')
+
+        tg_list = []
+        # Loop over id dimension
+        for ii in range(n_id):
+            # Get x and y for input to find_maxima
+            
+            x = dataset.isel(id=ii).time.values
+            y = dataset.isel(id=ii)[var_str].values
+    
+            # Get time and values of maxima and minima
+            time_max, values_max = stats_util.find_maxima(x, y, method=method, 
+                                                          **kwargs)
+            time_min, values_min = stats_util.find_maxima(x, -y, method=method, 
+                                                          **kwargs)
+            # Place the above values into a brand new dataset for this id index
+            new_dataset = xr.Dataset()
+            new_dataset.attrs = dataset.attrs
+            new_dataset[var_str + "_highs"] = ("time_highs", values_max)
+            new_dataset[var_str + "_lows"] = ("time_lows", -values_min)
+            new_dataset["time_highs"] = ("time_highs", time_max)
+            new_dataset["time_lows"] = ("time_lows", time_min)
+    
+            # Place dataset into a new Tidegauge object and append to output
+            new_object = Tidegauge()
+            new_object.dataset = new_dataset
+            tg_list.append(new_object)
+            
+        # If only 1 index, return just a Tidegauge object, else return list.
+        if n_id == 1:
+            return new_object
+        else:
+            return tg_list
+        
+    @staticmethod
+    def doodson_x0_filter(tidegauge, var_str):
+        """Applies doodson X0 filter to a specified TIDEGAUGE variable
+        Input ius expected to be hourly. Use resample_mean to average data
+        to hourly frequency."""
+        dataset = tidegauge.dataset
+        n_id = dataset.dims['id']
+        n_time = dataset.dims['t_dim']
+        filtered = np.zeros((n_id, n_time))
+        for ii in range(n_id):
+            ds_ii = dataset.isel(id=ii)
+            filtered[ii] = stats_util.doodson_x0_filter(ds_ii[var_str], ax=0)
+        new_dataset = xr.Dataset(dataset.coords)
+        new_dataset[var_str] = (("id","t_dim"), filtered)
+        return Tidegauge(dataset=new_dataset)
+    
+    @classmethod
+    def crps(
+        cls, tidegauge, gridded,
+        model_var_name, obs_var_name: str = "ssh",
+        nh_radius: float = 20, time_interp: str = "linear",
+    ):
+        """
+        Comparison of observed variable to modelled using the Continuous
+        Ranked Probability Score. This is done using this TIDEGAUGE object.
+        This method specifically performs a single-observation neighbourhood-
+        forecast method.
+
+        Parameters
+        ----------
+        model_object (model) : Model object (NEMO) containing model data
+        model_var_name (str) : Name of model variable to compare.
+        obs_var_name (str)   : Name of observed variable to compare.
+        nh_radius (float)    : Neighbourhood rad
+        cdf_type (str)       : Type of cumulative distribution to use for the
+                               model data ('empirical' or 'theoretical').
+                               Observations always use empirical.
+        time_interp (str)    : Type of time interpolation to use (s)
+        create_new_obj (bool): If True, save output to new TIDEGAUGE obj.
+                               Otherwise, save to this obj.
+
+        Returns
+        -------
+        xarray.Dataset containing times, sealevel and quality control flags
+
+        Example Useage
+        -------
+        # Compare modelled 'sossheig' with 'ssh' using CRPS
+        crps = altimetry.crps(nemo, 'sossheig', 'ssh')
+        """
+
+        # Extract variables and get shape
+        mod_var = gridded.dataset[model_var_name]
+        obs_var = tidegauge.dataset[obs_var_name]
+        n_id, n_time = obs_var.shape
+        
+        # Make output CRPS array
+        crps_out = np.zeros((n_id, n_time))
+        N_out = np.zeros((n_id, n_time))
+        
+        # Loop over location indices
+        for ii in range(n_id):
+            
+            obs_ii = obs_var.isel(id=ii)
+            
+            # Calculate CRPS
+            crps_list, n_model_pts, contains_land = crps_util.crps_sonf_fixed(
+                mod_var,
+                tidegauge.dataset.longitude.values,
+                tidegauge.dataset.latitude.values,
+                obs_ii.values,
+                tidegauge.dataset.time.values,
+                nh_radius,
+                time_interp,
+            )
+            
+            crps_out[ii] = crps_list
+            N_out[ii] = n_model_pts
+
+        # Put into new object
+        new_dataset = tidegauge.dataset[["longitude", "latitude", "time"]]
+        new_dataset["crps"] = (("id","time"), crps_out)
+        new_dataset["crps_N"] = (("id","time"), N_out)
+        return Tidegauge(dataset = new_dataset)
+
+    @classmethod
+    def time_mean(cls, tidegauge, date0=None, date1=None):
+        """Time mean of variable var_str between dates date0, date1"""
+        dataset = tidegauge.dataset
+        var = general_utils.data_array_time_slice(dataset, date0, date1)
+        return Tidegauge(dataset = var.mean(dim='t_dim', skipna=True))
+
+    @classmethod
+    def time_std(cls, tidegauge, date0=None, date1=None):
+        """Time st. dev of variable var_str between dates date0 and date1"""
+        dataset = tidegauge.dataset
+        var = general_utils.data_array_time_slice(dataset, date0, date1)
+        return Tidegauge(dataset = var.std(dim='t_dim', skipna=True))
+    
+    @classmethod
+    def time_slice(cls, tidegauge, date0=None, date1=None):
+        sliced = general_utils.data_array_time_slice(tidegauge.dataset, 
+                                                     date0, date1)
+        return Tidegauge(dataset = sliced)
+    
+    @classmethod
+    def resample_mean(cls, tidegauge,  time_freq: str, **kwargs):
+        """Resample a TIDEGAUGE variable in time by calculating the mean
+            of all data points at a given frequency.
+
+        Parameters
+        ----------
+        time_freq (str)  : Time frequency. e.g. '1H' for hourly, '1D' for daily
+                           Can also be a timedelta object. See Pandas resample
+                           method for more info.
+        **kwargs (other) : Other arguments to pass to xarray.Dataset.resample
+        (http://xarray.pydata.org/en/stable/generated/xarray.Dataset.resample.html)
+
+        Returns
+        -------
+        New Tidegauge() object containing resampled data
+        """
+
+        # Resample using xarray.resample
+        dataset = tidegauge.dataset.swap_dims({"t_dim":"time"})
+        resampled = dataset.resample(time=time_freq, **kwargs).mean()
+        resampled = resampled.swap_dims({"time":"t_dim"})
+        return Tidegauge(dataset=resampled)

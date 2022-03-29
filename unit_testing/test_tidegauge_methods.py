@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import unit_test_files as files
 import datetime
+import pandas as pd
 
 class test_tidegauge_methods(unittest.TestCase):
     def test_read_gesla_and_compare_to_model(self):
@@ -12,6 +13,7 @@ class test_tidegauge_methods(unittest.TestCase):
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
                             config=files.fn_config_t_grid)
         sci.dataset['landmask'] = sci.dataset.bottom_level == 0
+        tganalysis = coast.TidegaugeAnalysis()
 
         with self.subTest("Read GESLA file"):
             date0 = datetime.datetime(2007, 1, 10)
@@ -45,67 +47,90 @@ class test_tidegauge_methods(unittest.TestCase):
             plt.close("all")
 
         with self.subTest("Obs operator"):
-            lowestoft.obs_operator(sci, time_interp="linear")
+            lowestoft_interp = lowestoft.obs_operator(sci, time_interp="linear")
 
             # TEST: Check that the resulting interp_sossheig variable is of the same
             # length as sea_level and that it is populated.
-            interp = lowestoft.dataset.interp_ssh
-            interp_len = interp.shape[0]
-            orig_len = lowestoft.dataset.sea_level.shape[0]
+            interp_len = lowestoft_interp.dataset.ssh.shape[0]
+            orig_len = lowestoft.dataset.ssh.shape[0]
             check1 = interp_len == orig_len
-            check2 = False in np.isnan(lowestoft.dataset.interp_ssh)
+            check2 = False in np.isnan(lowestoft_interp.dataset.ssh)
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
         with self.subTest("Tidegauge CRPS"):
-            crps = lowestoft.crps(sci, "ssh")
+            crps = tganalysis.crps(lowestoft, sci, "ssh")
 
             # TEST: Check length of crps and that it contains values
-            check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.sea_level.shape[0]
+            check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.ssh.shape[0]
             check2 = False in np.isnan(crps.dataset.crps)
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
-        with self.subTest("Tidegauge stats"):
-            stats = lowestoft.basic_stats("sea_level", "interp_ssh")
-            lowestoft.basic_stats("sea_level", "interp_ssh", create_new_object=False)
-
-            # TEST: Check new object resembles internal object
-            check1 = all(stats.dataset.error == lowestoft.dataset.error)
-            # TEST: Check lengths and values
-            check2 = stats.dataset.absolute_error.shape[0] == lowestoft.dataset.sea_level.shape[0]
-            self.assertTrue(check1, "check1")
-            self.assertTrue(check2, "check2")
+    def test_time_mean(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, 
+                                date_start=date0, date_end=date1)
+        tmean = tganalysis.time_mean(lowestoft, date0, 
+                                     datetime.datetime(2007,1,11))
+        check1 = np.isclose(tmean.dataset.ssh.values[0], 1.91486598)
+        self.assertTrue(check1, 'check1')
+        
+        
+    def test_time_std(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, 
+                                date_start=date0, date_end=date1)
+        tstd = tganalysis.time_std(lowestoft, date0, 
+                                     datetime.datetime(2007,1,11))
+        check1 = np.isclose(tstd.dataset.ssh.values[0], 0.5419484060517006)
+        self.assertTrue(check1, 'check1')
+        
+    def test_time_slice(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, 
+                                date_start=date0, date_end=date1)
+        tslice = tganalysis.time_slice(lowestoft, date0=date0, 
+                                       date1=datetime.datetime(2007,1,11))
+        check1 = pd.to_datetime(tslice.dataset.time.values[0]) == date0
+        check2 = pd.to_datetime(tslice.dataset.time.values[-1]) == datetime.datetime(2007,1,11)
+        self.assertTrue(check1, 'check1')
+        self.assertTrue(check2, 'check2')
 
     def test_tidegauge_resample_and_apply_doodsonx0(self):
 
         with self.subTest("Resample to 1H"):
+            tganalysis = coast.TidegaugeAnalysis()
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
-            lowestoft = coast.Tidegauge(files.fn_tidegauge, date_start=date0, date_end=date1)
-            lowestoft.resample_mean("sea_level", "1H")
-            td0 = lowestoft.dataset.time_1H[1] - lowestoft.dataset.time_1H[0]
-            check1 = td0.values.astype("timedelta64[h]") == np.timedelta64(1, "h")
-            # TEST: Check length
-            check2 = np.ceil(lowestoft.dataset.time.shape[0] / 4) == lowestoft.dataset.time_1H.shape[0]
-            self.assertTrue(check1, "check1")
-            self.assertTrue(check2, "check2")
+            lowestoft = coast.Tidegauge()
+            lowestoft.read_gesla_v3(files.fn_tidegauge, 
+                                    date_start=date0, date_end=date1)
+            resampled = tganalysis.resample_mean(lowestoft, '1H')
+            check1 = pd.to_datetime(resampled.dataset.time.values[2]) == datetime.datetime(2007,1,10,2,0,0)
+            check2 = resampled.dataset.dims['t_dim'] == 49
+            self.assertTrue(check1)
+            self.assertTrue(check2)
 
         with self.subTest("Apply Doodson x0 filter"):
-            lowestoft.apply_doodson_x0_filter("sea_level_1H")
+            dx0 = tganalysis.doodson_x0_filter(resampled, 'ssh')
 
             # TEST: Check new times are same length as variable
-            check1 = lowestoft.dataset.time_1H.shape == lowestoft.dataset.sea_level_1H_dx0.shape
+            check1 = dx0.dataset.time.shape == resampled.dataset.time.shape
             # TEST: Check there are number values in output
-            check2 = False in np.isnan(lowestoft.dataset.sea_level_1H_dx0)
+            check2 = False in np.isnan(dx0.dataset.ssh)
 
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
-
-        with self.subTest("Plot time series"):
-            f, a = lowestoft.plot_timeseries(["sea_level", "sea_level_1H", "sea_level_1H_dx0"])
-            f.savefig(files.dn_fig + "tidegauge_timeseries.png")
-            plt.close("all")
 
     def test_load_multiple_tidegauge(self):
 
