@@ -76,7 +76,7 @@ class Tidegauge(Timeseries):
         -> find_high_and_low_water(): Find maxima and minima of time series
     """
 
-    def __init__(self, dataset = None, config: Union[Path, str] = None):
+    def __init__(self, dataset=None, config: Union[Path, str] = None):
         """
         Initialise TIDEGAUGE object either as empty (no arguments) or by
         reading GESLA data from a directory between two datetime objects.
@@ -111,7 +111,6 @@ class Tidegauge(Timeseries):
             self.apply_config_mappings()
         else:
             self.dataset = None
-            
 
         print(f"{get_slug(self)} initialised")
 
@@ -136,16 +135,16 @@ class Tidegauge(Timeseries):
         If multiple files are provided then instead returns a list of NEW
         tidegauge objects.
         """
-        debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')  
+        debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
 
         # See if its a file list input, or a glob
         if type(fn_gesla) is not list:
             file_list = glob.glob(fn_gesla)
-            
-        multiple=False
+
+        multiple = False
         if len(file_list) > 1:
-            multiple=True
+            multiple = True
 
         ds_list = []
         # Loop over files and put resulting dataset into an output list
@@ -161,7 +160,7 @@ class Tidegauge(Timeseries):
             del header_dict["longitude"]
             del header_dict["latitude"]
             dataset.attrs = header_dict
-            
+
             # Create tidegauge object, save dataset and append to list
             if multiple:
                 tg_tmp = Tidegauge()
@@ -238,8 +237,7 @@ class Tidegauge(Timeseries):
         return header_dict
 
     @classmethod
-    def _read_gesla_data_v3(cls, fn_gesla, date_start=None, 
-                            date_end=None, header_length: int = 32):
+    def _read_gesla_data_v3(cls, fn_gesla, date_start=None, date_end=None, header_length: int = 32):
         """
         Reads observation data from a GESLA file (format version 3.0).
 
@@ -304,7 +302,7 @@ class Tidegauge(Timeseries):
         # Assign local dataset to object-scope dataset
         return dataset
 
-    ### tide table methods (HLW) 
+    ### tide table methods (HLW)
     def read_hlw(self, fn_hlw, date_start=None, date_end=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
@@ -331,7 +329,7 @@ class Tidegauge(Timeseries):
         -------
         xarray.Dataset object.
         """
-        debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(self)}')  
+        debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         try:
             header_dict = self._read_hlw_header(fn_hlw)
@@ -390,13 +388,11 @@ class Tidegauge(Timeseries):
         debug(f'Read done, close file "{filnam}"')
         fid.close()
         # Put all header info into an attributes dictionary
-        header_dict = {"site_name": site_name, "field": field, 
-                       "units": units, "datum": datum}
+        header_dict = {"site_name": site_name, "field": field, "units": units, "datum": datum}
         return header_dict
 
     @classmethod
-    def _read_hlw_data(cls, filnam, header_dict, date_start=None, 
-                       date_end=None, header_length: int = 1):
+    def _read_hlw_data(cls, filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -489,8 +485,7 @@ class Tidegauge(Timeseries):
                 debug(
                     "time (" + timezone + "):",
                     general_utils.day_of_week(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m", 
-                                          timezone=pytz.timezone(timezone)),
+                    np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
                     self.dataset.ssh[i].values,
                     "m",
@@ -547,7 +542,7 @@ class Tidegauge(Timeseries):
             date_end = time_guess + np.timedelta64(winsize, "h")
             end_index = np.argmax(self.dataset[time_var].values > date_end)
 
-            ssh = self.dataset[measure_var].isel(time=slice(start_index,end_index))
+            ssh = self.dataset[measure_var].isel(time=slice(start_index, end_index))
 
             return ssh[0]
 
@@ -708,7 +703,7 @@ class Tidegauge(Timeseries):
             End Date:          31AUG2020-23.45.00
             Contributor:       National Oceanography Centre, Liverpool
             Datum information: The data refer to Admiralty Chart Datum (ACD)
-            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum) 
+            Parameter code:    ASLVBG02 = Surface elevation (unspecified datum)
             of the water body by bubbler tide gauge (second sensor)
               Cycle    Date      Time    ASLVBG02   Residual
              Number yyyy mm dd hh mi ssf         f          f
@@ -729,7 +724,7 @@ class Tidegauge(Timeseries):
         -------
         xarray.Dataset object.
         """
-        debug(f'Reading "{fn_bodc}" as a BODC file with {get_slug(self)}')  
+        debug(f'Reading "{fn_bodc}" as a BODC file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         try:
             header_dict = self._read_bodc_header(fn_bodc)
@@ -862,8 +857,8 @@ class Tidegauge(Timeseries):
         # ssh[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims('id')
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims('id')
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id")
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims("id")
         dataset = dataset.assign_coords(time=("time", time))
 
         # Assign local dataset to object-scope dataset
@@ -924,7 +919,7 @@ class Tidegauge(Timeseries):
         plt.title("Site: " + self.dataset.site_name)
 
         return fig, ax
-    
+
     def plot_on_map(self):
         """
         Show the location of a tidegauge on a map.
@@ -933,9 +928,9 @@ class Tidegauge(Timeseries):
         # For a TIDEGAUGE object tg
         tg.plot_map()
         """
-    
+
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
-    
+
         title = "Location: " + self.dataset.attrs["site_name"]
         X = self.dataset.longitude
         Y = self.dataset.latitude
@@ -943,7 +938,7 @@ class Tidegauge(Timeseries):
         ax.set_xlim((X - 10, X + 10))
         ax.set_ylim((Y - 10, Y + 10))
         return fig, ax
-    
+
     @classmethod
     def plot_on_map_multiple(cls, tidegauge_list, color_var_str=None):
         """
@@ -953,9 +948,9 @@ class Tidegauge(Timeseries):
         # For a TIDEGAUGE object tg
         tg.plot_map()
         """
-    
+
         debug(f"Plotting tide gauge locations for {get_slug(cls)}")
-    
+
         X = []
         Y = []
         C = []
@@ -964,13 +959,13 @@ class Tidegauge(Timeseries):
             Y.append(tg.dataset.latitude)
             if color_var_str is not None:
                 C.append(tg.dataset[color_var_str].values)
-    
+
         title = ""
         if color_var_str is None:
             fig, ax = plot_util.geo_scatter(X, Y, title=title)
         else:
             fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
-    
+
         ax.set_xlim((min(X) - 10, max(X) + 10))
         ax.set_ylim((min(Y) - 10, max(Y) + 10))
         return fig, ax
@@ -978,7 +973,6 @@ class Tidegauge(Timeseries):
     ##############################################################################
     ###                ~        Model Comparison         ~                     ###
     ##############################################################################
-    
     def obs_operator(self, gridded, time_interp="nearest"):
         """
         Regrids a Gridded object onto a tidegauge_multiple object. A nearest
@@ -997,14 +991,13 @@ class Tidegauge(Timeseries):
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, 
-            ds.latitude, mask=gridded.landmask
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=gridded.landmask
         )
 
         # Extract spatial time series
         print("Calculating time indices.", flush=True)
         extracted = gridded.isel(x_dim=ind_x, y_dim=ind_y)
-        if 'dim_0' in extracted.dims:
+        if "dim_0" in extracted.dims:
             extracted = extracted.swap_dims({"dim_0": "id"})
         else:
             extracted = extracted.expand_dims('id')
@@ -1016,8 +1009,7 @@ class Tidegauge(Timeseries):
         # Check interpolation distances
         print("Calculating interpolation distances.", flush=True)
         interp_dist = general_utils.calculate_haversine_distance(
-            extracted.longitude, extracted.latitude, 
-            ds.longitude.values, ds.latitude.values
+            extracted.longitude, extracted.latitude, ds.longitude.values, ds.latitude.values
         )
 
         # Interpolate model onto obs times

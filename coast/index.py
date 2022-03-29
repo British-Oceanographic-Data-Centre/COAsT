@@ -64,7 +64,7 @@ class Indexed(Coast):
             self.dataset = self.dataset.set_coords(self.coord_vars)
 
     def insert_dataset(self, dataset, apply_config_mappings=False):
-        ''' Insert a dataset straight into this object instance'''
+        """Insert a dataset straight into this object instance"""
         self.dataset = dataset
         if apply_config_mappings:
             self.apply_config_mappings()

@@ -71,6 +71,7 @@ class TidegaugeAnalysis:
         return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
 
     @classmethod
+
     def harmonic_analysis_utide(cls, tidegauge, var_name = 'ssh', 
                                 min_datapoints=1000, nodal=False, trend=False, 
                                 method="ols", conf_int="linear", 
@@ -143,8 +144,7 @@ class TidegaugeAnalysis:
 
         return analyses
 
-    def reconstruct_tide_utide(self, utide_solution_list, 
-                               output_var_name = 'ssh_tide', constit=None):
+    def reconstruct_tide_utide(self, utide_solution_list, output_var_name="ssh_tide", constit=None):
         """
         Use the time information inside this object to construct a tidal time
         series using a list of utide analysis objects. This list can be obtained
@@ -181,8 +181,7 @@ class TidegaugeAnalysis:
         return tg_return
 
     @classmethod
-    def calculate_residuals(cls, tg_ssh, tg_tide, apply_filter=True, 
-                            window_length=25, polyorder=3):
+    def calculate_residuals(cls, tg_ssh, tg_tide, apply_filter=True, window_length=25, polyorder=3):
         """
         Calculate non tidal residuals using the Total water level in THIS object
         and the tide data in another object. This assumes that this object
@@ -208,8 +207,12 @@ class TidegaugeAnalysis:
         return tg_return
 
     @classmethod
+<<<<<<< HEAD
     def threshold_statistics(cls, tidegauge, thresholds=np.arange(-0.4, 2, 0.1), 
                              peak_separation=12):
+=======
+    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
+>>>>>>> ded058a5affd11445b053563eae3edb927b07189
         """
         Do some threshold statistics for all variables with a time dimension
         inside this tidegauge_multiple object. Specifically, this routine will
@@ -293,8 +296,12 @@ class TidegaugeAnalysis:
         return Tidegauge(dataset = demeaned)
 
     @classmethod
+<<<<<<< HEAD
     def difference(cls, tidegauge1, tidegauge2, 
                    absolute_diff=True, square_diff=True):
+=======
+    def difference(cls, dataset1, dataset2, absolute_diff=True, square_diff=True):
+>>>>>>> ded058a5affd11445b053563eae3edb927b07189
         """
         Calculates differences between two tide gauge objects. Will calculate
         differences, absolute differences and square differences between all
@@ -335,8 +342,7 @@ class TidegaugeAnalysis:
         else:
             sq_tmp = xr.Dataset()
 
-        differenced = xr.merge((differenced, abs_tmp, sq_tmp, 
-                                dataset1[save_coords]))
+        differenced = xr.merge((differenced, abs_tmp, sq_tmp, dataset1[save_coords]))
 
         return_differenced = Tidegauge()
         return_differenced.dataset = differenced
