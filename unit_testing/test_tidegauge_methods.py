@@ -159,11 +159,12 @@ class test_tidegauge_methods(unittest.TestCase):
         date_start = np.datetime64("2020-10-11 07:59")
         date_end = np.datetime64("2020-10-20 20:21")
 
-        # Initiate a Tidegauge object, if a filename is passed it assumes it is a GESLA type object
+        # Initiate a Tidegauge object, if a filename is passed it assumes 
+        # it is a GESLA type object
         tg = coast.Tidegauge()
         tg.read_hlw(files.fn_gladstone, date_start, date_end)
 
-        check1 = len(tg.dataset.ssh) == 37
+        check1 = len(tg.dataset.ssh[0]) == 37
         check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
         check3 = tg.get_tide_table_times(
             np.datetime64("2020-10-13 12:48"), method="nearest_1"
@@ -188,10 +189,13 @@ class test_tidegauge_methods(unittest.TestCase):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 20)
             lowestoft2 = coast.Tidegauge()
-            lowestoft2.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft2.read_gesla_v3(files.fn_tidegauge, date_start=date0, 
+                                     date_end=date1)
+            tganalysis = coast.TidegaugeAnalysis()
 
             # Use comparison of neighbourhood method (method="comp" is assumed)
-            extrema_comp = lowestoft2.find_high_and_low_water("ssh", distance=40)
+            extrema_comp = tganalysis.find_high_and_low_water(lowestoft2,
+                                                              "ssh", distance=40)
             # Check actual maximum/minimum is in output dataset
             check1 = np.nanmax(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_highs
             check2 = np.nanmin(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_lows
@@ -221,6 +225,7 @@ class test_tidegauge_methods(unittest.TestCase):
         with self.subTest("Fit cubic spline"):
             date_start = np.datetime64("2020-10-12 23:59")
             date_end = np.datetime64("2020-10-14 00:01")
+            tganalysis = coast.TidegaugeAnalysis()
 
             # Initiate a Tidegauge object, if a filename is passed
             # it assumes it is a GESLA  type object
@@ -229,7 +234,7 @@ class test_tidegauge_methods(unittest.TestCase):
             tg.read_bodc(files.fn_tidegauge2, date_start, date_end)
 
             # Use cubic spline fitting method
-            extrema_cubc = tg.find_high_and_low_water("ssh", method="cubic")
+            extrema_cubc = tganalysis.find_high_and_low_water(tg,"ssh", method="cubic")
 
             # Check actual maximum/minimum is in output dataset
             check1 = np.isclose(extrema_cubc.dataset.ssh_highs, [7.774, 7.91]).all()

@@ -207,12 +207,9 @@ class TidegaugeAnalysis:
         return tg_return
 
     @classmethod
-<<<<<<< HEAD
+
     def threshold_statistics(cls, tidegauge, thresholds=np.arange(-0.4, 2, 0.1), 
                              peak_separation=12):
-=======
-    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
->>>>>>> ded058a5affd11445b053563eae3edb927b07189
         """
         Do some threshold statistics for all variables with a time dimension
         inside this tidegauge_multiple object. Specifically, this routine will
@@ -296,12 +293,8 @@ class TidegaugeAnalysis:
         return Tidegauge(dataset = demeaned)
 
     @classmethod
-<<<<<<< HEAD
     def difference(cls, tidegauge1, tidegauge2, 
                    absolute_diff=True, square_diff=True):
-=======
-    def difference(cls, dataset1, dataset2, absolute_diff=True, square_diff=True):
->>>>>>> ded058a5affd11445b053563eae3edb927b07189
         """
         Calculates differences between two tide gauge objects. Will calculate
         differences, absolute differences and square differences between all
