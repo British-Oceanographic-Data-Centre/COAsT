@@ -36,18 +36,6 @@ class TidegaugeAnalysis:
     def __init__():
         return
 
-    ##############################################################################
-    ###                ~            Plotting             ~                     ###
-    ##############################################################################
-
-    ##############################################################################
-    ###                ~        Model Comparison         ~                     ###
-    ##############################################################################
-
-    ##############################################################################
-    ###                ~            Analysis             ~                     ###
-    ##############################################################################
-
     @classmethod
     def match_missing_values(cls, tidegauge1, tidegauge2, fill_value=np.nan):
         """
@@ -82,8 +70,11 @@ class TidegaugeAnalysis:
 
         return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
 
-    def harmonic_analysis_utide(
-        self, min_datapoints=1000, nodal=False, trend=False, method="ols", conf_int="linear", Rayleigh_min=0.95
+    @classmethod
+    def harmonic_analysis_utide(cls, dataset, var_name = 'ssh', 
+                                min_datapoints=1000, nodal=False, trend=False, 
+                                method="ols", conf_int="linear", 
+                                Rayleigh_min=0.95
     ):
         """
         Does a harmonic analysis for each timeseries inside this object using
@@ -112,7 +103,7 @@ class TidegaugeAnalysis:
          A list of utide structures from the solve() routine. If a location
          is omitted, it will contain [] for it's entry.
         """
-        ds = self.dataset
+        ds = dataset
         n_port = ds.dims["id"]
         n_time = ds.dims["t_dim"]
         # Harmonic analysis datenums
@@ -124,9 +115,9 @@ class TidegaugeAnalysis:
 
             # Temporary in-loop datasets
             ds_port = ds.isel(id=pp).load()
-            ssh = ds_port.ssh
+            var = ds_port[var_name]
 
-            number_of_nan = np.sum(np.isnan(ssh.values))
+            number_of_nan = np.sum(np.isnan(var.values))
 
             if number_of_nan == n_time:
                 analyses.append([])
@@ -139,8 +130,8 @@ class TidegaugeAnalysis:
             # Do harmonic analysis using UTide
             uts_obs = ut.solve(
                 time,
-                ssh.values,
-                lat=ssh.latitude.values,
+                var.values,
+                lat=var.latitude.values,
                 nodal=nodal,
                 trend=trend,
                 method=method,
@@ -152,7 +143,8 @@ class TidegaugeAnalysis:
 
         return analyses
 
-    def reconstruct_tide_utide(self, utide_solution_list, constit=None):
+    def reconstruct_tide_utide(self, utide_solution_list, 
+                               output_var_name = 'ssh_tide', constit=None):
         """
         Use the time information inside this object to construct a tidal time
         series using a list of utide analysis objects. This list can be obtained
@@ -182,13 +174,15 @@ class TidegaugeAnalysis:
             tide = np.array(ut.reconstruct(time, pp_solution, constit=constit).h)
             reconstructed[pp] = tide
 
-        coords["ssh_tide"] = (["id", "t_dim"], reconstructed)
+        coords[output_var_name] = (["id", "t_dim"], reconstructed)
         tg_return = Tidegauge()
         tg_return.dataset = coords
 
         return tg_return
 
-    def calculate_residuals(self, tg_tide, apply_filter=True, window_length=25, polyorder=3):
+    @classmethod
+    def calculate_residuals(cls, tg_ssh, tg_tide, apply_filter=True, 
+                            window_length=25, polyorder=3):
         """
         Calculate non tidal residuals using the Total water level in THIS object
         and the tide data in another object. This assumes that this object
@@ -198,22 +192,24 @@ class TidegaugeAnalysis:
         """
 
         # NTR: Calculate non tidal residuals
-        ntr = self.dataset.ssh - tg_tide.dataset.ssh_tide
-        n_port = self.dataset.dims["id"]
+        ntr = tg_ssh.dataset.ssh - tg_tide.dataset.ssh_tide
+        n_port = tg_ssh.dataset.dims["id"]
 
         # NTR: Apply filter if wanted
         if apply_filter:
             for pp in range(n_port):
                 ntr[pp, :] = signal.savgol_filter(ntr[pp, :], 25, 3)
 
-        coords = xr.Dataset(self.dataset[list(self.dataset.coords.keys())])
+        coords = xr.Dataset(tg_ssh.dataset[list(tg_ssh.dataset.coords.keys())])
         coords["ntr"] = ntr
 
         tg_return = Tidegauge()
         tg_return.dataset = coords
         return tg_return
 
-    def threshold_statistics(self, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
+    @classmethod
+    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), 
+                             peak_separation=12):
         """
         Do some threshold statistics for all variables with a time dimension
         inside this tidegauge_multiple object. Specifically, this routine will
@@ -238,7 +234,7 @@ class TidegaugeAnalysis:
         and one of the above analysis categories.
         """
 
-        ds = self.dataset
+        ds = dataset
         ds_thresh = xr.Dataset(ds[list(ds.coords.keys())])
         ds_thresh["threshold"] = ("threshold", thresholds)
         var_list = list(ds.keys())
@@ -294,56 +290,9 @@ class TidegaugeAnalysis:
         """
         return self.dataset - self.dataset.mean(dim="t_dim")
 
-    def obs_operator(self, gridded, time_interp="nearest"):
-        """
-        Regrids a Gridded object onto a tidegauge_multiple object. A nearest
-        neighbour interpolation is done for spatial interpolation and time
-        interpolation can be specified using the time_interp argument. This
-        takes any scipy interpolation string. If Gridded object contains a
-        landmask variables, then the nearest WET point is taken for each tide
-        gauge.
-
-        Output is a new tidegauge_multiple object containing interpolated data.
-        """
-
-        gridded = gridded.dataset
-        ds = self.dataset
-
-        # Determine spatial indices
-        print("Calculating spatial indices.", flush=True)
-        ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=gridded.landmask
-        )
-
-        # Extract spatial time series
-        print("Calculating time indices.", flush=True)
-        extracted = gridded.isel(x_dim=ind_x, y_dim=ind_y)
-        extracted = extracted.swap_dims({"dim_0": "id"})
-
-        # Compute data (takes a while..)
-        print(" Indexing model data at tide gauge locations.. ", flush=True)
-        extracted.load()
-
-        # Check interpolation distances
-        print("Calculating interpolation distances.", flush=True)
-        interp_dist = general_utils.calculate_haversine_distance(
-            extracted.longitude, extracted.latitude, ds.longitude.values, ds.latitude.values
-        )
-
-        # Interpolate model onto obs times
-        print("Interpolating in time...", flush=True)
-        extracted = extracted.rename({"time": "t_dim"})
-        extracted = extracted.interp(t_dim=ds.time.values, method=time_interp)
-
-        # Put interp_dist into dataset
-        extracted["interp_dist"] = interp_dist
-        extracted = extracted.rename_vars({"t_dim": "time"})
-
-        tg_out = Tidegauge()
-        tg_out.dataset = extracted
-        return tg_out
-
-    def difference(self, other, absolute_diff=True, square_diff=True):
+    @classmethod
+    def difference(cls, dataset1, dataset2, 
+                   absolute_diff=True, square_diff=True):
         """
         Calculates differences between two tide gauge objects. Will calculate
         differences, absolute differences and square differences between all
@@ -358,9 +307,9 @@ class TidegaugeAnalysis:
         Output is a new tidegauge object containing differenced variables.
         """
 
-        differenced = self.dataset - other.dataset
+        differenced = dataset1 - dataset2
         diff_vars = list(differenced.keys())
-        save_coords = list(self.dataset.coords.keys())
+        save_coords = list(dataset1.coords.keys())
 
         for vv in diff_vars:
             differenced = differenced.rename({vv: "diff_" + vv})
@@ -381,7 +330,8 @@ class TidegaugeAnalysis:
         else:
             sq_tmp = xr.Dataset()
 
-        differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
+        differenced = xr.merge((differenced, abs_tmp, sq_tmp, 
+                                dataset1[save_coords]))
 
         return_differenced = Tidegauge()
         return_differenced.dataset = differenced

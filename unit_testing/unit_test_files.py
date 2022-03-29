@@ -12,10 +12,10 @@ For example:
 import os.path as path
 
 # All directories relative to unit_testing diretory
-dn_files = "./example_files/"  # Example data directory
-dn_config = "./config"  # Example config file directory
-dn_fig = "./unit_testing/figures/"  # Figure saving directory
-dn_scripts = "./example_scripts"  # Example scripts directory
+dn_files = "../example_files/"  # Example data directory
+dn_config = "../config"  # Example config file directory
+dn_fig = "../unit_testing/figures/"  # Figure saving directory
+dn_scripts = "../example_scripts"  # Example scripts directory
 
 # Check dn_files directory
 if not path.isdir(dn_files):

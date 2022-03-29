@@ -1276,3 +1276,59 @@ class Tidegauge(Timeseries):
 
     def demean_timeseries(self):
         return self.dataset - self.dataset.mean(dim="t_dim")
+    
+    def obs_operator(self, gridded, time_interp="nearest"):
+        """
+        Regrids a Gridded object onto a tidegauge_multiple object. A nearest
+        neighbour interpolation is done for spatial interpolation and time
+        interpolation can be specified using the time_interp argument. This
+        takes any scipy interpolation string. If Gridded object contains a
+        landmask variables, then the nearest WET point is taken for each tide
+        gauge.
+
+        Output is a new tidegauge_multiple object containing interpolated data.
+        """
+
+        gridded = gridded.dataset
+        ds = self.dataset
+
+        # Determine spatial indices
+        print("Calculating spatial indices.", flush=True)
+        ind_x, ind_y = general_utils.nearest_indices_2d(
+            gridded.longitude, gridded.latitude, ds.longitude, 
+            ds.latitude, mask=gridded.landmask
+        )
+
+        # Extract spatial time series
+        print("Calculating time indices.", flush=True)
+        extracted = gridded.isel(x_dim=ind_x, y_dim=ind_y)
+        if 'dim_0' in extracted.dims:
+            extracted = extracted.swap_dims({"dim_0": "id"})
+        else:
+            extracted = extracted.expand_dims('id')
+            
+        print(extracted)
+
+        # Compute data (takes a while..)
+        print(" Indexing model data at tide gauge locations.. ", flush=True)
+        extracted.load()
+
+        # Check interpolation distances
+        print("Calculating interpolation distances.", flush=True)
+        interp_dist = general_utils.calculate_haversine_distance(
+            extracted.longitude, extracted.latitude, 
+            ds.longitude.values, ds.latitude.values
+        )
+
+        # Interpolate model onto obs times
+        print("Interpolating in time...", flush=True)
+        extracted = extracted.rename({"time": "t_dim"})
+        extracted = extracted.interp(t_dim=ds.time.values, method=time_interp)
+
+        # Put interp_dist into dataset
+        extracted["interp_dist"] = interp_dist
+        extracted = extracted.rename_vars({"t_dim": "time"})
+
+        tg_out = Tidegauge()
+        tg_out.dataset = extracted
+        return tg_out

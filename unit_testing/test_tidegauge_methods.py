@@ -6,16 +6,19 @@ import matplotlib.pyplot as plt
 import unit_test_files as files
 import datetime
 
-
 class test_tidegauge_methods(unittest.TestCase):
     def test_read_gesla_and_compare_to_model(self):
 
-        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, 
+                            config=files.fn_config_t_grid)
+        sci.dataset['landmask'] = sci.dataset.bottom_level == 0
 
         with self.subTest("Read GESLA file"):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
-            lowestoft = coast.Tidegauge(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft = coast.Tidegauge()
+            lowestoft.read_gesla_v3(files.fn_tidegauge, 
+                                    date_start=date0, date_end=date1)
 
             # TEST: Define Attribute dictionary for comparison
             test_attrs = {
@@ -31,7 +34,7 @@ class test_tidegauge_methods(unittest.TestCase):
             }
 
             # TEST: Check attribute dictionary and length of sea_level.
-            check1 = len(lowestoft.dataset.sea_level) == 193
+            check1 = len(lowestoft.dataset.ssh.isel(id=0)) == 193
             check2 = lowestoft.dataset.attrs == test_attrs
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
@@ -42,7 +45,7 @@ class test_tidegauge_methods(unittest.TestCase):
             plt.close("all")
 
         with self.subTest("Obs operator"):
-            lowestoft.obs_operator(sci, "ssh", time_interp="linear", model_mask="bathy")
+            lowestoft.obs_operator(sci, time_interp="linear")
 
             # TEST: Check that the resulting interp_sossheig variable is of the same
             # length as sea_level and that it is populated.
@@ -137,15 +140,18 @@ class test_tidegauge_methods(unittest.TestCase):
         tg.read_hlw(files.fn_gladstone, date_start, date_end)
 
         check1 = len(tg.dataset.ssh) == 37
-        check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_HW").values == 8.01
+        check2 = tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), 
+                                         method="nearest_HW").values == 8.01
         check3 = tg.get_tide_table_times(
             np.datetime64("2020-10-13 12:48"), method="nearest_1"
         ).time.values == np.datetime64("2020-10-13 14:36")
         check4 = np.array_equal(
-            tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="nearest_2").values, [2.83, 8.01]
+            tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), 
+                                    method="nearest_2").values, [2.83, 8.01]
         )
         check5 = np.array_equal(
-            tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), method="window", winsize=24).values,
+            tg.get_tide_table_times(np.datetime64("2020-10-13 12:48"), 
+                                    method="window", winsize=24).values,
             [3.47, 7.78, 2.8, 8.01, 2.83, 8.45, 2.08, 8.71],
         )
 
