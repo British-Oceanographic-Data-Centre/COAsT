@@ -9,23 +9,23 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
     """
     Object for handling and storing necessary information, methods and outputs
     for calculation of internal tide diagnostics.
-    
+
     Herein the depth moments of stratification are used as proxies for
     pycnocline depth (as the first  moment of stratification), and pycnocline
     thickness  (as the 2nd moment of stratification).
     This approximation improves towards the limit of a two-layer fluid.
-    
+
     For stratification that is not nearly two-layer, the pycnocline
     thickness appears large and this method for identifying the pycnocline
     depth is less reliable.
-    
+
     Parameters
     ----------
         gridded_t : xr.Dataset
             Gridded object on t-points.
         gridded_w : xr.Dataset, optional
             Gridded object on w-points.
-            
+
     Example basic usage:
     -------------------
         # Create Internal tide diagnostics object
@@ -34,7 +34,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         # Make maps of pycnocline thickness and depth
         IT_obj.quick_plot()
     """
-    
+
     def __init__(self, gridded_t: xr.Dataset, gridded_w: xr.Dataset):  # TODO gridded_w is unused
         # TODO Super __init__ should be called at some point
         debug(f"Creating new {get_slug(self)}")
