@@ -1,4 +1,4 @@
-numpy>=1.22
+numpy>=1.22.3
 dask>=2022.3.0
 dask[complete]>=2022.3.0
 xarray>=2022.3.0
