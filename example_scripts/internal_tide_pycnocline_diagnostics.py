@@ -240,8 +240,8 @@ zd = IT.dataset.strat_1st_mom_masked.where(H > 11).mean(dim="t_dim", skipna=True
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
-fig = plt.figure()
-plt.rcParams["figure.figsize"] = (8.0, 8.0)
+fig = plt.figure(figsize=(8,9)) 
+#plt.rcParams["figure.figsize"] = (8.0, 12.0)
 
 ax = fig.add_subplot(111)
 cz = plt.contour(lon, lat, H, levels=[11, 50, 100, 200], colors=["k", "k", "k", "k"], linewidths=[1, 1, 1, 1])
@@ -260,7 +260,8 @@ lines = [
 labels = [str(int(cz.levels[i])) + "m" for i in range(1, len(cz.levels))]
 # labels = ['80m','200m','800m']
 
-plt.legend(lines, labels, loc="lower right")
+# Supress legend
+#plt.legend(lines, labels, loc="lower right")
 
 # I expect to see RuntimeWarnings in this block
 title_str = (
@@ -273,6 +274,6 @@ title_str = (
 plt.title(title_str)
 plt.xlabel("longitude")
 plt.ylabel("latitude")
-plt.show()
+#plt.show()
 
-# fig.savefig(fig_dir+'strat_1st_mom.png', dpi=120)
+fig.savefig('strat_1st_mom.png', dpi=300)
