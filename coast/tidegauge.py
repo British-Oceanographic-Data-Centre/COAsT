@@ -1000,7 +1000,7 @@ class Tidegauge(Timeseries):
         if "dim_0" in extracted.dims:
             extracted = extracted.swap_dims({"dim_0": "id"})
         else:
-            extracted = extracted.expand_dims('id')
+            extracted = extracted.expand_dims("id")
 
         # Compute data (takes a while..)
         print(" Indexing model data at tide gauge locations.. ", flush=True)
