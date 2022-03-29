@@ -55,16 +55,16 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         stratification approximately represents a two-layer fluid, these can be
         interpreted as pycnocline depths and thicknesses. They are computed on
         w-points.
-        
+
         1st moment of stratification: \int z.strat dz / \int strat dz
             In the limit of a two layer fluid this is equivalent to the
         pycnocline depth, or z_d (units: metres)
-        
+
         2nd moment of stratification: \sqrt{\int (z-z_d)^2 strat dz / \int strat dz}
             where strat = d(density)/dz
             In the limit of a two layer fluid this is equivatlent to the
         pycnocline thickness, or z_t (units: metres)
-        
+
         Parameters
         ----------
         gridded_t : xr.Dataset
@@ -73,7 +73,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             Gridded object on w-points.
         strat_thres: float - Optional
             limiting stratification (rho_dz < 0) to trigger masking of mixed waters
-        
+
         Output
         ------
         self.dataset.strat_1st_mom - (t,y,x) pycnocline depth
@@ -85,11 +85,11 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         self.dataset.mask - (t,y,x) [1/0] stratified/unstrafied
                 water column according to strat_thres not being met anywhere
                 in the column
-        
+
         Returns
         -------
         None.
-        
+
         Example Usage
         -------------
         # load some example data
@@ -102,16 +102,16 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         # create an empty w-grid object, to store stratification
         gridded_w = coast.Gridded( fn_domain = dn_files + fn_nemo_dom,
                            grid_ref='w-grid')
-        
+
         # initialise Internal Tide object
         IT = coast.INTERNALTIDE(gridded_t, gridded_w)
         # Construct pycnocline variables: depth and thickness
         IT.construct_pycnocline_vars( gridded_t, gridded_w )
         # Plot pycnocline depth and thickness
         IT.quickplot()
-        
+
         """
-    
+
         debug(f"Constructing pycnocline variables for {get_slug(self)}")
         # Construct in-situ density if not already done
         if not hasattr(gridded_t.dataset, "density"):
