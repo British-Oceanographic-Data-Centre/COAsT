@@ -24,8 +24,8 @@ from test_plot_utilities import test_plot_utilities
 from test_stats_utilities import test_stats_utilities
 from test_maskmaker_methods import test_maskmaker_methods
 from test_climatology import test_climatology
-from test_example_scripts import test_example_scripts
 from test_WOD_read_data import test_WOD_read_data
+from test_example_scripts import test_example_scripts
 
 # Open log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
@@ -33,7 +33,7 @@ coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 
 # Test list -- comment out ones you don't want maybe (or add your own)
 tests_to_do = [
-    test_TEMPLATE,
+    #test_TEMPLATE,
     test_xesmf_convert,
     test_gridded_initialisation,
     test_general_utils,
@@ -51,8 +51,8 @@ tests_to_do = [
     test_stats_utilities,
     test_maskmaker_methods,
     test_climatology,
-    test_example_scripts,
     test_WOD_read_data,
+    test_example_scripts,
 ]
 
 # Create suite - this is a collection of tests, defined by classes
