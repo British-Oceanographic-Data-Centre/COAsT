@@ -240,13 +240,70 @@ of the observed or derived quantities above. So to take a look at the
 &lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
 fig, ax = stats.quick_plot('absolute_error')
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
-&lt;p>The Github page for this package can be found
-&lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
+&lt;p>For COAsT development we use a Github workflow to manage version control and collaboration. Git allows use to keep track of changes made to the COAsT code base, avoid breaking existing code and work as a group on a single package. Any contributor needs to use this workflow to add their code. Below is some guidance on using git with COAsT, including a typical workflow and cheat sheet.&lt;/p>
+&lt;p>For more information on git, see:&lt;/p>
+&lt;p>Github (&lt;a href="https://github.com/">https://github.com/&lt;/a>)&lt;/p>
+&lt;p>The Github page for this package can be found:&lt;/p>
+&lt;p>&lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
+&lt;h2 id="key-ideas">Key Ideas&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>The COAsT repository has two core branches: &lt;code>master&lt;/code> and &lt;code>develop&lt;/code>. The &lt;code>master&lt;/code> branch contains the tested code that you install when using Anaconda. This is updated less frequently, and is the &amp;ldquo;user-facing&amp;rdquo; branch of code. Most contributors do not need to edit this branch. The &lt;code>develop&lt;/code> branch is the &amp;lsquo;pre-master&amp;rsquo; branch, where &lt;strong>working&lt;/strong> code is kept. This is the leading branch, with the most up-to-date code, although it is not necessarily user-facing. When writing code into your own branch (see below), it is &amp;lsquo;branched&amp;rsquo; from &lt;code>develop&lt;/code> and then eventually merged back into &lt;code>develop&lt;/code>. &lt;strong>You should never make changes directly to either &lt;code>master&lt;/code> or &lt;code>develop&lt;/code>&lt;/strong>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>There is a &amp;lsquo;local&amp;rsquo; and &amp;lsquo;remote&amp;rsquo; copy of the COAsT repository. The local repository exists only on your machine. The remote repository is the one you see on the Github website and exists separately. The two versions of the repository can be synchronised at a single point using commands such as &lt;code>git pull&lt;/code> &lt;code>git push&lt;/code> and &lt;code>git fetch&lt;/code> (see below). After cloning (downloading) the repository, all modifications you make/add/commit will &lt;strong>only be local until you push them to the remote repository&lt;/strong>.&lt;/p>
+&lt;/li>
+&lt;/ol>
 &lt;h2 id="typical-workflow">Typical Workflow&lt;/h2>
 &lt;p>A typical workflow for editting COAsT in git might look like:&lt;/p>
 &lt;ol>
-&lt;li>&lt;strong>Clone Repository:&lt;/strong> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code.&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Clone Repository:&lt;/strong> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code. This only needs to be done once.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Checkout develop:&lt;/strong> &lt;code>git checkout develop&lt;/code>. Before creating a new branch for your code, you should checkout the develop branch. This will switch your &lt;strong>local&lt;/strong> repository to the develop branch. You can check what branch your current local repository is in by entering &lt;code>git branch&lt;/code> &amp;ndash; it should now say &lt;code>develop&lt;/code>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create/checkout your new branch:&lt;/strong> &lt;code>git checkout -b new_branch_name&lt;/code>. This will create and checkout your new branch &amp;ndash; right now it is an identical copy of &lt;code>develop&lt;/code>. However, any changes you commit to your local repository will be saved into your branch. Once you have created your branch, you can open it as before, using &lt;code>git checkout new_branch_name&lt;/code>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Make changes/additions to code:&lt;/strong> Make any changes you like to COAsT. At this point it is separate from the main branches and it is safe to do so. If in doubt, enter &lt;code>git branch&lt;/code> again to ensure you are within your own branch.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Add changes to branch:&lt;/strong> &lt;code>git add modified_file&lt;/code>. Using this command will tell git that you have changed/added this file and you want to save it to the branch you are currently in. Upon entering this command, the file changes/additions &lt;em>are not saved&lt;/em> to the branch and won&amp;rsquo;t be until the next step. You can remove an added file by entering &lt;code>git reset modified_file&lt;/code> and can check which files have changed by typing &lt;code>git status&lt;/code>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Commit changes to branch:&lt;/strong> &lt;code>git commit -m &amp;quot;type a message in quotations&amp;quot;&lt;/code>. Entering this command will &amp;ldquo;save&amp;rdquo; the changes you added using &lt;code>git add &lt;/code> in the step above to the branch you are currently in. Once entered, git will identify what has changed since the previous commit. If this is the first commit in your new branch then since the version of &lt;code>develop&lt;/code> that you branch from. This will not change any other branch except the one you are in and you can/should do this often with an appropriate message. At this point, all changes are still only on your local machine and will not change the remote repository. It is also possible to undo a commit using &lt;code>git revert&lt;/code>, so nothing is unfixable.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Continue modifying code:&lt;/strong> At this point, you may want to continue modifying the code, repeatedly adding changes and commiting them to your local repository, as above.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Push your local repository to the remote:&lt;/strong> &lt;code>git push origin&lt;/code>. This will upload the changes you have made in the branch you are in (and only this branch) to the remote (website) repository. If this is the first time you have pushed this branch then an error may appear telling you to repush with the &lt;code>--set-upstream&lt;/code> flag enable. Simply copy and paste this command back into the terminal. This will &amp;ldquo;create&amp;rdquo; your branch in the remote repository. Once pushed, github will do some auto-checks to make sure the code works (which it may not, but that is fine). You can continue to modify the code at any point, and push multiple times. This is encouraged if sharing with other collaboraters.&lt;/p>
+&lt;/li>
 &lt;/ol>
+&lt;p>&lt;strong>Once you are satisfied with your changes, move onto the next steps.&lt;/strong>&lt;/p>
+&lt;ol start="9">
+&lt;li>
+&lt;p>&lt;strong>Make sure your local branch is up to date with the remote:&lt;/strong> &lt;code>git pull origin&lt;/code> when in your branch. This is to ensure that nobody else has changed your branch, or if they have to update your local branch with the changes on the remote.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Update your branch with develop:&lt;/strong>. Before requesting that your branch and its changes be merged back into the &lt;code>develop&lt;/code> branch, it is good practice to first merge develop back into your branch. This is because &lt;code>develop&lt;/code> may have changed since you started working on your branch and these changes should be merged into your branch to ensure that conflicts are resolved. To do this, first update develop by entering &lt;code>git checkout develop&lt;/code> and &lt;code>git pull&lt;/code>. This will update the &lt;code>develop&lt;/code> branch on your local machine. Then merge &lt;code>develop&lt;/code> back into your branch by entering &lt;code>git checkout your_branch&lt;/code> and &lt;code>git merge develop&lt;/code>. This may say up-to-date (in which case GREAT), or successful (in which case GREAT) or may say there are some conflicts. This happens when more than one person has changed the same piece of code.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Resolve Conflicts:&lt;/strong> This step may not be necessary if there are no conflicts. If git tells you there are conflicts, it will also tell you which files they occur in. For more information/help with conflict resolution see &lt;a href="https://www.atlassian.com/git/tutorials/using-branches/merge-conflicts">here&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create a pull request for your branch&lt;/strong>. First your most up to date branch using &lt;code>git push origin&lt;/code>, even after merging develop in step 9/10. On the website you may then create a &amp;lsquo;pull request&amp;rsquo; which is a formal way of saying you want to merge your branch back into &lt;code>develop&lt;/code>. A pull request allows you to ask people to &amp;lsquo;review&amp;rsquo; your branch, share your code, view the changes in your branch and other things. To make a pull request, go to the website, click on the pull requests tab and click &lt;code>Create new pull request&lt;/code>. Then select your branch in the right drop down menu and &lt;code>develop&lt;/code> in the left. You may then enter a description of the changes you have made and anything else you would like reviewers to see.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Reviewers review the code:&lt;/strong> Requested reviewers take a look at your changes and run the unit_test. Once they are satisfied, they will approve the pull request, or add comments about any problems.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Merge branch into develop:&lt;/strong> Once reviewers are satisfied, you may click &lt;code>Merge branch&lt;/code> at the bottom of the pull request. Now your changes will be added into develop! Again, this is fine as the branch has been inspected by reviewers and any change can be reverted using &lt;code>git revert&lt;/code> (although this is not encouraged for the &lt;code>develop&lt;/code> branch).&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>**Note: After creating a pull request, Github will automatically apply &amp;ldquo;black formatting&amp;rdquo; to the code. This will commit new (small) changes to the branch so you should always do a &lt;code>git pull&lt;/code> on your branch to make sure your local version is up to date with the remote.&lt;/p>
 &lt;h2 id="git-cheat-sheet">Git cheat sheet&lt;/h2></description></item><item><title>Docs: Logging</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</guid><description>
 &lt;p>COAsT utilises Python’s default logging library and includes a simple setup function for those unfamiliar with how to use it.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
