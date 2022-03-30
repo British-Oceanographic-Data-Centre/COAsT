@@ -63,7 +63,21 @@
 &lt;/li>
 &lt;/ol>
 &lt;p>**Note: After creating a pull request, Github will automatically apply &amp;ldquo;black formatting&amp;rdquo; to the code. This will commit new (small) changes to the branch so you should always do a &lt;code>git pull&lt;/code> on your branch to make sure your local version is up to date with the remote.&lt;/p>
-&lt;h2 id="git-cheat-sheet">Git cheat sheet&lt;/h2></description></item><item><title>Docs: setting up Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</guid><description>
+&lt;h2 id="condensed-workflow">Condensed Workflow&lt;/h2>
+&lt;ol>
+&lt;li>&lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>.&lt;/li>
+&lt;li>&lt;code>git checkout develop&lt;/code>&lt;/li>
+&lt;li>&lt;code>git checkout -b new_branch_name&lt;/code>&lt;/li>
+&lt;li>Make changes&lt;/li>
+&lt;li>&lt;code>git add changed_file&lt;/code>&lt;/li>
+&lt;li>&lt;code>git commit -m &amp;quot;what changes have you made&amp;quot;&lt;/code>&lt;/li>
+&lt;li>&lt;code>git push origin&lt;/code>&lt;/li>
+&lt;li>If your branch changed by anyone else, &lt;code>git pull&lt;/code>&lt;/li>
+&lt;li>Repeat steps 4-8&lt;/li>
+&lt;li>&lt;code>git checkout develop&lt;/code> &lt;code>git pull&lt;/code> &lt;code>git checkout your_branch&lt;/code> &lt;code>git merge develop&lt;/code> &lt;code>git push origin&lt;/code>&lt;/li>
+&lt;li>Create pull request from &lt;code>your_branch&lt;/code> to &lt;code>develop&lt;/code>, include description and request reviewers.&lt;/li>
+&lt;li>Reviewers accept, Merge branch.&lt;/li>
+&lt;/ol></description></item><item><title>Docs: setting up Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</guid><description>
 &lt;p>This page will walk you though a simple setup for hugo extended - which is needed if want to view any changes you make to this site locally.&lt;/p>
 &lt;p>For more details please &lt;a href="https://gohugo.io/getting-started/installing/">read this&lt;/a>.&lt;/p>
 &lt;h2 id="installation">Installation&lt;/h2>
