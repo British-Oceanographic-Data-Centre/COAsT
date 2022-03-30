@@ -99,7 +99,8 @@ def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
 
     return fig, ax
 
-def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7,7)):
+
+def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
     """
     A routine for creating an axis for any geographical plot. Within the
     specified longitude and latitude bounds, a map will be drawn up using
@@ -122,36 +123,37 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7,7)):
     from cartopy.feature import NaturalEarthFeature
 
     # If no figure or ax is provided, create a new one
-    #fig = plt.figure()
-    #fig.clf()
-    fig, ax = plt.subplots(n_r, n_c, subplot_kw={'projection': ccrs.PlateCarree()},
-                           sharey = True, sharex = True, figsize=figsize)
+    # fig = plt.figure()
+    # fig.clf()
+    fig, ax = plt.subplots(
+        n_r, n_c, subplot_kw={"projection": ccrs.PlateCarree()}, sharey=True, sharex=True, figsize=figsize
+    )
     land_color = [0.9, 0.9, 0.9]
-    coast_color = [0,0,0]
-    coast_width = .25
+    coast_color = [0, 0, 0]
+    coast_width = 0.25
 
-    if n_r*n_c > 1:
+    if n_r * n_c > 1:
         ax = ax.flatten()
-        for rr in range(n_r*n_c):
+        for rr in range(n_r * n_c):
             coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="50m")
-            ax[rr].add_feature(coast, edgecolor=coast_color, linewidth = coast_width)
+            ax[rr].add_feature(coast, edgecolor=coast_color, linewidth=coast_width)
             # ax.coastlines(facecolor=[0.8,0.8,0.8])
             gl = ax[rr].gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
             gl.top_labels = False
             gl.right_labels = False
-            if rr%n_c==0:
+            if rr % n_c == 0:
                 gl.left_labels = True
             else:
                 gl.left_labels = False
-                
-            if np.abs(n_r*n_c - rr)<=n_c:
+
+            if np.abs(n_r * n_c - rr) <= n_c:
                 gl.bottom_labels = True
             else:
                 gl.bottom_labels = False
             ax[rr].set_xlim(lonbounds[0], lonbounds[1])
             ax[rr].set_ylim(latbounds[0], latbounds[1])
             ax[rr].set_aspect("auto")
-        
+
         ax = ax.reshape((n_r, n_c))
     else:
         coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="50m")
@@ -160,17 +162,17 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7,7)):
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
         gl.top_labels = False
         gl.right_labels = False
-        
+
         gl.left_labels = True
         gl.bottom_labels = True
-            
-    
+
         ax.set_xlim(lonbounds[0], lonbounds[1])
         ax.set_ylim(latbounds[0], latbounds[1])
         ax.set_aspect("auto")
 
     plt.show()
     return fig, ax
+
 
 def create_geo_axes(lonbounds, latbounds):
     """

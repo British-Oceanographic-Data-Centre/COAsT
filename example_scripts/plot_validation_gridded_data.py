@@ -1,4 +1,4 @@
-'''
+"""
 Plot up surface or bottom (or any fixed level) errors from a profile object
 with no z_dim (vertical dimension). Provide an array of netcdf files and 
 mess with the options to get a figure you like.
@@ -7,13 +7,14 @@ You can define how many rows and columns the plot will have. This script will
 plot the provided list of netcdf datasets from left to right and top to bottom.
 
 A colorbar will be placed right of the figure.
-'''
+"""
 
 import xarray as xr
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-sys.path.append('/Users/dbyrne/code/COAsT')
+
+sys.path.append("/Users/dbyrne/code/COAsT")
 import coast
 import pandas as pd
 
@@ -54,12 +55,12 @@ discrete_cmap = True       # Discretize colormap
 cmap_levels = 14
 
 # Labels and Titles
-fig_title = "SST Errors"                   # Whole figure title
-title_fontsize = 13                        # Fontsize of title
-title_fontweight = "bold"                  # Fontweight to use for title
-dataset_names = ["CO9p0", "CO9p0", "CO9p0"]         # Names to use for labelling plots
-subtitle_fontsize = 11                     # Fontsize for dataset subtitles
-subtitle_fontweight = "normal"             # Fontweight for dataset subtitles
+fig_title = "SST Errors"  # Whole figure title
+title_fontsize = 13  # Fontsize of title
+title_fontweight = "bold"  # Fontweight to use for title
+dataset_names = ["CO9p0", "CO9p0", "CO9p0"]  # Names to use for labelling plots
+subtitle_fontsize = 11  # Fontsize for dataset subtitles
+subtitle_fontweight = "normal"  # Fontweight for dataset subtitles
 
 # PLOT SEASONS. Make sure n_r = 2 and n_c = 2
 # If this option is true, only the first dataset will be plotted, with seasonal
@@ -73,23 +74,22 @@ season_suffixes = ['DJF','MAM','JJA','SON']
 # Read all datasets into list
 ds_list = [xr.open_dataset(dd) for dd in fn_list]
 n_ds = len(ds_list)
-n_ax = n_r*n_c
+n_ax = n_r * n_c
 
 # Create plot and flatten axis array
-f,a = coast.plot_util.create_geo_subplots(lonbounds, latbounds, n_r, n_c, figsize = figsize)
+f, a = coast.plot_util.create_geo_subplots(lonbounds, latbounds, n_r, n_c, figsize=figsize)
 a_flat = a.flatten()
 
 # Dicretize colormap maybe
 if discrete_cmap:
     cmap = plt.cm.get_cmap(cmap, cmap_levels)
-    
+
 # Determine if we will extend the colormap or not
 extend_cbar = []
 
 # Loop over dataset
 for ii in range(n_ax):
     ur_index = np.unravel_index(ii, (n_r, n_c))
-    
     
     # Select season if required
     if plot_seasons:
@@ -116,32 +116,28 @@ for ii in range(n_ax):
     # Will we extend the colorbar for this dataset?
     extend_cbar.append( coast.plot_util.determine_colorbar_extension(data, clim[0], clim[1]) )
 
-            
 # Set Figure title
-f.suptitle(fig_title, fontsize = title_fontsize, fontweight = title_fontweight)
+f.suptitle(fig_title, fontsize=title_fontsize, fontweight=title_fontweight)
 
 
 # Set tight figure layout
-f.tight_layout(w_pad = subplot_padding, h_pad= subplot_padding)
-f.subplots_adjust(left   = (fig_pad[0]), 
-                  bottom = (fig_pad[1]),
-                  right  = (1-fig_pad[2]),
-                  top    = (1-fig_pad[3]))
+f.tight_layout(w_pad=subplot_padding, h_pad=subplot_padding)
+f.subplots_adjust(left=(fig_pad[0]), bottom=(fig_pad[1]), right=(1 - fig_pad[2]), top=(1 - fig_pad[3]))
 
 # Handle colorbar -- will we extend it?
-if 'both' in extend_cbar:
-    extend = 'both'
-elif 'max' in extend_cbar and 'min' in extend_cbar:
-    extend = 'both'
-elif 'max' in extend_cbar:
-    extend = 'max'
-elif 'min' in extend_cbar:
-    extend = 'min'
+if "both" in extend_cbar:
+    extend = "both"
+elif "max" in extend_cbar and "min" in extend_cbar:
+    extend = "both"
+elif "max" in extend_cbar:
+    extend = "max"
+elif "min" in extend_cbar:
+    extend = "min"
 else:
-    extend = 'neither'
-cbar_ax = f.add_axes([(1 - fig_pad[2] + fig_pad[2]*0.15), .15, .025, .7])
-f.colorbar(pc, cax = cbar_ax, extend=extend)
+    extend = "neither"
+cbar_ax = f.add_axes([(1 - fig_pad[2] + fig_pad[2] * 0.15), 0.15, 0.025, 0.7])
+f.colorbar(pc, cax=cbar_ax, extend=extend)
 
 # Save plot maybe
-if save_plot: 
+if save_plot:
     f.savefig(fn_out)
