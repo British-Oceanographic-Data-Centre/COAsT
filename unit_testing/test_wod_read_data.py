@@ -5,7 +5,6 @@ TEST reading of wod profiles
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
 import unittest
-import unit_test_files as files
 import numpy as np
 import os.path as path
 
