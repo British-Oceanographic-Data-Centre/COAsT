@@ -86,4 +86,3 @@ class test_example_scripts(unittest.TestCase):
             from example_scripts import example_WOD_BGC_ragged
 
             plt.close("all")
-
