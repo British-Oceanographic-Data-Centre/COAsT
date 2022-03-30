@@ -1,7 +1,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing: Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/</link><description>Recent content in Contributing: Documentation on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
 &lt;p>The Github page for this package can be found
 &lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
-&lt;p>The rest of this page is coming soon.&lt;/p></description></item><item><title>Docs: setting up Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</guid><description>
+&lt;h2 id="typical-workflow">Typical Workflow&lt;/h2>
+&lt;p>A typical workflow for editting COAsT in git might look like:&lt;/p>
+&lt;ol>
+&lt;li>&lt;em>Clone Repository:&lt;/em> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code.&lt;/li>
+&lt;/ol>
+&lt;h2 id="git-cheat-sheet">Git cheat sheet&lt;/h2></description></item><item><title>Docs: setting up Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</guid><description>
 &lt;p>This page will walk you though a simple setup for hugo extended - which is needed if want to view any changes you make to this site locally.&lt;/p>
 &lt;p>For more details please &lt;a href="https://gohugo.io/getting-started/installing/">read this&lt;/a>.&lt;/p>
 &lt;h2 id="installation">Installation&lt;/h2>

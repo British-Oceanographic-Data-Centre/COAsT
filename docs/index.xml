@@ -242,7 +242,12 @@ fig, ax = stats.quick_plot('absolute_error')
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
 &lt;p>The Github page for this package can be found
 &lt;a href="https://github.com/british-oceanographic-data-centre/COAsT">here&lt;/a>&lt;/p>
-&lt;p>The rest of this page is coming soon.&lt;/p></description></item><item><title>Docs: Logging</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</guid><description>
+&lt;h2 id="typical-workflow">Typical Workflow&lt;/h2>
+&lt;p>A typical workflow for editting COAsT in git might look like:&lt;/p>
+&lt;ol>
+&lt;li>&lt;em>Clone Repository:&lt;/em> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code.&lt;/li>
+&lt;/ol>
+&lt;h2 id="git-cheat-sheet">Git cheat sheet&lt;/h2></description></item><item><title>Docs: Logging</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_logging/</guid><description>
 &lt;p>COAsT utilises Python’s default logging library and includes a simple setup function for those unfamiliar with how to use it.&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">logging_util&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">setup_logging&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
