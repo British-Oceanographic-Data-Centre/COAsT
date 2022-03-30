@@ -43,6 +43,7 @@ fn_tidegauge_multiple = "./example_files/tide_gauges/m*"
 fn_WOD = "./example_files/WOD_example_ragged_standard_level.nc"
 fn_WOD_config = "config/example_WOD_profiles.json"
 
+
 def test_load_altimetry_no_config():
     altimetry = Altimetry(file_path=fn_altimetry)
     assert altimetry is not None
@@ -75,6 +76,7 @@ def test_load_profile_config():
         "qc_time",
     ]
 
+
 def test_load_WOD_config():
     WOD_profile_1D = Profile(config=fn_WOD_config)
     WOD_profile_1D.read_WOD(fn_WOD)
@@ -84,6 +86,7 @@ def test_load_WOD_config():
     assert list(WOD_profile_1D.dataset.data_vars) == [
         "depth",
     ]
+
 
 def test_load_glider_no_config():
     glider = Glider(file_path=fn_glider)

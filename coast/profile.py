@@ -91,7 +91,7 @@ class Profile(Indexed):
         """
         self.dataset = xr.open_dataset(fn_WOD, chunks=chunks)
         self.apply_config_mappings()
-        
+
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
