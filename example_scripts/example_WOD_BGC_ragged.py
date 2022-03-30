@@ -8,9 +8,6 @@ Created on Wed Mar 23 13:53:33 2022
 
 #%reset
 # ====================== LOAD MODULES =========================
-import sys  # sys.exit('Error message) also module import
-
-sys.path.append("/work/annkat/COAST_DEV/COAsT")
 import coast
 import glob  # For getting file paths
 import gsw
