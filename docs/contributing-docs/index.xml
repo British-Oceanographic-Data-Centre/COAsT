@@ -4,7 +4,7 @@
 &lt;h2 id="typical-workflow">Typical Workflow&lt;/h2>
 &lt;p>A typical workflow for editting COAsT in git might look like:&lt;/p>
 &lt;ol>
-&lt;li>&lt;em>Clone Repository:&lt;/em> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code.&lt;/li>
+&lt;li>&lt;strong>Clone Repository:&lt;/strong> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code.&lt;/li>
 &lt;/ol>
 &lt;h2 id="git-cheat-sheet">Git cheat sheet&lt;/h2></description></item><item><title>Docs: setting up Hugo</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/hugo/</guid><description>
 &lt;p>This page will walk you though a simple setup for hugo extended - which is needed if want to view any changes you make to this site locally.&lt;/p>
