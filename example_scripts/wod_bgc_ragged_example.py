@@ -30,8 +30,8 @@ wod_profile_1d.read_wod(fn_wod_var)
 
 # ===================== reshape TO 2D=====================
 # choose which observed variables you want
-VAR_USER_want = ["Salinity", "Temperature", "Nitrate", "Oxygen", "DIC", "Phosphate", "Alkalinity"]
-wod_profile = coast.Profile.reshape_2d(wod_profile_1d, VAR_USER_want)
+var_user_want = ["Salinity", "Temperature", "Nitrate", "Oxygen", "DIC", "Phosphate", "Alkalinity"]
+wod_profile = coast.Profile.reshape_2d(wod_profile_1d, var_user_want)
 
 # ===================== keep subset =====================
 ind = wod_profile.subset_indices_lonlat_box([90, 120], [-5, 5])[0]
