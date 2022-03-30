@@ -39,9 +39,9 @@ fn_tidegauge = "./example_files/tide_gauges/portellen-p202-uk-bodc"
 fn_tidegauge_config = "config/example_tidegauge.json"
 fn_tidegauge_multiple = "./example_files/tide_gauges/m*"
 
-# WOD profile data 1D (NetCDF)
-fn_WOD = "./example_files/WOD_example_ragged_standard_level.nc"
-fn_WOD_config = "config/example_WOD_profiles.json"
+# wod profile data 1D (NetCDF)
+fn_wod = "./example_files/wod_example_ragged_standard_level.nc"
+fn_wod_config = "config/example_wod_profiles.json"
 
 
 def test_load_altimetry_no_config():
@@ -77,13 +77,13 @@ def test_load_profile_config():
     ]
 
 
-def test_load_WOD_config():
-    WOD_profile_1D = Profile(config=fn_WOD_config)
-    WOD_profile_1D.read_WOD(fn_WOD)
-    assert WOD_profile_1D is not None
+def test_load_wod_config():
+    wod_profile_1D = Profile(config=fn_wod_config)
+    wod_profile_1D.read_wod(fn_wod)
+    assert wod_profile_1D is not None
     # assert that we have the coordinate and data variable names as specified in the json config file
-    assert list(WOD_profile_1D.dataset.coords) == ["casts", "Z_N"]
-    assert list(WOD_profile_1D.dataset.data_vars) == [
+    assert list(wod_profile_1D.dataset.coords) == ["casts", "Z_N"]
+    assert list(wod_profile_1D.dataset.data_vars) == [
         "depth",
     ]
 

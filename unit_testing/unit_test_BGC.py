@@ -1,6 +1,6 @@
 ##
 """
-Script to do unit testing for BGC only in SEAsia
+Script to do unit testing for bgc only in SEAsia
 ***SECTIONS***
 This script is separated into Subsections, for which there are two
 counters to keep track: sec and subsec respectively.  At the beginning of each
@@ -11,7 +11,7 @@ subsection, subsec should be incremented by one.
 This is supplement file to the original unit testing script:
     - unit_test
 Run:
-ipython: cd COAsT; run unit_testing/unit_test_BGC.py  # I.e. from the git repo.
+ipython: cd COAsT; run unit_testing/unit_test_bgc.py  # I.e. from the git repo.
 Unit template:
 #-----------------------------------------------------------------------------#
 # ( ## ) Subsection title                                                     #
@@ -70,11 +70,11 @@ if not os.path.isdir(dn_files):
         print(f"location f{dn_files} cannot be found")
 
 dn_fig = "unit_testing/figures/"
-# BGC for nemo
-fn_nemo_dat = "coast_example_SEAsia_BGC_1990.nc"
-fn_nemo_dom_BGC = "coast_example_domain_SEAsia.nc"
-# BGC for SEAsia
-fn_nemo_config_BGC_grid = path.join("./config", "example_nemo_BGC.json")
+# bgc for nemo
+fn_nemo_dat = "coast_example_seasia_bgc_1990.nc"
+fn_nemo_dom_bgc = "coast_example_domain_seasia.nc"
+# bgc for SEAsia
+fn_nemo_config_bgc_grid = path.join("./config", "example_nemo_bgc.json")
 
 sec = 1
 subsec = 96  # Code for '`' (1 below 'a')
@@ -86,20 +86,20 @@ subsec = 96  # Code for '`' (1 below 'a')
 # This section is for testing the loading and initialisation of Gridded objects.
 
 # -----------------------------------------------------------------------------#
-# %% ( 1a ) BGC- Load example Gridded Nemo-nemo data for BGC (DIC, oxygen, nutrients, ph, alkalinity)                 #
+# %% ( 1a ) bgc- Load example Gridded Nemo-nemo data for BGC (DIC, oxygen, nutrients, ph, alkalinity)                 #
 #                                                                             #
 
 subsec = subsec + 1
 
 try:
-    sci_BGC = coast.Gridded(
-        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom_BGC), config=fn_nemo_config_BGC_grid
+    sci_bgc = coast.Gridded(
+        path.join(dn_files, fn_nemo_dat), path.join(dn_files, fn_nemo_dom_bgc), config=fn_nemo_config_bgc_grid
     )
 
     # Test the data has loaded
-    sci_BGC_attrs_ref = dict(
+    sci_bgc_attrs_ref = dict(
         [
-            ("name", "SEAsia_HAD_1m_19900101_19901231_ptrc_T"),
+            ("name", "seasia_HAD_1m_19900101_19901231_ptrc_T"),
             ("description", "tracer variables"),
             ("title", "tracer variables"),
             ("Conventions", "CF-1.6"),
@@ -109,7 +109,7 @@ try:
     )
 
     # checking is LHS is a subset of RHS
-    if sci_BGC_attrs_ref.items() <= sci_BGC.dataset.attrs.items():
+    if sci_bgc_attrs_ref.items() <= sci_bgc.dataset.attrs.items():
         print(str(sec) + chr(subsec) + " OK - nemo BGC data loaded: " + fn_nemo_dat)
     else:
         print(str(sec) + chr(subsec) + " X - There is an issue with loading nemo BGC " + fn_nemo_dat)
@@ -123,12 +123,12 @@ except:
 subsec = subsec + 1
 
 try:
-    ds_BGC = xr.open_dataset(dn_files + fn_nemo_dat)
-    sci_BGC_load_ds = coast.Gridded(config=fn_nemo_config_BGC_grid)
-    sci_BGC_load_ds.load_dataset(ds_BGC)
-    sci_BGC_load_file = coast.Gridded(config=fn_nemo_config_BGC_grid)
-    sci_BGC_load_file.load(dn_files + fn_nemo_dat)
-    if sci_BGC_load_ds.dataset.identical(sci_BGC_load_file.dataset):
+    ds_bgc = xr.open_dataset(dn_files + fn_nemo_dat)
+    sci_bgc_load_ds = coast.Gridded(config=fn_nemo_config_bgc_grid)
+    sci_bgc_load_ds.load_dataset(ds_bgc)
+    sci_bgc_load_file = coast.Gridded(config=fn_nemo_config_bgc_grid)
+    sci_bgc_load_file.load(dn_files + fn_nemo_dat)
+    if sci_bgc_load_ds.dataset.identical(sci_bgc_load_file.dataset):
         print(str(sec) + chr(subsec) + " OK BGC - coast.load_dataset()")
     else:
         print(
@@ -147,15 +147,15 @@ except:
 subsec = subsec + 1
 
 try:
-    sci_BGC = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom_BGC, config=fn_nemo_config_BGC_grid)
+    sci_bgc = coast.Gridded(dn_files + fn_nemo_dat, dn_files + fn_nemo_dom_bgc, config=fn_nemo_config_bgc_grid)
     try:
-        sci_BGC.dataset.DIC
+        sci_bgc.dataset.DIC
     except NameError:
         print(str(sec) + chr(subsec) + " X - variable name (to DIC) not reset")
     else:
         print(str(sec) + chr(subsec) + " OK - variable name reset (to DIC)")
 except:
-    print(str(sec) + chr(subsec) + " FAILED BGC")
+    print(str(sec) + chr(subsec) + " FAILED bgc")
 
 # -----------------------------------------------------------------------------#
 # %% ( 1d ) BGC Set Gridded grid attributes - dimension names                           #
@@ -164,7 +164,7 @@ except:
 subsec = subsec + 1  #
 
 try:
-    if sci_BGC.dataset.DIC.dims == ("t_dim", "z_dim", "y_dim", "x_dim"):
+    if sci_bgc.dataset.DIC.dims == ("t_dim", "z_dim", "y_dim", "x_dim"):
         print(str(sec) + chr(subsec) + " OK BGC - dimension names reset")
     else:
         print(str(sec) + chr(subsec) + " X BGC - dimension names not reset")
@@ -179,7 +179,7 @@ except:
 subsec = subsec + 1
 
 pass_test = False
-nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom_BGC, config=fn_nemo_config_BGC_grid)
+nemo_f = coast.Gridded(fn_domain=dn_files + fn_nemo_dom_bgc, config=fn_nemo_config_bgc_grid)
 
 if nemo_f.dataset._coord_names == {"depth_0", "latitude", "longitude"}:
     var_name_list = []
@@ -201,9 +201,9 @@ subsec = subsec + 1
 try:
     fig = plt.figure()
     plt.pcolormesh(
-        sci_BGC.dataset.longitude,
-        sci_BGC.dataset.latitude,
-        sci_BGC.dataset.DIC.isel(t_dim=0).isel(z_dim=0),
+        sci_bgc.dataset.longitude,
+        sci_bgc.dataset.latitude,
+        sci_bgc.dataset.DIC.isel(t_dim=0).isel(z_dim=0),
         cmap="RdYlBu_r",
         vmin=1600,
         vmax=2080,
@@ -213,7 +213,7 @@ try:
     plt.xlabel("longitude")
     plt.ylabel("latitude")
     plt.show()
-    fig.savefig("SEAsia_DIC_surface.png")
+    fig.savefig("seasia_DIC_surface.png")
     print(str(sec) + chr(subsec) + " OK - DIC at surface plot saved")
 except:
     print(str(sec) + chr(subsec) + "X - DIC plot failed")

@@ -85,9 +85,9 @@
 17. test_climatology
       a. monthly_and_seasonal_climatology
 
-18. test_WOD_read_data
-      a. load_WOD
-      b. reshape_WOD
+18. test_wod_read_data
+      a. load_wod
+      b. reshape_wod
 
 19. test_example_scripts
       a. altimetry_tutorial
@@ -95,7 +95,7 @@
       c. anchor_plots_of_nsea_wvel
       d. blz_example_plot
       e. contour_tutorial
-      f. example_WOD_BGC_ragged
+      f. example_wod_bgc_ragged
       g. export_to_netcdf_tutorial
       h. internal_tide_pycnocline_diagnostics
       i. seasia_r12_example_plot
