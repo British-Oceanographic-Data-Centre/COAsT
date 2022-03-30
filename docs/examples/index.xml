@@ -735,119 +735,36 @@ Or load file as see that the xarray structure is preserved.&lt;/p>
 &lt;span style="color:#204a87">object&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">ofile&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#204a87">object&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">close&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># close file associated with this object&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Unit testing</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/unit_testing/</guid><description>
-&lt;p>Code functionality tests are written in
-&lt;code>unit_testing/unit_testing.py&lt;/code> in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/unit_testing">COAsT&lt;/a>
-repository, and therefore contain working examples of the package. These are written to verify the package functionality and to maintain operability following code updates.&lt;/p>
-&lt;p>At the time of writing these included:&lt;/p>
-&lt;h3 id="1-loading--initialisation">1. Loading &amp;amp; Initialisation&lt;/h3>
-&lt;pre>&lt;code>a. Loading Gridded NEMO data file
-b. Load data from existing dataset
-c. Set Gridded variable name
-d. Set Gridded grid attribute - dimension names
-e. Load only Domain
-f. Calculate depth_0 for t,u,v,w,f grids
-g. Load a subregion dataset with a full domain (AMM7)
-h. Load and combine multiple files.
-i. Load and combine harmonics
-j. Convert harmonics to a/g and back
-k. Compute e3[t,u,v,f,w] from SSH
-&lt;/code>&lt;/pre>
-&lt;h3 id="2-general-utility-methods-in-coast">2. General Utility Methods in COAsT&lt;/h3>
-&lt;pre>&lt;code>a. Copying a COAsT object
-b. COAsT __getitem__ returns variable
-c. Renaming variables inside a COAsT object
-d. day of the week function
-&lt;/code>&lt;/pre>
-&lt;h3 id="3-diagnostic-methods">3. Diagnostic Methods&lt;/h3>
-&lt;pre>&lt;code>a. Compute vertical spatial derivative
-b. Construct density method inside Gridded class
-c. Construct pycnocline depth and thickness
-d. Plot pycnocline depth
-&lt;/code>&lt;/pre>
-&lt;h3 id="4-transect-methods">4. Transect Methods&lt;/h3>
-&lt;pre>&lt;code>a. Determine and extract transect indices
-b. Transport velocity and depth calculations
-c. Transport and velocity plotting
-d. Construct density on z-levels along the transect. Compare with item 3b.
-e. Geostrophic velocity &amp;amp; transport calculations
-&lt;/code>&lt;/pre>
-&lt;h3 id="5-object-manipulation-eg-indexing-subsetting">5. Object Manipulation (e.g. indexing, subsetting)&lt;/h3>
-&lt;pre>&lt;code>a. Subsetting single variable
-b. Indices by distance
-c. Find nearest xy indices
-d. Gridded.interpolate_in_space()
-e. Gridded.interpolate_in_time()
-&lt;/code>&lt;/pre>
-&lt;h3 id="6-altimetry-methods">6. Altimetry Methods&lt;/h3>
-&lt;pre>&lt;code>a. Load example data
-b. Subset altimetry data
-c. Interpolate model onto altimetry using obs_operator
-d. Calculate CRPS
-e. ALTIMETRY basic stats
-f. Altimetry plotting
-&lt;/code>&lt;/pre>
-&lt;h3 id="7-tidegauge-methods">7. TIDEGAUGE Methods&lt;/h3>
-&lt;pre>&lt;code>a. Load GESLA data
-b. Load BODC data
-c. Load EA data via API
-d. TIDEGAUGE obs operator
-e. Tidegauge CRPS
-f. Tiudegauge basic stats
-g. Resample TIDEGAUGE
-h. Apply Doodson XO Filter to data
-i. Loading multiple tidegauges
-j. Plotting a single tidegauge location
-k. Plotting multiple tidegauge locations
-l. Tidegauge time series plot
-m. TIDEGAUGE method for tabulated data
-n. TIDEGAUGE method for finding peaks and troughs, compare neighbours
-o. TIDEGAUGE method for finding extrema and troughs, fit cubic spline
-&lt;/code>&lt;/pre>
-&lt;h3 id="8-isobath-contour-methods">8. Isobath Contour Methods&lt;/h3>
-&lt;pre>&lt;code>a. Extract isbath contour between two points
-b. Plot contour on map
-c. Calculate pressure along contour
-d. Calculate flow across contour
-e. Calculate pressure gradient driven flow across contour
-&lt;/code>&lt;/pre>
-&lt;h3 id="9-eof-methods">9. EOF methods&lt;/h3>
-&lt;pre>&lt;code>a. Compute EOFs, projections and variance
-b. Compute HEOFs, projections and variance
-&lt;/code>&lt;/pre>
-&lt;h3 id="10-profile-methods">10. Profile Methods&lt;/h3>
-&lt;pre>&lt;code>a. Load En4 data
-b. Process En4 data
-c. Gridded obs_operator
-d. Vertical Interpolation
-e. Profile differencing
-f. Regional averaging
-g. Surface and Bottm averaging.
-&lt;/code>&lt;/pre>
-&lt;h3 id="11-plotting-utility">11. Plotting Utility&lt;/h3>
-&lt;pre>&lt;code>a. scatter_with_fit()
-b. create_geo_axes()
-c. determine_colorbar_extension()
-d. determine_clim_by_standard_deviation()
-&lt;/code>&lt;/pre>
-&lt;h3 id="12-stats-utility">12. Stats Utility&lt;/h3>
-&lt;pre>&lt;code>a. find_maxima()
-&lt;/code>&lt;/pre>
-&lt;h3 id="13-mask_masker">13. MASK_MASKER&lt;/h3>
-&lt;pre>&lt;code>a. Create mask by indices
-b. Create mask by lonlat
-&lt;/code>&lt;/pre>
-&lt;h3 id="14-climatology">14. CLIMATOLOGY&lt;/h3>
-&lt;pre>&lt;code>a. Create monthly and seasonal climatology, write to file
-&lt;/code>&lt;/pre>
-&lt;h3 id="n-example-script-testing">N. Example script testing&lt;/h3>
-&lt;pre>&lt;code>a. tutorials using example_files (E.g. altimetry and tidegauges, ...)
-b. tutorial on AMM15 data
-c. tutorial on AMM60 data
-d. tutorial on Belize data
-e. tutorial on SEAsia data
-f. tutorial on WCSSP-India data
-g. tutorial on internal tides
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Configuration files</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</link><pubDate>Tue, 07 Sep 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</guid><description>
+&lt;p>Unit testing is a key component of the COAsT contribution workflow. A &amp;ldquo;unit test&amp;rdquo; is a small, singular piece of code that tests an element of COAsT to ensure that it works as expected. This might include a small check that a method actually runs without error and returns an expected value or dataset. There is then a sequence of unit tests which should, in theory, test all parts of the COAsT codebase. When pushing a change to COAsT, we can use this system to ensure that any changes that have been made do not break the existing package. If a modification results in a unit test failing then we must not merge changes into the &lt;code>develop&lt;/code> or &lt;code>merge&lt;/code> branches.&lt;/p>
+&lt;p>The COAsT unit testing system uses Python&amp;rsquo;s own &lt;code>unittest&lt;/code> library. On this page, the system is outlined, alongside guidance on how to use it.&lt;/p>
+&lt;h2 id="the-unittest-library">The unittest library&lt;/h2>
+&lt;p>Unittest is a library that comes with Python. You can find more information &lt;a href="https://docs.python.org/3/library/unittest.html">here&lt;/a>.&lt;/p>
+&lt;p>We have used the TestSuite functionality of the library alongside the TestCase class. This works by creating a class that inherits from TestCase. Then, any method within this class acts as a unit test, so long as it begins with &lt;code>test_&lt;/code>. We can create a Test Suite (just a collection of the TestCase classes) and then run it. When we do this, the package will search for all methods beginning with &lt;code>test_&lt;/code> and run them.&lt;/p>
+&lt;h2 id="system-overview">System Overview&lt;/h2>
+&lt;p>There are several files that make up the unit testing system in COAsT:&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>unit_testing/unit_test.py&lt;/code>. This is the main unit testing file that controls the import of test classes as well as the creation and execution of the Test Suite.&lt;/li>
+&lt;li>&lt;code>unit_testing/unit_test_files.py&lt;/code>. This file simply contains paths which point towards example files, scripts and configs. These are small files that can be obtained here. Ideally, the example files should be in &lt;code>COAsT/example_files&lt;/code>, the scripts in &lt;code>COAsT/example_scripts&lt;/code> and the configs in &lt;code>COAsT/configs&lt;/code>. It is easy to obtain these files from within a test file. Simply &lt;code>import unit_test_files as files&lt;/code> at the top of a test file. A file can then be obtained anywhere by using &lt;code>files.file_name_variable&lt;/code>.&lt;/li>
+&lt;li>&lt;code>unit_testing/test_*.py&lt;/code>. These are the files that contain the actual unit tests, inside the TestCase classes mentioned above. There is a well commented example/template file that comes with COAsT called &lt;code>test_TEMPLATE.py&lt;/code>. Please see this file for a better idea of what these files look like.&lt;/li>
+&lt;/ol>
+&lt;h2 id="running-the-unit-test">Running the unit test&lt;/h2>
+&lt;p>You can run the unit testing system simply by running the &lt;code>unit_test.py&lt;/code> file. For example, within Spyder you could use &lt;code>run unit_testing/unit_test.py&lt;/code>. The script should be run from the main &lt;code>COAsT&lt;/code> directory to work correctly. Be careful if using Spyder&amp;rsquo;s play button that your working directory is also the highest level &lt;code>COAsT&lt;/code> directory. For the easiest time, your example files should be in &lt;code>COAsT/example_files&lt;/code>, however you can put them anywhere you wish. If the unit test cannot find the files, it will prompt you to enter the path in the terminal.&lt;/p>
+&lt;p>If you are testing new additions to the system, you may not wish to run all tests. You can easily change which tests you are running by modifying the &lt;code>tests_to_run&lt;/code> list variable in &lt;code>unit_testing/unit_test.py&lt;/code>. Comment out the names of the test classes you do not wish to run (that&amp;rsquo;s all you have to do).&lt;/p>
+&lt;p>As the test runs, it will return the names of the test methods it is currently running and a message telling you whether it was ok, ERROR or FAILURE. When all tests are complete, it will tell you how many ERRORs and FAILUREs occurred and how long the test took. A successful unit testing run will have 0 ERRORS and 0 FAILURES. If there are errors, it will return information on which unit tests failed as well as traceback on the error raised.&lt;/p>
+&lt;h2 id="adding-your-own-unit-test">Adding your own unit test&lt;/h2>
+&lt;p>When changing COAsT, you should add your own unit tests for the features you have added. You can do this either by adding a method to an existing test class in one of the &lt;code>test_*.py&lt;/code> files or by creating your own test class and adding unit tests to this. You should carefully consider whether your new features fit within the context of any of the existing test classes.&lt;/p>
+&lt;p>If creating a new test class, your workflow may look something like this:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Create new test_your_name.py file&lt;/strong>: You might want to start by copying test_TEMPLATE.py to a new filename of your choice. Delete the methods inside of it and rename to class from test_TEMPLATE to test_&amp;lt;&amp;gt;. The name of the class does not have to match the name of the file, but make sure you know the difference. Ensure this new file is saved in the &lt;code>COAsT/unit_testing&lt;/code> directory.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Add unit tests to your file:&lt;/strong> You do this simply by creating new methods inside the class you created above. Each method that you want to act as a unit test must being with &amp;ldquo;test_&amp;quot;. You should name your test to appropriately reflect its function. If there are any problems with your unit test when running the system then the name of the failed method will be returned. Using a long descriptive name in this case is useful.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Add new test file to unit_test.py:&lt;/strong> You need to let the main &lt;code>unit_test.py&lt;/code> script know about your new file and class. At the top of this file is a selection of import statement. Follow the other lines here by importing the names of your test class(es) from your file. For example, to import the &lt;code>test_TEMPLATE&lt;/code> class from &lt;code>test_TEMPLATE.py&lt;/code>, you can add the line &lt;code>from test_TEMPLATE.py import test_TEMPLATE&lt;/code>. Next, you must add this imported classes to the &lt;code>tests_to_do&lt;/code> list below. And that&amp;rsquo;s it!&lt;/p>
+&lt;/li>
+&lt;/ol></description></item><item><title>Docs: Configuration files</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</link><pubDate>Tue, 07 Sep 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</guid><description>
 &lt;p>Configuration file code can be found in
 &lt;code>coast/config&lt;/code> within the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/coast/config">COAsT&lt;/a> github repository.
 This code is used internally within the package.&lt;/p>
