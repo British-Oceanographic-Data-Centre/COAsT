@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import unit_test_files as files
 
 
-class test_WOD_read_data(unittest.TestCase):
+class test_altimetry_methods(unittest.TestCase):
     def test_altimetry_load_subset_and_comparison(self):
 
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
