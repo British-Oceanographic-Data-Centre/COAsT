@@ -80,7 +80,7 @@ def test_load_profile_config():
 def test_load_WOD_config():
     WOD_profile_1D = Profile(config=fn_WOD_config)
     WOD_profile_1D.read_WOD(fn_WOD)
-    assert profile is not None
+    assert WOD_profile_1D is not None
     # assert that we have the coordinate and data variable names as specified in the json config file
     assert list(WOD_profile_1D.dataset.coords) == ["casts", "Z_N"]
     assert list(WOD_profile_1D.dataset.data_vars) == [
