@@ -80,3 +80,10 @@ class test_example_scripts(unittest.TestCase):
             import internal_tide_pycnocline_diagnostics
 
             plt.close("all")
+
+    def test_example_WOD_BGC_ragged(self):
+        if "livljobs" in gethostname().lower():
+            from example_scripts import example_WOD_BGC_ragged
+
+            plt.close("all")
+
