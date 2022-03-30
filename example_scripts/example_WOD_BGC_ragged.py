@@ -21,7 +21,7 @@ import coast.general_utils as general_utils
 import scipy as sp
 
 #====================== UNIV PARAMS ===========================
-path_examples = '/scratch/accord/COAST/coast_demo/COAsT_example_files/EXTRA_examples/'   ## data local
+path_examples = '/projectsa/COAsT/NEMO_example_data/SEAsia_R12/'   ## data local
 
 #====================== load my data ===========================
 fn_WOD_var = (path_examples + 'WOD_example_ragged_standard_level.nc')#'WOD_example_ragged_OBSdepth.nc')
