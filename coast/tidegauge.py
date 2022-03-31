@@ -963,6 +963,10 @@ class Tidegauge(Timeseries):
 
         gridded = gridded.dataset
         ds = self.dataset
+        
+        # Determine if landmask is present
+        if 'landmask' not in gridded:
+            gridded.landmask = None
 
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)

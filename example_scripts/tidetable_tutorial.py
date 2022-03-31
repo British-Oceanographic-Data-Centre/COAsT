@@ -28,7 +28,7 @@ import numpy as np
 
 #%% Load and plot High and Low Water data
 print("load and plot HLW data")
-filnam = "example_files/Gladstone_2020-10_HLW.txt"
+filnam = './example_files/Gladstone_2020-10_HLW.txt'
 
 # Set the start and end dates
 date_start = np.datetime64("2020-10-12 23:59")
@@ -37,12 +37,12 @@ date_end = np.datetime64("2020-10-14 00:01")
 # Initiate a TideGauge object, if a filename is passed it assumes it is a GESLA type object
 tg = coast.Tidegauge()
 # specify the data read as a High Low Water dataset
-tg.dataset = tg.read_hlw_to_xarray(filnam, date_start, date_end)
+tg.read_hlw(filnam, date_start, date_end)
 # Show dataset. If timezone is specified then it is presented as requested, otherwise uses UTC
 print("Try the TideGauge.show() method:")
 tg.show(timezone="Europe/London")
 # Do a basic plot of these points
-tg.dataset.plot.scatter(x="time", y="sea_level")
+tg.dataset.plot.scatter(x="time", y="ssh")
 
 #%%
 

@@ -15,18 +15,19 @@
       i. gridded_load_variables_correctly_renamed
 
 3. test_general_utils
-      a. coast_variable_renaming
-      b. copy_coast_object
-      c. day_of_week
-      d. getitem
+      a. bst_to_gmt
+      b. coast_variable_renaming
+      c. copy_coast_object
+      d. day_of_week
+      e. getitem
 
 4. test_gridded_harmonics
       a. combine_and_convert_harmonics
 
 5. test_diagnostic_methods
       a. compute_vertical_spatial_derivative
-      b. construct_pycnocline_depth_and_thickness
-      c. contruct_density
+      b. construct_density
+      c. construct_pycnocline_depth_and_thickness
 
 6. test_transect_methods
       a. calculate_transport_velocity_and_depth
@@ -49,48 +50,47 @@
       d. tidegauge_finding_extrema
       e. tidegauge_for_tabulated_data
       f. tidegauge_resample_and_apply_doodsonx0
+      g. time_mean
+      h. time_slice
+      i. time_std
 
-10. test_eof_methods
+10. test_tidegauge_analysis
+      a. difference
+      b. harmonic_analysis_utide
+      c. match_missing_values
+      d. threshold_statistics
+
+11. test_eof_methods
       a. compute_heofs
       b. compute_regular_eof
 
-11. test_isobath_contour_methods
+12. test_contour_f_methods
       a. calculate_flow_across_contour
-      b. calculate_preddure_gradient_griven_flow
-      c. calculate_pressure_along_contour
-      d. extract_isobath_contour_between_two_points
+      b. calculate_pressure_gradient_driven_flow
+      c. extract_isobath_contour_between_two_points
 
-12. test_profile_methods
+13. test_contour_t_methods
+      a. along_contour_2d_flow
+      b. along_contour_flow
+      c. calculate_pressure_along_contour
+
+14. test_profile_methods
       a. compare_processed_profile_with_model
       b. load_process_and_compare_profile_data
 
-13. test_plot_utilities
+15. test_plot_utilities
       a. determine_clim_by_stdev
       b. determine_colorbar_extension
       c. geo_axes
       d. scatter_with_fit
 
-14. test_stats_utilities
+16. test_stats_utilities
       a. find_maxima
 
-15. test_maskmaker_methods
+17. test_maskmaker_methods
       a. fill_polygon_by_index
       b. fill_polygon_by_lonlat
 
-16. test_climatology
+18. test_climatology
       a. monthly_and_seasonal_climatology
-
-17. test_example_scripts
-      a. altimetry_tutorial
-      b. amm15_example_plot
-      c. anchor_plots_of_nsea_wvel
-      d. blz_example_plot
-      e. contour_tutorial
-      f. export_to_netcdf_tutorial
-      g. internal_tide_pycnocline_diagnostics
-      h. seasia_r12_example_plot
-      i. tidegauge_tutorial
-      j. tidetable_tutorial
-      k. transect_tutorial
-      l. wcssp_india_example_plot
 
