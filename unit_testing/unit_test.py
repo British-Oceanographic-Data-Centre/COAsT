@@ -89,11 +89,14 @@ for test in tests_to_do:
 unittest.TextTestRunner(verbosity=2).run(suite)
 
 if calculate_coverage:
-    print(" ")
-    print("COVERAGE REPORT: ")
     cov.stop()
     cov.save()
-    cov.report(omit="unit_testing/test_*")
+    print(" ")
+    print("COVERAGE REPORT (Classes): ")
+    cov.report(omit=["unit_testing/test_*","example_scripts/*"])
+    print(" ")
+    print("COVERAGE REPORT (Example Scripts): ")
+    cov.report(omit=["unit_testing/test_*","coast/*"])
 
 # Generate unit_test_contents
 if generate_unit_test_contents:
