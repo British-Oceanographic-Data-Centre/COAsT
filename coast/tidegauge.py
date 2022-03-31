@@ -909,10 +909,9 @@ class Tidegauge(Timeseries):
 
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
 
-        title = "Location: " + self.dataset.attrs["site_name"]
         X = self.dataset.longitude
         Y = self.dataset.latitude
-        fig, ax = plot_util.geo_scatter(X, Y, title=title)
+        fig, ax = plot_util.geo_scatter(X, Y)
         ax.set_xlim((X - 10, X + 10))
         ax.set_ylim((Y - 10, Y + 10))
         return fig, ax
@@ -969,7 +968,8 @@ class Tidegauge(Timeseries):
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=gridded.landmask
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, 
+            mask=gridded.landmask
         )
 
         # Extract spatial time series
@@ -987,7 +987,8 @@ class Tidegauge(Timeseries):
         # Check interpolation distances
         print("Calculating interpolation distances.", flush=True)
         interp_dist = general_utils.calculate_haversine_distance(
-            extracted.longitude, extracted.latitude, ds.longitude.values, ds.latitude.values
+            extracted.longitude.values, extracted.latitude.values, 
+            ds.longitude.values, ds.latitude.values
         )
 
         # Interpolate model onto obs times

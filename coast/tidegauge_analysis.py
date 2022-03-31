@@ -107,8 +107,8 @@ class TidegaugeAnalysis:
         """
         # Make name shorter for computations and get dimension lengths
         ds = data_array
-        n_port = ds.dims["id"]
-        n_time = ds.dims["t_dim"]
+        n_port = ds.sizes["id"]
+        n_time = ds.sizes["t_dim"]
         
         # Harmonic analysis datenums -- for utide to work correctly
         time = mdates.date2num(ds.time.values)
@@ -198,7 +198,7 @@ class TidegaugeAnalysis:
 
         # NTR: Calculate non tidal residuals
         ntr = data_array_ssh - data_array_tide
-        n_port = data_array_ssh.dims["id"]
+        n_port = data_array_ssh.sizes["id"]
 
         # NTR: Apply filter if wanted
         if apply_filter:
@@ -243,7 +243,7 @@ class TidegaugeAnalysis:
         ds_thresh["threshold"] = ("threshold", thresholds)
         var_list = list(ds.keys())
         n_thresholds = len(thresholds)
-        n_port = ds.dims["id"]
+        n_port = ds.sizes["id"]
 
         # Loop over vars in the input dataset
         for vv in var_list:
@@ -258,7 +258,7 @@ class TidegaugeAnalysis:
 
                 # Identify NTR peaks for threshold analysis
                 data_pp = ds[vv].isel(id=pp)
-                if np.sum(np.isnan(data_pp.values)) == ds.dims["t_dim"]:
+                if np.sum(np.isnan(data_pp.values)) == ds.sizes["t_dim"]:
                     continue
 
                 pk_ind, _ = signal.find_peaks(data_pp.values, distance=peak_separation)
@@ -365,7 +365,7 @@ class TidegaugeAnalysis:
         """
 
         if "id" in data_array.dims:
-            n_id = data_array.dims["id"]
+            n_id = data_array.sizes["id"]
         else:
             n_id = 1
             data_array = data_array.expand_dims("id")
@@ -404,8 +404,8 @@ class TidegaugeAnalysis:
         """Applies doodson X0 filter to a specified TIDEGAUGE variable
         Input ius expected to be hourly. Use resample_mean to average data
         to hourly frequency."""
-        n_id = dataset.dims["id"]
-        n_time = dataset.dims["t_dim"]
+        n_id = dataset.sizes["id"]
+        n_time = dataset.sizes["t_dim"]
         filtered = np.zeros((n_id, n_time))
         for ii in range(n_id):
             ds_ii = dataset.isel(id=ii)
@@ -480,9 +480,9 @@ class TidegaugeAnalysis:
             N_out[ii] = n_model_pts
 
         # Put into new object
-        new_dataset = tidegauge_data[["longitude", "latitude", "time"]]
-        new_dataset["crps"] = (("id", "time"), crps_out)
-        new_dataset["crps_N"] = (("id", "time"), N_out)
+        new_dataset = xr.Dataset( tidegauge_data.coords )
+        new_dataset["crps"] = (("id", "t_dim"), crps_out)
+        new_dataset["crps_N"] = (("id", "t_dim"), N_out)
         return Tidegauge(dataset=new_dataset)
 
     @classmethod

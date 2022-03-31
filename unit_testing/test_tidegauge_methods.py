@@ -21,22 +21,9 @@ class test_tidegauge_methods(unittest.TestCase):
             lowestoft = coast.Tidegauge()
             lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
 
-            # TEST: Define Attribute dictionary for comparison
-            test_attrs = {
-                "site_name": "Lowestoft",
-                "country": "United_Kingdom",
-                "contributor": "British_Oceanographic_Data_Centre",
-                "coordinate_system": "UK",
-                "original_start_date": np.datetime64("1964-01-01 00:00:00"),
-                "original_end_date": np.datetime64("2014-12-31 23:45:00"),
-                "time_zone_hours": 0.0,
-                "precision": 0.001,
-                "null_value": -99.9999,
-            }
-
             # TEST: Check attribute dictionary and length of sea_level.
             check1 = len(lowestoft.dataset.ssh.isel(id=0)) == 193
-            check2 = lowestoft.dataset.attrs == test_attrs
+            check2 = lowestoft.dataset.id_name.values[0] == 'Lowestoft'
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
@@ -58,7 +45,7 @@ class test_tidegauge_methods(unittest.TestCase):
             self.assertTrue(check2, "check2")
 
         with self.subTest("Tidegauge CRPS"):
-            crps = tganalysis.crps(lowestoft, sci, "ssh")
+            crps = tganalysis.crps(lowestoft.dataset.ssh, sci.dataset.ssh)
 
             # TEST: Check length of crps and that it contains values
             check1 = crps.dataset.crps.shape[0] == lowestoft.dataset.ssh.shape[0]
@@ -72,7 +59,8 @@ class test_tidegauge_methods(unittest.TestCase):
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
         lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
-        tmean = tganalysis.time_mean(lowestoft, date0, datetime.datetime(2007, 1, 11))
+        tmean = tganalysis.time_mean(lowestoft.dataset, 
+                                     date0, datetime.datetime(2007, 1, 11))
         check1 = np.isclose(tmean.dataset.ssh.values[0], 1.91486598)
         self.assertTrue(check1, "check1")
 
@@ -82,7 +70,8 @@ class test_tidegauge_methods(unittest.TestCase):
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
         lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
-        tstd = tganalysis.time_std(lowestoft, date0, datetime.datetime(2007, 1, 11))
+        tstd = tganalysis.time_std(lowestoft.dataset, 
+                                   date0, datetime.datetime(2007, 1, 11))
         check1 = np.isclose(tstd.dataset.ssh.values[0], 0.5419484060517006)
         self.assertTrue(check1, "check1")
 
@@ -92,7 +81,8 @@ class test_tidegauge_methods(unittest.TestCase):
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
         lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
-        tslice = tganalysis.time_slice(lowestoft, date0=date0, date1=datetime.datetime(2007, 1, 11))
+        tslice = tganalysis.time_slice(lowestoft.dataset, 
+                                       date0=date0, date1=datetime.datetime(2007, 1, 11))
         check1 = pd.to_datetime(tslice.dataset.time.values[0]) == date0
         check2 = pd.to_datetime(tslice.dataset.time.values[-1]) == datetime.datetime(2007, 1, 11)
         self.assertTrue(check1, "check1")
@@ -106,14 +96,14 @@ class test_tidegauge_methods(unittest.TestCase):
             date1 = datetime.datetime(2007, 1, 12)
             lowestoft = coast.Tidegauge()
             lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
-            resampled = tganalysis.resample_mean(lowestoft, "1H")
+            resampled = tganalysis.resample_mean(lowestoft.dataset, "1H")
             check1 = pd.to_datetime(resampled.dataset.time.values[2]) == datetime.datetime(2007, 1, 10, 2, 0, 0)
             check2 = resampled.dataset.dims["t_dim"] == 49
             self.assertTrue(check1)
             self.assertTrue(check2)
 
         with self.subTest("Apply Doodson x0 filter"):
-            dx0 = tganalysis.doodson_x0_filter(resampled, "ssh")
+            dx0 = tganalysis.doodson_x0_filter(resampled.dataset, "ssh")
 
             # TEST: Check new times are same length as variable
             check1 = dx0.dataset.time.shape == resampled.dataset.time.shape
@@ -184,7 +174,8 @@ class test_tidegauge_methods(unittest.TestCase):
             tganalysis = coast.TidegaugeAnalysis()
 
             # Use comparison of neighbourhood method (method="comp" is assumed)
-            extrema_comp = tganalysis.find_high_and_low_water(lowestoft2, "ssh", distance=40)
+            extrema_comp = tganalysis.find_high_and_low_water(lowestoft2.dataset.ssh,
+                                                              distance=40)
             # Check actual maximum/minimum is in output dataset
             check1 = np.nanmax(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_highs
             check2 = np.nanmin(lowestoft2.dataset.ssh) in extrema_comp.dataset.ssh_lows
@@ -223,7 +214,8 @@ class test_tidegauge_methods(unittest.TestCase):
             tg.read_bodc(files.fn_tidegauge2, date_start, date_end)
 
             # Use cubic spline fitting method
-            extrema_cubc = tganalysis.find_high_and_low_water(tg, "ssh", method="cubic")
+            extrema_cubc = tganalysis.find_high_and_low_water(tg.dataset.ssh, 
+                                                              method="cubic")
 
             # Check actual maximum/minimum is in output dataset
             check1 = np.isclose(extrema_cubc.dataset.ssh_highs, [7.774, 7.91]).all()
