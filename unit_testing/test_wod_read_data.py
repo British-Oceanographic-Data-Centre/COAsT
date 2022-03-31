@@ -29,7 +29,7 @@ class test_wod_read_data(unittest.TestCase):
         wod_profile_1D.read_wod(files.fn_wod)
 
         with self.subTest("Check reshape"):
-            my_list = ["DIC", "Temperature", "Alkalinity"]
+            my_list = ["dic", "temperature", "alkalinity"]
             wod_profile = coast.Profile.reshape_2d(wod_profile_1D, my_list)
 
             check1 = type(wod_profile) == coast.profile.Profile

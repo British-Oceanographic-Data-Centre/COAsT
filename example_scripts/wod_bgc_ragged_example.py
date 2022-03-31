@@ -30,7 +30,7 @@ wod_profile_1d.read_wod(fn_wod_var)
 
 # ===================== reshape TO 2D=====================
 # choose which observed variables you want
-var_user_want = ["Salinity", "Temperature", "Nitrate", "Oxygen", "DIC", "Phosphate", "Alkalinity"]
+var_user_want = ["salinity", "temperature", "nitrate", "oxygen", "dic", "phosphate", "alkalinity"]
 wod_profile = coast.Profile.reshape_2d(wod_profile_1d, var_user_want)
 
 # ===================== keep subset =====================
@@ -62,21 +62,21 @@ wod_profile = wod_profile.isel(profile=keep_indices)
 
 # transform observed DIC from mmol/l to mmol C/ m^3 that the model has
 fig = plt.figure()
-plt.plot(1000 * wod_profile.dataset.DIC[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
-plt.plot(model_profiles.dataset.DIC[8, :], model_profiles.dataset.depth[:, 8], linestyle="", marker="o")
+plt.plot(1000 * wod_profile.dataset.dic[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
+plt.plot(model_profiles.dataset.dic[8, :], model_profiles.dataset.depth[:, 8], linestyle="", marker="o")
 plt.ylim([2500, 0])
 plt.title("DIC vs depth")
 plt.show()
 
 fig = plt.figure()
-plt.plot(wod_profile.dataset.Oxygen[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
+plt.plot(wod_profile.dataset.oxygen[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
 plt.plot(model_profiles.dataset.oxygen[8, :], model_profiles.dataset.depth[:, 8], linestyle="", marker="o")
 plt.ylim([2500, 0])
 plt.title("Oxygen vs depth")
 plt.show()
 
 fig = plt.figure()
-plt.plot(wod_profile.dataset.Phosphate[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
+plt.plot(wod_profile.dataset.phosphate[8, :], wod_profile.dataset.depth[8, :], linestyle="", marker="o")
 plt.plot(model_profiles.dataset.phosphate[8, :], model_profiles.dataset.depth[:, 8], linestyle="", marker="o")
 plt.ylim([2500, 0])
 plt.title("Phosphate vs depth")
@@ -85,7 +85,7 @@ plt.show()
 
 # interpolate seasia to profile depths
 reference_depths = wod_profile.dataset.depth[20, :].values
-model_profiles.dataset = model_profiles.dataset[["DIC"]] / 1000
+model_profiles.dataset = model_profiles.dataset[["dic"]] / 1000
 model_profiles_interp = model_profiles.interpolate_vertical(reference_depths, interp_method="linear")
 
 #!!NOTE INTERPOLATE does not work with wod_profiles (maybe due to all nans in some points)

@@ -6,11 +6,11 @@
 		"dimension_map": {
 			"casts": "casts",
 			"z_obs": "z_N",
-                        "Temperature_obs": "Temperature_N",
-                        "Salinity_obs": "Salinity_N",
-                        "Oxygen_obs": "Oxygen_N",
-                        "Phosphate_obs": "Phosphate_N",
-                        "tCO2_obs": "DIC_N"
+                        "Temperature_obs": "temperature_N",
+                        "Salinity_obs": "salinity_N",
+                        "Oxygen_obs": "oxygen_N",
+                        "Phosphate_obs": "phosphate_N",
+                        "tCO2_obs": "dic_N"
 		},
 		"variable_map": {
 			"lat": "latitude",
@@ -19,16 +19,16 @@
 			"time": "time",
                         "z": "depth",
                         "z_row_size": "z_row_size",
-			"Temperature": "Temperature",
-                        "Temperature_row_size": "Temperature_row_size",
-                        "Salinity": "Salinity",
-                        "Salinity_row_size": "Salinity_row_size",
-                        "Oxygen": "Oxygen",
-                        "Oxygen_row_size": "Oxygen_row_size",
-                        "Phosphate": "Phosphate",
-                        "Phosphate_row_size": "Phosphate_row_size",
-                        "tCO2": "DIC",
-                        "tCO2_row_size": "DIC_row_size"
+			"Temperature": "temperature",
+                        "Temperature_row_size": "temperature_row_size",
+                        "Salinity": "salinity",
+                        "Salinity_row_size": "salinity_row_size",
+                        "Oxygen": "oxygen",
+                        "Oxygen_row_size": "oxygen_row_size",
+                        "Phosphate": "phosphate",
+                        "Phosphate_row_size": "phosphate_row_size",
+                        "tCO2": "dic",
+                        "tCO2_row_size": "dic_row_size"
 		},
 		"coord_vars": []
 	},
