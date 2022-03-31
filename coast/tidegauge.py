@@ -43,8 +43,7 @@ class Tidegauge(Timeseries):
     should also be used for quality control/data rejection.
     """
 
-    def __init__(self, dataset=None, config: Union[Path, str] = None,
-                 new_time_coords=None):
+    def __init__(self, dataset=None, config: Union[Path, str] = None, new_time_coords=None):
         """
         Initialise TIDEGAUGE object as empty or by providing an existing
         dataset or tidegauge object. There are read functions within Tidegauge()
@@ -54,10 +53,10 @@ class Tidegauge(Timeseries):
         --------------
         # Create empty tidegauge object
         tidegauge = coast.Tidegauge()
-        
+
         # Create new tidegauge object containing an existing xarray dataset
         tidegauge = coast.Tidegauge(dataset = dataset_name)
-        
+
         # Create new tidegauge object containing existing xarray dataset and
         # create new time coordinate (will remove all variables)
         tidegauge = coast.Tidegage(tidegauge0.dataset, new_coords = time_array)
@@ -80,14 +79,14 @@ class Tidegauge(Timeseries):
         if dataset is not None:
             self.dataset = dataset
             self.apply_config_mappings()
-            
+
             # If new_time_coords, replace existing time dimension with new
             if new_time_coords is not None:
-                ds_coords = xr.Dataset(self.dataset.coords ).drop("time")
+                ds_coords = xr.Dataset(self.dataset.coords).drop("time")
                 ds_coords["time"] = ("t_dim", new_time_coords)
                 ds_coords = ds_coords.set_coords("time")
                 self.dataset = ds_coords
-            
+
         else:
             self.dataset = None
 
@@ -134,10 +133,10 @@ class Tidegauge(Timeseries):
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
-            dataset["longitude"] = ("id",[ header_dict["longitude"]])
+            dataset["longitude"] = ("id", [header_dict["longitude"]])
             dataset["latitude"] = ("id", [header_dict["latitude"]])
             dataset["id_name"] = ("id", [header_dict["site_name"]])
-            dataset = dataset.set_coords(['longitude','latitude','id_name'])
+            dataset = dataset.set_coords(["longitude", "latitude", "id_name"])
 
             # Create tidegauge object, save dataset and append to list
             if multiple:
