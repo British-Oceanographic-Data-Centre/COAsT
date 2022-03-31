@@ -12,15 +12,17 @@ import matplotlib.pyplot as plt
 #################################################
 #%%  Loading  data
 #################################################
-path_examples = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"  ## data local
+path_examples = "./example_files/"
+## data local in livljobs : /projectsa/COAsT/NEMO_example_data/SEAsia_R12/
+path_config = "./config/"
 
 fn_seasia_domain = path_examples + "coast_example_domain_SEAsia.nc"
-fn_seasia_config_bgc = path_examples + "example_nemo_bgc.json"
+fn_seasia_config_bgc = path_config + "example_nemo_bgc.json"
 fn_seasia_var = path_examples + "coast_example_SEAsia_BGC_1990.nc"
 
 seasia_bgc = coast.Gridded(fn_data=fn_seasia_var, fn_domain=fn_seasia_domain, config=fn_seasia_config_bgc)
 
-#%% Plot
+#%% Plot DIC
 fig = plt.figure()
 plt.pcolormesh(
     seasia_bgc.dataset.longitude,
@@ -35,4 +37,4 @@ plt.title("DIC, mmol/m^3")
 plt.xlabel("longitude")
 plt.ylabel("latitude")
 plt.show()
-fig.savefig("seasia_DIC_surface.png")
+#fig.savefig("seasia_DIC_surface.png")

@@ -19,11 +19,13 @@ import coast.general_utils as general_utils
 import scipy as sp
 
 # ====================== UNIV PARAMS ===========================
-path_examples = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"  ## data local
+path_examples = "./example_files/"  
+## data local in livljobs : /projectsa/COAsT/NEMO_example_data/SEAsia_R12/
+path_config = "./config/"
 
 # ====================== load my data ===========================
 fn_wod_var = path_examples + "WOD_example_ragged_standard_level.nc"  #'wod_example_ragged_OBSdepth.nc')
-fn_wod_config = path_examples + "example_wod_profiles.json"
+fn_wod_config = path_config + "example_wod_profiles.json"
 
 wod_profile_1d = coast.Profile(config=fn_wod_config)
 wod_profile_1d.read_wod(fn_wod_var)
@@ -42,7 +44,7 @@ wod_profile = wod_profile.isel(profile=ind)
 # comparisons are not going to be correct but just as a demo
 
 fn_seasia_domain = path_examples + "coast_example_domain_SEAsia.nc"
-fn_seasia_config_bgc = path_examples + "example_nemo_bgc.json"
+fn_seasia_config_bgc = path_config + "example_nemo_bgc.json"
 fn_seasia_var = path_examples + "coast_example_SEAsia_BGC_1990.nc"
 
 seasia_bgc = coast.Gridded(
