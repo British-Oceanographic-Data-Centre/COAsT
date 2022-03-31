@@ -17,90 +17,61 @@ import xarray.ufuncs as uf
 
 class Tidegauge(Timeseries):
     """
-    An object for reading, storing and manipulating tide gauge data.
-    Functionality available for reading and organisation of GESLA files.
-    (Source: https://www.gesla.org/).  However, any fixed time series data can
-    be used if in the correct format.
+    This is an object for storage and manipulation of tide gauge data
+    in a single dataset. This may require some processing of the observations
+    such as interpolation to a common time step.
 
-    The data format used for this object is as follows:
+    This object's dataset should take the form (as with Timeseries):
 
-    *Data Format Overview*
+        Dimensions:
+            id   : The locations dimension. Each time series has an index
+            time : The time dimension. Each datapoint at each port has an index
 
-        1. Data for a single tide gauge is stored in an xarray Dataset object.
-           This can be accessed using TIDEGAUGE.dataset.
-        2. The dataset has a single dimension: time.
-        3. Latitude/Longitude and other single values parameters are stored as
-           attributes or single float variables.
-        4. Time is a coordinate variable and time dimension.
-        5. Data variables are stored along the time dimension.
-        6. The attributes: site_name, latitude, longitude are expected. If they
-            are missing functionality may be reduced.
+        Coordinates:
+            longitude (id) : Longitude values for each port index
+            latitude  (id) : Latitude values for each port index
+            time      (time) : Time values for each time index (datetime)
+            id_name   (id)   : Name of index, e.g. port name or mooring id.
 
+    An example data variable could be ssh, or ntr (non-tidal residual). This
+    object can also be used for other instrument types, not just tide gauges.
+    For example moorings.
 
-    *Methods Overview*
-
-        *Initialisation and File Reading*
-        -> __init__: Can be initialised with a GESLA file or empty.
-        -> obs_operator: Interpolates model data to time series locations
-           and times (not yet implemented).
-        -> read_gesla_v3: Reads a format version 3.0
-           GESLA file to an xarray Dataset.
-        -> read_gesla_header_v3: Reads the header of a version 3
-           GESLA file.
-        -> read_gesla_data_v3: Reads data from a version 3 GESLA
-           file.
-        -> create_multiple_tidegauge: Creates multiple tide gauge objects
-           objects from a list of filenames or directory and returns them
-           in a list.
-
-        *Plotting*
-        -> plot_on_map: Plots location of TIDEGAUGE object on map.
-        -> plot_timeseries: Plots a specified time series.
-
-        *Model Comparison*
-        -> obs_operator(): For interpolating model data to this object.
-        -> cprs(): Calculates the CRPS between a model and obs variable.
-        -> difference(): Differences two specified variables
-        -> absolute_error(): Absolute difference, two variables
-        -> mean_absolute_error(): MAE between two variables
-        -> root_mean_square_error(): RMSE between two variables
-        -> time_mean(): Mean of a variable in time
-        -> time_std(): St. Dev of a variable in time
-        -> time_correlation(): Correlation between two variables
-        -> time_covariance(): Covariance between two variables
-        -> basic_stats(): Calculates multiple of the above metrics.
-
-        *Analysis*
-        -> resample_mean(): For resampling data in time using averaging
-        -> apply_doodson_xo_filter(): Remove tidal signal using Doodson XO
-        -> find_high_and_low_water(): Find maxima and minima of time series
+    Every id index for this object should use the same time coordinates.
+    Therefore, timeseries need to be aligned before being placed into the
+    object. If there is any padding needed, then NaNs should be used. NaNs
+    should also be used for quality control/data rejection.
     """
 
-    def __init__(self, dataset=None, config: Union[Path, str] = None):
+    def __init__(self, dataset=None, config: Union[Path, str] = None,
+                 new_time_coords=None):
         """
-        Initialise TIDEGAUGE object either as empty (no arguments) or by
-        reading GESLA data from a directory between two datetime objects.
+        Initialise TIDEGAUGE object as empty or by providing an existing
+        dataset or tidegauge object. There are read functions within Tidegauge()
+        which can subsequently read into this object's dataset.'
 
         Example usage:
         --------------
-        # Read tide gauge data for data in January 1990
-        date0 = datetime.datetime(1990,1,1)
-        date1 = datetime.datetime(1990,2,1)
-        tg = coast.TIDEGAUGE(<'path_to_file'>, date0, date1)
+        # Create empty tidegauge object
+        tidegauge = coast.Tidegauge()
+        
+        # Create new tidegauge object containing an existing xarray dataset
+        tidegauge = coast.Tidegauge(dataset = dataset_name)
+        
+        # Create new tidegauge object containing existing xarray dataset and
+        # create new time coordinate (will remove all variables)
+        tidegauge = coast.Tidegage(tidegauge0.dataset, new_coords = time_array)
 
-        # Access the data
-        tg.dataset
-
-        Parameters
+        INPUTS
         ----------
-        file_path (list of str) : Filename to read from directory.
-        date_start (datetime) : Start date for data read. Optional
-        date_end (datetime) : end date for data read. Optional
-        config (Path or str) : configuration file
+        dataset (xr.Dataset)    :: Xarray dataset to insert into new object
+        config  (Path or Str)   :: Configuration file to use when calling
+                                   read functions (saved in object) [Optional]
+        new_time_coords (array) :: New time coords to create [Optional]
 
         Returns
         -------
-        Self
+        New Tidegauge object.
         """
         debug(f"Creating a new ..... {get_slug(self)}")
         super().__init__(config)
@@ -109,6 +80,14 @@ class Tidegauge(Timeseries):
         if dataset is not None:
             self.dataset = dataset
             self.apply_config_mappings()
+            
+            # If new_time_coords, replace existing time dimension with new
+            if new_time_coords is not None:
+                ds_coords = xr.Dataset(self.dataset.coords ).drop("time")
+                ds_coords["time"] = ("t_dim", new_time_coords)
+                ds_coords = ds_coords.set_coords("time")
+                self.dataset = ds_coords
+            
         else:
             self.dataset = None
 
@@ -155,11 +134,10 @@ class Tidegauge(Timeseries):
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
-            dataset["longitude"] = header_dict["longitude"]
-            dataset["latitude"] = header_dict["latitude"]
-            del header_dict["longitude"]
-            del header_dict["latitude"]
-            dataset.attrs = header_dict
+            dataset["longitude"] = ("id",[ header_dict["longitude"]])
+            dataset["latitude"] = ("id", [header_dict["latitude"]])
+            dataset["id_name"] = ("id", [header_dict["site_name"]])
+            dataset = dataset.set_coords(['longitude','latitude','id_name'])
 
             # Create tidegauge object, save dataset and append to list
             if multiple:
