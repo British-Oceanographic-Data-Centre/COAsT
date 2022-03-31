@@ -52,7 +52,7 @@ tests_to_do = [
     test_stats_utilities,
     test_maskmaker_methods,
     test_climatology,
-    test_example_scripts
+    test_example_scripts,
 ]
 
 # Create suite - this is a collection of tests, defined by classes
