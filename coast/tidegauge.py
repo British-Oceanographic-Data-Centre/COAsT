@@ -77,7 +77,7 @@ class Tidegauge(Timeseries):
 
         # If file list is supplied, read files from directory
         if dataset is not None:
-            self.dataset = dataset
+            self.dataset = dataset.copy()
             self.apply_config_mappings()
 
             # If new_time_coords, replace existing time dimension with new
@@ -85,7 +85,7 @@ class Tidegauge(Timeseries):
                 ds_coords = xr.Dataset(self.dataset.coords).drop("time")
                 ds_coords["time"] = ("t_dim", new_time_coords)
                 ds_coords = ds_coords.set_coords("time")
-                self.dataset = ds_coords
+                self.dataset = ds_coords.copy()
 
         else:
             self.dataset = None

@@ -6,7 +6,6 @@ import utide as ut
 import scipy.signal as signal
 from coast import stats_util, crps_util
 
-
 class TidegaugeAnalysis:
     """
     This is an object for storage and manipulation of tide gauge data
@@ -60,8 +59,8 @@ class TidegaugeAnalysis:
             ind1 = data_array1 == fill_value
             ind2 = data_array2 == fill_value
 
-        ds1 = data_array1.where(~ind2)
-        ds2 = data_array2.where(~ind1)
+        ds1 = data_array1.where(~ind2).to_dataset()
+        ds2 = data_array2.where(~ind1).to_dataset()
 
         return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
 
@@ -178,7 +177,7 @@ class TidegaugeAnalysis:
             reconstructed[pp] = tide
 
         # Create output dataset and return it in new Tidegauge object.
-        ds_out = xr.Dataset(data_array.coords())
+        ds_out = xr.Dataset(data_array.coords)
         ds_out[output_name] = (["id", "t_dim"], reconstructed)
 
         return Tidegauge(dataset=ds_out)
@@ -205,9 +204,9 @@ class TidegaugeAnalysis:
                 ntr[pp, :] = signal.savgol_filter(ntr[pp, :], 25, 3)
 
         # Create output Tidegauge object and return
-        coords = xr.Dataset(data_array_ssh.coords)
-        coords["ntr"] = ntr
-        return Tidegauge(dataset=coords)
+        ds_coords = data_array_ssh.coords.to_dataset()
+        ds_coords["ntr"] = ntr
+        return Tidegauge(dataset=ds_coords)
 
     @classmethod
     def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
@@ -259,7 +258,7 @@ class TidegaugeAnalysis:
                 if np.sum(np.isnan(data_pp.values)) == ds.sizes["t_dim"]:
                     continue
 
-                pk_ind, _ = signal.find_peaks(data_pp.values, distance=peak_separation)
+                pk_ind, _ = signal.find_peaks(data_pp.values.copy(), distance=peak_separation)
                 pk_values = data_pp[pk_ind]
 
                 # Threshold Analysis
@@ -341,7 +340,7 @@ class TidegaugeAnalysis:
         # Merge all differences into one
         differenced = xr.merge((differenced, abs_tmp, sq_tmp, dataset1[save_coords]))
 
-        return Tidegauge(Dataset=differenced)
+        return Tidegauge(dataset=differenced)
 
     @staticmethod
     def find_high_and_low_water(data_array, method="comp", **kwargs):

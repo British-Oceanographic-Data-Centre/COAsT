@@ -7,6 +7,108 @@ import unit_test_files as files
 import datetime
 import pandas as pd
 
+class test_tidegauge_analysis(unittest.TestCase):
+    
+    def test_match_missing_values(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft2 = coast.Tidegauge(dataset=lowestoft.dataset)
+        
+        # Insert some missing values into lowestoft 2
+        ds2 = lowestoft.dataset.ssh.values.copy()
+        ds2[0,0] = np.nan
+        ds2[0,100] = np.nan
+        lowestoft2.dataset['ssh'] = (['id','t_dim'], ds2)
+        ds1 = lowestoft.dataset.ssh.values.copy()
+        ds1[0,50] = np.nan
+        ds1[0,150] = np.nan
+        lowestoft.dataset['ssh'] = (['id','t_dim'], ds1)
+        
+        
+        # Call match_missing_values
+        tg1, tg2 = tganalysis.match_missing_values(lowestoft.dataset.ssh, 
+                                                   lowestoft2.dataset.ssh)
+        
+        self.assertTrue( np.isnan( tg1.dataset.ssh[0,0].values ), 'check1')
+        self.assertTrue( np.isnan( tg1.dataset.ssh[0,100].values ), 'check1')
+        self.assertTrue( np.isnan( tg2.dataset.ssh[0,50].values ), 'check1')
+        self.assertTrue( np.isnan( tg2.dataset.ssh[0,150].values ), 'check1')
+        
+    def test_harmonic_analysis_utide(self):
+        
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        
+        with self.subTest("Do harmonic analysis"):
+            ha = tganalysis.harmonic_analysis_utide(lowestoft.dataset.ssh,
+                                                    min_datapoints=10)
+            self.assertTrue('M2' in ha[0].name, 'check1')
+            self.assertTrue( np.isclose( ha[0].A[0], 0.8927607454203988 ), 'check2')
+            
+        # Reconstruct for a different time period
+        with self.subTest("Reconstruct time series"):
+            new_times = pd.date_range(datetime.datetime(2008,1,1), 
+                                      datetime.datetime(2008,12,31),
+                                      freq='1H')
+            tg_recon = coast.Tidegauge(dataset=lowestoft.dataset, 
+                                       new_time_coords = new_times)
+            reconstructed = tganalysis.reconstruct_tide_utide(tg_recon.dataset,
+                                                              ha, constit='M2',
+                                                              output_name = 'test')
+            
+            self.assertTrue('test' in reconstructed.dataset, 'check1')
+            self.assertTrue(reconstructed.dataset.time.values[0] == np.datetime64('2008-01-01T00:00:00.000000000'), 'check2' )
+            self.assertTrue(np.isclose(reconstructed.dataset.test[0,0].values, 1.92296937), 'check3')
+            
+        with self.subTest("Calculate non-tidal residuals"):
+            reconstructed = tganalysis.reconstruct_tide_utide(lowestoft.dataset.ssh, 
+                                                              ha)
+            ntr = tganalysis.calculate_non_tidal_residuals(lowestoft.dataset.ssh, 
+                                           reconstructed.dataset.reconstructed)
+            self.assertTrue('ntr' in ntr.dataset)
+            self.assertTrue( np.isclose(ntr.dataset.ntr[0,0], 0.00129846), 'check1')
+            
+    def test_threshold_statistics(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        
+        thresh = tganalysis.threshold_statistics(lowestoft.dataset)
+        
+        check1 = 'peak_count_ssh' in thresh
+        check2 = 'peak_count_qc_flags' in thresh
+        check3 = np.isclose(thresh.peak_count_ssh[0,0], 5)
+        
+        self.assertTrue(check1, 'check1')
+        self.assertTrue(check2, 'check2')
+        self.assertTrue(check3, 'check3')
+        
+    def test_difference(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft2 = coast.Tidegauge(dataset = lowestoft.dataset)
+        
+        diff = tganalysis.difference(lowestoft.dataset, lowestoft2.dataset)
+        
+        check1 = 'diff_ssh' in diff.dataset
+        check2 = 'abs_diff_ssh' in diff.dataset
+        check3 = (diff.dataset.diff_ssh==0).all()
+        
+        self.assertTrue(check1, 'check1')
+        self.assertTrue(check2, 'check2')
+        self.assertTrue(check3, 'check3')
+        
 
 class test_tidegauge_methods(unittest.TestCase):
     def test_read_gesla_and_compare_to_model(self):
