@@ -17,20 +17,6 @@ class Process_data:  # TODO All abstract methods should be implemented
     def __init__(self):
         return  # TODO Super __init__ should be called at some point
 
-#    def seasonal_decomposition_np(self, data_chunk, **kwargs ):
-#        from statsmodels.tsa.seasonal import seasonal_decompose
-#        #model='additive', period=12, extrapolate_trend="freq"
-#        result_stacked = seasonal_decompose(data_chunk, **kwargs)  
-#        return result_stacked 
-    
-    def _remove_invalid(self, data_stacked):
-        active_ind = np.where(np.nan_to_num(data_stacked.data).any(axis=0))[0] 
-        return data_stacked[:,active_ind]
-
-    def _rebuild_component(self, component_chunks: list, ts_shape, ts_stacked_shape, active_ind):
-        component = np.full(ts_stacked_shape, np.nan)    
-        component[:, active_ind] = np.concatenate(component_chunks, axis = 1)
-        return np.reshape(component, ts_shape).squeeze()
     
     def seasonal_decomp(self, ts_chunk, **kwargs):    
         from statsmodels.tsa.seasonal import seasonal_decompose
@@ -83,76 +69,3 @@ class Process_data:  # TODO All abstract methods should be implemented
         gd.dataset["residual"] = xr.full_like(time_series.chunk(residual.chunks), np.nan)
         gd.dataset["residual"][:,:,:] = residual
         return gd
-
-#    def seasonal_decomposition(self, time_series: xr.DataArray, num_chunks=1, **kwargs):
-#        time_series = time_series.transpose("t_dim",...)
-#        ts_stacked = time_series.stack(space=time_series.dims[1:])
-#        
-#        #active_ind = xr.where( 
-#        #    ts_stacked.fillna(0).any(dim="t_dim"), 
-#        #    da.arange(0, ts_stacked.space.size), 
-#        #    np.nan 
-#        #).dropna("space").astype(int)
-#        #ts_stacked_valid = ts_stacked.isel( space=active_ind )
-#        
-#        ts_stacked_valid = delayed(self._remove_invalid)(ts_stacked)        
-#        
-#        chunk_size = ts_stacked_valid["space"].size // num_chunks + 1
-#        ts_stacked_valid = ts_stacked_valid.chunk({"t_dim": ts_stacked_valid["t_dim"].size, "space": chunk_size})
-#        
-#        decomp_results = [
-#            delayed(self.seasonal_decomposition_np)(ts_chunk, **kwargs) 
-#            #for ts_chunk in ts_stacked_valid.data.to_delayed().ravel()
-#            for ts_chunk in ts_stacked_valid.data.ravel()
-#        ]    
-#
-#        trend_chunks, seasonal_chunks, residual_chunks = [], [], []
-#        for decomp_results_chunk in decomp_results:
-#            trend_chunks.append(decomp_results_chunk.trend)
-#            seasonal_chunks.append(decomp_results_chunk.seasonal)
-#            residual_chunks.append(decomp_results_chunk.resid)
-#
-#        ts_shape = time_series.shape
-#        trend_delayed = delayed(self._rebuild_component)(trend_chunks, ts_shape, ts_stacked.shape, active_ind)
-#        seasonal_delayed = delayed(self._rebuild_component)(seasonal_chunks, ts_shape, ts_stacked.shape, active_ind)
-#        residual_delayed = delayed(self._rebuild_component)(residual_chunks, ts_shape, ts_stacked.shape, active_ind)
-#
-#        gd_out = Gridded()
-#        #gd_out.dataset["trend"] = xr.full_like(time_series.chunk(ts_shape), np.nan)
-#        #gd_out.dataset["trend"][:,:,:] = da.from_delayed(trend_delayed, ts_shape, dtype=float)
-#        #gd_out.dataset["seasonal"] = xr.full_like(time_series.chunk(ts_shape), np.nan)
-#        #gd_out.dataset["seasonal"][:,:,:] = da.from_delayed(seasonal_delayed, ts_shape, dtype=float)
-#        #gd_out.dataset["residual"] = xr.full_like(time_series.chunk(ts_shape), np.nan)
-#        #gd_out.dataset["residual"][:,:,:] = da.from_delayed(residual_delayed, ts_shape, dtype=float)
-#        return gd_out  
-    
-"""
-def seasonal_decomposition(time_series: xr.DataArray):
-
-#    time series must be hozizontal 2d
-    
-
-    
-    from statsmodels.tsa.seasonal import seasonal_decompose
-                           
-    data_stacked = time_series.fillna(0).stack(space=("x_dim","y_dim"))
-    active_ind = np.where( np.nan_to_num(data_stacked).any(axis=0))[0] 
-    data_stacked_valid = data_stacked[:,active_ind]
-    result_stacked = seasonal_decompose(data_stacked_valid, model='additive', period=12, extrapolate_trend="freq")
-
-        trend = np.empty(np.shape(data_stacked))
-    seasonal = np.empty(np.shape(data_stacked))
-    residual = np.empty(np.shape(data_stacked))
-
-    trend[:,active_ind] = result_stacked.trend
-    seasonal[:,active_ind] = result_stacked.seasonal
-    residual[:,active_ind] = result_stacked.resid
-
-    gd_out = coast.Gridded()
-    gd_out.dataset["trend"] = xr.full_like(da_in, np.nan)
-    gd_out.dataset["trend"][:,:,:] = trend.reshape(np.shape(da_in))
-    gd_out.dataset["seasonal"] = xr.full_like(da_in, np.nan)
-    gd_out.dataset["seasonal"][:,:,:] = seasonal.reshape(np.shape(da_in))
-    gd_out.dataset["residual"] = xr.full_like(da_in, np.nan)
-    gd_out.dataset["residual"][:,:,:] = residual.reshape(np.shape(da_in))
-    """
