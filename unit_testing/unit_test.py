@@ -57,14 +57,13 @@ tests_to_do = [
 ]
 
 
-
-
 # UNIT TESTING CONTROL SCRIPT
 
 # Import modules, including unittest
 import unittest
 import sys
 import coast
+
 sys.path.append("./unit_testing")
 import logging
 
@@ -75,6 +74,7 @@ coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 # If this is enabled, import the library and start the coverage calculation
 if calculate_coverage:
     import coverage
+
     cov = coverage.Coverage()
     cov.start()
 
@@ -89,8 +89,8 @@ for test in tests_to_do:
 unittest.TextTestRunner(verbosity=2).run(suite)
 
 if calculate_coverage:
-    print(' ')
-    print('COVERAGE REPORT: ')
+    print(" ")
+    print("COVERAGE REPORT: ")
     cov.stop()
     cov.save()
     cov.report(omit="unit_testing/test_*")
@@ -99,20 +99,20 @@ if calculate_coverage:
 if generate_unit_test_contents:
     # Initialize counters
     test_count = 1
-    
+
     # Open output file
     with open(fn_contents, "w") as file:
-    
+
         # Write title things
         file.write("     UNIT TEST CONTENTS FILE TEST    \n")
         file.write("\n")
-    
+
         # Loop over tests in tests_to_do and get name of module as string
         for test in tests_to_do:
             test_name = test.__name__
             file.write("{0}. {1}\n".format(test_count, test_name))
             method_count = 97
-    
+
             # Loop over methods in module. If begins with 'test_' then write to file
             for method in dir(test):
                 if method[:5] != "test_":
