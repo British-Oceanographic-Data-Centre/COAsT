@@ -115,7 +115,7 @@ class TidegaugeAnalysis:
 
         # Create empty list of analyses
         analyses = []
-        
+
         # Loop over ports
         for pp in range(0, n_port):
 
@@ -145,21 +145,20 @@ class TidegaugeAnalysis:
         return analyses
 
     @classmethod
-    def reconstruct_tide_utide(cls, data_array, utide_solution_list, 
-                               constit=None, output_name = 'reconstructed'):
+    def reconstruct_tide_utide(cls, data_array, utide_solution_list, constit=None, output_name="reconstructed"):
         """
-        Use the tarray of times to reconstruct a time series series using a 
+        Use the tarray of times to reconstruct a time series series using a
         list of utide analysis objects. This list can be obtained
         using harmonic_analysis_utide(). Specify constituents to use in the
         reconstruction by passing a list of strings such as 'M2' to the constit
         argument. This won't work if a specified constituent is not present in
         the analysis.
         """
-        
+
         # Get dimension lengths
         n_port = len(utide_solution_list)
         n_time = len(data_array.time)
-        
+
         # Harmonic analysis datenums -- needed for utide
         time = mdates.date2num(data_array.time)
 
@@ -179,18 +178,18 @@ class TidegaugeAnalysis:
             reconstructed[pp] = tide
 
         # Create output dataset and return it in new Tidegauge object.
-        ds_out = xr.Dataset( data_array.coords() )
+        ds_out = xr.Dataset(data_array.coords())
         ds_out[output_name] = (["id", "t_dim"], reconstructed)
 
-        return Tidegauge(dataset = ds_out)
+        return Tidegauge(dataset=ds_out)
 
     @classmethod
-    def calculate_non_tidal_residuals(cls, data_array_ssh, data_array_tide,
-                                      apply_filter=True, window_length=25, 
-                                      polyorder=3):
+    def calculate_non_tidal_residuals(
+        cls, data_array_ssh, data_array_tide, apply_filter=True, window_length=25, polyorder=3
+    ):
         """
         Calculate non tidal residuals by subtracting values in data_array_tide
-        from data_array_ssh. You may optionally apply a filter to the non 
+        from data_array_ssh. You may optionally apply a filter to the non
         tidal residual data by setting apply_filter = True. This uses the
         scipy.signal.savgol_filter function, which you ay pass window_length
         and poly_order.
@@ -206,13 +205,12 @@ class TidegaugeAnalysis:
                 ntr[pp, :] = signal.savgol_filter(ntr[pp, :], 25, 3)
 
         # Create output Tidegauge object and return
-        coords = xr.Dataset( data_array_ssh.coords )
+        coords = xr.Dataset(data_array_ssh.coords)
         coords["ntr"] = ntr
         return Tidegauge(dataset=coords)
 
     @classmethod
-    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), 
-                             peak_separation=12):
+    def threshold_statistics(cls, dataset, thresholds=np.arange(-0.4, 2, 0.1), peak_separation=12):
         """
         Do some threshold statistics for all variables with a time dimension
         inside this tidegauge_multiple object. Specifically, this routine will
@@ -239,7 +237,7 @@ class TidegaugeAnalysis:
 
         # Set up working datasets and lists
         ds = dataset
-        ds_thresh = xr.Dataset( ds.coords )
+        ds_thresh = xr.Dataset(ds.coords)
         ds_thresh["threshold"] = ("threshold", thresholds)
         var_list = list(ds.keys())
         n_thresholds = len(thresholds)
@@ -343,7 +341,7 @@ class TidegaugeAnalysis:
         # Merge all differences into one
         differenced = xr.merge((differenced, abs_tmp, sq_tmp, dataset1[save_coords]))
 
-        return Tidegauge(Dataset = differenced)
+        return Tidegauge(Dataset=differenced)
 
     @staticmethod
     def find_high_and_low_water(data_array, method="comp", **kwargs):
@@ -390,7 +388,7 @@ class TidegaugeAnalysis:
             new_dataset["time_lows"] = ("time_lows", time_min)
 
             # Place dataset into a new Tidegauge object and append to output
-            new_object = Tidegauge(dataset = new_dataset)
+            new_object = Tidegauge(dataset=new_dataset)
             tg_list.append(new_object)
 
         # If only 1 index, return just a Tidegauge object, else return list.
