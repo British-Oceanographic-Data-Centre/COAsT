@@ -108,7 +108,7 @@ class TidegaugeAnalysis:
         ds = data_array
         n_port = ds.sizes["id"]
         n_time = ds.sizes["t_dim"]
-        
+
         # Harmonic analysis datenums -- for utide to work correctly
         time = mdates.date2num(ds.time.values)
 
@@ -477,7 +477,7 @@ class TidegaugeAnalysis:
             N_out[ii] = n_model_pts
 
         # Put into new object
-        new_dataset = xr.Dataset( tidegauge_data.coords )
+        new_dataset = xr.Dataset(tidegauge_data.coords)
         new_dataset["crps"] = (("id", "t_dim"), crps_out)
         new_dataset["crps_N"] = (("id", "t_dim"), N_out)
         return Tidegauge(dataset=new_dataset)
