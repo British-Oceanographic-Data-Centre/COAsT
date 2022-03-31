@@ -93,10 +93,10 @@ if calculate_coverage:
     cov.save()
     print(" ")
     print("COVERAGE REPORT (Classes): ")
-    cov.report(omit=["unit_testing/test_*","example_scripts/*"])
+    cov.report(omit=["unit_testing/test_*", "example_scripts/*"])
     print(" ")
     print("COVERAGE REPORT (Example Scripts): ")
-    cov.report(omit=["unit_testing/test_*","coast/*"])
+    cov.report(omit=["unit_testing/test_*", "coast/*"])
 
 # Generate unit_test_contents
 if generate_unit_test_contents:
