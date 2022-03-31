@@ -94,3 +94,16 @@
 18. test_climatology
       a. monthly_and_seasonal_climatology
 
+19. test_example_scripts
+      a. altimetry_tutorial
+      b. amm15_example_plot
+      c. anchor_plots_of_nsea_wvel
+      d. blz_example_plot
+      e. contour_tutorial
+      f. export_to_netcdf_tutorial
+      g. internal_tide_pycnocline_diagnostics
+      h. seasia_r12_example_plot
+      i. tidetable_tutorial
+      j. transect_tutorial
+      k. wcssp_india_example_plot
+

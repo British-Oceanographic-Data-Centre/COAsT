@@ -4,10 +4,10 @@
 # coverage. You must have installed Coverage separately for this to work.
 # You can do this using pip: pip install coverage.
 # See docs website for more info. This will take longer to execute.
-calculate_coverage = True
+calculate_coverage = False
 
 # Set the following to True to also auto-generate a new unit_test_contents file.
-generate_unit_test_contents = True
+generate_unit_test_contents = False
 fn_contents = "./unit_testing/unit_test_contents.txt"
 
 # Set TEST imports and list of tests to do.
@@ -53,7 +53,7 @@ tests_to_do = [
     test_stats_utilities,
     test_maskmaker_methods,
     test_climatology,
-    #test_example_scripts,
+    test_example_scripts,
 ]
 
 
@@ -93,7 +93,7 @@ if calculate_coverage:
     print('COVERAGE REPORT: ')
     cov.stop()
     cov.save()
-    cov.report()
+    cov.report(omit="unit_testing/test_*")
 
 # Generate unit_test_contents
 if generate_unit_test_contents:
@@ -121,5 +121,6 @@ if generate_unit_test_contents:
                 method_count = method_count + 1
             file.write("\n")
             test_count = test_count + 1
-    print("Written modules and methods to: \n \n")
-    print("{0}".format(fn_contents))
+    print(" ")
+    print("Written modules and methods to:")
+    print("          {0}".format(fn_contents))
