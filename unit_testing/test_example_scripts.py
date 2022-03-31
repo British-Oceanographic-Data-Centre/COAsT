@@ -81,8 +81,14 @@ class test_example_scripts(unittest.TestCase):
 
             plt.close("all")
 
-    def test_example_wod_bgc_ragged(self):
+    def test_wod_bgc_ragged_example(self):
         if "livljobs" in gethostname().lower():
             from example_scripts import wod_bgc_ragged_example
+
+            plt.close("all")
+
+    def test_seasia_dic_example_plot(self):
+        if "livljobs" in gethostname().lower():
+            from example_scripts import seasia_dic_example_plot
 
             plt.close("all")

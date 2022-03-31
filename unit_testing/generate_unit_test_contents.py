@@ -37,6 +37,7 @@ from test_maskmaker_methods import test_maskmaker_methods
 from test_climatology import test_climatology
 from test_example_scripts import test_example_scripts
 from test_wod_read_data import test_wod_read_data
+from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
 
 # Open log file
 log_file = open("unit_testing/unit_test.log", "w")  # Need log_file.close()
@@ -63,6 +64,7 @@ tests_to_do = [
     test_maskmaker_methods,
     test_climatology,
     test_wod_read_data,
+    test_bgc_gridded_initialisation,
     test_example_scripts,
 ]
 
