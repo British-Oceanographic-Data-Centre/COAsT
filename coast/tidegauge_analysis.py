@@ -6,6 +6,7 @@ import utide as ut
 import scipy.signal as signal
 from coast import stats_util, crps_util
 
+
 class TidegaugeAnalysis:
     """
     This is an object for storage and manipulation of tide gauge data
