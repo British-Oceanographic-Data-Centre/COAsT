@@ -967,8 +967,7 @@ class Tidegauge(Timeseries):
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, 
-            mask=gridded.landmask
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=gridded.landmask
         )
 
         # Extract spatial time series
@@ -986,8 +985,7 @@ class Tidegauge(Timeseries):
         # Check interpolation distances
         print("Calculating interpolation distances.", flush=True)
         interp_dist = general_utils.calculate_haversine_distance(
-            extracted.longitude.values, extracted.latitude.values, 
-            ds.longitude.values, ds.latitude.values
+            extracted.longitude.values, extracted.latitude.values, ds.longitude.values, ds.latitude.values
         )
 
         # Interpolate model onto obs times
