@@ -28,7 +28,7 @@ import numpy as np
 
 #%% Load and plot High and Low Water data
 print("load and plot HLW data")
-filnam = './example_files/Gladstone_2020-10_HLW.txt'
+filnam = "./example_files/Gladstone_2020-10_HLW.txt"
 
 # Set the start and end dates
 date_start = np.datetime64("2020-10-12 23:59")
