@@ -22,7 +22,7 @@ import scipy as sp
 path_examples = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"  ## data local
 
 # ====================== load my data ===========================
-fn_wod_var = path_examples + "wod_example_ragged_standard_level.nc"  #'wod_example_ragged_OBSdepth.nc')
+fn_wod_var = path_examples + "WOD_example_ragged_standard_level.nc"  #'wod_example_ragged_OBSdepth.nc')
 fn_wod_config = path_examples + "example_wod_profiles.json"
 
 wod_profile_1d = coast.Profile(config=fn_wod_config)
@@ -41,9 +41,9 @@ wod_profile = wod_profile.isel(profile=ind)
 # note in this simple test nemo data are only for 3 months from 1990 so the
 # comparisons are not going to be correct but just as a demo
 
-fn_seasia_domain = path_examples + "coast_example_domain_seasia.nc"
+fn_seasia_domain = path_examples + "coast_example_domain_SEAsia.nc"
 fn_seasia_config_bgc = path_examples + "example_nemo_bgc.json"
-fn_seasia_var = path_examples + "coast_example_seasia_bgc_1990.nc"
+fn_seasia_var = path_examples + "coast_example_SEAsia_BGC_1990.nc"
 
 seasia_bgc = coast.Gridded(
     fn_data=fn_seasia_var, fn_domain=fn_seasia_domain, config=fn_seasia_config_bgc, multiple=True

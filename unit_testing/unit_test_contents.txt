@@ -95,7 +95,7 @@
       c. anchor_plots_of_nsea_wvel
       d. blz_example_plot
       e. contour_tutorial
-      f. example_wod_bgc_ragged
+      f. wod_bgc_ragged_example
       g. export_to_netcdf_tutorial
       h. internal_tide_pycnocline_diagnostics
       i. seasia_r12_example_plot

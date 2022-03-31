@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 #################################################
 path_examples = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"  ## data local
 
-fn_seasia_domain = path_examples + "coast_example_domain_seasia.nc"
+fn_seasia_domain = path_examples + "coast_example_domain_SEAsia.nc"
 fn_seasia_config_bgc = path_examples + "example_nemo_bgc.json"
-fn_seasia_var = path_examples + "coast_example_seasia_bgc_1990.nc"
+fn_seasia_var = path_examples + "coast_example_SEAsia_BGC_1990.nc"
 
 seasia_bgc = coast.Gridded(fn_data=fn_seasia_var, fn_domain=fn_seasia_domain, config=fn_seasia_config_bgc)
 

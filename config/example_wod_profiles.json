@@ -28,12 +28,7 @@
                         "Phosphate": "Phosphate",
                         "Phosphate_row_size": "Phosphate_row_size",
                         "tCO2": "DIC",
-                        "tCO2_row_size": "DIC_row_size",
-                        "Salinity_wodflag" : "Salinity_flag",
-                        "Temperature_wodflag" : "Temperature_flag",
-                        "Phosphate_wodflag" : "Phosphate_flag",
-                        "tCO2_wodflag" : "DIC_flag",
-                        "Oxygen_wodflag" : "Oxygen_flag"
+                        "tCO2_row_size": "DIC_row_size"
 		},
 		"coord_vars": []
 	},

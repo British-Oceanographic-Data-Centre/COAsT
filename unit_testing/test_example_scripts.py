@@ -83,6 +83,6 @@ class test_example_scripts(unittest.TestCase):
 
     def test_example_wod_bgc_ragged(self):
         if "livljobs" in gethostname().lower():
-            from example_scripts import example_wod_bgc_ragged
+            from example_scripts import wod_bgc_ragged_example
 
             plt.close("all")
