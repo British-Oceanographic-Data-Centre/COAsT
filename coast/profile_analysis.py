@@ -21,8 +21,7 @@ class ProfileAnalysis(Indexed):
     """
 
     def __init__(self):
-        """
-        """
+        """ """
 
     """======================= Model Comparison ======================="""
 
@@ -316,8 +315,7 @@ class ProfileAnalysis(Indexed):
         return Profile(dataset=differenced)
 
     @classmethod
-    def interpolate_vertical(cls, profile, new_depth, interp_method="linear",
-                             print_progress = False):
+    def interpolate_vertical(cls, profile, new_depth, interp_method="linear", print_progress=False):
         """
         (04/10/2021)
         Author: David Byrne
@@ -357,7 +355,7 @@ class ProfileAnalysis(Indexed):
 
         ds = profile.dataset
         n_prof = ds.sizes["id_dim"]
-        n_z = ds.sizes['z_dim']
+        n_z = ds.sizes["z_dim"]
 
         # Get variable names on z_dim dimension
         zvars = []
@@ -372,7 +370,7 @@ class ProfileAnalysis(Indexed):
         count_ii = 0
         for pp in range(0, n_prof):
             if print_progress:
-                print("{0} / {1}".format(pp, n_prof-1))
+                print("{0} / {1}".format(pp, n_prof - 1))
 
             # Select the current profile
             profile = ds.isel(id_dim=pp)  # .rename({"depth": "z_dim"})
@@ -419,8 +417,7 @@ class ProfileAnalysis(Indexed):
             if count_ii == 0:
                 interpolated = interpolated_tmp
             else:
-                interpolated = xr.concat((interpolated, interpolated_tmp), 
-                                         dim="id_dim", coords="all")
+                interpolated = xr.concat((interpolated, interpolated_tmp), dim="id_dim", coords="all")
             count_ii = count_ii + 1
 
         # Set depth to be a coordinate and return a new Profile object.

@@ -47,16 +47,14 @@ class test_profile_methods(unittest.TestCase):
 
         with self.subTest("Gridded obs_operator"):
             nemo_t = coast.Gridded(
-                fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, 
-                config=files.fn_config_t_grid
+                fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
             )
             nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
             nemo_profiles = processed.obs_operator(nemo_t)
 
             check1 = type(nemo_profiles) == coast.Profile
             check2 = "nearest_index_x" in list(nemo_profiles.dataset.keys())
-            check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 
-                                151.4443554515237)
+            check3 = np.isclose(nemo_profiles.dataset.interp_dist.values[0], 151.4443554515237)
 
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
@@ -69,16 +67,14 @@ class test_profile_methods(unittest.TestCase):
             model_interpolated = pa.interpolate_vertical(nemo_profiles, processed)
 
             check1 = type(model_interpolated) == coast.Profile
-            check2 = np.isclose(nemo_profiles.dataset.temperature.values[0, 0], 
-                                np.float32(1.7324219))
+            check2 = np.isclose(nemo_profiles.dataset.temperature.values[0, 0], np.float32(1.7324219))
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
-            
+
         with self.subTest("Vertical interpolation with NAN profiles"):
-            nemo_profiles2 = coast.Profile(dataset = nemo_profiles.dataset.copy())
-            nemo_profiles2.dataset.temperature[:10,:] = np.nan
+            nemo_profiles2 = coast.Profile(dataset=nemo_profiles.dataset.copy())
+            nemo_profiles2.dataset.temperature[:10, :] = np.nan
             model_interpolated = pa.interpolate_vertical(nemo_profiles2, processed)
-            
 
             check1 = type(model_interpolated) == coast.Profile
             check2 = np.isnan(nemo_profiles.dataset.temperature.values[:10, :]).all()
@@ -91,7 +87,7 @@ class test_profile_methods(unittest.TestCase):
             difference.dataset.load()
 
             check1 = type(difference) == coast.profile.Profile
-            check2 = np.isclose(difference.dataset.diff_temperature.values[22, 2],2.2567890882492065)
+            check2 = np.isclose(difference.dataset.diff_temperature.values[22, 2], 2.2567890882492065)
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
@@ -117,13 +113,12 @@ class test_profile_methods(unittest.TestCase):
             # Do average differences for each region
             mask_means = pa.mask_means(difference, mask_indices)
 
-            check1 = np.isclose(mask_means.all_mean_diff_temperature.values[0], 
-                                -0.8169331445866469)
+            check1 = np.isclose(mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
             self.assertTrue(check1, "check1")
 
         with self.subTest("Surface/Bottom averaging"):
             surface = 5
-            model_profiles_surface = pa.depth_means(nemo_profiles,[0, surface])
+            model_profiles_surface = pa.depth_means(nemo_profiles, [0, surface])
 
             # Lets get bottom values by averaging over the bottom 30m, except whether
             # depth is <100m, then average over the bottom 10m

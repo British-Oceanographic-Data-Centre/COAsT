@@ -18,7 +18,7 @@ class Profile(Indexed):
     down and up observations). The structure of the class is based on data from
     the EN4 database. The class dataset should contain two dimension:
 
-        > id_dim      :: The profiles dimension. Each element of this dimension 
+        > id_dim      :: The profiles dimension. Each element of this dimension
                      contains data (e.g. cast) for an individual location.
         > z_dim   :: The dimension for depth levels. A profile object does not
                      need to have shared depths, so NaNs might be used to
@@ -26,7 +26,7 @@ class Profile(Indexed):
 
     Alongside these dimensions, the following minimal coordinates should also
     be available:
-        
+
         > longitude (id_dim)   :: 1D array of longitudes, one for each id_dim
         > latitude  (id_dim)   :: 1D array of latitudes, one for each id_dim
         > time      (id_dim)   :: 1D array of times, one for each id_dim
@@ -36,8 +36,8 @@ class Profile(Indexed):
                                     stored in a 2D array, so NaNs can be used
                                     to pad out profiles with shallower depths.
         > id_name   (id_dim)   :: [Optional] Name of id_dim/case or id_dim number.
-                                    
-    You may create an empty profile object by using profile = coast.Profile(). 
+
+    You may create an empty profile object by using profile = coast.Profile().
     You may then add your own dataset to the object profile or use one of the
     functions within Profile() for reading common profile datasets:
 
@@ -61,7 +61,7 @@ class Profile(Indexed):
         debug(f"Creating a new {get_slug(self)}")
         self.config = config
         super().__init__(self.config)
-        
+
         # If dataset is provided, put inside this object
         if dataset is not None:
             self.dataset = dataset
@@ -141,7 +141,7 @@ class Profile(Indexed):
         ind = general_utils.subset_indices_lonlat_box(
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Profile(dataset = self.dataset.isel(id_dim=ind))
+        return Profile(dataset=self.dataset.isel(id_dim=ind))
 
     """======================= Plotting ======================="""
 
@@ -241,15 +241,13 @@ class Profile(Indexed):
         reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
         ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
         ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
-        debug(
-            "     >>> QC: Completely rejecting {0} / {1} id_dims".format(np.sum(reject_both_prof), ds.dims["id_dim"])
-        )
+        debug("     >>> QC: Completely rejecting {0} / {1} id_dims".format(np.sum(reject_both_prof), ds.dims["id_dim"]))
 
         # Subset profile dataset to remove profiles that are COMPLETELY empty
         ds = ds.isel(id_dim=~reject_both_prof)
         reject_tem_prof = reject_tem_prof[~reject_both_prof]
         reject_sal_prof = reject_sal_prof[~reject_both_prof]
-        
+
         # Get new QC flags array
         qc_lev = ds.qc_flags_levels.values
 
@@ -257,7 +255,7 @@ class Profile(Indexed):
         debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
         debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
 
-        # 
+        #
         reject_tem_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
         reject_sal_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
 
@@ -401,8 +399,7 @@ class Profile(Indexed):
 
         # SPATIAL indices - nearest neighbour
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded["longitude"], gridded["latitude"], en4["longitude"], 
-            en4["latitude"], mask=gridded.landmask
+            gridded["longitude"], gridded["latitude"], en4["longitude"], en4["latitude"], mask=gridded.landmask
         )
         debug(f"Spatial Indices Calculated")
 
