@@ -23,7 +23,7 @@ class Profile(Indexed):
         > z_dim   :: The dimension for depth levels. A profile object does not
                      need to have shared depths, so NaNs might be used to
                      pad any depth array.
-    
+
     Alongside these dimensions, the following minimal coordinates should also
     be available:
         
@@ -40,20 +40,20 @@ class Profile(Indexed):
     You may create an empty profile object by using profile = coast.Profile(). 
     You may then add your own dataset to the object profile or use one of the
     functions within Profile() for reading common profile datasets:
-        
+
         > read_en4()
         > read_wod()
-    
+
     Optionally, you may pass a dataset to the Profile object on creation:
-        
+
         profile = coast.Profile(dataset = profile_dataset)
-        
+
     A config file can also be provided, in which case any netcdf read functions
     will rename dimensions and variables as dictated.
     """
 
-    def __init__(self, dataset = None, config: Union[Path, str] = None):
-        """Initialization and file reading. You may initialize 
+    def __init__(self, dataset=None, config: Union[Path, str] = None):
+        """Initialization and file reading. You may initialize
 
         Args:
             config (Union[Path, str]): path to json config file.
@@ -70,7 +70,7 @@ class Profile(Indexed):
         debug(f"{get_slug(self)} initialised")
 
     def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
-        """Reads a single or multiple EN4 netCDF files into the COAsT profile 
+        """Reads a single or multiple EN4 netCDF files into the COAsT profile
         data structure.
 
         Args:
@@ -78,18 +78,18 @@ class Profile(Indexed):
             chunks (dict): chunks
             multiple (boolean): True if reading multiple files otherwise False
         """
-        
+
         # If not multiple then just read the netcdf file
         if not multiple:
             self.dataset = xr.open_dataset(fn_en4, chunks=chunks)
-            
+
         # If multiple, then we have to get all file names and read them in a
         # loop, followed by concatenation
         else:
             # Check a list is provided
             if type(fn_en4) is not list:
                 fn_en4 = [fn_en4]
-                
+
             # Use glob to get a list of file paths from input
             file_to_read = []
             for file in fn_en4:
@@ -114,14 +114,14 @@ class Profile(Indexed):
                     self.dataset = data_tmp
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim="N_PROF")
-                    
+
         # Apply config settings
         self.apply_config_mappings()
 
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """ Get a subset of this Profile() object in a spatial box.
+        """Get a subset of this Profile() object in a spatial box.
 
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
@@ -129,8 +129,7 @@ class Profile(Indexed):
         return: A new profile object containing subsetted data
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], 
-            lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
         return Profile(dataset = self.dataset.isel(id_dim=ind))
 
@@ -487,15 +486,4 @@ class Profile(Indexed):
         mod_profiles["nearest_index_x"] = (["id_dim"], ind_x.values)
         mod_profiles["nearest_index_y"] = (["id_dim"], ind_y.values)
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
-
         return Profile(dataset=mod_profiles)
-
-            
-            
-            
-            
-            
-            
-            
-            
-            

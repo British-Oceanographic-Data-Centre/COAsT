@@ -38,10 +38,9 @@ class ProfileAnalysis(Indexed):
                                 Should be of form: (lower, upper) and in metres
         """
 
-        debug(f"Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], 
-                                                                         depth_bounds[1]))
+        debug(f"Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]))
         dataset = profile.dataset
-        
+
         # We need to remove any time variables or the later .where() won't work
         var_list = list(dataset.keys())
         time_var_list = ["time"]
@@ -57,17 +56,17 @@ class ProfileAnalysis(Indexed):
         layer_ind0 = dataset.depth >= depth_bounds[0]
         layer_ind1 = dataset.depth < depth_bounds[1]
         layer_ind = layer_ind0 * layer_ind1
-        
+
         # Mask out all other points
         masked = dataset.where(layer_ind, np.nan)
-        
+
         # Calculate the average. By skipping nans, we only mean the points
         # within the desired layer
         meaned = masked.mean(dim="z_dim", skipna=True)
 
         # Remerge time variables and return new Profile object.
         ds = xr.merge((meaned, time_vars))
-        return Profile(dataset = ds)
+        return Profile(dataset=ds)
 
     @classmethod
     def bottom_means(cls, profile, layer_thickness, depth_thresholds=[np.inf]):
@@ -148,15 +147,14 @@ class ProfileAnalysis(Indexed):
         # Remerge time variables
         dataset = xr.merge((dataset, time_vars))
         return Profile(dataset=dataset)
-    
-    
+
     @classmethod
     def determine_mask_indices(cls, profile, mask_dataset):
         """
-        Determines whether each profile is within a mask (region) or not. 
-        These masks should be in Dataset form, as returned by 
+        Determines whether each profile is within a mask (region) or not.
+        These masks should be in Dataset form, as returned by
         Mask_maker().make_mask_dataset(). I.E, each mask
-        should be a 2D array with corresponding 2D longitude and latitude 
+        should be a 2D array with corresponding 2D longitude and latitude
         arrays. Multiple masks should be stored along a dim_mask dimension.
 
         Parameters
@@ -164,7 +162,7 @@ class ProfileAnalysis(Indexed):
         dataset : xarray.Dataset
             A dataset from a profile object
         mask_dataset : xarray.Dataset
-            Dataset with dimensions (dim_mask, x_dim, y_dim). 
+            Dataset with dimensions (dim_mask, x_dim, y_dim).
             Should contain longitude, latitude and mask. Mask has dimensions
             (dim_mask, y_dim, x_dim). Spatial dimensions should align with
             longitude and latitude
@@ -180,11 +178,14 @@ class ProfileAnalysis(Indexed):
             landmask = None
         else:
             landmask = mask_dataset.landmask
-            
+
         # SPATIAL indices - nearest neighbour
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            mask_dataset["longitude"], mask_dataset["latitude"], 
-            dataset["longitude"], dataset["latitude"], mask=landmask
+            mask_dataset["longitude"],
+            mask_dataset["latitude"],
+            dataset["longitude"],
+            dataset["latitude"],
+            mask=landmask,
         )
 
         # Figure out which points lie in which region
@@ -195,8 +196,8 @@ class ProfileAnalysis(Indexed):
 
     @classmethod
     def mask_means(cls, profile, mask_indices):
-        '''
-        Averages all data inside a given profile dataset across a regional mask 
+        """
+        Averages all data inside a given profile dataset across a regional mask
         or for multiples regional masks.
 
         Parameters
@@ -204,21 +205,21 @@ class ProfileAnalysis(Indexed):
         dataset : xarray.Dataset
             The profile dataset to average.
         mask_indices : xarray.Dataset
-            Describes which profiles are in which region. Returned from 
+            Describes which profiles are in which region. Returned from
             profile_analysis.determine_mask_indices().
 
         Returns
         -------
-        xarray.Dataset containing meaned data. 
+        xarray.Dataset containing meaned data.
 
-        '''
+        """
         dataset = profile.dataset
         # Get the number of masks provided
         n_masks = mask_indices.dims["dim_mask"]
 
         # Loop over maskal arrays. Assign mean to mask and seasonal means
         debug(f"Calculating maskal averages..")
-        
+
         # Loop over masks and index the data
         for mm in range(0, n_masks):
             mask = mask_indices.isel(dim_mask=mm).mask.values
@@ -227,10 +228,9 @@ class ProfileAnalysis(Indexed):
                 if mm == 0:
                     ds_average = xr.Dataset()
                 continue
-            
+
             # Get actual profile data for this mask
             mask_data = dataset.isel(id_dim=mask_ind)
-            
             # Get two averages. One preserving depths and the other averaging
             # across all data in a region
             ds_average_prof = mask_data.mean(dim="id_dim", skipna=True).compute()
@@ -255,10 +255,9 @@ class ProfileAnalysis(Indexed):
         return ds_average
 
     @classmethod
-    def difference(cls, profile1, profile2, 
-                   absolute_diff=True, square_diff=True):
-        '''
-        Calculates differences between all matched variables in two Profile 
+    def difference(cls, profile1, profile2, absolute_diff=True, square_diff=True):
+        """
+        Calculates differences between all matched variables in two Profile
         datasets. Difference direction is dataset1 - dataset2.
 
         Parameters
@@ -279,13 +278,13 @@ class ProfileAnalysis(Indexed):
         Absolute differences have suffix abs_
         Square differences have suffic square_
 
-        '''
+        """
         dataset1 = profile1.dataset
         dataset2 = profile2.dataset
-        
+
         # Difference the two input dataset
         differenced = dataset1 - dataset2
-        
+
         # Get list of vars and coord names for later
         diff_vars = list(differenced.keys())
         save_coords = list(dataset1.coords.keys())
@@ -393,27 +392,26 @@ class ProfileAnalysis(Indexed):
                 # Get arrays to interpolate
                 interpx = profile.depth.values
                 interpy = profile[vv].values
-                
+
                 # Remove NaNs
                 xnans = np.isnan(interpx)
                 ynans = np.isnan(interpy)
                 xynans = np.logical_or(xnans, ynans)
                 interpx = interpx[~xynans]
-                interpy = interpy[~xynans] 
-                
+                interpy = interpy[~xynans]
+
                 # If there are <2 datapoints, dont interpolate. Return a nan
                 # array instead for this profile variable
                 if len(interpx) >= 2:
                     # Use scipy to interpolate this profile
                     interp_func = interpolate.interp1d(
-                        interpx, interpy, bounds_error=False, 
-                        kind=interp_method, fill_value=np.nan
+                        interpx, interpy, bounds_error=False, kind=interp_method, fill_value=np.nan
                     )
                     vv_interp = interp_func(new_depth_prof)
                     interpolated_tmp[vv] = ("z_dim", vv_interp)
                 else:
-                    interpolated_tmp[vv] = ("z_dim", np.zeros(len(new_depth_prof))*np.nan)
-                    
+                    interpolated_tmp[vv] = ("z_dim", np.zeros(len(new_depth_prof)) * np.nan)
+
             # Put the new depth into the interpolated profile
             interpolated_tmp["depth"] = ("z_dim", new_depth_prof)
 
@@ -427,11 +425,10 @@ class ProfileAnalysis(Indexed):
 
         # Set depth to be a coordinate and return a new Profile object.
         interpolated = interpolated.set_coords(["depth"])
-        return Profile(dataset = interpolated)
+        return Profile(dataset=interpolated)
 
     @classmethod
-    def average_into_grid_boxes(cls, profile, grid_lon, grid_lat, 
-                                min_datapoints=1, season=None, var_modifier=""):
+    def average_into_grid_boxes(cls, profile, grid_lon, grid_lat, min_datapoints=1, season=None, var_modifier=""):
         """
         Takes the contents of this Profile() object and averages each variables
         into geographical grid boxes. At the moment, this expects there to be
@@ -475,7 +472,7 @@ class ProfileAnalysis(Indexed):
 
         # Loop over variables and create empty placeholders
         for vv in vars_out:
-            ds_out[vv] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
+            ds_out[vv] = (["y_dim", "x_dim"], np.zeros((n_r, n_c)) * np.nan)
         # Grid_N is the count ineach box
         ds_out["grid_N{0}".format(var_modifier)] = (["y_dim", "x_dim"], np.zeros((n_r, n_c)) * np.nan)
 

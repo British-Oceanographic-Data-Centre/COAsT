@@ -15,7 +15,7 @@ grid_lon = np.arange(-15, 15, 0.5)
 grid_lat = np.arange(45, 65, 0.5)
 
 # Average all data across all seasons
-prof_gridded = prof_data.average_into_grid_boxes(grid_lon, grid_lat, min_datapoints = 0)
+prof_gridded = prof_data.average_into_grid_boxes(grid_lon, grid_lat, min_datapoints=0)
 
 # Average data for each season
 prof_gridded_DJF = prof_data.average_into_grid_boxes(grid_lon, grid_lat, season="DJF", var_modifier="_DJF")
