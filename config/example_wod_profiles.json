@@ -1,0 +1,38 @@
+{
+	"type": "indexed",
+	"dimensionality": 1,
+	"chunks": {},
+	"dataset": {
+		"dimension_map": {
+			"casts": "casts",
+			"z_obs": "z_N",
+                        "Temperature_obs": "temperature_N",
+                        "Salinity_obs": "salinity_N",
+                        "Oxygen_obs": "oxygen_N",
+                        "Phosphate_obs": "phosphate_N",
+                        "tCO2_obs": "dic_N"
+		},
+		"variable_map": {
+			"lat": "latitude",
+			"lon": "longitude",
+			"depth": "depth",
+			"time": "time",
+                        "z": "depth",
+                        "z_row_size": "z_row_size",
+			"Temperature": "temperature",
+                        "Temperature_row_size": "temperature_row_size",
+                        "Salinity": "salinity",
+                        "Salinity_row_size": "salinity_row_size",
+                        "Oxygen": "oxygen",
+                        "Oxygen_row_size": "oxygen_row_size",
+                        "Phosphate": "phosphate",
+                        "Phosphate_row_size": "phosphate_row_size",
+                        "tCO2": "dic",
+                        "tCO2_row_size": "dic_row_size"
+		},
+		"coord_vars": []
+	},
+	"processing_flags": [
+		"example_flag"
+	]
+}

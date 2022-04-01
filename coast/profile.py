@@ -118,6 +118,16 @@ class Profile(Indexed):
         # Apply config settings
         self.apply_config_mappings()
 
+    def read_wod(self, fn_wod, chunks: dict = {}) -> None:
+        """Reads a single World Ocean Database netCDF files into the COAsT profile data structure.
+
+        Args:
+            fn_wod (str): path to data file
+            chunks (dict): chunks
+        """
+        self.dataset = xr.open_dataset(fn_wod, chunks=chunks)
+        self.apply_config_mappings()
+
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
@@ -487,3 +497,304 @@ class Profile(Indexed):
         mod_profiles["nearest_index_y"] = (["id_dim"], ind_y.values)
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
+
+    def process_en4(self, sort_time=True):
+        """
+        VERSION 1.4 (05/07/2021)
+
+        PREPROCESSES EN4 data ready for comparison with model data.
+        This routine will cut out a desired geographical box of EN4 data and
+        then apply quality control according to the available flags in the
+        netCDF files. Quality control happens in two steps:
+            1. Where a whole data profile is flagged, it is completely removed
+               from the dataset
+            2. Where a single datapoint is rejected in either temperature or
+               salinity, it is set to NaN.
+        This routine attempts to use xarray/dask chunking magic to keep
+        memory useage low however some memory is still needed for loading
+        flags etc. May be slow if using large EN4 datasets.
+
+        Routine will return a processed profile object dataset and can write
+        the new dataset to file if fn_out is defined. If saving to the
+        PROFILE object, be aware that DASK computations will not have happened
+        and will need to be done using .load(), .compute() or similar before
+        accessing the values. IF using multiple EN4 files or large dataset,
+        make sure you have chunked the data over N_PROF dimension.
+
+        INPUTS
+         fn_out (str)      : Full path to a desired output file. If unspecified
+                             then nothing is written.
+
+        EXAMPLE USEAGE:
+         profile = coast.PROFILE()
+         profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
+         fn_out = '~/output_file.nc'
+         new_profile = profile.preprocess_en4(fn_out = fn_out,
+                                              lonbounds = [-10, 10],
+                                              latbounds = [45, 65])
+        """
+
+        ds = self.dataset
+
+        # REJECT profiles that are QC flagged.
+        debug(f" Applying QUALITY CONTROL to EN4 data...")
+        ds.qc_flags_profiles.load()
+
+        # This line reads converts the QC integer to a binary string.
+        # Each bit of this string is a different QC flag. Which flag is which can
+        # be found on the EN4 website:
+        # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
+        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims["id_dim"])]
+
+        # Determine indices of kept profiles
+        reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
+        reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
+        reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
+        ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
+        ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
+        debug(
+            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["id_dim"])
+        )
+
+        ds = ds.isel(id_dim=~reject_both_prof)
+        reject_tem_prof = reject_tem_prof[~reject_both_prof]
+        reject_sal_prof = reject_sal_prof[~reject_both_prof]
+        qc_lev = ds.qc_flags_levels.values
+
+        debug(f" QC: Additional profiles converted to NaNs: ")
+        debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
+        debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
+
+        reject_tem_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
+        reject_sal_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
+
+        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
+        for ii in range(len(int_tem)):
+            reject_tem_lev[qc_lev == int_tem[ii]] = 1
+        for ii in range(len(int_sal)):
+            reject_sal_lev[qc_lev == int_sal[ii]] = 1
+        for ii in range(len(int_both)):
+            reject_tem_lev[qc_lev == int_both[ii]] = 1
+            reject_sal_lev[qc_lev == int_both[ii]] = 1
+
+        ds["reject_tem_datapoint"] = (["id_dim", "z_dim"], reject_tem_lev)
+        ds["reject_sal_datapoint"] = (["id_dim", "z_dim"], reject_sal_lev)
+
+        debug(f"MASKING rejected datapoints, replacing with NaNs...")
+        ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
+        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
+        ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
+
+        if sort_time:
+            debug(f"Sorting Time Dimension...")
+            ds = ds.sortby("time")
+
+        debug(f"Finished processing data. Returning new Profile object.")
+
+        return_prof = Profile()
+        return_prof.dataset = ds
+        return return_prof
+
+    def calculate_all_en4_qc_flags(self):
+        """
+        Brute force method for identifying all rejected points according to
+        EN4 binary integers. It can be slow to convert large numbers of integers
+        to a sequence of bits and is actually quicker to just generate every
+        combination of possible QC integers. That's what this routine does.
+        Used in PROFILE.preprocess_en4().
+
+        INPUTS
+         NO INPUTS
+
+        OUTPUTS
+         qc_integers_tem  : Array of integers signifying the rejection of ONLY
+                            temperature datapoints
+         qc_integers_sal  : Array of integers signifying the rejection of ONLY
+                            salinity datapoints
+         qc_integers_both : Array of integers signifying the rejection of BOTH
+                            temperature and salinity datapoints.
+        """
+
+        reject_tem_ind = 0
+        reject_sal_ind = 1
+        reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+
+        qc_integers_tem = []
+        qc_integers_sal = []
+        qc_integers_both = []
+        n_tem_reasons = len(reject_tem_reasons)
+        n_sal_reasons = len(reject_sal_reasons)
+        bin_len = 30
+
+        # IF reject_tem = 1, reject_sal = 0
+        for ii in range(n_tem_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_tem_ind] = 1
+            bin_tmp[reject_tem_reasons[ii]] = 1
+            qc_integers_tem.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+
+        # IF reject_tem = 0, reject_sal = 1
+        for ii in range(n_sal_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_sal_ind] = 1
+            bin_tmp[reject_sal_reasons[ii]] = 1
+            qc_integers_sal.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+
+        # IF reject_tem = 1, reject_sal = 1
+        for tt in range(n_tem_reasons):
+            for ss in range(n_sal_reasons):
+                bin_tmp = np.zeros(bin_len, dtype=int)
+                bin_tmp[reject_tem_ind] = 1
+                bin_tmp[reject_sal_ind] = 1
+                bin_tmp[reject_tem_reasons[tt]] = 1
+                bin_tmp[reject_sal_reasons[ss]] = 1
+                qc_integers_both.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
+
+        qc_integers_tem = list(set(qc_integers_tem))
+        qc_integers_sal = list(set(qc_integers_sal))
+        qc_integers_both = list(set(qc_integers_both))
+
+        return qc_integers_tem, qc_integers_sal, qc_integers_both
+
+    """================Reshape to 2D================"""
+
+    def reshape_2d(self, var_user_want):
+        """
+        OBSERVATION type class for reshaping World Ocean Data (WOD) or similar that
+        contains 1D profiles (profile * depth levels)  into a 2D array.
+        Note that its variable has its own dimention and in some profiles
+        only some variables are present. WOD can be observed depth or a
+        standard depth as regrided by NOAA.
+           Args:
+            > X     --      The variable (e.g,Temperatute, Salinity, Oxygen, DIC ..)
+            > X_N    --     Dimensions of observed variable as 1D
+                            (essentially number of obs variable = casts * osberved depths)
+            > casts --      Dimension for locations of observations (ie. profiles)
+            > z_N   --      Dimension for depth levels of all observations as 1D
+                            (essentially number of depths = casts * osberved depths)
+            > X_row_size -- Gives the vertical index (number of depths)
+                            for each variable
+        """
+
+        """reshape the 1D variable into 2D variable (id_dimß, z_dim)    
+        Args:
+            profile       ::   The profile dimension. Called cast in WOD, 
+                               common in all variables, but nans if 
+                                a variable is not observed at a location
+            z_dim         ::   The dimension for depth levels.
+            var_user_want ::   List of observations the user wants to reshape       
+        """
+
+        # find maximum z levels in any of the profiles
+        d_max = int(np.max(self.dataset.z_row_size.values))
+        # number of profiles
+        prof_size = self.dataset.z_row_size.shape[0]
+
+        # set a 2D array (relevant to maximum depth)
+        depth_2d = np.empty(
+            (
+                prof_size,
+                d_max,
+            )
+        )
+        depth_2d[:] = np.nan
+        # reshape depth information from 1D to 2D
+        if np.isnan(self.dataset.z_row_size.values[0]) == False:
+            I_SIZE = int(self.dataset.z_row_size.values[0])
+            depth_2d[0, :I_SIZE] = self.dataset.depth[0:I_SIZE].values
+        for iJ in range(1, prof_size):
+            if np.isnan(self.dataset.z_row_size.values[iJ]) == False:
+                I_START = int(np.nansum(self.dataset.z_row_size.values[:iJ]))
+                I_END = int(np.nansum(self.dataset.z_row_size.values[: iJ + 1]))
+                I_SIZE = int(self.dataset.z_row_size.values[iJ])
+                depth_2d[iJ, 0:I_SIZE] = self.dataset.depth[I_START:I_END].values
+
+        # check reshape
+        T_OBS1 = np.delete(np.ravel(depth_2d), np.isnan(np.ravel(depth_2d)))
+        T_OBS2 = np.delete(self.dataset.depth.values, np.isnan(self.dataset.depth.values))
+        if T_OBS1.size == T_OBS2.size and (int(np.min(T_OBS1 - T_OBS2)) == 0 or int(np.max(T_OBS1 - T_OBS2)) == 0):
+            print("Depth OK reshape successful")
+        else:
+            print("Depth WRONG!! reshape")
+
+        # reshape obs for each variable from 1D to 2D
+        var_all = np.empty(
+            (
+                len(var_user_want),
+                prof_size,
+                d_max,
+            )
+        )
+        var_list = var_user_want[:]
+        counter_i = 0
+        for iN in range(0, len(var_user_want)):
+            print(var_user_want[iN])
+            # check that variable exist in the WOD observations file
+            if var_user_want[iN] in self.dataset:
+                print("observed variable exist")
+                # reshape it into 2D
+                var_2d = np.empty(
+                    (
+                        prof_size,
+                        d_max,
+                    )
+                )
+                var_2d[:] = np.nan
+                # populate array but make sure that the indexing for number of levels
+                # is not nan, as in the data there are nan indexings for number of levels
+                # indicating no observations there
+                if np.isnan(self.dataset[var_user_want[iN] + "_row_size"][0].values) == False:
+                    I_SIZE = int(self.dataset[var_user_want[iN] + "_row_size"][0].values)
+                    var_2d[0, :I_SIZE] = self.dataset[var_user_want[iN]][0:I_SIZE].values
+                for iJ in range(1, prof_size):
+                    if np.isnan(self.dataset[var_user_want[iN] + "_row_size"].values[iJ]) == False:
+                        I_START = int(np.nansum(self.dataset[var_user_want[iN] + "_row_size"].values[:iJ]))
+                        I_END = int(np.nansum(self.dataset[var_user_want[iN] + "_row_size"].values[: iJ + 1]))
+                        I_SIZE = int(self.dataset[var_user_want[iN] + "_row_size"].values[iJ])
+                        var_2d[iJ, 0:I_SIZE] = self.dataset[var_user_want[iN]].values[I_START:I_END]
+
+                # all variables in one array
+                var_all[counter_i, :, :] = var_2d
+                counter_i = counter_i + 1
+                # check that you did everything correctly and the obs in yoru reshaped
+                # array match the observations in original array
+                T_OBS1 = np.delete(np.ravel(var_2d), np.isnan(np.ravel(var_2d)))
+                del I_START, I_END, I_SIZE, var_2d
+                T_OBS2 = np.delete(
+                    self.dataset[var_user_want[iN]].values, np.isnan(self.dataset[var_user_want[iN]].values)
+                )
+
+                if T_OBS1.size == T_OBS2.size and (
+                    int(np.min(T_OBS1 - T_OBS2)) == 0 or int(np.max(T_OBS1 - T_OBS2)) == 0
+                ):
+                    print("OK reshape successful")
+                else:
+                    print("WRONG!! reshape")
+
+            else:
+                print("variable not in observations")
+                var_list[iN] = "NO"
+
+        # REMOVE DUBLICATES
+        var_list = list(dict.fromkeys(var_list))
+        # REMOVE the non-observed variables from the list of variables
+        var_list.remove("NO")
+
+        # create the new 2D dataset array
+        wod_profiles_2d = xr.Dataset(
+            {
+                "depth": (["id_dim", "z_dim"], depth_2d),
+            },
+            coords={
+                "time": (["id_dim"], self.dataset.time.values),
+                "latitude": (["id_dim"], self.dataset.latitude.values),
+                "longitude": (["id_dim"], self.dataset.longitude.values),
+            },
+        )
+        for iN in range(0, len(var_list)):
+            wod_profiles_2d[var_list[iN]] = (["id_dim", "z_dim"], var_all[iN, :, :])
+
+        return_prof = Profile()
+        return_prof.dataset = wod_profiles_2d
+        return return_prof

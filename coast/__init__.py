@@ -25,6 +25,7 @@ from .tidegauge import Tidegauge
 from .tidegauge_analysis import TidegaugeAnalysis
 from .config_parser import ConfigParser
 from .xesmf_convert import xesmf_convert
+from .process_data import Process_data
 
 # Set default for logging level when coast is imported
 import logging

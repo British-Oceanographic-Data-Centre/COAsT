@@ -108,6 +108,6 @@ N. Example script testing
     b. tutorial on AMM15 data
     c. tutorial on AMM60 data
     d. tutorial on Belize data
-    e. tutorial on SEAsia data
+    e. tutorial on seasia data
     f. tutorial on WCSSP-India data
     g. tutorial on internal tides

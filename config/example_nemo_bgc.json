@@ -31,11 +31,11 @@
                         "N3_n": "nitrogen_nitrate",
 			"N5_s": "silicate",
                         "N4_n": "nitrogen_ammonium",
-			"O3_c": "DIC",
+			"O3_c": "dic",
                         "O2_o": "oxygen",
                         "O3_TA": "alkalinity",
                         "O3_pH": "ph",
-                        "O3_fair": "CO2_flux"
+                        "O3_fair": "co2_flux"
 		},
 		"coord_vars": [
 			"longitude",

@@ -36,6 +36,7 @@ PACKAGE = SimpleNamespace(
             "utide>=0.2.6",
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",
+            "statsmodels>=0.13.2",
         ],
         "python_requires": ">=3.8",
         "packages": ["coast"],

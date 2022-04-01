@@ -40,15 +40,20 @@ fn_gladstone = path.join(dn_files, "Gladstone_2020-10_HLW.txt")
 fn_nemo_harmonics = path.join(dn_files, "coast_nemo_harmonics.nc")
 fn_nemo_harmonics_dom = path.join(dn_files, "coast_nemo_harmonics_dom.nc")
 fn_profile = path.join(dn_files, "coast_example_EN4_201008.nc")
+fn_wod = path.join(dn_files, "WOD_example_ragged_standard_level.nc")
+fn_nemo_bgc = path.join(dn_files, "coast_example_SEAsia_BGC_1990.nc")
 
 # Domain files
 fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
+fn_nemo_dom_bgc = path.join(dn_files, "coast_example_domain_SEAsia.nc")
 
 # Configuration files
 fn_profile_config = path.join(dn_config, "example_en4_profiles.json")
+fn_wod_config = path.join(dn_config, "example_wod_profiles.json")
 fn_altimetry_config = path.join(dn_config, "example_altimetry.json")
 fn_config_t_grid = path.join(dn_config, "example_nemo_grid_t.json")
 fn_config_f_grid = path.join(dn_config, "example_nemo_grid_f.json")
 fn_config_u_grid = path.join(dn_config, "example_nemo_grid_u.json")
 fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
 fn_config_w_grid = path.join(dn_config, "example_nemo_grid_w.json")
+fn_nemo_config_bgc = path.join(dn_config, "example_nemo_bgc.json")
