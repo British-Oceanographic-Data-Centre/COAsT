@@ -15,13 +15,14 @@ class test_stats_utilities(unittest.TestCase):
     def test_find_maxima(self):
         date0 = datetime.datetime(2007, 1, 15)
         date1 = datetime.datetime(2007, 1, 16)
-        tg = coast.Tidegauge(files.fn_tidegauge, date_start=date0, date_end=date1)
+        tg = coast.Tidegauge()
+        tg.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
 
-        tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method="comp")
+        tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.ssh[0], method="comp")
         check1 = np.isclose((tt.values[0] - np.datetime64("2007-01-15T00:15:00")) / np.timedelta64(1, "s"), 0)
         check2 = np.isclose(hh.values[0], 1.027)
 
-        tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.sea_level, method="cubic")
+        tt, hh = stats_util.find_maxima(tg.dataset.time, tg.dataset.ssh[0], method="cubic")
         check3 = np.isclose((tt[0] - np.datetime64("2007-01-15T00:07:49")) / np.timedelta64(1, "s"), 0)
         check4 = np.isclose(hh[0], 1.0347638302097757)
 

@@ -26,4 +26,5 @@ unit_testing/*log
 sandbox.py
 
 config/nemo_tst_gridded.json
-
+.coverage
+unit_testing/coverage.txt
