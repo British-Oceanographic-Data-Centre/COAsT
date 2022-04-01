@@ -54,7 +54,7 @@ class test_bgc_gridded_initialisation(unittest.TestCase):
         sci = coast.Gridded(files.fn_nemo_bgc, files.fn_nemo_dom_bgc, config=files.fn_nemo_config_bgc)
         check1 = sci.dataset.dic.dims == ("t_dim", "z_dim", "y_dim", "x_dim")
         self.assertTrue(check1, msg="check1")
-        
+
     def test_gridded_load_bgc_domain_only(self):
         # Check gridded load domain only
         nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom_bgc, config=files.fn_nemo_config_bgc)

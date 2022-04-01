@@ -19,7 +19,7 @@ import coast.general_utils as general_utils
 import scipy as sp
 
 # ====================== UNIV PARAMS ===========================
-path_examples = "./example_files/"  
+path_examples = "./example_files/"
 ## data local in livljobs : /projectsa/COAsT/NEMO_example_data/SEAsia_R12/
 path_config = "./config/"
 
