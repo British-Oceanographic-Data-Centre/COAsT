@@ -1,19 +1,22 @@
-import coast as cst
+"""
+Demonstration of wrapped longitude coordinates when finding the nearest
+ grid index for specified latitude and lonitude
+"""
+import coast
 import os.path as path
 
-dn_files = "N:\\COAsT\\example_files\\"
-
-anotherpath = "l:\\users\\sgl\\immerse\\data\\"
-# The above is a temporary location. Adjust this to access file below
+# Global data files
+dn_files = "/projectsa/COAsT/GLOBAL_example_data/"
 filename = "so_Omon_IPSL-CM5A-LR_historical_r1i1p1_200001-200512.nc"
+fn_ispl_dat_t = path.join(dn_files, filename)
+# Configuration files describing the data files
+fn_config_t_grid = "./config/example_cmip5_grid_t.json"
 
-myconfigfile = path.join(dn_files, "griddedOmonDB.json")
-filedata = path.join(anotherpath, filename)
-sci = cst.Gridded(filedata, config=myconfigfile)
+# Load the data as a Gridded object
+ispl = coast.Gridded(fn_ispl_dat_t, config=fn_config_t_grid)
 
-[j1, i1] = sci.find_j_i(50, -9)
-print("j1 = " + str(j1))
-print("i1 = " + str(i1))
-[j1, i1] = sci.find_j_i(-310, -9)  # Same point on globe gives same result
-print("j1 = " + str(j1))
-print("i1 = " + str(i1))
+[j1, i1] = ispl.find_j_i(50, -9)
+print(f"At (-9N,50E) nearest j,i indices: ({j1,i1})")
+
+[j1, i1] = ispl.find_j_i(-310, -9)  # Same point on globe gives same result
+print(f"At (-9N,-310E) nearest j,i indices: ({j1,i1})")
