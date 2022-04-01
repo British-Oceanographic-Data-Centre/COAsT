@@ -63,7 +63,7 @@ def find_maxima(x, y, method="comp", **kwargs):
             method = "comp"
 
     if method == "comp":
-        peaks, props = scipy.signal.find_peaks(y, **kwargs)
+        peaks, props = scipy.signal.find_peaks(np.copy(y), **kwargs)
         return x[peaks], y[peaks]
 
     if method == "cubic":

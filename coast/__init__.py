@@ -21,7 +21,7 @@ from .argos import Argos
 from .altimetry import Altimetry
 from .timeseries import Timeseries
 from .tidegauge import Tidegauge
-from .tidegauge_multiple import TidegaugeMultiple
+from .tidegauge_analysis import TidegaugeAnalysis
 from .config_parser import ConfigParser
 from .xesmf_convert import xesmf_convert
 

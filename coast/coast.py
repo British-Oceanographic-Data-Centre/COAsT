@@ -157,7 +157,7 @@ class Coast:
         """
         Indexes COAsT object along specified dimensions using xarray isel.
         Input is of same form as xarray.isel. Basic use, hand in either:
-            1. Dictionary with keys = dimensions, values = indices
+            1. dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
         """
         obj_copy = self.copy()

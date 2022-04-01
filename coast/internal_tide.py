@@ -111,6 +111,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         IT.quickplot()
 
         """
+
         debug(f"Constructing pycnocline variables for {get_slug(self)}")
         # Construct in-situ density if not already done
         if not hasattr(gridded_t.dataset, "density"):
