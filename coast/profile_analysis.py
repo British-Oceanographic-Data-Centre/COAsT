@@ -34,7 +34,7 @@ class ProfileAnalysis(Indexed):
     """======================= Model Comparison ======================="""
 
     @classmethod
-    def depth_means(cls, dataset, depth_bounds):
+    def depth_means(cls, profile, depth_bounds):
         """
         Calculates a mean of all variable data that lie between two depths.
         Returns a new Profile() object containing the meaned data
@@ -47,6 +47,8 @@ class ProfileAnalysis(Indexed):
 
         debug(f"Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], 
                                                                          depth_bounds[1]))
+        dataset = profile.dataset
+        
         # We need to remove any time variables or the later .where() won't work
         var_list = list(dataset.keys())
         time_var_list = ["time"]
@@ -75,7 +77,7 @@ class ProfileAnalysis(Indexed):
         return Profile(dataset = ds)
 
     @classmethod
-    def bottom_means(cls, dataset, layer_thickness, depth_thresholds=[np.inf]):
+    def bottom_means(cls, profile, layer_thickness, depth_thresholds=[np.inf]):
         """
         Averages profile data in some layer above the bathymetric depth. This
         routine requires there to be a 'bathymetry' variable in the Profile dataset.
@@ -110,6 +112,7 @@ class ProfileAnalysis(Indexed):
          New profile object containing bottom averaged data.
 
         """
+        dataset = profile.dataset
 
         # Extract bathymetry points and load them
         bathy_pts = dataset.bathymetry.values
@@ -155,7 +158,7 @@ class ProfileAnalysis(Indexed):
     
     
     @classmethod
-    def determine_mask_indices(cls, dataset, mask_dataset):
+    def determine_mask_indices(cls, profile, mask_dataset):
         """
         Determines whether each profile is within a mask (region) or not. 
         These masks should be in Dataset form, as returned by 
@@ -178,7 +181,7 @@ class ProfileAnalysis(Indexed):
         Dataset describing which profiles are in which mask/region.
         Ready for input to Profile.mask_means()
         """
-
+        dataset = profile.dataset
         # If landmask not present, set to None for nearest_indices (no masking)
         if "landmask" not in list(mask_dataset.keys()):
             landmask = None
@@ -198,7 +201,7 @@ class ProfileAnalysis(Indexed):
         return region_indices.rename({"dim_0": "id"})
 
     @classmethod
-    def mask_means(cls, dataset, mask_indices):
+    def mask_means(cls, profile, mask_indices):
         '''
         Averages all data inside a given profile dataset across a regional mask 
         or for multiples regional masks.
@@ -216,7 +219,7 @@ class ProfileAnalysis(Indexed):
         xarray.Dataset containing meaned data. 
 
         '''
-
+        dataset = profile.dataset
         # Get the number of masks provided
         n_masks = mask_indices.dims["dim_mask"]
 
@@ -259,7 +262,7 @@ class ProfileAnalysis(Indexed):
         return Profile(dataset = ds_average)
 
     @classmethod
-    def difference(cls, dataset1, dataset2, 
+    def difference(cls, profile1, profile2, 
                    absolute_diff=True, square_diff=True):
         '''
         Calculates differences between all matched variables in two Profile 
@@ -284,6 +287,9 @@ class ProfileAnalysis(Indexed):
         Square differences have suffic square_
 
         '''
+        dataset1 = profile1.dataset
+        dataset2 = profile2.dataset
+        
         # Difference the two input dataset
         differenced = dataset1 - dataset2
         
@@ -317,7 +323,8 @@ class ProfileAnalysis(Indexed):
         differenced = xr.merge((differenced, abs_tmp, sq_tmp, dataset1[save_coords]))
         return Profile(dataset=differenced)
 
-    def interpolate_vertical(self, new_depth, interp_method="linear"):
+    @classmethod
+    def interpolate_vertical(cls, profile, new_depth, interp_method="linear"):
         """
         (04/10/2021)
         Author: David Byrne
@@ -355,7 +362,7 @@ class ProfileAnalysis(Indexed):
             debug(f"Interpolating onto depths of existing Profile object")
             repeated_depth = False
 
-        ds = self.dataset
+        ds = profile.dataset
         n_prof = ds.dims["profile"]
 
         # Get variable names on z_dim dimension
@@ -420,157 +427,8 @@ class ProfileAnalysis(Indexed):
 
         return return_interpolated
 
-    def obs_operator(self, gridded, mask_bottom_level=True):
-        """
-        VERSION 2.0 (04/10/2021)
-        Author: David Byrne
-
-        Does a spatial and time interpolation of a gridded object's data.
-        A nearest neighbour approach is used for both interpolations. Both
-        datasets (the Profile and Gridded objects) must contain longitude,
-        latitude and time coordinates. This routine expects there to be a
-        landmask variable in the gridded object. This is is not available,
-        then place an array of zeros into the dataset, with dimensions
-        (y_dim, x_dim).
-
-        This routine will do the interpolation based on the chunking applied
-        to the Gridded object. Please ensure you have the available memory to
-        have an entire Gridded chunk loaded to memory. If multiple files are
-        used, then using one chunk per file will be most efficient. Time
-        chunking is generally the better option for this routine.
-
-        INPUTS:
-         gridded (Gridded)        : gridded object created on t-grid
-         mask_bottom_level (bool) : Whether or not to mask any data below the
-                                    model's bottom level. If True, then ensure
-                                    the Gridded object's dataset contain's a
-                                    bottom_level variable with dims
-                                    (y_dim, x_dim).
-
-        OUTPUTS:
-         Returns a new PROFILE object containing a computed dataset of extracted
-         profiles.
-        """
-
-        # Read EN4, then extract desired variables
-        en4 = self.dataset
-        gridded = gridded.dataset
-
-        # CHECKS
-        # 1. Check that bottom_level is in dataset if mask_bottom_level is True
-        if mask_bottom_level:
-            if "bottom_level" not in gridded.variables:
-                raise ValueError(
-                    "bottom_level not found in input dataset. Please ensure variable is present or set mask_bottom_level to False"
-                )
-
-        # Use only observations that are within model time window.
-        en4_time = en4.time.values
-        mod_time = gridded.time.values
-
-        # SPATIAL indices - nearest neighbour
-        ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded["longitude"], gridded["latitude"], en4["longitude"], en4["latitude"], mask=gridded.landmask
-        )
-        debug(f"Spatial Indices Calculated")
-
-        # TIME indices - model nearest to obs time
-        en4_time = en4.time.values
-        ind_t = [np.argmin(np.abs(mod_time - en4_time[tt])) for tt in range(en4.dims["profile"])]
-        ind_t = xr.DataArray(ind_t)
-        debug(f"Time Indices Calculated")
-
-        # Find out which variables have both depth and profile
-        # This is for applying the bottom_level mask later
-        var_list = list(gridded.keys())
-        bl_var_list = []
-        for vv in var_list:
-            cond1 = "z_dim" not in gridded[vv].dims
-            if cond1:
-                bl_var_list.append(vv)
-
-        # Get chunks along the time dimension and determine whether chunks
-        # are described by a single equal size, or a tuples of sizes
-        time_chunks = gridded.chunks["t_dim"]
-        time_dim = gridded.dims["t_dim"]
-        start_ii = 0  # Starting index for loading data. Increments each loop
-        count_ii = 0  # Counting index for allocating data. Increments 1 each loop
-
-        while start_ii < time_dim:
-            end_ii = start_ii + time_chunks[count_ii]
-            debug(f"{0}: {1} > {2}".format(count_ii, start_ii, end_ii))
-
-            # Determine which time indices lie in this chunk
-            ind_in_chunk = np.logical_and(ind_t >= start_ii, ind_t < end_ii)
-
-            # Check There are some indices at all
-            if np.sum(ind_in_chunk) == 0:
-                start_ii = end_ii
-                count_ii = count_ii + 1
-                if count_ii == 0:
-                    mod_profiles = xr.Dataset()
-                continue
-
-            # Pull out x,y and t indices
-            ind_x_in_chunk = ind_x[ind_in_chunk]
-            ind_y_in_chunk = ind_y[ind_in_chunk]
-            ind_t_in_chunk = ind_t[ind_in_chunk] - start_ii
-
-            # Index a temporary chunk and read it to memory
-            ds_tmp = gridded.isel(t_dim=np.arange(start_ii, end_ii)).load()
-
-            # Index loaded chunk and rename dim_0 to profile
-            ds_tmp_indexed = ds_tmp.isel(x_dim=ind_x_in_chunk, y_dim=ind_y_in_chunk, t_dim=ind_t_in_chunk)
-            ds_tmp_indexed = ds_tmp_indexed.rename({"dim_0": "profile"})
-
-            # Mask out all levels deeper than bottom_level
-            # Here I have used set_coords() and reset_coords() to omit variables
-            # with no z_dim from the masking. Otherwise xr.where expands these
-            # dimensions into full 2D arrays.
-            if mask_bottom_level:
-                n_z_tmp = ds_tmp_indexed.dims["z_dim"]
-                bl_array = ds_tmp_indexed.bottom_level.values
-                z_index, bl_index = np.meshgrid(np.arange(0, n_z_tmp), bl_array)
-                mask2 = xr.DataArray(z_index < bl_index, dims=["profile", "z_dim"])
-                ds_tmp_indexed = ds_tmp_indexed.set_coords(bl_var_list)
-                ds_tmp_indexed = ds_tmp_indexed.where(mask2)
-                ds_tmp_indexed = ds_tmp_indexed.reset_coords(bl_var_list)
-
-            # If not first iteration, concatenate this indexed chunk onto
-            # final output dataset
-            if count_ii == 0:
-                mod_profiles = ds_tmp_indexed
-            else:
-                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="profile")
-
-            # Update counters
-            start_ii = end_ii
-            count_ii = count_ii + 1
-
-        # Put obs time into the output array
-        mod_profiles["obs_time"] = (["profile"], en4_time)
-
-        # Calculate interpolation distances
-        interp_dist = general_utils.calculate_haversine_distance(
-            en4.longitude, en4.latitude, mod_profiles.longitude, mod_profiles.latitude
-        )
-        mod_profiles["interp_dist"] = (["profile"], interp_dist.values)
-
-        # Calculate interpolation time lags
-        interp_lag = (mod_profiles.time.values - en4_time).astype("timedelta64[h]")
-        mod_profiles["interp_lag"] = (["profile"], interp_lag)
-
-        # Put x and y indices into dataset
-        mod_profiles["nearest_index_x"] = (["profile"], ind_x.values)
-        mod_profiles["nearest_index_y"] = (["profile"], ind_y.values)
-        mod_profiles["nearest_index_t"] = (["profile"], ind_t.values)
-
-        # Create return object and put dataset into it.
-        return_prof = Profile()
-        return_prof.dataset = mod_profiles
-        return return_prof
-
-    def average_into_grid_boxes(self, grid_lon, grid_lat, min_datapoints=1, season=None, var_modifier=""):
+    def average_into_grid_boxes(self, grid_lon, grid_lat, min_datapoints=1, 
+                                season=None, var_modifier=""):
         """
         Takes the contents of this Profile() object and averages each variables
         into geographical grid boxes. At the moment, this expects there to be
