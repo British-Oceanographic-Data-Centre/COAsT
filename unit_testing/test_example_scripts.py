@@ -36,7 +36,7 @@ class test_example_scripts(unittest.TestCase):
 
     def test_internal_tide_pycnocline_diagnostics(self):
         if "livljobs" in gethostname().lower():
-            import internal_tide_pycnocline_diagnostics
+            from example_scripts import internal_tide_pycnocline_diagnostics
 
             plt.close("all")
 
@@ -73,5 +73,17 @@ class test_example_scripts(unittest.TestCase):
     def test_internal_tide_pycnocline_diagnostics(self):
         if "livljobs" in gethostname().lower():
             from example_scripts import internal_tide_pycnocline_diagnostics
+
+            plt.close("all")
+
+    def test_wod_bgc_ragged_example(self):
+        if "livljobs" in gethostname().lower():
+            from example_scripts import wod_bgc_ragged_example
+
+            plt.close("all")
+
+    def test_seasia_dic_example_plot(self):
+        if "livljobs" in gethostname().lower():
+            from example_scripts import seasia_dic_example_plot
 
             plt.close("all")

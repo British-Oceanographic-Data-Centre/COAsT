@@ -1,9 +1,6 @@
      UNIT TEST CONTENTS FILE TEST    
 
-1. test_xesmf_convert
-      a. basic_conversion_to_xesmf
-
-2. test_gridded_initialisation
+1. test_gridded_initialisation
       a. gridded_calculate_depth0_for_tuvwf
       b. gridded_compute_e3_from_ssh
       c. gridded_load_dimensions_correctly_renamed
@@ -14,15 +11,18 @@
       h. gridded_load_subregion_with_domain
       i. gridded_load_variables_correctly_renamed
 
-3. test_general_utils
+2. test_general_utils
       a. bst_to_gmt
       b. coast_variable_renaming
       c. copy_coast_object
       d. day_of_week
       e. getitem
 
-4. test_gridded_harmonics
+3. test_gridded_harmonics
       a. combine_and_convert_harmonics
+
+4. test_xesmf_convert
+      a. basic_conversion_to_xesmf
 
 5. test_diagnostic_methods
       a. compute_vertical_spatial_derivative
@@ -64,46 +64,59 @@
       a. compute_heofs
       b. compute_regular_eof
 
-12. test_contour_f_methods
+11. test_contour_f_methods
       a. calculate_flow_across_contour
       b. calculate_pressure_gradient_driven_flow
       c. extract_isobath_contour_between_two_points
 
-13. test_contour_t_methods
+12. test_contour_t_methods
       a. along_contour_2d_flow
       b. along_contour_flow
       c. calculate_pressure_along_contour
 
-14. test_profile_methods
+13. test_profile_methods
       a. compare_processed_profile_with_model
       b. load_process_and_compare_profile_data
 
-15. test_plot_utilities
+14. test_plot_utilities
       a. determine_clim_by_stdev
       b. determine_colorbar_extension
       c. geo_axes
       d. scatter_with_fit
 
-16. test_stats_utilities
+15. test_stats_utilities
       a. find_maxima
 
-17. test_maskmaker_methods
+16. test_maskmaker_methods
       a. fill_polygon_by_index
       b. fill_polygon_by_lonlat
 
-18. test_climatology
+17. test_climatology
       a. monthly_and_seasonal_climatology
 
-19. test_example_scripts
+18. test_wod_read_data
+      a. load_wod
+      b. reshape_wod
+
+19. test_gridded_initialisation
+      a. gridded_load_bgc_data
+      b. gridded_load_bgc_variables_correctly_renamed
+      c. gridded_load_bgc_dimensions_correctly_renamed
+      d. gridded_load_bgc_domain_only
+
+20. test_example_scripts
       a. altimetry_tutorial
       b. amm15_example_plot
       c. anchor_plots_of_nsea_wvel
       d. blz_example_plot
       e. contour_tutorial
-      f. export_to_netcdf_tutorial
-      g. internal_tide_pycnocline_diagnostics
-      h. seasia_r12_example_plot
-      i. tidetable_tutorial
-      j. transect_tutorial
-      k. wcssp_india_example_plot
-
+      f. wod_bgc_ragged_example
+      g. export_to_netcdf_tutorial
+      h. internal_tide_pycnocline_diagnostics
+      i. seasia_r12_example_plot
+      j. tidegauge_tutorial
+      k. tidetable_tutorial
+      l. transect_tutorial
+      m. wcssp_india_example_plot
+      n. wod_bgc_ragged_example
+      o. seasia_dic_example_plot
