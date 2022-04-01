@@ -16,15 +16,7 @@ from scipy import interpolate
 
 class ProfileAnalysis(Indexed):
     """
-    OBSERVATION type class for storing data ßfrom a CTD Profile (or similar
-    down and up observations). The structure of the class is based on data from
-    the EN4 database. The class dataset should contain two dimension:
-
-        > profile :: The profiles dimension. Called N_PROF in EN4 data.
-                     Each element of this dimension contains data for a
-                     individual location.
-        > z_dim   :: The dimension for depth levels. Called N_LEVELS in EN4
-                     files.
+    
     """
 
     def __init__():
@@ -335,7 +327,7 @@ class ProfileAnalysis(Indexed):
 
         If a 1D numpy array is passed then all profiles will be interpolated
         onto this single set of depths. If a xarray.DataArray is passed, it
-        should have dimensions (profile, z_dim) and contain a variable called
+        should have dimensions (id, z_dim) and contain a variable called
         depth. This DataArray should contain the same number of profiles as
         this object and will map profiles in order for interpolation. If
         another profile object is passed, profiles will be mapped and
@@ -363,7 +355,8 @@ class ProfileAnalysis(Indexed):
             repeated_depth = False
 
         ds = profile.dataset
-        n_prof = ds.dims["profile"]
+        n_prof = ds.sizes["id"]
+        n_z = ds.sizes['z_dim']
 
         # Get variable names on z_dim dimension
         zvars = []
@@ -406,7 +399,8 @@ class ProfileAnalysis(Indexed):
                 interpx = interpx[~xynans]
                 interpy = interpy[~xynans] 
                 
-                # If there are <2 datapoints, dont interpolate.
+                # If there are <2 datapoints, dont interpolate. Return a nan
+                # array instead for this profile variable
                 if len(interpx) >= 2:
                     # Use scipy to interpolate this profile
                     interp_func = interpolate.interp1d(
@@ -416,6 +410,7 @@ class ProfileAnalysis(Indexed):
                     vv_interp = interp_func(new_depth_prof)
                     interpolated_tmp[vv] = ("z_dim", vv_interp)
                 else:
+                    interpolated_tmp[vv] = ("z_dim", np.zeros(len(new_depth_prof))*np.nan)
                     
             # Put the new depth into the interpolated profile
             interpolated_tmp["depth"] = ("z_dim", new_depth_prof)
@@ -428,12 +423,9 @@ class ProfileAnalysis(Indexed):
                                          dim="id", coords="all")
             count_ii = count_ii + 1
 
-        # Create and format output dataset
+        # Set depth to be a coordinate and return a new Profile object.
         interpolated = interpolated.set_coords(["depth"])
-        return_interpolated = Profile()
-        return_interpolated.dataset = interpolated
-
-        return return_interpolated
+        return Profile(dataset = interpolated)
 
     @classmethod
     def average_into_grid_boxes(cls, profile, grid_lon, grid_lat, 
@@ -489,7 +481,7 @@ class ProfileAnalysis(Indexed):
         if season is not None:
             season_array = general_utils.determine_season(ds.time)
             s_ind = season_array == season
-            ds = ds.isel(profile=s_ind)
+            ds = ds.isel(id=s_ind)
 
         # Loop over every box (slow??)
         for rr in range(n_r - 1):
@@ -511,7 +503,6 @@ class ProfileAnalysis(Indexed):
                         vv_in = vars_in[vv]
                         vv_out = vars_out[vv]
                         ds_out[vv_out][rr, cc] = ds[vv_in].isel(profile=prof_ind).mean()
-                        #ds_out[vv_out][rr, cc] = np.nanmean(ds[vv_in].isel(profile=prof_ind))
 
                 # Store N in own variable
                 ds_out["grid_N{0}".format(var_modifier)][rr, cc] = np.sum(prof_ind)
