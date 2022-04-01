@@ -2,16 +2,14 @@
 from .index import Indexed
 import numpy as np
 import xarray as xr
-from . import general_utils, plot_util, Gridded
+from . import general_utils, plot_util
 import matplotlib.pyplot as plt
 import glob
 import datetime
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
-import xarray.ufuncs as uf
-import pandas as pd
-from scipy import interpolate
+import scipy.interpolate as interpolate
 
 
 class Profile(Indexed):
@@ -20,46 +18,78 @@ class Profile(Indexed):
     down and up observations). The structure of the class is based on data from
     the EN4 database. The class dataset should contain two dimension:
 
-        > profile :: The profiles dimension. Called N_PROF in EN4 data.
-                     Each element of this dimension contains data for a
-                     individual location.
-        > z_dim   :: The dimension for depth levels. Called N_LEVELS in EN4
-                     files.
+        > id      :: The profiles dimension. Each element of this dimension 
+                     contains data (e.g. cast) for an individual location.
+        > z_dim   :: The dimension for depth levels. A profile object does not
+                     need to have shared depths, so NaNs might be used to
+                     pad any depth array.
+    
+    Alongside these dimensions, the following minimal coordinates should also
+    be available:
+        
+        > longitude (id)   :: 1D array of longitudes, one for each id
+        > latitude  (id)   :: 1D array of latitudes, one for each id
+        > time      (id)   :: 1D array of times, one for each id
+        > depth     (id, z_dim)  :: 2D array of depths, with different depth
+                                    levels being provided for each profile.
+                                    Note that these depth levels need to be
+                                    stored in a 2D array, so NaNs can be used
+                                    to pad out profiles with shallower depths.
+        > id_name   (id)   :: [Optional] Name of id/case or id number.
+                                    
+    You may create an empty profile object by using profile = coast.Profile(). 
+    You may then add your own dataset to the object profile or use one of the
+    functions within Profile() for reading common profile datasets:
+        
+        > read_en4()
+        > read_wod()
+    
+    Optionally, you may pass a dataset to the Profile object on creation:
+        
+        profile = coast.Profile(dataset = profile_dataset)
+        
+    A config file can also be provided, in which case any netcdf read functions
+    will rename dimensions and variables as dictated.
     """
 
-    def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
-        """Initialization and file reading.
+    def __init__(self, dataset = None, config: Union[Path, str] = None):
+        """Initialization and file reading. You may initialize 
 
         Args:
-            file_path (str): path to data file
-            multiple (boolean): True if reading multiple files otherwise False
             config (Union[Path, str]): path to json config file.
         """
         debug(f"Creating a new {get_slug(self)}")
         super().__init__(config)
-
-        if file_path is None:
-            warn("Object created but no file or directory specified: \n" "{0}".format(str(self)), UserWarning)
-        else:
-            self.read_en4(file_path, self.chunks, multiple)
+        
+        # If dataset is provided, put inside this object
+        if dataset is not None:
+            self.dataset = dataset
             self.apply_config_mappings()
 
         debug(f"{get_slug(self)} initialised")
 
     def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
-        """Reads a single or multiple EN4 netCDF files into the COAsT profile data structure.
+        """Reads a single or multiple EN4 netCDF files into the COAsT profile 
+        data structure.
 
         Args:
             fn_en4 (str): path to data file
             chunks (dict): chunks
             multiple (boolean): True if reading multiple files otherwise False
         """
+        
+        # If not multiple then just read the netcdf file
         if not multiple:
             self.dataset = xr.open_dataset(fn_en4, chunks=chunks)
+            
+        # If multiple, then we have to get all file names and read them in a
+        # loop, followed by concatenation
         else:
+            # Check a list is provided
             if type(fn_en4) is not list:
                 fn_en4 = [fn_en4]
-
+                
+            # Use glob to get a list of file paths from input
             file_to_read = []
             for file in fn_en4:
                 if "*" in file:
@@ -75,6 +105,7 @@ class Profile(Indexed):
             sort_ind = np.argsort(dates)
             file_to_read = file_to_read[sort_ind]
 
+            # Loop over all files, open them and concatenation them into one
             for ff in range(0, len(file_to_read)):
                 file = file_to_read[ff]
                 data_tmp = xr.open_dataset(file, chunks=chunks)
@@ -82,23 +113,25 @@ class Profile(Indexed):
                     self.dataset = data_tmp
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim="N_PROF")
+                    
+        # Apply config settings
+        self.apply_config_mappings()
 
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """Generates array indices for data which lies in a given lon/lat box.
-        Keyword arguments:
-        lon       -- Longitudes, 1D or 2D.
-        lat       -- Latitudes, 1D or 2D
+        """ Get a subset of this Profile() object in a spatial box.
+
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
 
-        return: Indices corresponding to datapoints inside specified box
+        return: A new profile object containing subsetted data
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude, self.dataset.latitude, lonbounds[0], 
+            lonbounds[1], latbounds[0], latbounds[1]
         )
-        return ind
+        return Profile(dataset = self.dataset.isel(id=ind))
 
     """======================= Plotting ======================="""
 
@@ -144,225 +177,166 @@ class Profile(Indexed):
 
     """======================= Model Comparison ======================="""
 
-    def depth_means(self, depth_bounds):
+    def process_en4(self, sort_time=True):
         """
-        (04/10/2021)
-        Author: David Byrne
+        VERSION 1.4 (05/07/2021)
 
-        INPUTS:
-         masks (Dataset) :
+        PREPROCESSES EN4 data ready for comparison with model data.
+        This routine will cut out a desired geographical box of EN4 data and
+        then apply quality control according to the available flags in the
+        netCDF files. Quality control happens in two steps:
+            1. Where a whole data profile is flagged, it is completely removed
+               from the dataset
+            2. Where a single datapoint is rejected in either temperature or
+               salinity, it is set to NaN.
+        This routine attempts to use xarray/dask chunking magic to keep
+        memory useage low however some memory is still needed for loading
+        flags etc. May be slow if using large EN4 datasets.
 
-        OUTPUTS:
+        Routine will return a processed profile object dataset and can write
+        the new dataset to file if fn_out is defined. If saving to the
+        PROFILE object, be aware that DASK computations will not have happened
+        and will need to be done using .load(), .compute() or similar before
+        accessing the values. IF using multiple EN4 files or large dataset,
+        make sure you have chunked the data over N_PROF dimension.
 
-        """
+        INPUTS
+         fn_out (str)      : Full path to a desired output file. If unspecified
+                             then nothing is written.
 
-        debug(f"Averaging all variables between {0}m <= x < {1}m".format(depth_bounds[0], depth_bounds[1]))
-        ds = self.dataset
-
-        # We need to remove any time variables or the later .where() won't work
-        var_list = list(ds.keys())
-        time_var_list = ["time"]
-        for vv in var_list:
-            if ds[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
-                time_var_list.append(vv)
-
-        time_vars = ds[time_var_list]
-        ds = ds.drop(time_var_list)
-
-        layer_ind0 = ds.depth >= depth_bounds[0]
-        layer_ind1 = ds.depth < depth_bounds[1]
-        layer_ind = layer_ind0 * layer_ind1
-        masked = ds.where(layer_ind, np.nan)
-        meaned = masked.mean(dim="z_dim", skipna=True).load()
-
-        # Remerge time variables
-        ds = xr.merge((meaned, time_vars))
-
-        return_prof = Profile()
-        return_prof.dataset = ds
-
-        return return_prof
-
-    def bottom_means(self, layer_thickness, depth_thresholds=[np.inf]):
-        """
-        (04/10/2021)
-        Author: David Byrne
-
-        Averages profile data in some layer above the bathymetric depth. This
-        routine requires there to be a 'bathymetry' variable in the Profile dataset.
-        It can apply a constant averaging layer thickness across all profiles
-        or a bespoke thickness dependent on the bathymetric depth. For example,
-        you may want to define the 'bottom' as the average of 100m above the
-        bathymetry in very deep ocean but only 10m in the shallower ocean.
-        If there is no data available in the layer specified (e.g. CTD cast not
-        deep enough or model bathymetry wrong) then it will be NaN
-
-        To apply constant thickness, you only need to provide a value (in metre)
-        for layer_thickness. For different thicknesses, you also need to give
-        depth_thresholds. The last threshold must always be np.inf, i.e. all
-        data below a specific bathymetry depth.
-
-        For example, to apply 10m to everywhere <100m, 50m to 100m -> 500m and
-        100m elsewhere, use:
-
-            layer_thickness = [10, 50, 100]
-            depth_thresholds = [100, 500, np.inf]
-
-        The bottom bound is always assumed to be 0.
-
-        *NOTE: If time related issues arise, then remove any time variables
-        from the profile dataset before running this routine.
-
-        INPUTS:
-         layer_thickness (array) : A scalar layer thickness or list of values
-         depth_thresholds (array) : Optional. List of bathymetry thresholds.
-
-        OUTPUTS:
-         New profile object containing bottom averaged data.
-
-        """
-
-        # Extract bathymetry points
-        ds = self.dataset
-        bathy_pts = ds.bathymetry.values
-
-        # We need to remove any time variables or the later .where() won't work
-        var_list = list(ds.keys())
-        time_var_list = ["time"]
-        for vv in var_list:
-            if ds[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
-                time_var_list.append(vv)
-
-        time_vars = ds[time_var_list]
-        ds = ds.drop(time_var_list)
-
-        if depth_thresholds[-1] != np.inf:
-            raise ValueError("Please ensure the final element of depth_thresholds is np.inf")
-
-        # Convert to numpy arrays where necessary
-        if np.isscalar(layer_thickness):
-            layer_thickness = [layer_thickness]
-
-        depth_thresholds = np.array(depth_thresholds)
-        layer_thickness = np.array(layer_thickness)
-
-        # Get depths, thresholds and thicknesses at each profile
-        prof_threshold = np.array([np.sum(ii > depth_thresholds) for ii in bathy_pts])
-        prof_thickness = layer_thickness[prof_threshold]
-
-        # Insert NaNs where not in the bottom
-        try:
-            bottom_ind = ds.depth >= (bathy_pts - prof_thickness)
-        except:
-            bottom_ind = ds.depth.transpose() >= (bathy_pts - prof_thickness)
-        ds = ds.where(bottom_ind, np.nan)
-
-        # Average the remaining data
-        ds = ds.mean(dim="z_dim", skipna=True).load()
-
-        # Remerge time variables
-        ds = xr.merge((ds, time_vars))
-
-        return_prof = Profile()
-        return_prof.dataset = ds
-
-        return return_prof
-
-    def determine_mask_indices(self, masks):
-        """
-        (04/10/2021)
-        Author: David Byrne
-
-        INPUTS:
-         masks (Dataset) :
-
-        OUTPUTS:
-
+        EXAMPLE USEAGE:
+         profile = coast.PROFILE()
+         profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
+         fn_out = '~/output_file.nc'
+         new_profile = profile.preprocess_en4(fn_out = fn_out,
+                                              lonbounds = [-10, 10],
+                                              latbounds = [45, 65])
         """
 
         ds = self.dataset
 
-        # If landmask not present, set to None for nearest_indices (no masking)
-        if "landmask" not in list(masks.keys()):
-            landmask = None
-        else:
-            landmask = masks.landmask
-        # SPATIAL indices - nearest neighbour
-        ind_x, ind_y = general_utils.nearest_indices_2d(
-            masks["longitude"], masks["latitude"], ds["longitude"], ds["latitude"], mask=landmask
+        # Load in the quality control flags
+        debug(f" Applying QUALITY CONTROL to EN4 data...")
+        ds.qc_flags_profiles.load()
+
+        # This line reads converts the QC integer to a binary string.
+        # Each bit of this string is a different QC flag. Which flag is which can
+        # be found on the EN4 website:
+        # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
+        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims["profile"])]
+
+        # Determine indices of the profiles that we want to keep
+        reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
+        reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
+        reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
+        ds["reject_tem_prof"] = (["profile"], reject_tem_prof)
+        ds["reject_sal_prof"] = (["profile"], reject_sal_prof)
+        debug(
+            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["profile"])
         )
 
-        # Figure out which points lie in which region
-        debug(f"Figuring out which regions each profile is in..")
-        region_indices = masks.isel(x_dim=ind_x, y_dim=ind_y)
+        ds = ds.isel(profile=~reject_both_prof)
+        reject_tem_prof = reject_tem_prof[~reject_both_prof]
+        reject_sal_prof = reject_sal_prof[~reject_both_prof]
+        qc_lev = ds.qc_flags_levels.values
 
-        return region_indices.rename({"dim_0": "profile"})
+        debug(f" QC: Additional profiles converted to NaNs: ")
+        debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
+        debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
 
-    def mask_means(self, mask_indices):
+        reject_tem_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
+        reject_sal_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
 
-        ds = self.dataset
+        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
+        for ii in range(len(int_tem)):
+            reject_tem_lev[qc_lev == int_tem[ii]] = 1
+        for ii in range(len(int_sal)):
+            reject_sal_lev[qc_lev == int_sal[ii]] = 1
+        for ii in range(len(int_both)):
+            reject_tem_lev[qc_lev == int_both[ii]] = 1
+            reject_sal_lev[qc_lev == int_both[ii]] = 1
 
-        n_masks = mask_indices.dims["dim_mask"]
+        ds["reject_tem_datapoint"] = (["profile", "z_dim"], reject_tem_lev)
+        ds["reject_sal_datapoint"] = (["profile", "z_dim"], reject_sal_lev)
 
-        # Loop over maskal arrays. Assign mean to mask and seasonal means
-        debug(f"Calculating maskal averages..")
-        for mm in range(0, n_masks):
-            mask = mask_indices.isel(dim_mask=mm).mask.values
-            mask_ind = np.where(mask.astype(bool))[0]
-            if len(mask_ind) < 1:
-                if mm == 0:
-                    ds_average = xr.Dataset()
-                continue
-            mask_data = ds.isel(profile=mask_ind)
-            ds_average_prof = mask_data.mean(dim="profile", skipna=True).compute()
-            ds_average_all = mask_data.mean(skipna=True).compute()
+        debug(f"MASKING rejected datapoints, replacing with NaNs...")
+        ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
+        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
+        ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
 
-            var_list = list(ds_average_prof.keys())
-            for vv in var_list:
-                ds_average_prof = ds_average_prof.rename({vv: "profile_average_" + vv})
-                ds_average_all = ds_average_all.rename({vv: "average_" + vv})
+        if sort_time:
+            debug(f"Sorting Time Dimension...")
+            ds = ds.sortby("time")
 
-            ds_average_tmp = xr.merge((ds_average_prof, ds_average_all))
+        debug(f"Finished processing data. Returning new Profile object.")
 
-            if mm == 0:
-                ds_average = ds_average_tmp
-            else:
-                ds_average = xr.concat((ds_average, ds_average_tmp), dim="dim_mask")
+        return_prof = Profile()
+        return_prof.dataset = ds
+        return return_prof
 
-        return ds_average
+    @classmethod
+    def calculate_all_en4_qc_flags(cls):
+        """
+        Brute force method for identifying all rejected points according to
+        EN4 binary integers. It can be slow to convert large numbers of integers
+        to a sequence of bits and is actually quicker to just generate every
+        combination of possible QC integers. That's what this routine does.
+        Used in PROFILE.preprocess_en4().
 
-    def difference(self, other, absolute_diff=True, square_diff=True):
+        INPUTS
+         NO INPUTS
 
-        differenced = self.dataset - other.dataset
-        diff_vars = list(differenced.keys())
-        save_coords = list(self.dataset.coords.keys())
+        OUTPUTS
+         qc_integers_tem  : Array of integers signifying the rejection of ONLY
+                            temperature datapoints
+         qc_integers_sal  : Array of integers signifying the rejection of ONLY
+                            salinity datapoints
+         qc_integers_both : Array of integers signifying the rejection of BOTH
+                            temperature and salinity datapoints.
+        """
 
-        for vv in diff_vars:
-            differenced = differenced.rename({vv: "diff_" + vv})
+        reject_tem_ind = 0
+        reject_sal_ind = 1
+        reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+        reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
 
-        if absolute_diff:
-            abs_tmp = np.fabs(differenced)
-            diff_vars = list(abs_tmp.keys())
-            for vv in diff_vars:
-                abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
-        else:
-            abs_tmp = xr.Dataset()
+        qc_integers_tem = []
+        qc_integers_sal = []
+        qc_integers_both = []
+        n_tem_reasons = len(reject_tem_reasons)
+        n_sal_reasons = len(reject_sal_reasons)
+        bin_len = 30
 
-        if square_diff:
-            sq_tmp = np.square(differenced)
-            diff_vars = list(sq_tmp.keys())
-            for vv in diff_vars:
-                sq_tmp = sq_tmp.rename({vv: "square_" + vv})
-        else:
-            sq_tmp = xr.Dataset()
+        # IF reject_tem = 1, reject_sal = 0
+        for ii in range(n_tem_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_tem_ind] = 1
+            bin_tmp[reject_tem_reasons[ii]] = 1
+            qc_integers_tem.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
 
-        differenced = xr.merge((differenced, abs_tmp, sq_tmp, self.dataset[save_coords]))
+        # IF reject_tem = 0, reject_sal = 1
+        for ii in range(n_sal_reasons):
+            bin_tmp = np.zeros(bin_len, dtype=int)
+            bin_tmp[reject_sal_ind] = 1
+            bin_tmp[reject_sal_reasons[ii]] = 1
+            qc_integers_sal.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
 
-        return_differenced = Profile()
-        return_differenced.dataset = differenced
+        # IF reject_tem = 1, reject_sal = 1
+        for tt in range(n_tem_reasons):
+            for ss in range(n_sal_reasons):
+                bin_tmp = np.zeros(bin_len, dtype=int)
+                bin_tmp[reject_tem_ind] = 1
+                bin_tmp[reject_sal_ind] = 1
+                bin_tmp[reject_tem_reasons[tt]] = 1
+                bin_tmp[reject_sal_reasons[ss]] = 1
+                qc_integers_both.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
 
-        return return_differenced
+        qc_integers_tem = list(set(qc_integers_tem))
+        qc_integers_sal = list(set(qc_integers_sal))
+        qc_integers_both = list(set(qc_integers_both))
 
+        return qc_integers_tem, qc_integers_sal, qc_integers_both
+    
     def interpolate_vertical(self, new_depth, interp_method="linear"):
         """
         (04/10/2021)
@@ -447,11 +421,6 @@ class Profile(Indexed):
 
             interpolated_tmp["depth"] = ("z_dim", new_depth_prof)
 
-            # interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
-
-            # interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
-            # interpolated_tmp = interpolated_tmp.reset_coords(["depth"])
-
             # If not first iteration, concat this interpolated profile
             if count_ii == 0:
                 interpolated = interpolated_tmp
@@ -461,10 +430,7 @@ class Profile(Indexed):
 
         # Create and format output dataset
         interpolated = interpolated.set_coords(["depth"])
-        return_interpolated = Profile()
-        return_interpolated.dataset = interpolated
-
-        return return_interpolated
+        return Profile(dataset=interpolated)
 
     def obs_operator(self, gridded, mask_bottom_level=True):
         """
@@ -615,247 +581,14 @@ class Profile(Indexed):
         return_prof = Profile()
         return_prof.dataset = mod_profiles
         return return_prof
+    
 
-    def process_en4(self, sort_time=True):
-        """
-        VERSION 1.4 (05/07/2021)
-
-        PREPROCESSES EN4 data ready for comparison with model data.
-        This routine will cut out a desired geographical box of EN4 data and
-        then apply quality control according to the available flags in the
-        netCDF files. Quality control happens in two steps:
-            1. Where a whole data profile is flagged, it is completely removed
-               from the dataset
-            2. Where a single datapoint is rejected in either temperature or
-               salinity, it is set to NaN.
-        This routine attempts to use xarray/dask chunking magic to keep
-        memory useage low however some memory is still needed for loading
-        flags etc. May be slow if using large EN4 datasets.
-
-        Routine will return a processed profile object dataset and can write
-        the new dataset to file if fn_out is defined. If saving to the
-        PROFILE object, be aware that DASK computations will not have happened
-        and will need to be done using .load(), .compute() or similar before
-        accessing the values. IF using multiple EN4 files or large dataset,
-        make sure you have chunked the data over N_PROF dimension.
-
-        INPUTS
-         fn_out (str)      : Full path to a desired output file. If unspecified
-                             then nothing is written.
-
-        EXAMPLE USEAGE:
-         profile = coast.PROFILE()
-         profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
-         fn_out = '~/output_file.nc'
-         new_profile = profile.preprocess_en4(fn_out = fn_out,
-                                              lonbounds = [-10, 10],
-                                              latbounds = [45, 65])
-        """
-
-        ds = self.dataset
-
-        # REJECT profiles that are QC flagged.
-        debug(f" Applying QUALITY CONTROL to EN4 data...")
-        ds.qc_flags_profiles.load()
-
-        # This line reads converts the QC integer to a binary string.
-        # Each bit of this string is a different QC flag. Which flag is which can
-        # be found on the EN4 website:
-        # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims["profile"])]
-
-        # Determine indices of kept profiles
-        reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
-        reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
-        reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
-        ds["reject_tem_prof"] = (["profile"], reject_tem_prof)
-        ds["reject_sal_prof"] = (["profile"], reject_sal_prof)
-        debug(
-            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["profile"])
-        )
-
-        ds = ds.isel(profile=~reject_both_prof)
-        reject_tem_prof = reject_tem_prof[~reject_both_prof]
-        reject_sal_prof = reject_sal_prof[~reject_both_prof]
-        qc_lev = ds.qc_flags_levels.values
-
-        debug(f" QC: Additional profiles converted to NaNs: ")
-        debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
-        debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
-
-        reject_tem_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
-        reject_sal_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
-
-        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
-        for ii in range(len(int_tem)):
-            reject_tem_lev[qc_lev == int_tem[ii]] = 1
-        for ii in range(len(int_sal)):
-            reject_sal_lev[qc_lev == int_sal[ii]] = 1
-        for ii in range(len(int_both)):
-            reject_tem_lev[qc_lev == int_both[ii]] = 1
-            reject_sal_lev[qc_lev == int_both[ii]] = 1
-
-        ds["reject_tem_datapoint"] = (["profile", "z_dim"], reject_tem_lev)
-        ds["reject_sal_datapoint"] = (["profile", "z_dim"], reject_sal_lev)
-
-        debug(f"MASKING rejected datapoints, replacing with NaNs...")
-        ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
-
-        if sort_time:
-            debug(f"Sorting Time Dimension...")
-            ds = ds.sortby("time")
-
-        debug(f"Finished processing data. Returning new Profile object.")
-
-        return_prof = Profile()
-        return_prof.dataset = ds
-        return return_prof
-
-    def calculate_all_en4_qc_flags(self):
-        """
-        Brute force method for identifying all rejected points according to
-        EN4 binary integers. It can be slow to convert large numbers of integers
-        to a sequence of bits and is actually quicker to just generate every
-        combination of possible QC integers. That's what this routine does.
-        Used in PROFILE.preprocess_en4().
-
-        INPUTS
-         NO INPUTS
-
-        OUTPUTS
-         qc_integers_tem  : Array of integers signifying the rejection of ONLY
-                            temperature datapoints
-         qc_integers_sal  : Array of integers signifying the rejection of ONLY
-                            salinity datapoints
-         qc_integers_both : Array of integers signifying the rejection of BOTH
-                            temperature and salinity datapoints.
-        """
-
-        reject_tem_ind = 0
-        reject_sal_ind = 1
-        reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
-
-        qc_integers_tem = []
-        qc_integers_sal = []
-        qc_integers_both = []
-        n_tem_reasons = len(reject_tem_reasons)
-        n_sal_reasons = len(reject_sal_reasons)
-        bin_len = 30
-
-        # IF reject_tem = 1, reject_sal = 0
-        for ii in range(n_tem_reasons):
-            bin_tmp = np.zeros(bin_len, dtype=int)
-            bin_tmp[reject_tem_ind] = 1
-            bin_tmp[reject_tem_reasons[ii]] = 1
-            qc_integers_tem.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        # IF reject_tem = 0, reject_sal = 1
-        for ii in range(n_sal_reasons):
-            bin_tmp = np.zeros(bin_len, dtype=int)
-            bin_tmp[reject_sal_ind] = 1
-            bin_tmp[reject_sal_reasons[ii]] = 1
-            qc_integers_sal.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        # IF reject_tem = 1, reject_sal = 1
-        for tt in range(n_tem_reasons):
-            for ss in range(n_sal_reasons):
-                bin_tmp = np.zeros(bin_len, dtype=int)
-                bin_tmp[reject_tem_ind] = 1
-                bin_tmp[reject_sal_ind] = 1
-                bin_tmp[reject_tem_reasons[tt]] = 1
-                bin_tmp[reject_sal_reasons[ss]] = 1
-                qc_integers_both.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        qc_integers_tem = list(set(qc_integers_tem))
-        qc_integers_sal = list(set(qc_integers_sal))
-        qc_integers_both = list(set(qc_integers_both))
-
-        return qc_integers_tem, qc_integers_sal, qc_integers_both
-
-    def average_into_grid_boxes(self, grid_lon, grid_lat, min_datapoints=1, season=None, var_modifier=""):
-        """
-        Takes the contents of this Profile() object and averages each variables
-        into geographical grid boxes. At the moment, this expects there to be
-        no vertical dimension (z_dim), so make sure to slice the data out you
-        want first using isel, Profile.depth_means() or Profile.bottom_means().
-
-        INPUTS
-         grid_lon (array)     : 1d array of longitudes
-         grid_lat (array)     : 1d array of latitude
-         min_datapoints (int) : Minimum N of datapoints at which to average
-                                into box. Will return Nan in boxes with smaller N.
-                                NOTE this routine will also return the variable
-                                grid_N, which tells you how many points were
-                                averaged into each box.
-        season (str)          : 'DJF','MAM','JJA' or 'SON'. Will only average
-                                data from specified season.
-        var_modifier (str)    : Suffix to add to all averaged variables in the
-                                output dataset. For example you may want to add
-                                _DJF to all vars if restricting only to winter.
-
-        OUTPUTS
-         COAsT Gridded object containing averaged data.
-        """
-
-        # Get the dataset in this object
-        ds = self.dataset
-
-        # Get a list of variables in this dataset
-        vars_in = [items for items in ds.keys()]
-        vars_out = [vv + "{0}".format(var_modifier) for vv in vars_in]
-
-        # Get output dimensions and create 2D longitude and latitude arrays
-        n_r = len(grid_lat) - 1
-        n_c = len(grid_lon) - 1
-        lon_mids = (grid_lon[1:] + grid_lon[:-1]) / 2
-        lat_mids = (grid_lat[1:] + grid_lat[:-1]) / 2
-        lon2, lat2 = np.meshgrid(lon_mids, lat_mids)
-
-        # Create empty output dataset
-        ds_out = xr.Dataset(coords=dict(longitude=(["y_dim", "x_dim"], lon2), latitude=(["y_dim", "x_dim"], lat2)))
-
-        # Loop over variables and create empty placeholders
-        for vv in vars_out:
-            ds_out[vv] = (['y_dim','x_dim'], np.zeros((n_r, n_c))*np.nan)
-        # Grid_N is the count ineach box
-        ds_out["grid_N{0}".format(var_modifier)] = (["y_dim", "x_dim"], np.zeros((n_r, n_c)) * np.nan)
-
-        # Extract season if needed
-        if season is not None:
-            season_array = general_utils.determine_season(ds.time)
-            s_ind = season_array == season
-            ds = ds.isel(profile=s_ind)
-
-        # Loop over every box (slow??)
-        for rr in range(n_r - 1):
-            for cc in range(n_c - 1):
-                # Get box bounds for easier understanding
-                lon_min = grid_lon[cc]
-                lon_max = grid_lon[cc + 1]
-                lat_min = grid_lat[rr]
-                lat_max = grid_lat[rr + 1]
-
-                # Get profiles inside this box
-                condition1 = np.logical_and(ds.longitude >= lon_min, ds.longitude < lon_max)
-                condition2 = np.logical_and(ds.latitude >= lat_min, ds.latitude < lat_max)
-                prof_ind = np.logical_and(condition1, condition2)
-
-                # Only average if N > min_datapoints
-                if np.sum(prof_ind) > min_datapoints:
-                    for vv in range(len(vars_in)):
-                        vv_in = vars_in[vv]
-                        vv_out = vars_out[vv]
-                        ds_out[vv_out][rr, cc] = ds[vv_in].isel(profile=prof_ind).mean()
-                        #ds_out[vv_out][rr, cc] = np.nanmean(ds[vv_in].isel(profile=prof_ind))
-
-                # Store N in own variable
-                ds_out["grid_N{0}".format(var_modifier)][rr, cc] = np.sum(prof_ind)
-
-        # Create and populate output dataset
-        gridded_out = Gridded()
-        gridded_out.dataset = ds_out
-
-        return gridded_out
+            
+            
+            
+            
+            
+            
+            
+            
+            
