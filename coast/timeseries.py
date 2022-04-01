@@ -1,5 +1,6 @@
 """Timeseries Class"""
 from .index import Indexed
+from . import general_utils
 
 
 class Timeseries(Indexed):
