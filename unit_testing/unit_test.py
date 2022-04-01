@@ -38,7 +38,6 @@ from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
 # Test list -- comment out ones you don't want maybe (or add your own)
 tests_to_do = [
     # test_TEMPLATE,
-<<<<<<< HEAD
     test_gridded_initialisation,
     test_general_utils,
     test_xesmf_convert,
