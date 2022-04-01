@@ -13,7 +13,9 @@ print(lon)
 ind = coast.general_utils.subset_indices_lonlat_box(lon, lat, ss=15, ww=20, ee=25)
 print("Here's the subset for [20,25] - note omission of 25")
 print(lon[ind])
-print("Interchange east and west. This should go from 25E all the way around to 20E. But for some reason it misses out 10-14")
+print(
+    "Interchange east and west. This should go from 25E all the way around to 20E. But for some reason it misses out 10-14"
+)
 ind = coast.general_utils.subset_indices_lonlat_box(lon, lat, ss=15, ww=25, ee=20)
 print(lon[ind])
 print("Use negative longitude")
