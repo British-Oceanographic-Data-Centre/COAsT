@@ -34,7 +34,6 @@ coast.logging_util.setup_logging(stream=log_file, level=logging.CRITICAL)
 # Test list -- comment out ones you don't want maybe (or add your own)
 tests_to_do = [
     # test_TEMPLATE,
-    test_process_data_methods,
     test_xesmf_convert,
     test_gridded_initialisation,
     test_general_utils,
@@ -52,6 +51,7 @@ tests_to_do = [
     test_stats_utilities,
     test_maskmaker_methods,
     test_climatology,
+    test_process_data_methods,
     test_example_scripts,
 ]
 
