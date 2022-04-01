@@ -82,6 +82,16 @@ class Profile(Indexed):
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim="N_PROF")
 
+    def read_wod(self, fn_wod, chunks: dict = {}) -> None:
+        """Reads a single World Ocean Database netCDF files into the COAsT profile data structure.
+
+        Args:
+            fn_wod (str): path to data file
+            chunks (dict): chunks
+        """
+        self.dataset = xr.open_dataset(fn_wod, chunks=chunks)
+        self.apply_config_mappings()
+
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
@@ -746,3 +756,145 @@ class Profile(Indexed):
         qc_integers_both = list(set(qc_integers_both))
 
         return qc_integers_tem, qc_integers_sal, qc_integers_both
+
+    """================Reshape to 2D================"""
+
+    def reshape_2d(self, var_user_want):
+        """
+        OBSERVATION type class for reshaping World Ocean Data (WOD) or similar that
+        contains 1D profiles (profile * depth levels)  into a 2D array.
+        Note that its variable has its own dimention and in some profiles
+        only some variables are present. WOD can be observed depth or a
+        standard depth as regrided by NOAA.
+           Args:
+            > X     --      The variable (e.g,Temperatute, Salinity, Oxygen, DIC ..)
+            > X_N    --     Dimensions of observed variable as 1D
+                            (essentially number of obs variable = casts * osberved depths)
+            > casts --      Dimension for locations of observations (ie. profiles)
+            > z_N   --      Dimension for depth levels of all observations as 1D
+                            (essentially number of depths = casts * osberved depths)
+            > X_row_size -- Gives the vertical index (number of depths)
+                            for each variable
+        """
+
+        """reshape the 1D variable into 2D variable (profile, z_dim)    
+        Args:
+            profile       ::   The profile dimension. Called cast in WOD, 
+                               common in all variables, but nans if 
+                                a variable is not observed at a location
+            z_dim         ::   The dimension for depth levels.
+            var_user_want ::   List of observations the user wants to reshape       
+        """
+
+        # find maximum z levels in any of the profiles
+        d_max = int(np.max(self.dataset.z_row_size.values))
+        # number of profiles
+        prof_size = self.dataset.z_row_size.shape[0]
+
+        # set a 2D array (relevant to maximum depth)
+        depth_2d = np.empty(
+            (
+                prof_size,
+                d_max,
+            )
+        )
+        depth_2d[:] = np.nan
+        # reshape depth information from 1D to 2D
+        if np.isnan(self.dataset.z_row_size.values[0]) == False:
+            I_SIZE = int(self.dataset.z_row_size.values[0])
+            depth_2d[0, :I_SIZE] = self.dataset.depth[0:I_SIZE].values
+        for iJ in range(1, prof_size):
+            if np.isnan(self.dataset.z_row_size.values[iJ]) == False:
+                I_START = int(np.nansum(self.dataset.z_row_size.values[:iJ]))
+                I_END = int(np.nansum(self.dataset.z_row_size.values[: iJ + 1]))
+                I_SIZE = int(self.dataset.z_row_size.values[iJ])
+                depth_2d[iJ, 0:I_SIZE] = self.dataset.depth[I_START:I_END].values
+
+        # check reshape
+        T_OBS1 = np.delete(np.ravel(depth_2d), np.isnan(np.ravel(depth_2d)))
+        T_OBS2 = np.delete(self.dataset.depth.values, np.isnan(self.dataset.depth.values))
+        if T_OBS1.size == T_OBS2.size and (int(np.min(T_OBS1 - T_OBS2)) == 0 or int(np.max(T_OBS1 - T_OBS2)) == 0):
+            print("Depth OK reshape successful")
+        else:
+            print("Depth WRONG!! reshape")
+
+        # reshape obs for each variable from 1D to 2D
+        var_all = np.empty(
+            (
+                len(var_user_want),
+                prof_size,
+                d_max,
+            )
+        )
+        var_list = var_user_want[:]
+        counter_i = 0
+        for iN in range(0, len(var_user_want)):
+            print(var_user_want[iN])
+            # check that variable exist in the WOD observations file
+            if var_user_want[iN] in self.dataset:
+                print("observed variable exist")
+                # reshape it into 2D
+                var_2d = np.empty(
+                    (
+                        prof_size,
+                        d_max,
+                    )
+                )
+                var_2d[:] = np.nan
+                # populate array but make sure that the indexing for number of levels
+                # is not nan, as in the data there are nan indexings for number of levels
+                # indicating no observations there
+                if np.isnan(self.dataset[var_user_want[iN] + "_row_size"][0].values) == False:
+                    I_SIZE = int(self.dataset[var_user_want[iN] + "_row_size"][0].values)
+                    var_2d[0, :I_SIZE] = self.dataset[var_user_want[iN]][0:I_SIZE].values
+                for iJ in range(1, prof_size):
+                    if np.isnan(self.dataset[var_user_want[iN] + "_row_size"].values[iJ]) == False:
+                        I_START = int(np.nansum(self.dataset[var_user_want[iN] + "_row_size"].values[:iJ]))
+                        I_END = int(np.nansum(self.dataset[var_user_want[iN] + "_row_size"].values[: iJ + 1]))
+                        I_SIZE = int(self.dataset[var_user_want[iN] + "_row_size"].values[iJ])
+                        var_2d[iJ, 0:I_SIZE] = self.dataset[var_user_want[iN]].values[I_START:I_END]
+
+                # all variables in one array
+                var_all[counter_i, :, :] = var_2d
+                counter_i = counter_i + 1
+                # check that you did everything correctly and the obs in yoru reshaped
+                # array match the observations in original array
+                T_OBS1 = np.delete(np.ravel(var_2d), np.isnan(np.ravel(var_2d)))
+                del I_START, I_END, I_SIZE, var_2d
+                T_OBS2 = np.delete(
+                    self.dataset[var_user_want[iN]].values, np.isnan(self.dataset[var_user_want[iN]].values)
+                )
+
+                if T_OBS1.size == T_OBS2.size and (
+                    int(np.min(T_OBS1 - T_OBS2)) == 0 or int(np.max(T_OBS1 - T_OBS2)) == 0
+                ):
+                    print("OK reshape successful")
+                else:
+                    print("WRONG!! reshape")
+
+            else:
+                print("variable not in observations")
+                var_list[iN] = "NO"
+
+        # REMOVE DUBLICATES
+        var_list = list(dict.fromkeys(var_list))
+        # REMOVE the non-observed variables from the list of variables
+        var_list.remove("NO")
+
+        # create the new 2D dataset array
+        wod_profiles_2d = xr.Dataset(
+            {
+                "depth": (["profile", "z_dim"], depth_2d),
+            },
+            coords={
+                "time": (["profile"], self.dataset.time.values),
+                "latitude": (["profile"], self.dataset.latitude.values),
+                "longitude": (["profile"], self.dataset.longitude.values),
+            },
+        )
+        for iN in range(0, len(var_list)):
+            wod_profiles_2d[var_list[iN]] = (["profile", "z_dim"], var_all[iN, :, :])
+
+        return_prof = Profile()
+        return_prof.dataset = wod_profiles_2d
+        return return_prof
