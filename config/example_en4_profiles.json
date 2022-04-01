@@ -4,7 +4,7 @@
 	"chunks": {},
 	"dataset": {
 		"dimension_map": {
-			"N_PROF": "profile",
+			"N_PROF": "id_dim",
 			"N_LEVELS": "z_dim"
 		},
 		"variable_map": {
