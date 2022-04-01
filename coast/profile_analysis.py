@@ -16,10 +16,11 @@ from scipy import interpolate
 
 class ProfileAnalysis(Indexed):
     """
-    
+    A set of analysis routines suitable for datasets in a Profile object.
+    See individual docstrings in each method for more info.
     """
 
-    def __init__():
+    def __init__(self):
         """
         """
 
@@ -190,7 +191,7 @@ class ProfileAnalysis(Indexed):
         debug(f"Figuring out which regions each profile is in..")
         region_indices = mask_dataset.isel(x_dim=ind_x, y_dim=ind_y)
 
-        return region_indices.rename({"dim_0": "id"})
+        return region_indices.rename({"dim_0": "id_dim"})
 
     @classmethod
     def mask_means(cls, profile, mask_indices):
@@ -228,11 +229,11 @@ class ProfileAnalysis(Indexed):
                 continue
             
             # Get actual profile data for this mask
-            mask_data = dataset.isel(profile=mask_ind)
+            mask_data = dataset.isel(id_dim=mask_ind)
             
             # Get two averages. One preserving depths and the other averaging
             # across all data in a region
-            ds_average_prof = mask_data.mean(dim="profile", skipna=True).compute()
+            ds_average_prof = mask_data.mean(dim="id_dim", skipna=True).compute()
             ds_average_all = mask_data.mean(skipna=True).compute()
 
             # Loop over variables and save to output dataset.
@@ -251,7 +252,7 @@ class ProfileAnalysis(Indexed):
             else:
                 ds_average = xr.concat((ds_average, ds_average_tmp), dim="dim_mask")
 
-        return Profile(dataset = ds_average)
+        return ds_average
 
     @classmethod
     def difference(cls, profile1, profile2, 
@@ -316,7 +317,8 @@ class ProfileAnalysis(Indexed):
         return Profile(dataset=differenced)
 
     @classmethod
-    def interpolate_vertical(cls, profile, new_depth, interp_method="linear"):
+    def interpolate_vertical(cls, profile, new_depth, interp_method="linear",
+                             print_progress = False):
         """
         (04/10/2021)
         Author: David Byrne
@@ -327,7 +329,7 @@ class ProfileAnalysis(Indexed):
 
         If a 1D numpy array is passed then all profiles will be interpolated
         onto this single set of depths. If a xarray.DataArray is passed, it
-        should have dimensions (id, z_dim) and contain a variable called
+        should have dimensions (id_dim, z_dim) and contain a variable called
         depth. This DataArray should contain the same number of profiles as
         this object and will map profiles in order for interpolation. If
         another profile object is passed, profiles will be mapped and
@@ -355,14 +357,13 @@ class ProfileAnalysis(Indexed):
             repeated_depth = False
 
         ds = profile.dataset
-        n_prof = ds.sizes["id"]
+        n_prof = ds.sizes["id_dim"]
         n_z = ds.sizes['z_dim']
 
         # Get variable names on z_dim dimension
         zvars = []
         notzvars = []
         for items in ds.keys():
-            print(items)
             if "z_dim" in ds[items].dims:
                 zvars.append(items)
             else:
@@ -371,16 +372,17 @@ class ProfileAnalysis(Indexed):
         # Now loop over profiles and interpolate model onto obs.
         count_ii = 0
         for pp in range(0, n_prof):
-            print("{0} / {1}".format(pp, n_prof))
+            if print_progress:
+                print("{0} / {1}".format(pp, n_prof-1))
 
             # Select the current profile
-            profile = ds.isel(profile=pp)  # .rename({"depth": "z_dim"})
+            profile = ds.isel(id_dim=pp)  # .rename({"depth": "z_dim"})
 
             # Extract new depths for this profile
             if repeated_depth:
                 new_depth_prof = new_depth
             else:
-                new_depth_prof = new_depth.isel(profile=pp).values
+                new_depth_prof = new_depth.isel(id_dim=pp).values
 
             # Do the interpolation and rename dimensions/vars back to normal
             interpolated_tmp = profile[notzvars]
@@ -420,7 +422,7 @@ class ProfileAnalysis(Indexed):
                 interpolated = interpolated_tmp
             else:
                 interpolated = xr.concat((interpolated, interpolated_tmp), 
-                                         dim="id", coords="all")
+                                         dim="id_dim", coords="all")
             count_ii = count_ii + 1
 
         # Set depth to be a coordinate and return a new Profile object.
@@ -481,7 +483,7 @@ class ProfileAnalysis(Indexed):
         if season is not None:
             season_array = general_utils.determine_season(ds.time)
             s_ind = season_array == season
-            ds = ds.isel(id=s_ind)
+            ds = ds.isel(id_dim=s_ind)
 
         # Loop over every box (slow??)
         for rr in range(n_r - 1):

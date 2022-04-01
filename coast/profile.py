@@ -18,7 +18,7 @@ class Profile(Indexed):
     down and up observations). The structure of the class is based on data from
     the EN4 database. The class dataset should contain two dimension:
 
-        > id      :: The profiles dimension. Each element of this dimension 
+        > id_dim      :: The profiles dimension. Each element of this dimension 
                      contains data (e.g. cast) for an individual location.
         > z_dim   :: The dimension for depth levels. A profile object does not
                      need to have shared depths, so NaNs might be used to
@@ -27,15 +27,15 @@ class Profile(Indexed):
     Alongside these dimensions, the following minimal coordinates should also
     be available:
         
-        > longitude (id)   :: 1D array of longitudes, one for each id
-        > latitude  (id)   :: 1D array of latitudes, one for each id
-        > time      (id)   :: 1D array of times, one for each id
-        > depth     (id, z_dim)  :: 2D array of depths, with different depth
+        > longitude (id_dim)   :: 1D array of longitudes, one for each id_dim
+        > latitude  (id_dim)   :: 1D array of latitudes, one for each id_dim
+        > time      (id_dim)   :: 1D array of times, one for each id_dim
+        > depth     (id_dim, z_dim)  :: 2D array of depths, with different depth
                                     levels being provided for each profile.
                                     Note that these depth levels need to be
                                     stored in a 2D array, so NaNs can be used
                                     to pad out profiles with shallower depths.
-        > id_name   (id)   :: [Optional] Name of id/case or id number.
+        > id_name   (id_dim)   :: [Optional] Name of id_dim/case or id_dim number.
                                     
     You may create an empty profile object by using profile = coast.Profile(). 
     You may then add your own dataset to the object profile or use one of the
@@ -59,7 +59,8 @@ class Profile(Indexed):
             config (Union[Path, str]): path to json config file.
         """
         debug(f"Creating a new {get_slug(self)}")
-        super().__init__(config)
+        self.config = config
+        super().__init__(self.config)
         
         # If dataset is provided, put inside this object
         if dataset is not None:
@@ -131,7 +132,7 @@ class Profile(Indexed):
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], 
             lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Profile(dataset = self.dataset.isel(id=ind))
+        return Profile(dataset = self.dataset.isel(id_dim=ind))
 
     """======================= Plotting ======================="""
 
@@ -140,12 +141,12 @@ class Profile(Indexed):
         fig = plt.figure(figsize=(7, 10))
 
         if profile_indices is None:
-            profile_indices = np.arange(0, self.dataset.dims["profile"])
+            profile_indices = np.arange(0, self.dataset.dims["id_dim"])
             pass
 
         for ii in profile_indices:
-            prof_var = self.dataset[var].isel(profile=ii)
-            prof_depth = self.dataset.depth.isel(profile=ii)
+            prof_var = self.dataset[var].isel(id_dim=ii)
+            prof_depth = self.dataset.depth.isel(id_dim=ii)
             ax = plt.plot(prof_var, prof_depth)
 
         plt.gca().invert_yaxis()
@@ -167,7 +168,7 @@ class Profile(Indexed):
 
     def plot_ts_diagram(self, profile_index, var_t="potential_temperature", var_s="practical_salinity"):
 
-        profile = self.dataset.isel(profile=profile_index)
+        profile = self.dataset.isel(id_dim=profile_index)
         temperature = profile[var_t].values
         salinity = profile[var_s].values
         depth = profile.depth.values
@@ -223,29 +224,33 @@ class Profile(Indexed):
         # Each bit of this string is a different QC flag. Which flag is which can
         # be found on the EN4 website:
         # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims["profile"])]
+        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.sizes["id_dim"])]
 
         # Determine indices of the profiles that we want to keep
         reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
         reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
         reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
-        ds["reject_tem_prof"] = (["profile"], reject_tem_prof)
-        ds["reject_sal_prof"] = (["profile"], reject_sal_prof)
+        ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
+        ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
         debug(
-            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["profile"])
+            "     >>> QC: Completely rejecting {0} / {1} id_dims".format(np.sum(reject_both_prof), ds.dims["id_dim"])
         )
 
-        ds = ds.isel(profile=~reject_both_prof)
+        # Subset profile dataset to remove profiles that are COMPLETELY empty
+        ds = ds.isel(id_dim=~reject_both_prof)
         reject_tem_prof = reject_tem_prof[~reject_both_prof]
         reject_sal_prof = reject_sal_prof[~reject_both_prof]
+        
+        # Get new QC flags array
         qc_lev = ds.qc_flags_levels.values
 
         debug(f" QC: Additional profiles converted to NaNs: ")
         debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
         debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
 
-        reject_tem_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
-        reject_sal_lev = np.zeros((ds.dims["profile"], ds.dims["z_dim"]), dtype=bool)
+        # 
+        reject_tem_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
+        reject_sal_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
 
         int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
         for ii in range(len(int_tem)):
@@ -256,8 +261,8 @@ class Profile(Indexed):
             reject_tem_lev[qc_lev == int_both[ii]] = 1
             reject_sal_lev[qc_lev == int_both[ii]] = 1
 
-        ds["reject_tem_datapoint"] = (["profile", "z_dim"], reject_tem_lev)
-        ds["reject_sal_datapoint"] = (["profile", "z_dim"], reject_sal_lev)
+        ds["reject_tem_datapoint"] = (["id_dim", "z_dim"], reject_tem_lev)
+        ds["reject_sal_datapoint"] = (["id_dim", "z_dim"], reject_sal_lev)
 
         debug(f"MASKING rejected datapoints, replacing with NaNs...")
         ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
@@ -387,13 +392,14 @@ class Profile(Indexed):
 
         # SPATIAL indices - nearest neighbour
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded["longitude"], gridded["latitude"], en4["longitude"], en4["latitude"], mask=gridded.landmask
+            gridded["longitude"], gridded["latitude"], en4["longitude"], 
+            en4["latitude"], mask=gridded.landmask
         )
         debug(f"Spatial Indices Calculated")
 
         # TIME indices - model nearest to obs time
         en4_time = en4.time.values
-        ind_t = [np.argmin(np.abs(mod_time - en4_time[tt])) for tt in range(en4.dims["profile"])]
+        ind_t = [np.argmin(np.abs(mod_time - en4_time[tt])) for tt in range(en4.dims["id_dim"])]
         ind_t = xr.DataArray(ind_t)
         debug(f"Time Indices Calculated")
 
@@ -438,7 +444,7 @@ class Profile(Indexed):
 
             # Index loaded chunk and rename dim_0 to profile
             ds_tmp_indexed = ds_tmp.isel(x_dim=ind_x_in_chunk, y_dim=ind_y_in_chunk, t_dim=ind_t_in_chunk)
-            ds_tmp_indexed = ds_tmp_indexed.rename({"dim_0": "profile"})
+            ds_tmp_indexed = ds_tmp_indexed.rename({"dim_0": "id_dim"})
 
             # Mask out all levels deeper than bottom_level
             # Here I have used set_coords() and reset_coords() to omit variables
@@ -448,7 +454,7 @@ class Profile(Indexed):
                 n_z_tmp = ds_tmp_indexed.dims["z_dim"]
                 bl_array = ds_tmp_indexed.bottom_level.values
                 z_index, bl_index = np.meshgrid(np.arange(0, n_z_tmp), bl_array)
-                mask2 = xr.DataArray(z_index < bl_index, dims=["profile", "z_dim"])
+                mask2 = xr.DataArray(z_index < bl_index, dims=["id_dim", "z_dim"])
                 ds_tmp_indexed = ds_tmp_indexed.set_coords(bl_var_list)
                 ds_tmp_indexed = ds_tmp_indexed.where(mask2)
                 ds_tmp_indexed = ds_tmp_indexed.reset_coords(bl_var_list)
@@ -458,81 +464,31 @@ class Profile(Indexed):
             if count_ii == 0:
                 mod_profiles = ds_tmp_indexed
             else:
-                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="profile")
+                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="id_dim")
 
             # Update counters
             start_ii = end_ii
             count_ii = count_ii + 1
 
         # Put obs time into the output array
-        mod_profiles["obs_time"] = (["profile"], en4_time)
+        mod_profiles["obs_time"] = (["id_dim"], en4_time)
 
         # Calculate interpolation distances
         interp_dist = general_utils.calculate_haversine_distance(
             en4.longitude, en4.latitude, mod_profiles.longitude, mod_profiles.latitude
         )
-        mod_profiles["interp_dist"] = (["profile"], interp_dist.values)
+        mod_profiles["interp_dist"] = (["id_dim"], interp_dist.values)
 
         # Calculate interpolation time lags
         interp_lag = (mod_profiles.time.values - en4_time).astype("timedelta64[h]")
-        mod_profiles["interp_lag"] = (["profile"], interp_lag)
+        mod_profiles["interp_lag"] = (["id_dim"], interp_lag)
 
         # Put x and y indices into dataset
-        mod_profiles["nearest_index_x"] = (["profile"], ind_x.values)
-        mod_profiles["nearest_index_y"] = (["profile"], ind_y.values)
-        mod_profiles["nearest_index_t"] = (["profile"], ind_t.values)
+        mod_profiles["nearest_index_x"] = (["id_dim"], ind_x.values)
+        mod_profiles["nearest_index_y"] = (["id_dim"], ind_y.values)
+        mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
 
-        # Create return object and put dataset into it.
-        return_prof = Profile()
-        return_prof.dataset = mod_profiles
-        return return_prof
-    
-    def check_dataset(self):
-        '''
-        Checks contents of Profile object match the COAsT standard.
-        '''
-        # What to check
-        dimensions_to_check = ["id", "z_dim"]
-        coords_to_check = ["longitude","latitude","time", "depth", "id_name"]
-        coords_dims = [("id"), ("id"), ("id"), ("id, z_dim"), ("id")]
-        
-        # Check dimensions
-        print("Checking Dimensions: ")
-        unknown = []
-        found_dims = []
-        for dim in self.dataset.dims:
-            if dim in dimensions_to_check:
-                found_dims.append()
-                print("Dimension {0} OK")
-            else:
-                unknown.append(dim)
-                
-        # If there are any unknown dimensions,tell the user
-        if len(unknown) > 0:
-            print("There are unrecognized dimensions for this object: ")
-            print("       {0}".unknown)
-        else:
-            print("All dimensions recognized.")
-        
-        # Check coords are recognized
-        print(" ")
-        print("Checking coordinate names:")
-        unknown = []
-        for coord in list( self.dataset.coords ):
-            if coord in coords_to_check:
-                print("Coordinate {0} OK")
-            else:
-                unknown.append(dim)
-            
-        # If there are any unknown coordinates,tell the user
-        if len(unknown) > 0:
-            print("There are unrecognized coordinates for this object: ")
-            print("       {0}".unknown)
-        else:
-            print("All coordinates recognized.")
-            
-        # Check coords have correct dimensions
-    
+        return Profile(dataset=mod_profiles)
 
             
             
