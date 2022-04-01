@@ -50,6 +50,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             else:
                 self._setup_grid_obj(None, multiple, **kwargs)
         else:  # allow for usage without config file, this will be limted and dosen't bring the full COAST features
+            print("is this it")
             debug("Config file expected. Limited functionality without config file")
             if self.fn_data is not None:
                 self.load(self.fn_data, None, multiple)
