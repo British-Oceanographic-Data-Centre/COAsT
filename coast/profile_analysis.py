@@ -382,8 +382,6 @@ class ProfileAnalysis(Indexed):
 
             # Select the current profile
             profile = ds.isel(profile=pp)  # .rename({"depth": "z_dim"})
-            # profile = profile.dropna("z_dim")
-            # profile = profile.set_coords("depth")
 
             # Extract new depths for this profile
             if repeated_depth:
@@ -397,27 +395,37 @@ class ProfileAnalysis(Indexed):
             for vv in zvars:
                 if vv == "depth":
                     continue
-                print(vv)
+                # Get arrays to interpolate
                 interpx = profile.depth.values
                 interpy = profile[vv].values
-                interp_func = interpolate.interp1d(
-                    interpx, interpy, bounds_error=False, kind=interp_method, fill_value=np.nan
-                )
-                vv_interp = interp_func(new_depth_prof)
-                interpolated_tmp[vv] = ("z_dim", vv_interp)
-
+                
+                # Remove NaNs
+                xnans = np.isnan(interpx)
+                ynans = np.isnan(interpy)
+                xynans = np.logical_or(xnans, ynans)
+                interpx = interpx[~xynans]
+                interpy = interpy[~xynans] 
+                
+                # If there are <2 datapoints, dont interpolate.
+                if len(interpx) >= 2:
+                    # Use scipy to interpolate this profile
+                    interp_func = interpolate.interp1d(
+                        interpx, interpy, bounds_error=False, 
+                        kind=interp_method, fill_value=np.nan
+                    )
+                    vv_interp = interp_func(new_depth_prof)
+                    interpolated_tmp[vv] = ("z_dim", vv_interp)
+                else:
+                    
+            # Put the new depth into the interpolated profile
             interpolated_tmp["depth"] = ("z_dim", new_depth_prof)
-
-            # interpolated_tmp = profile.interp(z_dim=new_depth_prof, method=interp_method)
-
-            # interpolated_tmp = interpolated_tmp.rename_vars({"z_dim": "depth"})
-            # interpolated_tmp = interpolated_tmp.reset_coords(["depth"])
 
             # If not first iteration, concat this interpolated profile
             if count_ii == 0:
                 interpolated = interpolated_tmp
             else:
-                interpolated = xr.concat((interpolated, interpolated_tmp), dim="profile", coords="all")
+                interpolated = xr.concat((interpolated, interpolated_tmp), 
+                                         dim="id", coords="all")
             count_ii = count_ii + 1
 
         # Create and format output dataset
@@ -427,8 +435,9 @@ class ProfileAnalysis(Indexed):
 
         return return_interpolated
 
-    def average_into_grid_boxes(self, grid_lon, grid_lat, min_datapoints=1, 
-                                season=None, var_modifier=""):
+    @classmethod
+    def average_into_grid_boxes(cls, profile, grid_lon, grid_lat, 
+                                min_datapoints=1, season=None, var_modifier=""):
         """
         Takes the contents of this Profile() object and averages each variables
         into geographical grid boxes. At the moment, this expects there to be
@@ -454,7 +463,7 @@ class ProfileAnalysis(Indexed):
         """
 
         # Get the dataset in this object
-        ds = self.dataset
+        ds = profile.dataset
 
         # Get a list of variables in this dataset
         vars_in = [items for items in ds.keys()]

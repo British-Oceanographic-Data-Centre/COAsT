@@ -487,6 +487,52 @@ class Profile(Indexed):
         return_prof.dataset = mod_profiles
         return return_prof
     
+    def check_dataset(self):
+        '''
+        Checks contents of Profile object match the COAsT standard.
+        '''
+        # What to check
+        dimensions_to_check = ["id", "z_dim"]
+        coords_to_check = ["longitude","latitude","time", "depth", "id_name"]
+        coords_dims = [("id"), ("id"), ("id"), ("id, z_dim"), ("id")]
+        
+        # Check dimensions
+        print("Checking Dimensions: ")
+        unknown = []
+        found_dims = []
+        for dim in self.dataset.dims:
+            if dim in dimensions_to_check:
+                found_dims.append()
+                print("Dimension {0} OK")
+            else:
+                unknown.append(dim)
+                
+        # If there are any unknown dimensions,tell the user
+        if len(unknown) > 0:
+            print("There are unrecognized dimensions for this object: ")
+            print("       {0}".unknown)
+        else:
+            print("All dimensions recognized.")
+        
+        # Check coords are recognized
+        print(" ")
+        print("Checking coordinate names:")
+        unknown = []
+        for coord in list( self.dataset.coords ):
+            if coord in coords_to_check:
+                print("Coordinate {0} OK")
+            else:
+                unknown.append(dim)
+            
+        # If there are any unknown coordinates,tell the user
+        if len(unknown) > 0:
+            print("There are unrecognized coordinates for this object: ")
+            print("       {0}".unknown)
+        else:
+            print("All coordinates recognized.")
+            
+        # Check coords have correct dimensions
+    
 
             
             
