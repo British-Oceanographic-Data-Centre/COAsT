@@ -1,7 +1,7 @@
 """
 seasia_r12_example_plot.py
 
-Make simple SEAsia 1/12 deg SSS plot.
+Make simple seasia 1/12 deg SSS plot.
 
 """
 

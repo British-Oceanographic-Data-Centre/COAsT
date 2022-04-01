@@ -2186,7 +2186,7 @@ try:
         subsec = subsec + 1
         from example_scripts import seasia_r12_example_plot
 
-        print(str(sec) + chr(subsec) + " OK - tutorial on SEAsia data")
+        print(str(sec) + chr(subsec) + " OK - tutorial on seasia data")
 
         subsec = subsec + 1
         from example_scripts import wcssp_india_example_plot

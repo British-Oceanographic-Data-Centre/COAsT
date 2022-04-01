@@ -1,0 +1,40 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {"time":1},
+	"grid_ref": {
+		"t-grid": []
+	},
+	"dataset": {
+		"dimension_map": {
+			"time": "t_dim",
+			"depth": "z_dim",
+			"lon": "x_dim",
+			"lat": "y_dim"
+		},
+		"variable_map": {
+			"time": "time",
+			"lon": "longitude",
+			"lat": "latitude",
+			"uo": "u_velocity",
+			"vo": "v_velocity"
+		},
+		"coord_vars": [
+			"time",
+                        "depth",
+                        "latitude",
+			"longitude"
+		]
+	},
+	"domain": {
+		"dimension_map": {},
+		"variable_map": {}
+	},
+	"static_variables": {
+		"not_grid_vars": [],
+		"delete_vars": []
+	},
+	"processing_flags": []
+}
+
+

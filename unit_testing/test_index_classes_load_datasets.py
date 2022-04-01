@@ -39,6 +39,10 @@ fn_tidegauge = "./example_files/tide_gauges/portellen-p202-uk-bodc"
 fn_tidegauge_config = "config/example_tidegauge.json"
 fn_tidegauge_multiple = "./example_files/tide_gauges/m*"
 
+# wod profile data 1D (NetCDF)
+fn_wod = "./example_files/WOD_example_ragged_standard_level.nc"
+fn_wod_config = "config/example_wod_profiles.json"
+
 
 def test_load_altimetry_no_config():
     altimetry = Altimetry(file_path=fn_altimetry)
@@ -70,6 +74,17 @@ def test_load_profile_config():
         "qc_practical_salinity",
         "qc_depth",
         "qc_time",
+    ]
+
+
+def test_load_wod_config():
+    wod_profile_1d = Profile(config=fn_wod_config)
+    wod_profile_1d.read_wod(fn_wod)
+    assert wod_profile_1d is not None
+    # assert that we have the coordinate and data variable names as specified in the json config file
+    assert list(wod_profile_1d.dataset.coords) == ["casts", "Z_N"]
+    assert list(wod_profile_1d.dataset.data_vars) == [
+        "depth",
     ]
 
 
