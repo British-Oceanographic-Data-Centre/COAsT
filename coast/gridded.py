@@ -270,7 +270,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
         debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
-        dist2 = xr.ufuncs.square(self.dataset.latitude - lat) + xr.ufuncs.square(self.dataset.longitude - lon)
+        dist2 = np.square(self.dataset.latitude - lat) + np.square(self.dataset.longitude - lon)
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
@@ -288,7 +288,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
         internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
         internal_lon = dataset_domain[self.grid_vars[0]]  # [f"glam{self.grid_ref.replace('-grid','')}"]
-        dist2 = xr.ufuncs.square(internal_lat - lat) + xr.ufuncs.square(internal_lon - lon)
+        dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 

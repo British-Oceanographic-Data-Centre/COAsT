@@ -111,6 +111,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         IT.quickplot()
 
         """
+
         debug(f"Constructing pycnocline variables for {get_slug(self)}")
         # Construct in-situ density if not already done
         if not hasattr(gridded_t.dataset, "density"):
@@ -137,7 +138,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         # Ensure bed value is 0
         strat[:, -1, :, :] = 0
         # mask out the Nan values
-        strat = strat.where(~xr.ufuncs.isnan(gridded_w.dataset.rho_dz), drop=False)
+        strat = strat.where(~np.isnan(gridded_w.dataset.rho_dz), drop=False)
         # create mask with a stratification threshold
         strat_m = gridded_w.dataset.latitude * 0 + 1  # create a stratification mask: [1/0] = strat/un-strat
         strat_m = strat_m.where(strat.min(dim="z_dim").squeeze() < strat_thres, 0, drop=False)
@@ -166,10 +167,10 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         pycnocline_depth = intzN2 / intN2  # pycnocline depth
 
         # compute pycnocline thickness
-        intz2N2 = (xr.ufuncs.square(depth_0_4d - pycnocline_depth) * e3_0_4d * strat).sum(
+        intz2N2 = (np.square(depth_0_4d - pycnocline_depth) * e3_0_4d * strat).sum(
             dim="z_dim", skipna=True
         )  # TODO Can someone sciencey give me the proper name for this?
-        zt = xr.ufuncs.sqrt(intz2N2 / intN2)  # pycnocline thickness
+        zt = np.sqrt(intz2N2 / intN2)  # pycnocline thickness
 
         # Define xarray attributes
         coords = {

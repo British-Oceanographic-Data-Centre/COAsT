@@ -341,7 +341,7 @@ class Profile(Indexed):
             differenced = differenced.rename({vv: "diff_" + vv})
 
         if absolute_diff:
-            abs_tmp = uf.fabs(differenced)
+            abs_tmp = np.fabs(differenced)
             diff_vars = list(abs_tmp.keys())
             for vv in diff_vars:
                 abs_tmp = abs_tmp.rename({vv: "abs_" + vv})
@@ -349,7 +349,7 @@ class Profile(Indexed):
             abs_tmp = xr.Dataset()
 
         if square_diff:
-            sq_tmp = uf.square(differenced)
+            sq_tmp = np.square(differenced)
             diff_vars = list(sq_tmp.keys())
             for vv in diff_vars:
                 sq_tmp = sq_tmp.rename({vv: "square_" + vv})
