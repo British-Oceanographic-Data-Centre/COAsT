@@ -50,8 +50,17 @@
       d. tidegauge_finding_extrema
       e. tidegauge_for_tabulated_data
       f. tidegauge_resample_and_apply_doodsonx0
+      g. time_mean
+      h. time_slice
+      i. time_std
 
-10. test_eof_methods
+10. test_tidegauge_analysis
+      a. difference
+      b. harmonic_analysis_utide
+      c. match_missing_values
+      d. threshold_statistics
+
+11. test_eof_methods
       a. compute_heofs
       b. compute_regular_eof
 

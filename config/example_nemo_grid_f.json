@@ -9,7 +9,8 @@
 			"e1f",
 			"e2f",
 			"e3f_0",
-			"depthf_0"
+			"depthf_0",
+			"hbatf"
 		]
 	},
 	"dataset": {
@@ -49,7 +50,8 @@
 			"ff_f": "ff",
 			"e3f_0": "e3_0",
 			"depthf_0": "depth_0",
-			"bottom_level": "bottom_level"
+			"bottom_level": "bottom_level",
+			"hbatf":"bathymetry"
 		}
 	},
 	"static_variables": {

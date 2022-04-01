@@ -14,11 +14,6 @@ class test_example_scripts(unittest.TestCase):
 
         plt.close("all")
 
-    def test_tidegauge_tutorial(self):
-        from example_scripts import tidegauge_tutorial
-
-        plt.close("all")
-
     def test_tidetable_tutorial(self):
         from example_scripts import tidetable_tutorial
 
