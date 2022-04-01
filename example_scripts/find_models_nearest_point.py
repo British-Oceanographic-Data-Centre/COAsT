@@ -15,8 +15,8 @@ fn_config_t_grid = "./config/example_cmip5_grid_t.json"
 # Load the data as a Gridded object
 ispl = coast.Gridded(fn_ispl_dat_t, config=fn_config_t_grid)
 
-[j1, i1] = ispl.find_j_i(50, -9)
+[j1, i1] = ispl.find_j_i(-9, 50)
 print(f"At (-9N,50E) nearest j,i indices: {j1,i1}")
 
-[j1, i1] = ispl.find_j_i(-310, -9)  # Same point on globe gives same result
+[j1, i1] = ispl.find_j_i(-9, -310)  # Same point on globe gives same result
 print(f"At (-9N,-310E) nearest j,i indices: {j1,i1}")
