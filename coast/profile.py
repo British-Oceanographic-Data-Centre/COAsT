@@ -18,15 +18,15 @@ class Profile(Indexed):
     down and up observations). The structure of the class is based on data from
     the EN4 database. The class dataset should contain two dimension:
 
-        > id      :: The profiles dimension. Each element of this dimension 
+        > id      :: The profiles dimension. Each element of this dimension
                      contains data (e.g. cast) for an individual location.
         > z_dim   :: The dimension for depth levels. A profile object does not
                      need to have shared depths, so NaNs might be used to
                      pad any depth array.
-    
+
     Alongside these dimensions, the following minimal coordinates should also
     be available:
-        
+
         > longitude (id)   :: 1D array of longitudes, one for each id
         > latitude  (id)   :: 1D array of latitudes, one for each id
         > time      (id)   :: 1D array of times, one for each id
@@ -36,31 +36,31 @@ class Profile(Indexed):
                                     stored in a 2D array, so NaNs can be used
                                     to pad out profiles with shallower depths.
         > id_name   (id)   :: [Optional] Name of id/case or id number.
-                                    
-    You may create an empty profile object by using profile = coast.Profile(). 
+
+    You may create an empty profile object by using profile = coast.Profile().
     You may then add your own dataset to the object profile or use one of the
     functions within Profile() for reading common profile datasets:
-        
+
         > read_en4()
         > read_wod()
-    
+
     Optionally, you may pass a dataset to the Profile object on creation:
-        
+
         profile = coast.Profile(dataset = profile_dataset)
-        
+
     A config file can also be provided, in which case any netcdf read functions
     will rename dimensions and variables as dictated.
     """
 
-    def __init__(self, dataset = None, config: Union[Path, str] = None):
-        """Initialization and file reading. You may initialize 
+    def __init__(self, dataset=None, config: Union[Path, str] = None):
+        """Initialization and file reading. You may initialize
 
         Args:
             config (Union[Path, str]): path to json config file.
         """
         debug(f"Creating a new {get_slug(self)}")
         super().__init__(config)
-        
+
         # If dataset is provided, put inside this object
         if dataset is not None:
             self.dataset = dataset
@@ -69,7 +69,7 @@ class Profile(Indexed):
         debug(f"{get_slug(self)} initialised")
 
     def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
-        """Reads a single or multiple EN4 netCDF files into the COAsT profile 
+        """Reads a single or multiple EN4 netCDF files into the COAsT profile
         data structure.
 
         Args:
@@ -77,18 +77,18 @@ class Profile(Indexed):
             chunks (dict): chunks
             multiple (boolean): True if reading multiple files otherwise False
         """
-        
+
         # If not multiple then just read the netcdf file
         if not multiple:
             self.dataset = xr.open_dataset(fn_en4, chunks=chunks)
-            
+
         # If multiple, then we have to get all file names and read them in a
         # loop, followed by concatenation
         else:
             # Check a list is provided
             if type(fn_en4) is not list:
                 fn_en4 = [fn_en4]
-                
+
             # Use glob to get a list of file paths from input
             file_to_read = []
             for file in fn_en4:
@@ -113,14 +113,14 @@ class Profile(Indexed):
                     self.dataset = data_tmp
                 else:
                     self.dataset = xr.concat((self.dataset, data_tmp), dim="N_PROF")
-                    
+
         # Apply config settings
         self.apply_config_mappings()
 
     """======================= Manipulate ======================="""
 
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
-        """ Get a subset of this Profile() object in a spatial box.
+        """Get a subset of this Profile() object in a spatial box.
 
         lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
         latbounds -- Array of form [min_latitude, max_latitude]
@@ -128,10 +128,9 @@ class Profile(Indexed):
         return: A new profile object containing subsetted data
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], 
-            lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Profile(dataset = self.dataset.isel(id=ind))
+        return Profile(dataset=self.dataset.isel(id=ind))
 
     """======================= Plotting ======================="""
 
@@ -486,16 +485,16 @@ class Profile(Indexed):
         return_prof = Profile()
         return_prof.dataset = mod_profiles
         return return_prof
-    
+
     def check_dataset(self):
-        '''
+        """
         Checks contents of Profile object match the COAsT standard.
-        '''
+        """
         # What to check
         dimensions_to_check = ["id", "z_dim"]
-        coords_to_check = ["longitude","latitude","time", "depth", "id_name"]
+        coords_to_check = ["longitude", "latitude", "time", "depth", "id_name"]
         coords_dims = [("id"), ("id"), ("id"), ("id, z_dim"), ("id")]
-        
+
         # Check dimensions
         print("Checking Dimensions: ")
         unknown = []
@@ -506,40 +505,29 @@ class Profile(Indexed):
                 print("Dimension {0} OK")
             else:
                 unknown.append(dim)
-                
+
         # If there are any unknown dimensions,tell the user
         if len(unknown) > 0:
             print("There are unrecognized dimensions for this object: ")
             print("       {0}".unknown)
         else:
             print("All dimensions recognized.")
-        
+
         # Check coords are recognized
         print(" ")
         print("Checking coordinate names:")
         unknown = []
-        for coord in list( self.dataset.coords ):
+        for coord in list(self.dataset.coords):
             if coord in coords_to_check:
                 print("Coordinate {0} OK")
             else:
                 unknown.append(dim)
-            
+
         # If there are any unknown coordinates,tell the user
         if len(unknown) > 0:
             print("There are unrecognized coordinates for this object: ")
             print("       {0}".unknown)
         else:
             print("All coordinates recognized.")
-            
-        # Check coords have correct dimensions
-    
 
-            
-            
-            
-            
-            
-            
-            
-            
-            
+        # Check coords have correct dimensions
