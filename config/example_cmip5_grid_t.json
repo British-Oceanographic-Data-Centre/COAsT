@@ -18,18 +18,12 @@
       "lon": "longitude",
       "so": "salinity"
     },
-    "dimension_map2": {
-      "t_dim": [],
-      "z_dim": [],
-      "y_dim": [],
-      "x_dim": []
-    },
-    "variable_map2": {},
-    "chunks": [
-      1000,
-      1000,
-      1000
-    ]
+    "coord_vars": [
+        "longitude",
+        "latitude",
+        "time",
+        "depth_0"
+        ]
   },
   "domain": {
     "dimension_map": {},
@@ -37,7 +31,6 @@
   },
   "static_variables": {
     "not_grid_vars" : [],
-    "coord_vars": [],
     "delete_vars": []
   },
   "processing_flags": []
