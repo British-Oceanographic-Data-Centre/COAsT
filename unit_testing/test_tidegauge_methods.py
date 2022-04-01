@@ -116,7 +116,7 @@ class test_tidegauge_methods(unittest.TestCase):
             lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
 
             # TEST: Check attribute dictionary and length of sea_level.
-            check1 = len(lowestoft.dataset.ssh.isel(id=0)) == 193
+            check1 = len(lowestoft.dataset.ssh.isel(id_dim=0)) == 193
             check2 = lowestoft.dataset.id_name.values[0] == "Lowestoft"
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
