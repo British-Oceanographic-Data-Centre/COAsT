@@ -274,7 +274,7 @@ class TidegaugeAnalysis:
         demeaned = dataset - dataset.mean(dim="t_dim")
         tg = Tidegauge()
         tg.dataset[dataset.name] = Tidegauge(dataset=demeaned)
-        #return Tidegauge(dataset=demeaned)  ## THIS RETURN SOMETHING NOT AS EXPECTED FOR A TIDEGAUGE
+        # return Tidegauge(dataset=demeaned)  ## THIS RETURN SOMETHING NOT AS EXPECTED FOR A TIDEGAUGE
         return tg  ## THIS DOES NOT WORK, NOW
 
     @classmethod
