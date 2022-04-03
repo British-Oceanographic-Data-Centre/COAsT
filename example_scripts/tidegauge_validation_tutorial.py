@@ -12,9 +12,13 @@ import coast
 import datetime
 
 #%% 2. Define paths
-fn_dom = "/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc"
-fn_dat = "/Users/dbyrne/Projects/coast/workshops/07092021/data/sossheig*"
-fn_tg = "/Users/dbyrne/Projects/coast/workshops/07092021/data/tg_amm15.nc"
+try:
+    dir = "/Users/dbyrne/Projects/coast/workshops/07092021/data/"
+except:
+    dir = "/Users/jeff/DATA/JMMP_COAsT_workshop_data_07092021/"
+fn_dom = dir + "mesh_mask.nc"
+fn_dat = dir + "sossheig*"
+fn_tg = dir + "tg_amm15.nc"
 
 #%% 3. Create gridded object and load data
 nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
@@ -31,7 +35,7 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 #%% 4. Create TidegaugeMultiple object
 
 # Create the object and then inset the netcdf dataset
-obs = coast.TidegaugeMultiple()
+obs = coast.Tidegauge()
 obs.dataset = xr.open_dataset(fn_tg)
 
 # Cut down data to be only in 2018 to match model data.
@@ -50,11 +54,12 @@ model_timeseries.dataset = model_timeseries.dataset.transpose()
 #%% 6. Do some processing
 # This routine searches for missing values in each dataset and applies them
 # equally to each corresponding dataset
-obs, model_timeseries = obs.match_missing_values(model_timeseries)
+tganalysis = coast.TidegaugeAnalysis()
+obs_new, model_new = tganalysis.match_missing_values(obs.dataset.ssh, model_timeseries.dataset.ssh)
 
 # Subtract means from all time series
-obs = obs.demean_timeseries()
-model_timeseries = model_timeseries.demean_timeseries()
+obs_new = tganalysis.demean_timeseries(obs_new.dataset.ssh)
+model_new = tganalysis.demean_timeseries(model_new.dataset.ssh)
 
 # Now you have equivalent and comparable sets of time series that can be
 # easily compared.
@@ -62,10 +67,10 @@ model_timeseries = model_timeseries.demean_timeseries()
 #%% Calculate non tidal residuals
 
 # First, do a harmonic analysis. This routine uses utide
-ha_mod = model_timeseries.harmonic_analysis_utide()
-ha_obs = obs.harmonic_analysis_utide()
+ha_mod = tganalysis.harmonic_analysis_utide(model_new)
+ha_obs = tganalysis.harmonic_analysis_utide(obs_new)
 
-# Create new TidegaugeMultiple objects containign reconstructed tides
+# Create new TidegaugeMultiple objects containing reconstructed tides
 tide_mod = model_timeseries.reconstruct_tide_utide(ha_mod)
 tide_obs = obs.reconstruct_tide_utide(ha_obs)
 

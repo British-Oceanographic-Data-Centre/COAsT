@@ -272,7 +272,10 @@ class TidegaugeAnalysis:
         object. This is done independently for each id_dim location.
         """
         demeaned = dataset - dataset.mean(dim="t_dim")
-        return Tidegauge(dataset=demeaned)
+        tg = Tidegauge()
+        tg.dataset[dataset.name] = Tidegauge(dataset=demeaned)
+        #return Tidegauge(dataset=demeaned)  ## THIS RETURN SOMETHING NOT AS EXPECTED FOR A TIDEGAUGE
+        return tg  ## THIS DOES NOT WORK, NOW
 
     @classmethod
     def difference(cls, dataset1, dataset2, absolute_diff=True, square_diff=True):
