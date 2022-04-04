@@ -42,19 +42,13 @@ class test_tidegauge_analysis(unittest.TestCase):
         lowestoft = coast.Tidegauge()
         lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
 
-        # Insert some missing values into lowestoft
-        ds1 = lowestoft.dataset.ssh.values.copy()
-        ds1[0, 50] = np.nan
-        ds1[0, 150] = np.nan
-        lowestoft.dataset["ssh"] = (["id", "t_dim"], ds1)
-
         # Call match_missing_values
-        tg1 = tganalysis.demean_timeseries(lowestoft.dataset.ssh)
-
-        self.assertTrue(np.isnan(tg1.dataset.ssh[0, 0].values), "check1")
-        self.assertTrue(np.isnan(tg1.dataset.ssh[0, 100].values), "check1")
-        self.assertTrue(np.isnan(tg2.dataset.ssh[0, 50].values), "check1")
-        self.assertTrue(np.isnan(tg2.dataset.ssh[0, 150].values), "check1")
+        tg1 = tganalysis.demean_timeseries(lowestoft.dataset)
+        
+        # Test that the mean has been removed
+        timeseries = lowestoft.dataset.ssh[0,:].values
+        demeaned = timeseries - np.nanmean(timeseries)
+        self.assertTrue( np.array_equal( tg1.dataset.ssh[0,:].values, demeaned), "check1")
 
     def test_harmonic_analysis_utide(self):
 
