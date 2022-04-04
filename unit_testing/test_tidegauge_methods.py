@@ -44,11 +44,11 @@ class test_tidegauge_analysis(unittest.TestCase):
 
         # Call match_missing_values
         tg1 = tganalysis.demean_timeseries(lowestoft.dataset)
-        
+
         # Test that the mean has been removed
-        timeseries = lowestoft.dataset.ssh[0,:].values
+        timeseries = lowestoft.dataset.ssh[0, :].values
         demeaned = timeseries - np.nanmean(timeseries)
-        self.assertTrue( np.array_equal( tg1.dataset.ssh[0,:].values, demeaned), "check1")
+        self.assertTrue(np.array_equal(tg1.dataset.ssh[0, :].values, demeaned), "check1")
 
     def test_harmonic_analysis_utide(self):
 
