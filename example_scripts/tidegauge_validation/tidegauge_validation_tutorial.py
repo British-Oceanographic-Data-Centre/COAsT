@@ -15,7 +15,7 @@ import datetime
 
 fn_dom = dir + "<PATH_TO_NEMO_DOMAIN"
 fn_dat = dir + "<PATH_TO_NEMO_DATA"
-fn_tg = dir + "<PATH_TO_TIDEGAUGE_NETCDF" # This should already be processed, on the same time dimension
+fn_tg = dir + "<PATH_TO_TIDEGAUGE_NETCDF"  # This should already be processed, on the same time dimension
 
 #%% 3. Create gridded object and load data
 nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
@@ -32,7 +32,7 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 #%% 4. Create TidegaugeMultiple object
 
 # Create the object and then inset the netcdf dataset
-obs = coast.Tidegauge(dataset = xr.open_dataset(fn_tg))
+obs = coast.Tidegauge(dataset=xr.open_dataset(fn_tg))
 
 # Cut down data to be only in 2018 to match model data.
 start_date = datetime.datetime(2018, 1, 1)
@@ -50,8 +50,7 @@ model_timeseries.dataset = model_timeseries.dataset.transpose()
 # This routine searches for missing values in each dataset and applies them
 # equally to each corresponding dataset
 tganalysis = coast.TidegaugeAnalysis()
-obs_new, model_new = tganalysis.match_missing_values(obs.dataset.ssh, 
-                                                     model_timeseries.dataset.ssh)
+obs_new, model_new = tganalysis.match_missing_values(obs.dataset.ssh, model_timeseries.dataset.ssh)
 
 # Subtract means from all time series
 obs_new = tganalysis.demean_timeseries(obs_new.dataset)

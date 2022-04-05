@@ -1002,7 +1002,7 @@ class Tidegauge(Timeseries):
         tg_out = Tidegauge()
         tg_out.dataset = extracted
         return tg_out
-    
+
     def time_slice(self, date0, date1):
         """Return new Gridded object, indexed between dates date0 and date1"""
         dataset = self.dataset
@@ -1010,8 +1010,8 @@ class Tidegauge(Timeseries):
         dataset = dataset.isel(t_dim=t_ind)
         t_ind = pd.to_datetime(dataset.time.values) < date1
         dataset = dataset.isel(t_dim=t_ind)
-        return Tidegauge(dataset = dataset)
-    
+        return Tidegauge(dataset=dataset)
+
     def subset_indices_lonlat_box(self, lonbounds, latbounds):
         """Get a subset of this Profile() object in a spatial box.
 

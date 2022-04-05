@@ -16,7 +16,7 @@ class Profile(Indexed):
     """
     INDEXED type class for storing data from a CTD Profile (or similar
     down and up observations). The structure of the class is based around having
-    discrete profile locations with independent depth dimensions and coords. 
+    discrete profile locations with independent depth dimensions and coords.
     The class dataset should contain two dimensions:
 
         > id_dim      :: The profiles dimension. Each element of this dimension
@@ -813,4 +813,4 @@ class Profile(Indexed):
         dataset = dataset.isel(t_dim=t_ind)
         t_ind = pd.to_datetime(dataset.time.values) < date1
         dataset = dataset.isel(t_dim=t_ind)
-        return Profile(dataset = dataset)
+        return Profile(dataset=dataset)
