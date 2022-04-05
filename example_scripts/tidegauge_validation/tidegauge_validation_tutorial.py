@@ -12,13 +12,10 @@ import coast
 import datetime
 
 #%% 2. Define paths
-try:
-    dir = "/Users/dbyrne/Projects/coast/workshops/07092021/data/"
-except:
-    dir = "/Users/jeff/DATA/JMMP_COAsT_workshop_data_07092021/"
-fn_dom = dir + "mesh_mask.nc"
-fn_dat = dir + "sossheig*"
-fn_tg = dir + "tg_amm15.nc"
+
+fn_dom = dir + "<PATH_TO_NEMO_DOMAIN"
+fn_dat = dir + "<PATH_TO_NEMO_DATA"
+fn_tg = dir + "<PATH_TO_TIDEGAUGE_NETCDF" # This should already be processed, on the same time dimension
 
 #%% 3. Create gridded object and load data
 nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
@@ -35,14 +32,12 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 #%% 4. Create TidegaugeMultiple object
 
 # Create the object and then inset the netcdf dataset
-obs = coast.Tidegauge()
-obs.dataset = xr.open_dataset(fn_tg)
+obs = coast.Tidegauge(dataset = xr.open_dataset(fn_tg))
 
 # Cut down data to be only in 2018 to match model data.
 start_date = datetime.datetime(2018, 1, 1)
 end_date = datetime.datetime(2018, 12, 31)
-obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)
-
+obs = obs.time_slice(start_date, end_date)
 
 #%% 5. Interpolate model data onto obs locations
 model_timeseries = obs.obs_operator(nemo)
@@ -55,11 +50,12 @@ model_timeseries.dataset = model_timeseries.dataset.transpose()
 # This routine searches for missing values in each dataset and applies them
 # equally to each corresponding dataset
 tganalysis = coast.TidegaugeAnalysis()
-obs_new, model_new = tganalysis.match_missing_values(obs.dataset.ssh, model_timeseries.dataset.ssh)
+obs_new, model_new = tganalysis.match_missing_values(obs.dataset.ssh, 
+                                                     model_timeseries.dataset.ssh)
 
 # Subtract means from all time series
-obs_new = tganalysis.demean_timeseries(obs_new.dataset.ssh)
-model_new = tganalysis.demean_timeseries(model_new.dataset.ssh)
+obs_new = tganalysis.demean_timeseries(obs_new.dataset)
+model_new = tganalysis.demean_timeseries(model_new.dataset)
 
 # Now you have equivalent and comparable sets of time series that can be
 # easily compared.
@@ -67,16 +63,16 @@ model_new = tganalysis.demean_timeseries(model_new.dataset.ssh)
 #%% Calculate non tidal residuals
 
 # First, do a harmonic analysis. This routine uses utide
-ha_mod = tganalysis.harmonic_analysis_utide(model_new)
-ha_obs = tganalysis.harmonic_analysis_utide(obs_new)
+ha_mod = tganalysis.harmonic_analysis_utide(model_new.dataset.ssh)
+ha_obs = tganalysis.harmonic_analysis_utide(obs_new.dataset.ssh)
 
 # Create new TidegaugeMultiple objects containing reconstructed tides
-tide_mod = model_timeseries.reconstruct_tide_utide(ha_mod)
-tide_obs = obs.reconstruct_tide_utide(ha_obs)
+tide_mod = tganalysis.reconstruct_tide_utide(model_new.dataset.time, ha_mod)
+tide_obs = tganalysis.reconstruct_tide_utide(obs_new.dataset.time, ha_obs)
 
 # Get new TidegaugeMultiple objects containing non tidal residuals.
-ntr_mod = model_timeseries.calculate_residuals(tide_mod)
-ntr_obs = obs.calculate_residuals(tide_obs)
+ntr_mod = tganalysis.calculate_residuals(model_new.dataset.ssh, tide_mod.dataset.ssh)
+ntr_obs = tganalysis.calculate_residuals(obs_new.dataset.ssh, tide_obs.dataset.ssh)
 
 # Other interesting applications here included only reconstructing specified
 # tidal frequency bands and validating this.
@@ -85,8 +81,8 @@ ntr_obs = obs.calculate_residuals(tide_obs)
 
 # The difference() routine will calculate differences, absolute_differences
 # and squared differenced for all variables:
-ntr_diff = ntr_obs.difference(ntr_mod)
-ssh_diff = obs.difference(model_timeseries)
+ntr_diff = tganalysis.difference(ntr_obs, ntr_mod)
+ssh_diff = tganalysis.difference(obs_new, model_new)
 
 # We can then easily get mean errors, MAE and MSE
 mean_stats = ntr_diff.dataset.mean(dim="t_dim", skipna=True)
@@ -98,5 +94,5 @@ mean_stats = ntr_diff.dataset.mean(dim="t_dim", skipna=True)
 # threshold provided. It will also count the numbers of daily and monthly
 # maxima over each threshold
 
-thresh_mod = ntr_mod.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
-thresh_obs = ntr_obs.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
+thresh_mod = tganalysis.threshold_statistics(ntr_mod, thresholds=np.arange(0, 2, 0.2))
+thresh_obs = tganalysis.threshold_statistics(ntr_obs, thresholds=np.arange(0, 2, 0.2))
