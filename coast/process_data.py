@@ -20,8 +20,8 @@ class Process_data:  # TODO All abstract methods should be implemented
         Process_data.seasonal_decomposition
 
         This function is itself a wrapper function for statsmodel.seasonal_decompose
-        that accepts multiple timeseries distributed across multiple dimensions
-        as an xr.DataArray: ts_chunk = ts_chunk(t_dim,z_dim,x_dim,y_dim,...).
+        that accepts multiple timeseries as multiple columns (s_dim)
+        as an xr.DataArray: ts_chunk = ts_chunk(t_dim,s_dim).
         Returns the trend, seasonal and residual componenets of the time series.
         Invalid points i.e. land points, should be specified as np.nans.
 
@@ -112,9 +112,9 @@ class Process_data:  # TODO All abstract methods should be implemented
         # to have same structure as the newly created dask arrays and then assign to gridded
         gd = Gridded()
         gd.dataset["trend"] = xr.full_like(time_series.chunk(trend.chunks), np.nan)
-        gd.dataset["trend"][:, :, :] = trend
+        gd.dataset["trend"][:] = trend
         gd.dataset["seasonal"] = xr.full_like(time_series.chunk(seasonal.chunks), np.nan)
-        gd.dataset["seasonal"][:, :, :] = seasonal
+        gd.dataset["seasonal"][:] = seasonal
         gd.dataset["residual"] = xr.full_like(time_series.chunk(residual.chunks), np.nan)
-        gd.dataset["residual"][:, :, :] = residual
+        gd.dataset["residual"][:] = residual
         return gd
