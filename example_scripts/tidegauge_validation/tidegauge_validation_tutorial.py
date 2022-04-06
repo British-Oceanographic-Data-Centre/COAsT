@@ -16,7 +16,7 @@ fn_dat = "<PATH_TO_NEMO_DATA>"
 fn_config = "<PATH_TO_CONFIG.json>"
 fn_tg = "<PATH_TO_TIDEGAUGE_NETCDF>"  # This should already be processed, on the same time dimension
 
-if(1):
+if 1:
     print(f"Use default files")
     dir = "./example_files/"
     fn_dom = dir + "coast_example_nemo_domain.nc"
@@ -44,7 +44,7 @@ obs.dataset = obs.dataset.rename_dims(
     {"time": "t_dim", "port": "id_dim"}
 )  # rename the time and port dimension into COAsT standards
 # Shift the timestamp so it overlaps with the tidegauge data - Not ideal but this is only a demo
-obs.dataset.coords['time'] = obs.dataset.coords['time'] + 1000000000*3600*24*365*3
+obs.dataset.coords["time"] = obs.dataset.coords["time"] + 1000000000 * 3600 * 24 * 365 * 3
 
 # Cut down data to be only in 2018 to match model data.
 start_date = datetime.datetime(2007, 1, 1)
