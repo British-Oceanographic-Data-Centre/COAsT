@@ -30,6 +30,7 @@ class Indexed(Coast):
         self.keep_all_vars = False
 
         if config:
+            print(config)
             self.json_config = ConfigParser(config)
             self.chunks = self.json_config.config.chunks
             self.dim_mapping = self.json_config.config.dataset.dimension_map
