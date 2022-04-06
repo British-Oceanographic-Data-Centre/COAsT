@@ -151,7 +151,7 @@ class Profile(Indexed):
         ind = general_utils.subset_indices_lonlat_box(
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Profile(dataset=self.dataset.isel(id_dim=ind)[0])
+        return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
 
     """======================= Plotting ======================="""
 
@@ -445,9 +445,10 @@ class Profile(Indexed):
             # Check There are some indices at all
             if np.sum(ind_in_chunk) == 0:
                 start_ii = end_ii
-                count_ii = count_ii + 1
                 if count_ii == 0:
                     mod_profiles = xr.Dataset()
+                    
+                count_ii = count_ii + 1
                 continue
 
             # Pull out x,y and t indices
@@ -480,7 +481,10 @@ class Profile(Indexed):
             if count_ii == 0:
                 mod_profiles = ds_tmp_indexed
             else:
-                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="id_dim")
+                if len(mod_profiles.data_vars) == 0:
+                    mod_profiles = xr.merge((mod_profiles, ds_tmp_indexed))
+                else:
+                    mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="id_dim")
 
             # Update counters
             start_ii = end_ii
@@ -810,7 +814,7 @@ class Profile(Indexed):
         """Return new Gridded object, indexed between dates date0 and date1"""
         dataset = self.dataset
         t_ind = pd.to_datetime(dataset.time.values) >= date0
-        dataset = dataset.isel(t_dim=t_ind)
+        dataset = dataset.isel(id_dim=t_ind)
         t_ind = pd.to_datetime(dataset.time.values) < date1
-        dataset = dataset.isel(t_dim=t_ind)
+        dataset = dataset.isel(id_dim=t_ind)
         return Profile(dataset=dataset)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+'''
 # Script for processing raw EN4 data prior to analysis.
 # See docstring of Profile.process_en4() for more specifics on what it does.
 #
@@ -11,6 +12,7 @@
 # the creation of the profile object. However, if analysing model
 # data in parallel chunks, you may want to split up the processing
 # into smaller files to make the analysis faster.
+'''
 
 ### Start script
 import sys
@@ -19,11 +21,12 @@ import sys
 # sys.path.append('<PATH_TO_COAST_REPO')
 import coast
 import pandas as pd
+from datetime import datetime
 
 print("Modules loaded")
 
 # File paths - input en4, output processed file and read config file
-fn_en4 = "<PATH_TO_RAW_EN4_DATA_FILE(S)>"
+fn_prof = "<PATH_TO_RAW_EN4_DATA_FILE(S)>"
 fn_out = "<PATH_TO_OUTPUT_LOCATION_FOR_PROCESSED_PROFILES>"
 fn_cfg_prof = "<PATH_TO_COAST_PROFILE_CONFIG_FILE>"
 
@@ -35,16 +38,20 @@ multiple = True  # Reading multple files?
 
 # Create profile object containing data
 profile = coast.Profile(config=fn_cfg_prof)
-profile.read_en4(fn_en4, multiple=multiple)
+profile.read_en4(fn_prof, multiple=multiple)
 
 # Get geographical indices to extract
 profile = profile.subset_indices_lonlat_box(longitude_bounds, latitude_bounds)
 
+# Cut out a time slice of the data
+profile = profile.time_slice( date0 = datetime(2010,1,1),
+                              date1 = datetime(2010,1,20) )
+
 # Process the extracted data into new processed profile
 processed_profile = profile.process_en4()
 
-# Not sure why but this is needed for now (xarray issue?)
-processed_profile.dataset["time"] = ("id_dim", pd.to_datetime(processed_profile.dataset.time.values))
+# Sometimes the following line is needed to avoid an error::
+# processed_profile.dataset["time"] = ("id_dim", pd.to_datetime(processed_profile.dataset.time.values))
 
 # Write processed profiles to file
 processed_profile.dataset.to_netcdf(fn_out)

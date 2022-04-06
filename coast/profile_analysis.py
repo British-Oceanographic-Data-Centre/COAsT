@@ -458,7 +458,8 @@ class ProfileAnalysis(Indexed):
         lon2, lat2 = np.meshgrid(lon_mids, lat_mids)
 
         # Create empty output dataset
-        ds_out = xr.Dataset(coords=dict(longitude=(["y_dim", "x_dim"], lon2), latitude=(["y_dim", "x_dim"], lat2)))
+        ds_out = xr.Dataset(coords=dict(longitude=(["y_dim", "x_dim"], lon2), 
+                                        latitude=(["y_dim", "x_dim"], lat2)))
 
         # Loop over variables and create empty placeholders
         for vv in vars_out:
@@ -491,7 +492,11 @@ class ProfileAnalysis(Indexed):
                     for vv in range(len(vars_in)):
                         vv_in = vars_in[vv]
                         vv_out = vars_out[vv]
-                        ds_out[vv_out][rr, cc] = ds[vv_in].isel(profile=prof_ind).mean()
+                        
+                        # Check datatype isn't string
+                        if ds[vv_in].dtype in ['S1','S2']:
+                            continue
+                        ds_out[vv_out][rr, cc] = ds[vv_in].isel(id_dim=prof_ind).mean()
 
                 # Store N in own variable
                 ds_out["grid_N{0}".format(var_modifier)][rr, cc] = np.sum(prof_ind)
