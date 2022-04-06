@@ -15,7 +15,12 @@ class test_example_scripts(unittest.TestCase):
         plt.close("all")
 
     def test_tidetable_tutorial(self):
-        from example_scripts import tidetable_tutorial
+        from example_scripts.tidegauge_validation import tidetable_tutorial
+
+        plt.close("all")
+
+    def test_tidegauge_validation_tutorial(self):
+        from example_scripts.tidegauge_validation import tidegauge_validation_tutorial
 
         plt.close("all")
 
