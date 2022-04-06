@@ -7,18 +7,26 @@ For this a script, a premade netcdf file containing tide gauge data is used.
 #%% 1. Import necessary libraries
 import xarray as xr
 import numpy as np
-import matplotlib.pyplot as plt
 import coast
 import datetime
 
 #%% 2. Define paths
+fn_dom = "<PATH_TO_NEMO_DOMAIN>"
+fn_dat = "<PATH_TO_NEMO_DATA>"
+fn_config = "<PATH_TO_CONFIG.json>"
+fn_tg = "<PATH_TO_TIDEGAUGE_NETCDF>"  # This should already be processed, on the same time dimension
 
-fn_dom = dir + "<PATH_TO_NEMO_DOMAIN"
-fn_dat = dir + "<PATH_TO_NEMO_DATA"
-fn_tg = dir + "<PATH_TO_TIDEGAUGE_NETCDF"  # This should already be processed, on the same time dimension
+if(0):
+    print(f"Use default files")
+    dir = "./example_files/"
+    fn_dom = dir + "coast_example_nemo_domain.nc"
+    fn_dat = dir + "coast_example_nemo_data.nc"
+    fn_config = "./config/example_nemo_grid_t.json"
+    fn_tg_bodc = dir + "tide_gauges/lowestoft-p024-uk-bodc"
+    fn_tg = dir + "tg_amm15.nc"
 
 #%% 3. Create gridded object and load data
-nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config="./config/example_nemo_grid_t.json")
+nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=fn_config)
 
 # Create a landmask array and put it into the nemo object.
 # Here, using the bottom_level == 0 variable from the domain file is enough.
@@ -33,10 +41,11 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 
 # Create the object and then inset the netcdf dataset
 obs = coast.Tidegauge(dataset=xr.open_dataset(fn_tg))
+obs.dataset = obs.dataset.rename_dims({'time':'t_dim'})  # rename the time dimension into COAsT standard: `t_dim`
 
 # Cut down data to be only in 2018 to match model data.
-start_date = datetime.datetime(2018, 1, 1)
-end_date = datetime.datetime(2018, 12, 31)
+start_date = datetime.datetime(2010, 1, 1)
+end_date = datetime.datetime(2010, 12, 31)
 obs = obs.time_slice(start_date, end_date)
 
 #%% 5. Interpolate model data onto obs locations
@@ -70,8 +79,8 @@ tide_mod = tganalysis.reconstruct_tide_utide(model_new.dataset.time, ha_mod)
 tide_obs = tganalysis.reconstruct_tide_utide(obs_new.dataset.time, ha_obs)
 
 # Get new TidegaugeMultiple objects containing non tidal residuals.
-ntr_mod = tganalysis.calculate_residuals(model_new.dataset.ssh, tide_mod.dataset.ssh)
-ntr_obs = tganalysis.calculate_residuals(obs_new.dataset.ssh, tide_obs.dataset.ssh)
+ntr_mod = tganalysis.calculate_non_tidal_residuals(model_new.dataset.ssh, tide_mod.dataset.reconstructed)
+ntr_obs = tganalysis.calculate_non_tidal_residuals(obs_new.dataset.ssh, tide_obs.dataset.reconstructed)
 
 # Other interesting applications here included only reconstructing specified
 # tidal frequency bands and validating this.
@@ -80,8 +89,8 @@ ntr_obs = tganalysis.calculate_residuals(obs_new.dataset.ssh, tide_obs.dataset.s
 
 # The difference() routine will calculate differences, absolute_differences
 # and squared differenced for all variables:
-ntr_diff = tganalysis.difference(ntr_obs, ntr_mod)
-ssh_diff = tganalysis.difference(obs_new, model_new)
+ntr_diff = tganalysis.difference(ntr_obs.dataset, ntr_mod.dataset)
+ssh_diff = tganalysis.difference(obs_new.dataset, model_new.dataset)
 
 # We can then easily get mean errors, MAE and MSE
 mean_stats = ntr_diff.dataset.mean(dim="t_dim", skipna=True)
