@@ -113,10 +113,13 @@ class Tidegauge(Timeseries):
         """
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
+        dataset = None
 
         # See if its a file list input, or a glob
         if type(fn_gesla) is not list:
             file_list = glob.glob(fn_gesla)
+        else:
+            file_list = fn_gesla
 
         multiple = False
         if len(file_list) > 1:
