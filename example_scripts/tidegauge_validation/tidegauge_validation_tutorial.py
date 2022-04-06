@@ -16,7 +16,7 @@ fn_dat = "<PATH_TO_NEMO_DATA>"
 fn_config = "<PATH_TO_CONFIG.json>"
 fn_tg = "<PATH_TO_TIDEGAUGE_NETCDF>"  # This should already be processed, on the same time dimension
 
-if 0:
+if(0):
     print(f"Use default files")
     dir = "./example_files/"
     fn_dom = dir + "coast_example_nemo_domain.nc"
