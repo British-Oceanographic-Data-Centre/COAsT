@@ -40,11 +40,11 @@ profile_analysis = coast.ProfileAnalysis()
 
 # Make Profile object from Profile data or analysis data from analysis_extract_and_compare
 # Here let's make it from EN4 data:
-profile = coast.Profile(config = fn_cfg_prof)
+profile = coast.Profile(config=fn_cfg_prof)
 profile.read_en4(fn_prof)
 
 # Or if reading analysis straight from netCDF, uncomment the following
-#profile = coast.Profile(dataset=xr.open_mfdataset(fn_prof, chunks={"id_dim": 10000}))
+# profile = coast.Profile(dataset=xr.open_mfdataset(fn_prof, chunks={"id_dim": 10000}))
 
 # Make MaskMaker object
 mm = coast.MaskMaker()

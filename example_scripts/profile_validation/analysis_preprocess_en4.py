@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 # Script for processing raw EN4 data prior to analysis.
 # See docstring of Profile.process_en4() for more specifics on what it does.
 #
@@ -12,7 +12,7 @@
 # the creation of the profile object. However, if analysing model
 # data in parallel chunks, you may want to split up the processing
 # into smaller files to make the analysis faster.
-'''
+"""
 
 ### Start script
 import sys
@@ -44,8 +44,7 @@ profile.read_en4(fn_prof, multiple=multiple)
 profile = profile.subset_indices_lonlat_box(longitude_bounds, latitude_bounds)
 
 # Cut out a time slice of the data
-profile = profile.time_slice( date0 = datetime(2010,1,1),
-                              date1 = datetime(2010,1,20) )
+profile = profile.time_slice(date0=datetime(2010, 1, 1), date1=datetime(2010, 1, 20))
 
 # Process the extracted data into new processed profile
 processed_profile = profile.process_en4()

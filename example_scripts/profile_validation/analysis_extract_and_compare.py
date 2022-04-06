@@ -3,7 +3,7 @@
 # It will do a nearest neighbour extraction of model data (with time interpolation
 # of your choice). It will then calculate differences between the model
 # and obs and averaged profiles and errors into surface and bottom layers.
-#  
+#
 #   This script will result in five new files being written:
 #
 #   1. extracted_profiles: Model data on model levels extracted at obs locs
@@ -21,7 +21,7 @@
 #
 # fn_dom = path.join('./example_files', "coast_example_nemo_domain.nc")
 # fn_dat = path.join('./example_files', "coast_example_nemo_data.nc")
-# dn_out = "./example_files" 
+# dn_out = "./example_files"
 # fn_prof = path.join('./example_files', "coast_example_EN4_201008.nc")
 # fn_cfg_nemo = path.join('./config', "example_nemo_grid_t.json")
 # fn_cfg_prof = path.join('./config', "example_en4_profiles.json")
@@ -77,12 +77,12 @@ nemo.dataset["landmask"] = nemo.dataset.bottom_level == 0
 nemo.dataset = nemo.dataset.rename({"depth_0": "depth"})
 print("Landmask calculated", flush=True)
 
-# CREATE EN4 PROFILE OBJECT 
+# CREATE EN4 PROFILE OBJECT
 # If you have not already processed the data:
-profile = coast.Profile(config = fn_cfg_prof)
+profile = coast.Profile(config=fn_cfg_prof)
 profile.read_en4(fn_prof)
 profile = profile.process_en4()
-    
+
 # If you have already processed then uncomment:
 # profile = coast.Profile(dataset = xr.open_dataset(fn_prof, chunks={"id_dim": 10000}))
 print("Profile object created", flush=True)

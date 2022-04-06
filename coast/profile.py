@@ -447,7 +447,7 @@ class Profile(Indexed):
                 start_ii = end_ii
                 if count_ii == 0:
                     mod_profiles = xr.Dataset()
-                    
+
                 count_ii = count_ii + 1
                 continue
 
