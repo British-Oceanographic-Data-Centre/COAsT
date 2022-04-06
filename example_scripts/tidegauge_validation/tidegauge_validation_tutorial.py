@@ -16,7 +16,7 @@ fn_dat = "<PATH_TO_NEMO_DATA>"
 fn_config = "<PATH_TO_CONFIG.json>"
 fn_tg = "<PATH_TO_TIDEGAUGE_NETCDF>"  # This should already be processed, on the same time dimension
 
-if(0):
+if(1):
     print(f"Use default files")
     dir = "./example_files/"
     fn_dom = dir + "coast_example_nemo_domain.nc"
@@ -41,7 +41,8 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 
 # Create the object and then inset the netcdf dataset
 obs = coast.Tidegauge(dataset=xr.open_dataset(fn_tg))
-obs.dataset = obs.dataset.rename_dims({"time": "t_dim"})  # rename the time dimension into COAsT standard: `t_dim`
+obs.dataset = obs.dataset.rename_dims({"time": "t_dim",
+                                       "port": "id_dim"})  # rename the time and port dimension into COAsT standards
 
 # Cut down data to be only in 2018 to match model data.
 start_date = datetime.datetime(2010, 1, 1)
