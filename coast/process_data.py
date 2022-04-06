@@ -20,7 +20,7 @@ class Process_data:  # TODO All abstract methods should be implemented
         Process_data.seasonal_decomposition
 
         This function is itself a wrapper function for statsmodel.seasonal_decompose
-        that accepts multiple timeseries as mulitple columns (s_dim)
+        that accepts multiple timeseries as multiple columns (s_dim)
         as an xr.DataArray: ts_chunk = ts_chunk(t_dim,s_dim).
         Returns the trend, seasonal and residual componenets of the time series.
         Invalid points i.e. land points, should be specified as np.nans.
