@@ -33,16 +33,16 @@ class TidegaugeAnalysis:
             data_array1 = data_array1.transpose()
 
         if np.isnan(fill_value):
-            ind1 = np.isnan(data_array1)
-            ind2 = np.isnan(data_array2)
+            ind1 = np.isnan(data_array1.values)
+            ind2 = np.isnan(data_array2.values)
         else:
-            ind1 = data_array1 == fill_value
-            ind2 = data_array2 == fill_value
+            ind1 = data_array1.values == fill_value
+            ind2 = data_array2.values == fill_value
 
-        ds1 = data_array1.where(~ind2).to_dataset()
-        ds2 = data_array2.where(~ind1).to_dataset()
+        ds1 = data_array1.where(~ind2)
+        ds2 = data_array2.where(~ind1)
 
-        return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
+        return Tidegauge(dataset=ds1.to_dataset()), Tidegauge(dataset=ds2.to_dataset())
 
     @classmethod
     def harmonic_analysis_utide(

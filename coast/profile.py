@@ -9,14 +9,15 @@ import datetime
 from .logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
-import scipy.interpolate as interpolate
+import pandas as pd
 
 
 class Profile(Indexed):
     """
-    OBSERVATION type class for storing data from a CTD Profile (or similar
-    down and up observations). The structure of the class is based on data from
-    the EN4 database. The class dataset should contain two dimension:
+    INDEXED type class for storing data from a CTD Profile (or similar
+    down and up observations). The structure of the class is based around having
+    discrete profile locations with independent depth dimensions and coords.
+    The class dataset should contain two dimensions:
 
         > id_dim      :: The profiles dimension. Each element of this dimension
                      contains data (e.g. cast) for an individual location.
@@ -70,13 +71,22 @@ class Profile(Indexed):
         debug(f"{get_slug(self)} initialised")
 
     def read_en4(self, fn_en4, chunks: dict = {}, multiple=False) -> None:
-        """Reads a single or multiple EN4 netCDF files into the COAsT profile
+        """
+        Reads a single or multiple EN4 netCDF files into the COAsT profile
         data structure.
 
-        Args:
-            fn_en4 (str): path to data file
-            chunks (dict): chunks
-            multiple (boolean): True if reading multiple files otherwise False
+        Parameters
+        ----------
+        fn_en4 : TYPE
+            path to data file.
+        chunks : dict, optional
+            Chunking specification
+        multiple : TYPE, optional
+            True if reading multiple files otherwise False
+
+        Returns
+        -------
+        None. Populates dataset within Profile object.
         """
 
         # If not multiple then just read the netcdf file
@@ -141,7 +151,7 @@ class Profile(Indexed):
         ind = general_utils.subset_indices_lonlat_box(
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Profile(dataset=self.dataset.isel(id_dim=ind))
+        return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
 
     """======================= Plotting ======================="""
 
@@ -435,9 +445,10 @@ class Profile(Indexed):
             # Check There are some indices at all
             if np.sum(ind_in_chunk) == 0:
                 start_ii = end_ii
-                count_ii = count_ii + 1
                 if count_ii == 0:
                     mod_profiles = xr.Dataset()
+
+                count_ii = count_ii + 1
                 continue
 
             # Pull out x,y and t indices
@@ -470,7 +481,10 @@ class Profile(Indexed):
             if count_ii == 0:
                 mod_profiles = ds_tmp_indexed
             else:
-                mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="id_dim")
+                if len(mod_profiles.data_vars) == 0:
+                    mod_profiles = xr.merge((mod_profiles, ds_tmp_indexed))
+                else:
+                    mod_profiles = xr.concat((mod_profiles, ds_tmp_indexed), dim="id_dim")
 
             # Update counters
             start_ii = end_ii
@@ -795,3 +809,12 @@ class Profile(Indexed):
         return_prof = Profile()
         return_prof.dataset = wod_profiles_2d
         return return_prof
+
+    def time_slice(self, date0, date1):
+        """Return new Gridded object, indexed between dates date0 and date1"""
+        dataset = self.dataset
+        t_ind = pd.to_datetime(dataset.time.values) >= date0
+        dataset = dataset.isel(id_dim=t_ind)
+        t_ind = pd.to_datetime(dataset.time.values) < date1
+        dataset = dataset.isel(id_dim=t_ind)
+        return Profile(dataset=dataset)

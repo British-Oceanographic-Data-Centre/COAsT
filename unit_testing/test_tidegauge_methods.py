@@ -35,6 +35,21 @@ class test_tidegauge_analysis(unittest.TestCase):
         self.assertTrue(np.isnan(tg2.dataset.ssh[0, 50].values), "check1")
         self.assertTrue(np.isnan(tg2.dataset.ssh[0, 150].values), "check1")
 
+    def test_demean_timeseries(self):
+        tganalysis = coast.TidegaugeAnalysis()
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+
+        # Call match_missing_values
+        tg1 = tganalysis.demean_timeseries(lowestoft.dataset)
+
+        # Test that the mean has been removed
+        timeseries = lowestoft.dataset.ssh[0, :].values
+        demeaned = timeseries - np.nanmean(timeseries)
+        self.assertTrue(np.array_equal(tg1.dataset.ssh[0, :].values, demeaned), "check1")
+
     def test_harmonic_analysis_utide(self):
 
         tganalysis = coast.TidegaugeAnalysis()
