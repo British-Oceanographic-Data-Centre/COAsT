@@ -45,7 +45,40 @@
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t_subset&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_x&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_y&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">nemo_t_subset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Alternatively, &lt;code>xarray.isel&lt;/code> can be applied directly to the &lt;code>xarray.Dataset&lt;/code> object.&lt;/p>
-&lt;p>A longitude/latitude box of data can also be extracted using &lt;code>Gridded.subset_indices()&lt;/code>.&lt;/p></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
+&lt;p>A longitude/latitude box of data can also be extracted using &lt;code>Gridded.subset_indices()&lt;/code>.&lt;/p>
+&lt;h3 id="example-for-nemo-ersem-biogechemical-variables">Example for NEMO-ERSEM biogechemical variables&lt;/h3>
+&lt;p>Import COAsT, define some file paths for NEMO-ERSEM output data and a NEMO domain,
+and read/load your NEMO-ERSEM data into a gridded object, example:&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">matplotlib.pyplot&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">plt&lt;/span>
+&lt;span style="color:#000">fn_bgc_dat&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_SEAsia_BGC_1990.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_bgc_dom&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./example_files/coast_example_domain_SEAsia.nc&amp;#34;&lt;/span>
+&lt;span style="color:#000">fn_config_bgc_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_bgc.json&amp;#34;&lt;/span>
+&lt;span style="color:#000">nemo_bgc&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_bgc_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">fn_bgc_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_bgc_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">nemo_bgc&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>As an example plot a snapshot of dissolved inorganic carbon at the sea surface&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">fig&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">figure&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>
+&lt;span style="color:#000">nemo_bgc&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">longitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000">nemo_bgc&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">latitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000">nemo_bgc&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dic&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">t_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">z_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span>
+&lt;span style="color:#000">cmap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;RdYlBu_r&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000">vmin&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1600&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000">vmax&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2080&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">colorbar&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">title&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;DIC, mmol/m^3&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">xlabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;longitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ylabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;latitude&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">show&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 610px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/examples/intro_gridded_class/SEAsia_DIC_surface_hu1e4513a01a44fba04c46a2a068dea2c6_120133_600x700_fit_catmullrom_2.png" width="600" height="450">
+&lt;div class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/div>
+&lt;/div></description></item><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/altimetry/</guid><description>
 &lt;p>Here we give a short tutorial of how to use the Altimetry object for reading data and
 comparing to NEMO data.&lt;/p>
 &lt;p>Begin by importing coast and other packages&lt;/p>
@@ -81,7 +114,7 @@ to see for yourself.&lt;/p>
 using some basic metrics. The basic_stats() routine can be used for this,
 which calculates some simple metrics including differences, RMSE and
 correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
-&lt;pre>&lt;code>stats = altimetry.basic_stats('interp_ssh', 'sla_filtered')
+&lt;pre>&lt;code>stats = altimetry.basic_stats(&amp;quot;ocean_tide_standard_name&amp;quot;, &amp;quot;interp_ssh&amp;quot;)
 &lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
 basic stats, the returned object is also an ALTIMETRY object, so all of the
 same methods can be applied. Alternatively, if you want to save the new
@@ -90,23 +123,23 @@ metrics to the original altimetry object, set create_new_object = False.&lt;/p>
 Probability Score (CRPS). For this, we need to hand over the model object,
 a model variable and an observed variable. We also give it a neighbourhood
 radius in km (nh_radius).&lt;/p>
-&lt;pre>&lt;code>crps = altimetry.crps(nemo, model_var_name = 'ssh',
-obs_var_name = 'sla_filtered', nh_radius = 20)
+&lt;pre>&lt;code>crps = altimetry.crps(nemo, model_var_name =&amp;quot;ssh&amp;quot;,
+obs_var_name=&amp;quot;ocean_tide_standard_name&amp;quot;, nh_radius=20)
 &lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
 to basic_stats, create_new_object can be set to false to save output to
 the original altimetry object.&lt;/p>
 &lt;p>Altimetry has a ready built quick_plot() routine for taking a look at any
 of the observed or derived quantities above. So to take a look at the
 &amp;lsquo;sla_filtered&amp;rsquo; variable:&lt;/p>
-&lt;pre>&lt;code>fig, ax = altimetry.quick_plot('sla_filtered')
+&lt;pre>&lt;code>fig, ax = altimetry.quick_plot(&amp;quot;ocean_tide_standard_name&amp;quot;)
 &lt;/code>&lt;/pre>&lt;p>As stats and crps are also Altimetry objects, quick_plot() can also be used:&lt;/p>
-&lt;pre>&lt;code>fig, ax = crps.quick_plot('crps')
-fig, ax = stats.quick_plot('absolute_error')
+&lt;pre>&lt;code>fig, ax = crps.quick_plot(&amp;quot;crps&amp;quot;)
+fig, ax = stats.quick_plot(&amp;quot;absolute_error&amp;quot;)
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</guid><description>
 &lt;p>This is a demonstration script for using the Climatology object in the COAsT
 package. This object has methods for analysing climatological data. Further examples can be found in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/blob/master/example_scripts/climatology_example.py">COAsT github&lt;/a> repository.&lt;/p>
 &lt;h1 id="climatological-means">Climatological means&lt;/h1>
-&lt;p>This section shows and example of how to use the &lt;code>Climatology.make_climatology()&lt;/code> method to calculates mean over a given period of time. This method doesn&amp;rsquo;t take different years into account, unless using the &amp;lsquo;years&amp;rsquo; frequency. (See the &lt;a href="#multi-year-climatological-means">Multi-year climatological means&lt;/a> section for multi-yeared data.)&lt;/p>
+&lt;p>This section shows an example of how to use the &lt;code>Climatology.make_climatology()&lt;/code> method to calculates mean over a given period of time. This method doesn&amp;rsquo;t take different years into account, unless using the &amp;lsquo;years&amp;rsquo; frequency. (See the &lt;a href="#multi-year-climatological-means">Multi-year climatological means&lt;/a> section for multi-yeared data.)&lt;/p>
 &lt;p>Begin by importing coast:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>And by defining some file paths for the data:&lt;/p>
@@ -118,29 +151,28 @@ package. This object has methods for analysing climatological data. Further exam
 &lt;span style="color:#000">config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;./config/example_nemo_grid_t.json&amp;#34;&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Read in data (This example uses NEMO data.)&lt;/span>
 &lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Calculate the climatology:&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Calculate the climatology for temperature and sea surface height (ssh) as an example:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Optional (This specifies an output file path.)&lt;/span>
 &lt;span style="color:#000">fn_out&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/path/to/outputfile.nc&amp;#34;&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># String is appended to &amp;#34;time.&amp;#34; to create a valid xarray time period. (i.e. time.season, time.month...)&lt;/span>
 &lt;span style="color:#000">climatology_frequency&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;month&amp;#34;&lt;/span>
 &lt;span style="color:#000">clim&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Not writing output to file:&lt;/span>
-&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">[[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;ssh&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]],&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Writing output to file (may require a large amount of memory.)&lt;/span>
-&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Below shows the structure of a dataset returned, containing 3 months worth of meaned data:&lt;/p>
+&lt;span style="color:#000">clim_mean&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">[[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;ssh&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]],&lt;/span> &lt;span style="color:#000">climatology_frequency&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Below shows the structure of a dataset returned, containing 1 month worth of meaned temperature and sea surface height data:&lt;/p>
 &lt;pre>&lt;code>&amp;lt;xarray.Dataset&amp;gt;
-Dimensions: (y_dim: 1345, x_dim: 1458, z_dim: 51, month: 3)
+Dimensions: (y_dim: 375, x_dim: 297, z_dim: 51, month: 1)
 Coordinates:
-nav_lat (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
-nav_lon (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
-deptht (z_dim) float32 3.038 9.367 16.1 ... 5.618e+03 5.822e+03
-* month (month) int64 1 2 3
+longitude (y_dim, x_dim) float32 ...
+latitude (y_dim, x_dim) float32 ...
+depth_0 (z_dim, y_dim, x_dim) float32 0.5 0.5 0.5 ... 50.5 50.5 50.5
+* month (month) int64 1
 Dimensions without coordinates: y_dim, x_dim, z_dim
 Data variables:
-temperature (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
-ssh (month, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 1345, 1458), meta=np.ndarray&amp;gt;
-salinity (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
+temperature (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 375, 297), meta=np.ndarray&amp;gt;
+ssh (month, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 375, 297), meta=np.ndarray&amp;gt;
 &lt;/code>&lt;/pre>&lt;h1 id="multi-year-climatological-means">Multi-year climatological means&lt;/h1>
 &lt;p>This section shows an example of how to use the &lt;code>Climatology.multiyear_averages()&lt;/code> method to generate annual averages across specified periods of time. This method is designed to be compatible with multi-year datasets, but will work with single year datasets too.&lt;/p>
 &lt;p>Begin by importing coast and helpful coast utilities:&lt;/p>
@@ -154,314 +186,354 @@ salinity (month, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51
 &lt;span style="color:#000">fn_config_t_grid&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;/Path/to/config/file.json&amp;#34;&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Read in multiyear data (This example uses NEMO data from multiple datafiles.)&lt;/span>
 &lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_t_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now calculate means of each season across multiple years for specified data:&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now calculate temperature and ssh means of each season across multiple years for specified data:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">clim&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Climatology&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Using seasons module to specify time period.&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># SPRING, SUMMER, AUTUMN, WINTER, ALL are valid values for seasons.&lt;/span>
-&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">seasons&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ALL&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">[[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;ssh&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]],&lt;/span> &lt;span style="color:#000">seasons&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ALL&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># Or explicitly defining specific month periods.&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># A list of tuples defining start and end month integers. The start months should be in chronological order.&lt;/span>
-&lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">[(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">6&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">8&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">)]&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Specifies June -&amp;gt; August and December -&amp;gt; February for each year of data.&lt;/span>
-&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># (you may need to read/load the data again if it gives an error)&lt;/span>
+&lt;span style="color:#000">nemo&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config_t_grid&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">[(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">12&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">)]&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Specifies January -&amp;gt; February and December -&amp;gt; February for each year of data. &lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">clim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiyear_averages&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">nemo&lt;/span>&lt;span style="color:#000;font-weight:bold">[[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;ssh&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]],&lt;/span> &lt;span style="color:#000">month_periods&lt;/span> &lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_var&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">time_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;t_dim&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Below shows the structure of a dataset returned from this method:&lt;/p>
 &lt;pre>&lt;code>&amp;lt;xarray.Dataset&amp;gt;
-Dimensions: (y_dim: 1345, x_dim: 1458, z_dim: 51, year_period: 3)
+Dimensions: (y_dim: 375, x_dim: 297, z_dim: 51, year_period: 2)
 Coordinates:
-nav_lat (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
-nav_lon (y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1345, 1458), meta=np.ndarray&amp;gt;
-deptht (z_dim) float32 3.038 9.367 ... 5.618e+03 5.822e+03
+longitude (y_dim, x_dim) float32 -19.89 -19.78 ... 12.89 13.0
+latitude (y_dim, x_dim) float32 40.07 40.07 40.07 ... 65.0 65.0
+depth_0 (z_dim, y_dim, x_dim) float32 0.5 0.5 0.5 ... 50.5 50.5
 * year_period (year_period) MultiIndex
-- year_period_level_0 (year_period) int64 2004 2005 2005
-- year_period_level_1 (year_period) object 'Dec-Feb' 'Mar-May' 'Dec-Feb'
+- year_period_level_0 (year_period) int64 2006 2007
+- year_period_level_1 (year_period) object 'Dec-Feb' 'Jan-Feb'
 Dimensions without coordinates: y_dim, x_dim, z_dim
 Data variables:
-temperature (year_period, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
-ssh (year_period, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 1345, 1458), meta=np.ndarray&amp;gt;
-salinity (year_period, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 1345, 1458), meta=np.ndarray&amp;gt;
-done
+temperature (year_period, z_dim, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 51, 375, 297), meta=np.ndarray&amp;gt;
+ssh (year_period, y_dim, x_dim) float32 dask.array&amp;lt;chunksize=(1, 375, 297), meta=np.ndarray&amp;gt;
 &lt;/code>&lt;/pre>&lt;p>Data can be accessed by selecting on the year-period MultiIndex:&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Selecting salinity data variable based on year:&lt;/span>
-&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2004&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;salinity&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
-&lt;span style="color:#8f5902;font-style:italic"># Selecting salinity data variable based on year and period:&lt;/span>
-&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2004&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;Dec-Feb&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;salinity&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Selecting temperature data variable based on year:&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2006&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># Selecting temperature data variable based on year and period:&lt;/span>
+&lt;span style="color:#000">clim_multiyear&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">year_period&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2006&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;Dec-Feb&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">))[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Profile</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/profile/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/profile/</guid><description>
-&lt;p>The Profile object is able to store and manipulate depth profile data. This object is a
-child of the INDEXED object and has dimensions (&amp;lsquo;profile&amp;rsquo;,&amp;lsquo;t_dim&amp;rsquo;). Please ensure any
-variables in this objects dataset also adhere to this dimension order.&lt;/p>
-&lt;p>Below is a set of examples of how you can use a Profile object for validation of
-a Gridded object.&lt;/p>
-&lt;p>You may want to take bits and pieces from this script to use as you wish.&lt;/p>
-&lt;p>Many of these routines utilise xarray and Dask&amp;rsquo;s lazy loading and chunking
-capabilities. Not all of them do however. If working with very large datasets
-it is recommended that the resulting datasets are saved to file at every step
-and read into a new profile object, with new chunking, before continuing. This
-can be done easily by calling xarrays to_netcdf().&lt;/p>
-&lt;h3 id="1-setup">1. Setup&lt;/h3>
-&lt;p>First, Import some things to make this script work&lt;/p>
-&lt;pre>&lt;code>import coast
-import xarray as xr
-import numpy as np
-import coast.general_utils as general_utils
-import matplotlib.pyplot as plt
-&lt;/code>&lt;/pre>&lt;p>Define some file paths&lt;/p>
-&lt;pre>&lt;code>fn_dat = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/25hourm.grid_T_20180101.nc&amp;quot;
-fn_dom = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc&amp;quot;
-fn_en4 = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/EN.4*&amp;quot;
-&lt;/code>&lt;/pre>&lt;p>Create a Gridded object using your data and domain files.&lt;/p>
-&lt;pre>&lt;code>nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=&amp;quot;./config/example_nemo_grid_t.json&amp;quot;)
-&lt;/code>&lt;/pre>&lt;p>Create a landmask array and put it into the nemo object.
-Here, using the bottom_level == 0 variable from the domain file is enough.&lt;/p>
-&lt;pre>&lt;code>nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
+&lt;h1 id="overview">Overview&lt;/h1>
+&lt;p>INDEXED type class for storing data from a CTD Profile (or similar
+down and up observations). The structure of the class is based around having
+discrete profile locations with independent depth dimensions and coords.
+The class dataset should contain two dimensions:&lt;/p>
+&lt;pre>&lt;code>&amp;gt; id_dim :: The profiles dimension. Each element of this dimension
+contains data (e.g. cast) for an individual location.
+&amp;gt; z_dim :: The dimension for depth levels. A profile object does not
+need to have shared depths, so NaNs might be used to
+pad any depth array.
+&lt;/code>&lt;/pre>
+&lt;p>Alongside these dimensions, the following minimal coordinates should also
+be available:&lt;/p>
+&lt;pre>&lt;code>&amp;gt; longitude (id_dim) :: 1D array of longitudes, one for each id_dim
+&amp;gt; latitude (id_dim) :: 1D array of latitudes, one for each id_dim
+&amp;gt; time (id_dim) :: 1D array of times, one for each id_dim
+&amp;gt; depth (id_dim, z_dim) :: 2D array of depths, with different depth
+levels being provided for each profile.
+Note that these depth levels need to be
+stored in a 2D array, so NaNs can be used
+to pad out profiles with shallower depths.
+&amp;gt; id_name (id_dim) :: [Optional] Name of id_dim/case or id_dim number.
+&lt;/code>&lt;/pre>
+&lt;h1 id="example-useage">Example Useage&lt;/h1>
+&lt;p>Below is a description of the available example scripts for this class as well
+as an overview of validation using&lt;code> Profile&lt;/code> and &lt;code>ProfileAnalysis&lt;/code>.&lt;/p>
+&lt;h3 id="example-scripts">Example Scripts&lt;/h3>
+&lt;p>Please see COAsT/example_scripts/profile_validation for some scripts which
+demonstrate how to use the Profile and ProfileAnalysis classes for model
+validation.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;code>analysis_preprocess_en4.py&lt;/code> : If you&amp;rsquo;re using EN4 data, this kind of script
+might be your first step for analysis.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>analysis_extract_and_compare.py&lt;/code>: This script shows you how to extract
+the nearest model profiles, compare them with EN4 observations and get errors
+throughout the vertical dimension and averaged in surface and bottom zones&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>analysis_extract_and_compare_single_process.py&lt;/code>: This script does the same
+as number 2. However, it is modified slightly to take a command line argument
+which helps it figure out which dates to analyse. This means that this script
+can act as a template for &lt;code>jug&lt;/code> type parallel processing on, e.g. JASMIN.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>analysis_mask_means.py&lt;/code>: This script demonstrates how to use boolean masks
+to obtain regional averages of profiles and errors.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>analysis_average_into_grid_boxes.py&lt;/code>: This script demonstrates how to
+average the data inside a &lt;code>Profile&lt;/code> object into regular grid boxes and
+seasonal climatologies.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="basic-useage">Basic useage&lt;/h3>
+&lt;p>We can create a new Profile object easily:&lt;/p>
+&lt;pre>&lt;code>profile = coast.Profile()
+&lt;/code>&lt;/pre>&lt;p>Currently, this object is empty, and contains no dataset. There are some
+reading routines currently available in Profile for reading EN4 or WOD data
+files. These can be used to easily read data into your new profile object:&lt;/p>
+&lt;pre>&lt;code># Read WOD data into profile object (OVERWRITES DATASET)
+profile.read_wod( filename )
+# Read EN4 data into profile object
+profile.read_en4( filename )
+&lt;/code>&lt;/pre>&lt;p>Alternatively, you can pass an &lt;code>xarray.dataset&lt;/code> straight to Profile:&lt;/p>
+&lt;pre>&lt;code>profile = coast.Profile( dataset = your_dataset, config = config_file [opt] )
+&lt;/code>&lt;/pre>&lt;p>We can do some simple spatial and temporal manipulations of this data:&lt;/p>
+&lt;pre>&lt;code># Cut out a geographical box
+profile = profile.subset_indices_lonlat_box(lonbounds = [-15, 15],
+latbounds = [45, 65])
+# Cut out a time window
+profile = profile.time_slice( date0 = datetime(2004, 1, 1), date1 = datetime(2005,1,1))
+&lt;/code>&lt;/pre>&lt;p>If you are using EN4 data, you can use the &lt;code>process_en4()&lt;/code> routine to apply
+quality control flags to the data (replacing with NaNs):&lt;/p>
+&lt;pre>&lt;code>processed_profile = profile.process_en4()
+&lt;/code>&lt;/pre>&lt;h3 id="direct-model-comparison">Direct Model Comparison&lt;/h3>
+&lt;p>There are a number of routines available for interpolating in the horizontal,
+vertical and in time to do direct comparisons of model and profile data.
+&lt;code>Profile.obs_operator&lt;/code> will do a nearest neighbour spatial interpolation of
+the data in a &lt;code>Gridded&lt;/code> object to profile latitudes/longitudes. It will also
+do a custom time interpolation. For example:&lt;/p>
+&lt;pre>&lt;code># Create gridded object:
+nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=fn_cfg_nemo)
+# Create a landmask array in Gridded
+nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
 nemo.dataset = nemo.dataset.rename({&amp;quot;depth_0&amp;quot;: &amp;quot;depth&amp;quot;})
-&lt;/code>&lt;/pre>&lt;h3 id="2-read-in-en4-data-and-subset-to-domain">2. Read in EN4 data and subset to domain&lt;/h3>
-&lt;p>Create a Profile object. Here we use EN4 data.&lt;/p>
-&lt;pre>&lt;code>profile = coast.Profile(fn_en4, multiple=True, config=&amp;quot;./config/example_en4_profiles.json&amp;quot;)
-&lt;/code>&lt;/pre>&lt;p>Do some processing of the EN4 data. Here, we cut out a box of the
-EN4 data for the region over out model domain. The process_en4()
-routine is called to handle quality control of the data.&lt;/p>
-&lt;p>Get indices of obs within a geographical box and index the profile&lt;/p>
-&lt;pre>&lt;code>ind = profile.subset_indices_lonlat_box([-25.47, 16.25], [44, 63.5])[0]
-profile = profile.isel(profile=ind)
-&lt;/code>&lt;/pre>&lt;h3 id="3-process-en4-data">3. Process EN4 data&lt;/h3>
-&lt;p>Create a new profile object called processed, containing the quality
-controlled data. NOTE: .compute() or .load() will need to be called on
-processed.dataset to access data&lt;/p>
-&lt;pre>&lt;code>processed = profile.process_en4()
-&lt;/code>&lt;/pre>&lt;p>At this point, you can continue is the dataset is small, or save this
-processed data to file using processed.dataset.to_netcdf(&lt;filename>)&lt;/p>
-&lt;h3 id="4-interpolate-gridded-object-to-profile-locations">4. Interpolate Gridded object to Profile locations&lt;/h3>
-&lt;p>Extract profiles from the model at nearest locations and times
-For this we use Profile.obs_operator().&lt;/p>
-&lt;pre>&lt;code>model_profiles = processed.obs_operator(nemo)
-&lt;/code>&lt;/pre>&lt;p>Inside this new profile object, there will be the extracted data and 5 new
-variables describing the spatial and time differences in the interpolation
-and the x, y and t indices used in the nearest neighbour.&lt;/p>
-&lt;p>Lets remove any points where the nearest neighbour was further than x km from
-the original point.&lt;/p>
-&lt;pre>&lt;code>too_far = 5
-keep_indices = model_profiles.dataset.interp_dist &amp;lt;= too_far
-model_profiles = model_profiles.isel(profile=keep_indices)
-processed = processed.isel(profile=keep_indices)
-&lt;/code>&lt;/pre>&lt;h3 id="5-interpolate-obs-and-gridded-onto-reference-depths">5. Interpolate Obs and Gridded onto Reference Depths&lt;/h3>
-&lt;p>Interpolate both model and observed profiles onto reference depths.&lt;/p>
-&lt;p>Define our reference depths&lt;/p>
-&lt;pre>&lt;code>reference_depths = np.arange(0, 500, 2)
-&lt;/code>&lt;/pre>&lt;p>Take just temperature for this example&lt;/p>
-&lt;pre>&lt;code>model_profiles.dataset = model_profiles.dataset[[&amp;quot;temperature&amp;quot;]]
-&lt;/code>&lt;/pre>&lt;p>Vertical interpolation of model profiles using interpolate_vertical().&lt;/p>
-&lt;pre>&lt;code>model_profiles_interp = model_profiles.interpolate_vertical(reference_depths, interp_method=&amp;quot;linear&amp;quot;)
-&lt;/code>&lt;/pre>&lt;p>Vertical interpolation of processed observations&lt;/p>
-&lt;pre>&lt;code>processed.dataset = processed.dataset[[&amp;quot;temperature&amp;quot;, &amp;quot;depth&amp;quot;]]
-processed_interp = processed.interpolate_vertical(reference_depths, interp_method=&amp;quot;linear&amp;quot;)
-&lt;/code>&lt;/pre>&lt;h3 id="6-calculate-errors--differences">6. Calculate Errors &amp;amp; Differences&lt;/h3>
-&lt;p>Data differences/errors. Now that we have our model and observed data on the same depths,
-we can do some differencing to get errors. We use the
-Profile.difference() routine, which will calculate differences,
-absolute differences and square differences&lt;/p>
-&lt;p>Calculate differences as obs minus model&lt;/p>
-&lt;pre>&lt;code>differences = processed_interp.difference(model_profiles_interp)
-&lt;/code>&lt;/pre>&lt;p>Load the differences to memory.&lt;/p>
-&lt;pre>&lt;code>differences.dataset.load()
-&lt;/code>&lt;/pre>&lt;h3 id="7-calculate-regional-average-errors">7. Calculate Regional Average Errors&lt;/h3>
-&lt;p>Average the differences into masked regions
-By averaging the differences into regions, we can get an idea of the
-errors or anomalies in, for example, the North Sea. For this we use
-the coast.Mask_maker() object as an aid&lt;/p>
-&lt;p>First let&amp;rsquo;s make some masks to define regions of the model domain&lt;/p>
+# Use obs operator for horizontal remapping of Gridded onto Profile.
+model_profiles = profile.obs_operator(nemo)
+&lt;/code>&lt;/pre>&lt;p>In the above example we added a &lt;code>landmask&lt;/code> variable to the &lt;code>Gridded&lt;/code> dataset.
+When this is present, the &lt;code>obs_operator&lt;/code> will use this to interpolation to the
+nearest &lt;em>wet&lt;/em> point. If not present, it will just take the nearest grid point.&lt;/p>
+&lt;p>Now that we have interpolated the model onto Profiles, we have a new Profile
+object called &lt;code>model_profiles&lt;/code>. This can be used to do some comparisons with
+our original &lt;code>processed_profile&lt;/code> object, which we created above. First lets
+make our ProfileAnalysis object:&lt;/p>
+&lt;pre>&lt;code>analysis = coast.ProfileAnalysis()
+&lt;/code>&lt;/pre>&lt;p>We can use &lt;code>ProfileAnalysis.interpolate_vertical&lt;/code> to interpolate all variables
+within a Profile object. This can be done onto a set of reference depths or,
+matching another object&amp;rsquo;s depth coordinates by passing another profile object.
+Let&amp;rsquo;s interpolate our model profiles onto observations depths, then interpolate
+both onto a set of reference depths:&lt;/p>
+&lt;pre>&lt;code># Interpolate model profiles onto observation depths
+model_profiles_interp = analysis.interpolate_vertical(model_profiles, profile, interp_method=&amp;quot;linear&amp;quot;)
+# Vertical interpolation of model profiles to reference depths
+model_profiles_interp = panalysis.interpolate_vertical(model_profiles_interp, ref_depth)
+# Interpolation of obs profiles to reference depths
+profile_interp = analysis.interpolate_vertical(profile, ref_depth)
+&lt;/code>&lt;/pre>&lt;p>Now that we have two Profile objects that are horizontally and vertically
+comparable, we can use &lt;code>difference()&lt;/code> to get some basic errors:&lt;/p>
+&lt;pre>&lt;code>differences = analysis.difference(profile_interp, model_profiles_interp)
+&lt;/code>&lt;/pre>&lt;p>This will return a new &lt;code>Profile&lt;/code> object that contains the variable difference,
+absolute differences and square differences at all depths and means for each
+profile.&lt;/p>
+&lt;h3 id="layer-averaging">Layer Averaging&lt;/h3>
+&lt;p>We can use the &lt;code>Profile&lt;/code> object to get mean values between specific depth levels
+or for some layer above the bathymetric depth. The former can be done using
+&lt;code>ProfileAnalysis.depth_means()&lt;/code>, for example the following will return a new
+Profile object containing the means of all variables between 0m and 5m:&lt;/p>
+&lt;pre>&lt;code>profile_surface = analysis.depth_means(profile, [0, 5])
+&lt;/code>&lt;/pre>&lt;p>This can be done for any arbitrary depth layer defined by two depths. In some
+cases it may be that one of the depth levels is not defined by a constant, e.g.
+when calculating bottom means. In this case you may want to calculate averages
+in some layer above the seabed. This can be done using
+&lt;code>ProfileAnalysis.bottom_means()&lt;/code>. For example:&lt;/p>
+&lt;pre>&lt;code>bottom_height = [10, 30, 100] # Use bottom heights of 10m, 30m and 100m for...
+bottom_thresh = [100, 500, np.inf] # ...depths less than 100m, 500m and infinite
+profile_bottom = analysis.bottom_means(profile, bottom_height, bottom_thresh)
+&lt;/code>&lt;/pre>&lt;p>This will calculate bottom means differently depending upon the actualy depth.
+For depths less than 100m, it will take the average of the bottom 10m. For less
+than 500 m (and greater than 100m), it will take the average of the bottom 30m.
+And so on. This routine will look for a variable in the input Profile called
+&lt;code>bathymetry&lt;/code>. If this is not present you will need to insert it yourself, e.g:&lt;/p>
+&lt;pre>&lt;code>profile.dataset[&amp;quot;bathymetry&amp;quot;] = ([&amp;quot;id_dim&amp;quot;], obs_bathymetry_array)
+&lt;/code>&lt;/pre>&lt;p>**NOTE1: The &lt;code>bathymetry&lt;/code> variable does not actually need to contain bathymetric
+depths, it can also be used to calculate means above any non-constant surface.
+For example, it could be mixed layer depth.&lt;/p>
+&lt;p>**NOTE2: This can be done for any Profile object. So, you could use this
+workflow to also average a Profile derived from the &lt;code>difference()&lt;/code> routine.&lt;/p>
+&lt;h3 id="regional-mask-averaging">Regional (Mask) Averaging&lt;/h3>
+&lt;p>We can use &lt;code>Profile&lt;/code> in combination with &lt;code>MaskMaker&lt;/code> to calculate averages over
+regions defined by masks. For example, to get the mean errors in the North Sea.
+Start by creating a list of boolean masks we would like to use:&lt;/p>
 &lt;pre>&lt;code>mm = coast.MaskMaker()
-&lt;/code>&lt;/pre>&lt;p>Make some variables easier to access&lt;/p>
-&lt;pre>&lt;code>bath = nemo.dataset.bathymetry.values
-lon = nemo.dataset.longitude.values
-lat = nemo.dataset.latitude.values
-&lt;/code>&lt;/pre>&lt;p>Make a North Sea and Whole Domain mask&lt;/p>
-&lt;pre>&lt;code>mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
-mm_whole_domain = np.ones(lon.shape)
-mask_list = [mm_north_sea, mm_whole_domain]
-mask_names = [&amp;quot;North Sea&amp;quot;, &amp;quot;Whole Domain&amp;quot;]
-&lt;/code>&lt;/pre>&lt;p>Turn mask list into an xarray dataset&lt;/p>
-&lt;pre>&lt;code>mask_list = coast.MaskMaker.make_mask_dataset(lon, lat, mask_list)
-&lt;/code>&lt;/pre>&lt;p>Determine whether each profile is in each masked region or not&lt;/p>
-&lt;pre>&lt;code>mask_indices = model_profiles_interp.determine_mask_indices(mask_list)
-&lt;/code>&lt;/pre>&lt;p>Do average differences for each region&lt;/p>
-&lt;pre>&lt;code>mask_means = differences.mask_means(mask_indices)
-&lt;/code>&lt;/pre>&lt;h3 id="8-calculate-surface-and-bottom-valueserrors">8. Calculate Surface and Bottom Values/Errors&lt;/h3>
-&lt;p>Surface and bottom averaging.
-We can use a couple of routines to get surface and bottom values
-for the profile data. This can be used to give us maps of e.g. SST.
-It also allows us to calculate more statistics such as the CRPS&lt;/p>
-&lt;p>Lets get surface values by averaging over the top 5m of data&lt;/p>
-&lt;pre>&lt;code>surface = 5
-model_profiles_surface = model_profiles.depth_means([0, surface])
-obs_profiles_surface = processed.depth_means([0, surface])
-&lt;/code>&lt;/pre>&lt;p>Get differences&lt;/p>
-&lt;pre>&lt;code>surface_errors = obs_profiles_surface.difference(model_profiles_surface)
-&lt;/code>&lt;/pre>&lt;p>Lets get bottom values by averaging over the bottom 30m, except whether
-depth is &amp;lt;100m, then average over the bottom 10m&lt;/p>
-&lt;pre>&lt;code>model_profiles_bottom = model_profiles.bottom_means([10, 30], [100, np.inf])
-obs_bathymetry = model_profiles.dataset[&amp;quot;bathymetry&amp;quot;].values
-processed.dataset[&amp;quot;bathymetry&amp;quot;] = ([&amp;quot;profile&amp;quot;], obs_bathymetry)
-obs_profiles_bottom = processed.bottom_means([10, 30], [100, np.inf])
-&lt;/code>&lt;/pre>&lt;p>Get differences&lt;/p>
-&lt;pre>&lt;code>bottom_errors = obs_profiles_bottom.difference(model_profiles_bottom)
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
-&lt;p>This is a demonstration script for using the Tidegauge object in the COAsT
-package. This object has strict data formatting requirements, which are
-outlined in tidegauge.py.&lt;/p>
-&lt;p>Begin by importing coast and other packages&lt;/p>
+# Define Regional Masks
+regional_masks = []
+bath = nemo.dataset.bathymetry.values
+# Add regional mask for whole domain
+regional_masks.append(np.ones(lon.shape))
+# Add regional mask for North Sea
+regional_masks.append(mm.region_def_nws_north_sea(lon, lat, bath))
+region_names = [&amp;quot;whole_domain&amp;quot;,&amp;quot;north_sea&amp;quot;,]
+&lt;/code>&lt;/pre>&lt;p>Next, we must make these masks into datasets using &lt;code>MaskMaker.make_mask_dataset&lt;/code>.
+Masks should be 2D datasets defined by booleans. In our example here we have used
+the latitude/longitude array from the nemo object, however it can be defined
+however you like.&lt;/p>
+&lt;pre>&lt;code>mask_list = mm.make_mask_dataset(lon, lat, regional_masks)
+&lt;/code>&lt;/pre>&lt;p>Then we use &lt;code>ProfileAnalysis.determine_mask_indices&lt;/code> to figure out which
+profiles in a &lt;code>Profile&lt;/code> object lie within each regional mask:&lt;/p>
+&lt;pre>&lt;code>mask_indices = analysis.determine_mask_indices(profile, mask_list)
+&lt;/code>&lt;/pre>&lt;p>This returns an object called &lt;code>mask_indices&lt;/code>, which is required to pass to
+&lt;code>ProfileAnalysis.mask_means()&lt;/code>. This routine will return a new xarray dataset
+containing averaged data for each region:&lt;/p>
+&lt;pre>&lt;code>mask_means = analysis.mask_means(profile, mask_indices)
+&lt;/code>&lt;/pre>&lt;h3 id="gridding-profile-data">Gridding Profile Data&lt;/h3>
+&lt;p>If you have large amount of profile data you may want to average it into
+grid boxes to get, for example, mean error maps or climatologies. This can be
+done using &lt;code>ProfileAnalysis.average_into_grid_boxes()&lt;/code>.&lt;/p>
+&lt;p>We can create a gridded dataset of all the data using:&lt;/p>
+&lt;pre>&lt;code>grid_lon = np.arange(-15, 15, 0.5)
+grid_lat = np.arange(45, 65, 0.5)
+prof_gridded = analysis.average_into_grid_boxes(grid_lon, grid_lat)
+&lt;/code>&lt;/pre>&lt;p>Alternatively, we can calculate averages for each season:&lt;/p>
+&lt;pre>&lt;code>prof_gridded_DJF = profile_analysis.average_into_grid_boxes(grid_lon, grid_lat, season=&amp;quot;DJF&amp;quot;, var_modifier=&amp;quot;_DJF&amp;quot;)
+prof_gridded_MAM = profile_analysis.average_into_grid_boxes(grid_lon, grid_lat, season=&amp;quot;MAM&amp;quot;, var_modifier=&amp;quot;_MAM&amp;quot;)
+prof_gridded_JJA = profile_analysis.average_into_grid_boxes(grid_lon, grid_lat, season=&amp;quot;JJA&amp;quot;, var_modifier=&amp;quot;_JJA&amp;quot;)
+prof_gridded_SON = profile_analysis.average_into_grid_boxes(grid_lon, grid_lat, season=&amp;quot;SON&amp;quot;, var_modifier=&amp;quot;_SON&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>Here, &lt;code>season&lt;/code> specifies which season to average over and &lt;code>var_modifier&lt;/code> is added to the end of
+all variable names in the object&amp;rsquo;s dataset.&lt;/p>
+&lt;p>This function returns a new Gridded object. It also contains a new variable
+called &lt;code>grid_N&lt;/code>, which stores how many profiles were averaged into each grid box.
+You may want to use this when using the analysis.&lt;/p></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegauge/</guid><description>
+&lt;h1 id="overview">Overview&lt;/h1>
+&lt;p>This is an object for storage and manipulation of tide gauge data
+in a single dataset. This may require some processing of the observations
+such as interpolation to a common time step.&lt;/p>
+&lt;p>This object&amp;rsquo;s dataset should take the form (as with Timeseries):&lt;/p>
+&lt;pre>&lt;code>Dimensions:
+id_dim : The locations dimension. Each time series has an index
+time : The time dimension. Each datapoint at each port has an index
+Coordinates:
+longitude (id_dim) : Longitude values for each port index
+latitude (id_dim) : Latitude values for each port index
+time (time) : Time values for each time index (datetime)
+id_name (id_dim) : Name of index, e.g. port name or mooring id.
+&lt;/code>&lt;/pre>
+&lt;p>An example data variable could be ssh, or ntr (non-tidal residual). This
+object can also be used for other instrument types, not just tide gauges.
+For example moorings.&lt;/p>
+&lt;p>Every &lt;code>id&lt;/code> index for this object should use the same time coordinates.
+Therefore, timeseries need to be aligned before being placed into the
+object. If there is any padding needed, then NaNs should be used. NaNs
+should also be used for quality control/data rejection.&lt;/p>
+&lt;h1 id="example-useage">Example Useage&lt;/h1>
+&lt;p>Please see &lt;code>COAsT/example_scripts/tidegauge_validation&lt;/code> for some working
+example scripts for using the &lt;code>Tidegauge&lt;/code> and &lt;code>TidegaugeAnalysis&lt;/code> classes.&lt;/p>
+&lt;p>To get started you can use example data detailed in the Getting Started section:&lt;/p>
 &lt;pre>&lt;code>import coast
-import datetime
-&lt;/code>&lt;/pre>&lt;p>And by defining some file paths from the COAsT example files&lt;/p>
-&lt;pre>&lt;code>fn_nemo_dat = './example_files/coast_example_nemo_data.nc'
-fn_nemo_dom = './example_files/coast_example_nemo_domain.nc'
-fn_config_t_grid = './config/example_nemo_grid_t.json',
-fn_tidegauge = './example_files/tide_gauges/lowestoft-p024-uk-bodc'
-fn_tidegauge_mult = './example_files/tide_gauges/l*'
-&lt;/code>&lt;/pre>&lt;p>We need to load in a Gridded object for doing things with NEMO.&lt;/p>
-&lt;pre>&lt;code>nemo = coast.Gridded(fn_nemo_dat, fn_nemo_dom, config=fn_config_t_grid)
-&lt;/code>&lt;/pre>&lt;p>And now we can load in our tidegauge data. By default, Tidegauge is set up
-to read in GESLA ASCII files. However, if no path is supplied, then the
-object&amp;rsquo;s dataset will be initialised as None. Custom data can then be loaded
-if desired, as long as it follows the data formatting for Tidegauge. Here
-we load data between two specified dates:&lt;/p>
-&lt;pre>&lt;code>date0 = datetime.datetime(2007,1,10)
+dn_files = &amp;quot;./example_files/&amp;quot;
+fn_dom = dn_files + &amp;quot;coast_example_nemo_domain.nc&amp;quot;
+fn_dat = dn_files + &amp;quot;coast_example_nemo_data.nc&amp;quot;
+fn_config = &amp;quot;./config/example_nemo_grid_t.json&amp;quot;
+fn_multigauge = dn_files + &amp;quot;tg_amm15.nc&amp;quot;
+fn_tidegauge = dn_files + &amp;quot;tide_gauges/lowestoft-p024-uk-bodc&amp;quot;
+nemo = coast.Gridded(fn_dat, fn_dom, config=fn_config)
+&lt;/code>&lt;/pre>&lt;h3 id="reading-and-manipulation">Reading and manipulation&lt;/h3>
+&lt;p>We can create our empty tidegauge object:&lt;/p>
+&lt;pre>&lt;code>tidegauge = coast.Tidegauge()
+&lt;/code>&lt;/pre>&lt;p>The &lt;code>Tidegauge&lt;/code> class contains multiple methods for reading different typical
+tidegauge formats. This includes reading from the GESLA and BODC databases.
+To read a gesla file between two dates, we can use:&lt;/p>
+&lt;pre>&lt;code>import datetime
+date0 = datetime.datetime(2007,1,10)
 date1 = datetime.datetime(2007,1,12)
-tidegauge = coast.Tidegauge(fn_tidegauge, date_start = date0, date_end = date1)
-&lt;/code>&lt;/pre>&lt;p>Before comparing our observations to the model, we will interpolate a model
-variable to the same time and geographical space as the tidegauge. This is
-done using the obs_operator() method:&lt;/p>
-&lt;pre>&lt;code>tidegauge.obs_operator(nemo, mod_var_name='ssh', time_interp='nearest')
-&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated variable called interp_ssh and
-saved it back into our Tidegauge object. Take a look at tidegauge.dataset
-to see for yourself.&lt;/p>
-&lt;p>Next we will compare this interpolated variable to an observed variable
-using some basic metrics. The basic_stats() routine can be used for this,
-which calculates some simple metrics including differences, RMSE and
-correlations. NOTE: This may not be a wise choice of variables.&lt;/p>
-&lt;pre>&lt;code>stats = tidegauge.basic_stats('interp_ssh', 'sea_level')
-&lt;/code>&lt;/pre>&lt;p>Take a look inside stats.dataset to see all of the new variables. When using
-basic stats, the returned object is also an Tidegauge object, so all of the
-same methods can be applied. Alternatively, if you want to save the new
-metrics to the original Tidegauge object, set create_new_object = False.&lt;/p>
-&lt;p>Now we will do a more complex comparison using the Continuous Ranked
-Probability Score (CRPS). For this, we need to hand over the model object,
-a model variable and an observed variable. We also give it a neighbourhood
-radius in km (nh_radius).&lt;/p>
-&lt;pre>&lt;code>crps = tidegauge.crps(nemo, model_var_name = 'ssh', obs_var_name = 'sea_level',
-nh_radius = 20)
-&lt;/code>&lt;/pre>&lt;p>Again, take a look inside crps.dataset to see some new variables. Similarly
-to basic_stats, create_new_object can be set to false to save output to
-the original tidegauge object.&lt;/p>
-&lt;p>Tidegauge has ready made quick plotting routines for viewing time series
+tidegauge.read_gesla_v3(fn_tidegauge, date_start = date0, date_end = date1)
+&lt;/code>&lt;/pre>&lt;p>For the rest of our examples, we will use data from multiple tide gauges
+on the same time dimension, read in from a simple netCDF file:&lt;/p>
+&lt;pre>&lt;code>import xarray as xr
+dataset = xr.open_dataset( fn_multigauge )
+tidegauge = coast.Tidegauge(dataset)
+tidegauge.dataset = tidegauge.dataset.set_coords('time')
+&lt;/code>&lt;/pre>&lt;p>Tidegauge has ready made quick plotting routines for viewing time series
 and tide gauge location. To look at the tide gauge location:&lt;/p>
 &lt;pre>&lt;code>fig, ax = tidegauge.plot_on_map()
 &lt;/code>&lt;/pre>&lt;p>Or to look at a time series of the sea_level variable:&lt;/p>
-&lt;pre>&lt;code>fig, ax = tidegauge.plot_timeseries('sea_level', qc_colors=True)
+&lt;pre>&lt;code>id=1
+tidegauge.dataset.ssh[id].rename({'t_dim':'time'}).plot() # rename time dimension to enable automatic x-axis labelling
+plt.show()
 &lt;/code>&lt;/pre>&lt;p>Note that start and end dates can also be specified for plot_timeseries().&lt;/p>
-&lt;p>As stats and crps are also Tidegauge objects, the same time series plotting
-functionality can be used:&lt;/p>
-&lt;pre>&lt;code>crps.plot_timeseries('crps')
-stats.plot_timeseries('absolute_error')
-&lt;/code>&lt;/pre>&lt;p>Each Tidegauge object only holds data for a single tidegauge. There is some
-functionality for dealing with multiple gauges in COAsT. To load multiple
-GESLA tidegauge files, we use the static method create_multiple_tidegauge().
-This routine takes a list of files or a wildcard string and loads them all
-into a list of Tidegauge objects.&lt;/p>
-&lt;pre>&lt;code>from coast.tidegauge import Tidegauge
-date0 = datetime.datetime(2007,1,10)
-date1 = datetime.datetime(2007,1,12)
-tidegauge_list = Tidegauge.create_multiple_tidegauge(fn_tidegauge_mult,
-date0,date1)
-&lt;/code>&lt;/pre>&lt;p>Now that we have tidegauge_list, we can plot the locations of all tide gauges
-as follows:&lt;/p>
-&lt;pre>&lt;code>fig, ax = Tidegauge.plot_on_map_multiple(tidegauge_list)
-&lt;/code>&lt;/pre>&lt;p>To do analysis on multiple gauges, a simple looping script can be setup.
-For example, to obtain basic stats:&lt;/p>
-&lt;pre>&lt;code>for tg in tidegauge_list:
-tg.obs_operator(nemo, 'ssh')
-tg.basic_stats('interp_ssh', 'sea_level', create_new_object=False)
-&lt;/code>&lt;/pre>&lt;p>And now some of these new values can be plotted on a map, again using
-plot_on_map_multiple:&lt;/p>
-&lt;pre>&lt;code>fig, ax = Tidegauge.plot_on_map_multiple(tidegauge_list, color_var_str='rmse')
-&lt;/code>&lt;/pre></description></item><item><title>Docs: TidegaugeMultiple</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/tidegaugemultiple/</guid><description>
-&lt;p>The TidegaugeMultiple object is for storing multiple tide gauge/time series datasets in one object.
-It has two dimensions: (&amp;lsquo;id&amp;rsquo;, &amp;lsquo;t_dim&amp;rsquo;) and is a child of the Timeseries and Indexed objects.
-All timeseries in this object must lie on the same time dimension and indices. If not the case
-in your data, then it must be preprocessed before use with this object.&lt;/p>
-&lt;p>The Tidegauge object on the other hand, currently only stores one time series at a time. See
-the examples page for Tidegauge for more information. In the future, these objects will be
-combined.&lt;/p>
-&lt;p>The TidegaugeMultiple object contains multiple routines suitable for validation of SSH.
-Below are some examples of how to use this object for this purpose.&lt;/p>
-&lt;p>This script gives an overview of some of validation tools available when
-using the TidegaugeMultiple object in COAsT.&lt;/p>
-&lt;p>For this a script, a premade netcdf file containing tide gauge data is used.&lt;/p>
-&lt;h3 id="1-setup">1. Setup&lt;/h3>
-&lt;pre>&lt;code>import xarray as xr
-import numpy as np
-import matplotlib.pyplot as plt
-import coast
-import datetime
-&lt;/code>&lt;/pre>&lt;p>Define paths&lt;/p>
-&lt;pre>&lt;code>fn_dom = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/mesh_mask.nc&amp;quot;
-fn_dat = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/sossheig*&amp;quot;
-fn_tg = &amp;quot;/Users/dbyrne/Projects/coast/workshops/07092021/data/tg_amm15.nc&amp;quot;
-&lt;/code>&lt;/pre>&lt;p>Create gridded object and load data&lt;/p>
-&lt;pre>&lt;code>nemo = coast.Gridded(fn_dat, fn_dom, multiple=True, config=&amp;quot;./config/example_nemo_grid_t.json&amp;quot;)
-&lt;/code>&lt;/pre>&lt;p>Create a landmask array and put it into the nemo object.
-Here, using the bottom_level == 0 variable from the domain file is enough.&lt;/p>
-&lt;pre>&lt;code>nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
-&lt;/code>&lt;/pre>&lt;p>Rename depth_0 to be depth to work with routines expectations&lt;/p>
+&lt;p>We can do some simple spatial and temporal manipulations of this data:&lt;/p>
+&lt;pre>&lt;code># Cut out a geographical box
+tidegauge = tidegauge.subset_indices_lonlat_box(lonbounds = [-5, 0],
+latbounds = [50, 55])
+# Cut out a time window
+tidegauge = tidegauge.time_slice( date0 = datetime.datetime(2007, 1, 1), date1 = datetime.datetime(2007,1,31))
+&lt;/code>&lt;/pre>&lt;p>We can extract just some variables using, e.g.:&lt;/p>
 &lt;pre>&lt;code>nemo.dataset = nemo.dataset.rename({&amp;quot;depth_0&amp;quot;: &amp;quot;depth&amp;quot;})
 nemo.dataset = nemo.dataset[[&amp;quot;ssh&amp;quot;, &amp;quot;landmask&amp;quot;]]
-&lt;/code>&lt;/pre>&lt;h3 id="2-create-tidegaugemultiple-object">2. Create TidegaugeMultiple object&lt;/h3>
-&lt;p>Create the object and then inset the netcdf dataset&lt;/p>
-&lt;pre>&lt;code>obs = coast.TidegaugeMultiple()
-obs.dataset = xr.open_dataset(fn_tg)
-&lt;/code>&lt;/pre>&lt;p>Cut down data to be only in 2018 to match model data.&lt;/p>
-&lt;pre>&lt;code>start_date = datetime.datetime(2018, 1, 1)
-end_date = datetime.datetime(2018, 12, 31)
-obs.dataset = coast.general_utils.data_array_time_slice(obs.dataset, start_date, end_date)
-&lt;/code>&lt;/pre>&lt;h3 id="3-interpolate-model-data-onto-obs-locations">3. Interpolate model data onto obs locations&lt;/h3>
-&lt;p>Obs_operator is used to extract time series from the model:&lt;/p>
-&lt;pre>&lt;code>model_timeseries = obs.obs_operator(nemo)
-&lt;/code>&lt;/pre>&lt;p>In this case, transpose the interpolated dataset so dimensions are
-in the correct order: (&amp;lsquo;id&amp;rsquo;,&amp;lsquo;t_dim&amp;rsquo;)&lt;/p>
-&lt;pre>&lt;code>model_timeseries.dataset = model_timeseries.dataset.transpose()
-&lt;/code>&lt;/pre>&lt;p>Process the data a little
-This routine searches for missing values in each dataset and applies them
-equally to each corresponding dataset&lt;/p>
-&lt;pre>&lt;code>obs, model_timeseries = obs.match_missing_values(model_timeseries)
-&lt;/code>&lt;/pre>&lt;p>Subtract means from all time series&lt;/p>
-&lt;pre>&lt;code>obs = obs.demean_timeseries()
-model_timeseries = model_timeseries.demean_timeseries()
-&lt;/code>&lt;/pre>&lt;p>Now you have equivalent and comparable sets of time series that can be
+&lt;/code>&lt;/pre>&lt;h3 id="direct-model-comparison">Direct model comparison&lt;/h3>
+&lt;p>Before comparing our observations to the model, we will interpolate a model
+variable to the same time and geographical space as the tidegauge. This is
+done using the `obs_operator()`` method:&lt;/p>
+&lt;pre>&lt;code># Suppose we have created a Gridded object called nemo
+tidegauge_from_model = tidegauge.obs_operator(nemo, time_interp='nearest')
+&lt;/code>&lt;/pre>&lt;p>Doing this has created a new interpolated tidegauge called &lt;code>tidegauge_from_model&lt;/code>
+Take a look at &lt;code>tidegauge_from_model.dataset&lt;/code> to see for yourself. If a &lt;code>landmask&lt;/code>
+variable is present in the &lt;code>Gridded&lt;/code> dataset then the nearest wet points will
+be taken. Otherwise, just the nearest point is taken. If &lt;code>landmask&lt;/code> is required
+but not present you will need to insert it into the dataset yourself. For nemo
+data, you could use the &lt;code>bottom_level&lt;/code> or &lt;code>mbathy&lt;/code> variables to do this. E.g:&lt;/p>
+&lt;pre>&lt;code>nemo.dataset[&amp;quot;landmask&amp;quot;] = nemo.dataset.bottom_level == 0
+&lt;/code>&lt;/pre>&lt;p>For a good comparison, we would like to make sure that both the observed and
+modelled &lt;code>Tidegauge&lt;/code> objects contain the same missing values. &lt;code>TidegaugeAnalysis&lt;/code>
+contains a routine for ensuring this. First create our analysis object:&lt;/p>
+&lt;pre>&lt;code>analysis = coast.TidegaugeAnalysis()
+&lt;/code>&lt;/pre>&lt;p>Then use the &lt;code>match_missing_values()&lt;/code> routine:&lt;/p>
+&lt;pre>&lt;code>obs_ssh, model_ssh = analysis.match_missing_values(tidegauge.dataset.ssh,
+tidegauge_from_model.dataset.ssh)
+&lt;/code>&lt;/pre>&lt;p>Although we input data arrays to the above routine, it returns two new Tidegauge
+objects. Now you have equivalent and comparable sets of time series that can be
 easily compared.&lt;/p>
-&lt;h3 id="4-calculate-non-tidal-residuals">4. Calculate non tidal residuals&lt;/h3>
-&lt;p>First, do a harmonic analysis. This routine uses utide&lt;/p>
-&lt;pre>&lt;code>ha_mod = model_timeseries.harmonic_analysis_utide()
-ha_obs = obs.harmonic_analysis_utide()
-&lt;/code>&lt;/pre>&lt;p>Create new TidegaugeMultiple objects containign reconstructed tides&lt;/p>
-&lt;pre>&lt;code>tide_mod = model_timeseries.reconstruct_tide_utide(ha_mod)
-tide_obs = obs.reconstruct_tide_utide(ha_obs)
-&lt;/code>&lt;/pre>&lt;p>Get new TidegaugeMultiple objects containing non tidal residuals.&lt;/p>
-&lt;pre>&lt;code>ntr_mod = model_timeseries.calculate_residuals(tide_mod)
-ntr_obs = obs.calculate_residuals(tide_obs)
-&lt;/code>&lt;/pre>&lt;p>Other interesting applications here included only reconstructing specified
-tidal frequency bands and validating this.&lt;/p>
-&lt;h3 id="5-calculate-errors">5. Calculate errors&lt;/h3>
 &lt;p>The difference() routine will calculate differences, absolute_differences
 and squared differenced for all variables:&lt;/p>
-&lt;pre>&lt;code>ntr_diff = ntr_obs.difference(ntr_mod)
-ssh_diff = obs.difference(model_timeseries)
+&lt;pre>&lt;code>diff = analysis.difference(obs_ssh.dataset, model_ssh.dataset)
 &lt;/code>&lt;/pre>&lt;p>We can then easily get mean errors, MAE and MSE&lt;/p>
-&lt;pre>&lt;code>mean_stats = ntr_diff.dataset.mean(dim=&amp;quot;t_dim&amp;quot;, skipna=True)
-&lt;/code>&lt;/pre>&lt;h3 id="6-threshold-statistics-for-non-tidal-residuals">6. Threshold Statistics for Non-tidal residuals&lt;/h3>
+&lt;pre>&lt;code>mean_stats = diff.dataset.mean(dim=&amp;quot;t_dim&amp;quot;, skipna=True)
+&lt;/code>&lt;/pre>&lt;h3 id="harmonic-analysis--non-tidal-residuals">Harmonic Analysis &amp;amp; Non-tidal Residuals&lt;/h3>
+&lt;p>The &lt;code>Tidegauge&lt;/code> object contains some routines which make harmonic analysis and
+the calculation/comparison of non-tidal residuals easier. Harmonic analysis is
+done using the &lt;code>utide&lt;/code> package. Please see &lt;a href="https://pypi.org/project/UTide/">here&lt;/a> for more info.&lt;/p>
+&lt;p>First we can use the &lt;code>TidegaugeAnalysis&lt;/code> class to do a harmonic analysis. Suppose
+we have two &lt;code>Tidegauge&lt;/code> objects called &lt;code>tidegauge&lt;/code> and &lt;code>tidegauge_from_model&lt;/code> generated from tidegauge observations and model simulations respectively.&lt;/p>
+&lt;p>We can subtract means from all time series:&lt;/p>
+&lt;pre>&lt;code>analysis = coast.TidegaugeAnalysis()
+obs_new, model_new = analysis.match_missing_values(tidegauge.dataset.ssh, tidegauge_from_model.dataset.ssh)
+&lt;/code>&lt;/pre>&lt;p>Then subtract means from all the time series&lt;/p>
+&lt;pre>&lt;code>model_timeseries = analysis.demean_timeseries(model_new.dataset)
+obs_timeseries = analysis.demean_timeseries(obs_new.dataset)
+&lt;/code>&lt;/pre>&lt;p>Then we can apply the harmonic analysis (though the example data is too short for this example to be that meaningful):&lt;/p>
+&lt;pre>&lt;code>ha_mod = analysis.harmonic_analysis_utide(model_timeseries.dataset.ssh, min_datapoints = 1)
+ha_obs = analysis.harmonic_analysis_utide(obs_timeseries.dataset.ssh, min_datapoints = 1)
+&lt;/code>&lt;/pre>&lt;p>The &lt;code>harmonic_analysis_utide&lt;/code> routine returns a list of &lt;code>utide&lt;/code> structure object,
+one for each &lt;code>id_dim&lt;/code> in the &lt;code>Tidegauge&lt;/code> object. It can be passed any of the
+arguments that go to &lt;code>utide&lt;/code>. It also has an additional argument &lt;code>min_datapoints&lt;/code>
+which determines a minimum number of data points for the harmonics analysis.
+If a tidegauge &lt;code>id_dim&lt;/code> has less than this number, it will not return an analysis.&lt;/p>
+&lt;p>Now, create new TidegaugeMultiple objects containing reconstructed tides:&lt;/p>
+&lt;pre>&lt;code>tide_mod = analysis.reconstruct_tide_utide(model_timeseries.dataset.time, ha_mod)
+tide_obs = analysis.reconstruct_tide_utide(obs_timeseries.dataset.time, ha_obs)
+&lt;/code>&lt;/pre>&lt;p>Get new TidegaugeMultiple objects containing non tidal residuals:&lt;/p>
+&lt;pre>&lt;code>ntr_mod = analysis.calculate_non_tidal_residuals(model_timeseries.dataset.ssh, tide_mod.dataset.reconstructed)
+ntr_obs = analysis.calculate_non_tidal_residuals(obs_timeseries.dataset.ssh, tide_obs.dataset.reconstructed)
+&lt;/code>&lt;/pre>&lt;p>By default, this routines will apply &lt;code>scipy.signal.savgol_filter&lt;/code> to the non-tidal residuals
+to remove some noise. This can be switched off using &lt;code>apply_filter = False&lt;/code>.&lt;/p>
+&lt;p>The Doodson X0 filter is an alternative way of estimating non-tidal residuals:&lt;/p>
+&lt;pre>&lt;code>dx0 = analysis.doodson_x0_filter(tidegauge.dataset, &amp;quot;ssh&amp;quot;)
+&lt;/code>&lt;/pre>&lt;p>This will return a new &lt;code>Tidegauge()&lt;/code> object containing filtered &lt;code>ssh&lt;/code> data.&lt;/p>
+&lt;h3 id="6-threshold-statistics">6. Threshold Statistics&lt;/h3>
 &lt;p>This is a simple extreme value analysis of whatever data you use.
 It will count the number of peaks and the total time spent over each
 threshold provided. It will also count the numbers of daily and monthly
-maxima over each threshold&lt;/p>
-&lt;pre>&lt;code>thresh_mod = ntr_mod.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
-thresh_obs = ntr_obs.threshold_statistics(thresholds=np.arange(0, 2, 0.2))
+maxima over each threshold. To this, a &lt;code>Tidegauge&lt;/code> object and an array of
+thresholds (in metres) should be passed:&lt;/p>
+&lt;pre>&lt;code>import numpy as np
+thresh_mod = analysis.threshold_statistics(ntr_mod.dataset, thresholds=np.arange(0, 2, 0.2))
+thresh_obs = analysis.threshold_statistics(ntr_obs.dataset, thresholds=np.arange(0, 2, 0.2))
 &lt;/code>&lt;/pre></description></item><item><title>Docs: Contour subsetting</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/contour/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/contour/</guid><description>
 &lt;p>In this tutorial we take a look the following Isobath Contour Methods:&lt;/p>
 &lt;pre>&lt;code>1. Extract isbath contour between two points
@@ -666,13 +738,13 @@ cont_f.data_cross_flow.transport_across_AB_spg
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Create a Gridded object and load in the data:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_t&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>The stratification variables are computed as centred differences of the t-grid variables. These will become w-grid variables. So, create an empty w-grid object, to store stratification. Note how we do not pass a NEMO data file for this load.&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">nemo_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">config_w&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="subset-the-domain">Subset the Domain&lt;/h2>
 &lt;p>We are not interested in the whole doman so it is computationally efficient to subset the data for the region of interest. Here we will look at the North Sea between (51N: 62N) and (-4E:15E). We will great subset objects for both the t- and w-grids:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">ind_2d&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
-&lt;span style="color:#000">nemo_nwes_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
+&lt;span style="color:#000">nemo_nwes_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_2d&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_2d&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
 &lt;span style="color:#000">ind_2d&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">51&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">62&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">15&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
-&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_sci&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
+&lt;span style="color:#000">nemo_nwes_w&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">nemo_w&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">y_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_2d&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">x_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind_2d&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span> &lt;span style="color:#8f5902;font-style:italic">#nwes = northwest european shelf&lt;/span>
 &lt;span style="color:#000">nemo_nwes_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="diagnostic-calculations-and-plotting">Diagnostic calculations and plotting&lt;/h2>
 &lt;p>We can use a COAsT method to construct the in-situ density:&lt;/p>
@@ -764,7 +836,49 @@ Or load file as see that the xarray structure is preserved.&lt;/p>
 &lt;li>
 &lt;p>&lt;strong>Add new test file to unit_test.py:&lt;/strong> You need to let the main &lt;code>unit_test.py&lt;/code> script know about your new file and class. At the top of this file is a selection of import statement. Follow the other lines here by importing the names of your test class(es) from your file. For example, to import the &lt;code>test_TEMPLATE&lt;/code> class from &lt;code>test_TEMPLATE.py&lt;/code>, you can add the line &lt;code>from test_TEMPLATE.py import test_TEMPLATE&lt;/code>. Next, you must add this imported classes to the &lt;code>tests_to_do&lt;/code> list below. And that&amp;rsquo;s it!&lt;/p>
 &lt;/li>
-&lt;/ol></description></item><item><title>Docs: Configuration files</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</link><pubDate>Tue, 07 Sep 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</guid><description>
+&lt;/ol>
+&lt;h2 id="unit-testing-coverage">Unit testing coverage&lt;/h2>
+&lt;p>Code coverage is a useful statistic that tells us how much of the package (and individual classes) are &amp;lsquo;covered&amp;rsquo; by the unit testing system. Coverage means what percentage of the code is &amp;lsquo;touched&amp;rsquo; by the unit testing system. This is not built in to the system used by COAsT, however it is easy to set up and use.&lt;/p>
+&lt;p>The Coverage python tool can be used to do this. For more information see &lt;a href="https://coverage.readthedocs.io/en/6.3.2/install.html">here&lt;/a>. The tool can be easily installed using pip:&lt;/p>
+&lt;p>&lt;code>pip install coverage&lt;/code>&lt;/p>
+&lt;p>Then we use the tool from the command line/terminal. From the main COAsT directory, enter:&lt;/p>
+&lt;pre>&lt;code>coverage run unit_testing/unit_test.py
+&lt;/code>&lt;/pre>&lt;p>This will run the unit test as usual, but with the coverage tool in the background (takes a little longer than usual). The result is a new output file in the COAsT directory called .coverage. We can&amp;rsquo;t read this but can transform it into a readable report using:&lt;/p>
+&lt;pre>&lt;code>coverage report
+&lt;/code>&lt;/pre>&lt;p>Which outputs statistics to the screen for each file and the whole package. For example:&lt;/p>
+&lt;pre>&lt;code class="language-Name" data-lang="Name">------------------------------------------------------------------
+coast/__init__.py 28 0 100%
+coast/altimetry.py 169 139 18%
+coast/argos.py 24 14 42%
+coast/climatology.py 85 67 21%
+coast/coast.py 205 147 28%
+coast/config_parser.py 51 9 82%
+coast/config_structure.py 53 0 100%
+coast/contour.py 485 443 9%
+coast/crps_util.py 117 56 52%
+coast/eof.py 83 76 8%
+coast/general_utils.py 153 88 42%
+coast/glider.py 16 8 50%
+coast/gridded.py 377 267 29%
+coast/index.py 49 25 49%
+coast/internal_tide.py 81 72 11%
+coast/lagrangian.py 3 0 100%
+coast/logging_util.py 50 3 94%
+coast/mask_maker.py 66 46 30%
+coast/oceanparcels.py 16 8 50%
+coast/plot_util.py 129 94 27%
+coast/profile.py 345 314 9%
+coast/stats_util.py 67 43 36%
+coast/tidegauge.py 453 113 75%
+coast/tidegauge_analysis.py 189 15 92%
+coast/timeseries.py 35 29 17%
+coast/track.py 3 0 100%
+coast/transect.py 420 385 8%
+coast/xesmf_convert.py 32 21 34%
+------------------------------------------------------------------
+TOTAL 4851 3071 37%
+&lt;/code>&lt;/pre>&lt;p>This table shows statistics for each file in the COAsT package. There are three key statistics returns: &lt;code>stmts&lt;/code>, &lt;code>Miss&lt;/code> and &lt;code>Cover&lt;/code>. &lt;code>stmts&lt;/code> tells us how many executable statements are reached, &lt;code>Miss&lt;/code> tells us how many were missed and &lt;code>Cover&lt;/code> tells us the percentage coverage.&lt;/p>
+&lt;p>There are plenty of extra features, such as outputting to various file types and flags which control the coverage calculations. See the website for more information.&lt;/p></description></item><item><title>Docs: Configuration files</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</link><pubDate>Tue, 07 Sep 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/configuration_files/</guid><description>
 &lt;p>Configuration file code can be found in
 &lt;code>coast/config&lt;/code> within the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/tree/master/coast/config">COAsT&lt;/a> github repository.
 This code is used internally within the package.&lt;/p>
