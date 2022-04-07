@@ -74,16 +74,18 @@ model_new = tganalysis.demean_timeseries(model_new.dataset)
 #%% Calculate non tidal residuals
 
 # First, do a harmonic analysis. This routine uses utide
-ha_mod = tganalysis.harmonic_analysis_utide(model_new.dataset.ssh)
-ha_obs = tganalysis.harmonic_analysis_utide(obs_new.dataset.ssh)
+ha_mod = tganalysis.harmonic_analysis_utide(model_new.dataset.ssh, min_datapoints = 1)
+ha_obs = tganalysis.harmonic_analysis_utide(obs_new.dataset.ssh, min_datapoints = 1)
 
 # Create new TidegaugeMultiple objects containing reconstructed tides
 tide_mod = tganalysis.reconstruct_tide_utide(model_new.dataset.time, ha_mod)
 tide_obs = tganalysis.reconstruct_tide_utide(obs_new.dataset.time, ha_obs)
 
 # Get new TidegaugeMultiple objects containing non tidal residuals.
-ntr_mod = tganalysis.calculate_non_tidal_residuals(model_new.dataset.ssh, tide_mod.dataset.reconstructed)
-ntr_obs = tganalysis.calculate_non_tidal_residuals(obs_new.dataset.ssh, tide_obs.dataset.reconstructed)
+ntr_mod = tganalysis.calculate_non_tidal_residuals(model_new.dataset.ssh, 
+                                                   tide_mod.dataset.reconstructed)
+ntr_obs = tganalysis.calculate_non_tidal_residuals(obs_new.dataset.ssh, 
+                                                   tide_obs.dataset.reconstructed)
 
 # Other interesting applications here included only reconstructing specified
 # tidal frequency bands and validating this.
@@ -105,5 +107,7 @@ mean_stats = ntr_diff.dataset.mean(dim="t_dim", skipna=True)
 # threshold provided. It will also count the numbers of daily and monthly
 # maxima over each threshold
 
-thresh_mod = tganalysis.threshold_statistics(ntr_mod, thresholds=np.arange(0, 2, 0.2))
-thresh_obs = tganalysis.threshold_statistics(ntr_obs, thresholds=np.arange(0, 2, 0.2))
+thresh_mod = tganalysis.threshold_statistics(ntr_mod.dataset, 
+                                             thresholds=np.arange(0, 2, 0.2))
+thresh_obs = tganalysis.threshold_statistics(ntr_obs.dataset, 
+                                             thresholds=np.arange(0, 2, 0.2))
