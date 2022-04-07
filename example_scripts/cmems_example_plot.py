@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 #################################################
 # Loading  data
 #################################################
-
 dir_nam = "/projectsa/COAsT/CMEMS/"
 filet = "coast_example_cmems_2020_01_01_download_T.nc"
 fileuv = "coast_example_cmems_2020_01_01_download_UV.nc"
