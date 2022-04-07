@@ -892,3 +892,14 @@ class Gridded(Coast):  # TODO Complete this docstring
             print("Unknown direction setting. Choose cart2polar or polar2cart")
 
         return
+
+    def time_slice(self, date0, date1):
+        """Return new Gridded object, indexed between dates date0 and date1"""
+        dataset = self.dataset
+        t_ind = pd.to_datetime(dataset.time.values) >= date0
+        dataset = dataset.isel(t_dim=t_ind)
+        t_ind = pd.to_datetime(dataset.time.values) < date1
+        dataset = dataset.isel(t_dim=t_ind)
+        gridded_out = Gridded()
+        gridded_out.dataset = dataset
+        return gridded_out

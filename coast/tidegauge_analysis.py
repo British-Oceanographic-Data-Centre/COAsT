@@ -9,29 +9,8 @@ from coast import stats_util, crps_util
 
 class TidegaugeAnalysis:
     """
-    This is an object for storage and manipulation of tide gauge data
-    in a single dataset. This may require some processing of the observations
-    such as interpolation to a common time step.
-
-    This object's dataset should take the form (as with Timeseries):
-
-        Dimensions:
-            id   : The locations dimension. Each time series has an index
-            time : The time dimension. Each datapoint at each port has an index
-
-        Coordinates:
-            longitude (port) : Longitude values for each port index
-            latitude  (port) : Latitude values for each port index
-            time      (port) : Time values for each time index (datetime)
-
-    An example data variable could be ssh, or ntr (non-tidal residual). This
-    object can also be used for other instrument types, not just tide gauges.
-    For example moorings.
-
-    Every id index for this object should use the same time coordinates.
-    Therefore, timeseries need to be aligned before being placed into the
-    object. If there is any padding needed, then NaNs should be used. NaNs
-    should also be used for quality control/data rejection.
+    This contains analysis methods suitable for use with the dataset structure
+    of Tidegauge()
     """
 
     def __init__(self):
@@ -54,16 +33,16 @@ class TidegaugeAnalysis:
             data_array1 = data_array1.transpose()
 
         if np.isnan(fill_value):
-            ind1 = np.isnan(data_array1)
-            ind2 = np.isnan(data_array2)
+            ind1 = np.isnan(data_array1.values)
+            ind2 = np.isnan(data_array2.values)
         else:
-            ind1 = data_array1 == fill_value
-            ind2 = data_array2 == fill_value
+            ind1 = data_array1.values == fill_value
+            ind2 = data_array2.values == fill_value
 
-        ds1 = data_array1.where(~ind2).to_dataset()
-        ds2 = data_array2.where(~ind1).to_dataset()
+        ds1 = data_array1.where(~ind2)
+        ds2 = data_array2.where(~ind1)
 
-        return Tidegauge(dataset=ds1), Tidegauge(dataset=ds2)
+        return Tidegauge(dataset=ds1.to_dataset()), Tidegauge(dataset=ds2.to_dataset())
 
     @classmethod
     def harmonic_analysis_utide(
@@ -107,7 +86,7 @@ class TidegaugeAnalysis:
         """
         # Make name shorter for computations and get dimension lengths
         ds = data_array
-        n_port = ds.sizes["id"]
+        n_port = ds.sizes["id_dim"]
         n_time = ds.sizes["t_dim"]
 
         # Harmonic analysis datenums -- for utide to work correctly
@@ -120,7 +99,7 @@ class TidegaugeAnalysis:
         for pp in range(0, n_port):
 
             # Temporary in-loop datasets
-            ds_port = ds.isel(id=pp).load()
+            ds_port = ds.isel(id_dim=pp).load()
             number_of_nan = np.sum(np.isnan(ds_port.values))
 
             # If not enough datapoints for analysis then append an empty list
@@ -179,7 +158,7 @@ class TidegaugeAnalysis:
 
         # Create output dataset and return it in new Tidegauge object.
         ds_out = xr.Dataset(data_array.coords)
-        ds_out[output_name] = (["id", "t_dim"], reconstructed)
+        ds_out[output_name] = (["id_dim", "t_dim"], reconstructed)
 
         return Tidegauge(dataset=ds_out)
 
@@ -197,7 +176,7 @@ class TidegaugeAnalysis:
 
         # NTR: Calculate non tidal residuals
         ntr = data_array_ssh - data_array_tide
-        n_port = data_array_ssh.sizes["id"]
+        n_port = data_array_ssh.sizes["id_dim"]
 
         # NTR: Apply filter if wanted
         if apply_filter:
@@ -241,21 +220,21 @@ class TidegaugeAnalysis:
         ds_thresh["threshold"] = ("threshold", thresholds)
         var_list = list(ds.keys())
         n_thresholds = len(thresholds)
-        n_port = ds.sizes["id"]
+        n_port = ds.sizes["id_dim"]
 
         # Loop over vars in the input dataset
         for vv in var_list:
 
             empty_thresh = np.zeros((n_port, n_thresholds)) * np.nan
-            ds_thresh["peak_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
-            ds_thresh["time_over_threshold_" + vv] = (["id", "threshold"], np.array(empty_thresh))
-            ds_thresh["dailymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
-            ds_thresh["monthlymax_count_" + vv] = (["id", "threshold"], np.array(empty_thresh))
+            ds_thresh["peak_count_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
+            ds_thresh["time_over_threshold_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
+            ds_thresh["dailymax_count_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
+            ds_thresh["monthlymax_count_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
 
             for pp in range(n_port):
 
                 # Identify NTR peaks for threshold analysis
-                data_pp = ds[vv].isel(id=pp)
+                data_pp = ds[vv].isel(id_dim=pp)
                 if np.sum(np.isnan(data_pp.values)) == ds.sizes["t_dim"]:
                     continue
 
@@ -290,7 +269,7 @@ class TidegaugeAnalysis:
     def demean_timeseries(dataset):
         """
         Subtract time means from all variables within this tidegauge_multiple
-        object. This is done independently for each id location.
+        object. This is done independently for each id_dim location.
         """
         demeaned = dataset - dataset.mean(dim="t_dim")
         return Tidegauge(dataset=demeaned)
@@ -349,7 +328,7 @@ class TidegaugeAnalysis:
         Finds high and low water for a given variable.
         Returns in a new TIDEGAUGE object with similar data format to
         a TIDETABLE. If this Tidegauge object contains more than one location
-        (id > 1) then a list of Tidegauges will be returned.
+        (id_dim > 1) then a list of Tidegauges will be returned.
 
         Methods:
         'comp' :: Find maxima by comparison with neighbouring values.
@@ -362,24 +341,24 @@ class TidegaugeAnalysis:
                   methods include linear interpolation or refinements.
         """
 
-        if "id" in data_array.dims:
-            n_id = data_array.sizes["id"]
+        if "id_dim" in data_array.dims:
+            n_id = data_array.sizes["id_dim"]
         else:
             n_id = 1
-            data_array = data_array.expand_dims("id")
+            data_array = data_array.expand_dims("id_dim")
 
         tg_list = []
-        # Loop over id dimension
+        # Loop over id_dim dimension
         for ii in range(n_id):
             # Get x and y for input to find_maxima
 
-            x = data_array.isel(id=ii).time.values
-            y = data_array.isel(id=ii).values
+            x = data_array.isel(id_dim=ii).time.values
+            y = data_array.isel(id_dim=ii).values
 
             # Get time and values of maxima and minima
             time_max, values_max = stats_util.find_maxima(x, y, method=method, **kwargs)
             time_min, values_min = stats_util.find_maxima(x, -y, method=method, **kwargs)
-            # Place the above values into a brand new dataset for this id index
+            # Place the above values into a brand new dataset for this id_dim index
             new_dataset = xr.Dataset()
             new_dataset.attrs = data_array.attrs
             new_dataset[data_array.name + "_highs"] = ("time_highs", values_max)
@@ -402,14 +381,14 @@ class TidegaugeAnalysis:
         """Applies doodson X0 filter to a specified TIDEGAUGE variable
         Input ius expected to be hourly. Use resample_mean to average data
         to hourly frequency."""
-        n_id = dataset.sizes["id"]
+        n_id = dataset.sizes["id_dim"]
         n_time = dataset.sizes["t_dim"]
         filtered = np.zeros((n_id, n_time))
         for ii in range(n_id):
-            ds_ii = dataset.isel(id=ii)
+            ds_ii = dataset.isel(id_dim=ii)
             filtered[ii] = stats_util.doodson_x0_filter(ds_ii[var_str], ax=0)
         new_dataset = xr.Dataset(dataset.coords)
-        new_dataset[var_str] = (("id", "t_dim"), filtered)
+        new_dataset[var_str] = (("id_dim", "t_dim"), filtered)
         return Tidegauge(dataset=new_dataset)
 
     @classmethod
@@ -461,7 +440,7 @@ class TidegaugeAnalysis:
         # Loop over location indices
         for ii in range(n_id):
 
-            obs_ii = obs_var.isel(id=ii)
+            obs_ii = obs_var.isel(id_dim=ii)
 
             # Calculate CRPS
             crps_list, n_model_pts, contains_land = crps_util.crps_sonf_fixed(
@@ -479,8 +458,8 @@ class TidegaugeAnalysis:
 
         # Put into new object
         new_dataset = xr.Dataset(tidegauge_data.coords)
-        new_dataset["crps"] = (("id", "t_dim"), crps_out)
-        new_dataset["crps_N"] = (("id", "t_dim"), N_out)
+        new_dataset["crps"] = (("id_dim", "t_dim"), crps_out)
+        new_dataset["crps_N"] = (("id_dim", "t_dim"), N_out)
         return Tidegauge(dataset=new_dataset)
 
     @classmethod

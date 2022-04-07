@@ -7,12 +7,10 @@ import pandas as pd
 import glob
 import re
 import pytz
-import sklearn.metrics as metrics
 from . import general_utils, plot_util, crps_util, stats_util
 from .logging_util import get_slug, debug, error, info
 from typing import Union
 from pathlib import Path
-import xarray.ufuncs as uf
 
 
 class Tidegauge(Timeseries):
@@ -24,14 +22,14 @@ class Tidegauge(Timeseries):
     This object's dataset should take the form (as with Timeseries):
 
         Dimensions:
-            id   : The locations dimension. Each time series has an index
+            id_dim   : The locations dimension. Each time series has an index
             time : The time dimension. Each datapoint at each port has an index
 
         Coordinates:
-            longitude (id) : Longitude values for each port index
-            latitude  (id) : Latitude values for each port index
+            longitude (id_dim) : Longitude values for each port index
+            latitude  (id_dim) : Latitude values for each port index
             time      (time) : Time values for each time index (datetime)
-            id_name   (id)   : Name of index, e.g. port name or mooring id.
+            id_name   (id_dim)   : Name of index, e.g. port name or mooring id.
 
     An example data variable could be ssh, or ntr (non-tidal residual). This
     object can also be used for other instrument types, not just tide gauges.
@@ -115,10 +113,13 @@ class Tidegauge(Timeseries):
         """
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
+        dataset = None
 
         # See if its a file list input, or a glob
         if type(fn_gesla) is not list:
             file_list = glob.glob(fn_gesla)
+        else:
+            file_list = fn_gesla
 
         multiple = False
         if len(file_list) > 1:
@@ -133,9 +134,9 @@ class Tidegauge(Timeseries):
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
-            dataset["longitude"] = ("id", [header_dict["longitude"]])
-            dataset["latitude"] = ("id", [header_dict["latitude"]])
-            dataset["id_name"] = ("id", [header_dict["site_name"]])
+            dataset["longitude"] = ("id_dim", [header_dict["longitude"]])
+            dataset["latitude"] = ("id_dim", [header_dict["latitude"]])
+            dataset["id_name"] = ("id_dim", [header_dict["site_name"]])
             dataset = dataset.set_coords(["longitude", "latitude", "id_name"])
 
             # Create tidegauge object, save dataset and append to list
@@ -272,8 +273,8 @@ class Tidegauge(Timeseries):
         ssh[qc_flags == 5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims("id")
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims("id")
+        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims("id_dim")
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims("id_dim")
         dataset = dataset.assign_coords(time=("t_dim", time))
 
         # Assign local dataset to object-scope dataset
@@ -434,7 +435,7 @@ class Tidegauge(Timeseries):
         ssh = ssh[start_index:end_index]
         debug(f"ssh: {ssh}")
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id")
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id_dim")
         dataset = dataset.assign_coords(time=("time", time))
         # Assign local dataset to object-scope dataset
         return dataset
@@ -834,8 +835,8 @@ class Tidegauge(Timeseries):
         # ssh[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id")
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims("id")
+        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id_dim")
+        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims("id_dim")
         dataset = dataset.assign_coords(time=("time", time))
 
         # Assign local dataset to object-scope dataset
@@ -978,9 +979,9 @@ class Tidegauge(Timeseries):
         print("Calculating time indices.", flush=True)
         extracted = gridded.isel(x_dim=ind_x, y_dim=ind_y)
         if "dim_0" in extracted.dims:
-            extracted = extracted.swap_dims({"dim_0": "id"})
+            extracted = extracted.swap_dims({"dim_0": "id_dim"})
         else:
-            extracted = extracted.expand_dims("id")
+            extracted = extracted.expand_dims("id_dim")
 
         # Compute data (takes a while..)
         print(" Indexing model data at tide gauge locations.. ", flush=True)
@@ -1004,3 +1005,25 @@ class Tidegauge(Timeseries):
         tg_out = Tidegauge()
         tg_out.dataset = extracted
         return tg_out
+
+    def time_slice(self, date0, date1):
+        """Return new Gridded object, indexed between dates date0 and date1"""
+        dataset = self.dataset
+        t_ind = pd.to_datetime(dataset.time.values) >= date0
+        dataset = dataset.isel(t_dim=t_ind)
+        t_ind = pd.to_datetime(dataset.time.values) < date1
+        dataset = dataset.isel(t_dim=t_ind)
+        return Tidegauge(dataset=dataset)
+
+    def subset_indices_lonlat_box(self, lonbounds, latbounds):
+        """Get a subset of this Profile() object in a spatial box.
+
+        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
+        latbounds -- Array of form [min_latitude, max_latitude]
+
+        return: A new profile object containing subsetted data
+        """
+        ind = general_utils.subset_indices_lonlat_box(
+            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+        )
+        return Tidegauge(dataset=self.dataset.isel(id_dim=ind[0]))
