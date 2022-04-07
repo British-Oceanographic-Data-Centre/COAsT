@@ -1026,4 +1026,4 @@ class Tidegauge(Timeseries):
         ind = general_utils.subset_indices_lonlat_box(
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
-        return Tidegauge(dataset=self.dataset.isel(id_dim=ind)[0])
+        return Tidegauge(dataset=self.dataset.isel(id_dim=ind[0]))
