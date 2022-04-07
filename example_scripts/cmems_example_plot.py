@@ -35,7 +35,7 @@ current = abs(sci_uv.dataset.u_velocity)*abs(sci_uv.dataset.v_velocity)
 #plot
 #################################################
 #choose time step and depth levels to plot
-li=5 #z level
+li=0 #z level
 
 # full domain salinity
 fig = plt.figure()
