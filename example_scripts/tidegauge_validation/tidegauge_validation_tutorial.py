@@ -40,9 +40,8 @@ nemo.dataset = nemo.dataset[["ssh", "landmask"]]
 
 # Create the object and then inset the netcdf dataset
 obs = coast.Tidegauge(dataset=xr.open_dataset(fn_tg))
-obs.dataset = obs.dataset.rename_dims(
-    {"time": "t_dim", "port": "id_dim"}
-)  # rename the time and port dimension into COAsT standards
+obs.dataset = obs.dataset.set_coords('time')
+
 # Shift the timestamp so it overlaps with the tidegauge data - Not ideal but this is only a demo
 obs.dataset.coords["time"] = obs.dataset.coords["time"] + 1000000000 * 3600 * 24 * 365 * 3
 
