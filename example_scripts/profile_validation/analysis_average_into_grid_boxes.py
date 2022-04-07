@@ -32,22 +32,30 @@ fn_out = "<OUTPUT_FILENAME.nc>"
 grid_lon = np.arange(-15, 15, 0.5)
 grid_lat = np.arange(45, 65, 0.5)
 
-# Load in data for averaging (e.g. surface data). 
-prof_data = coast.Profile(config = fn_cfg_prof)
+# Load in data for averaging (e.g. surface data).
+prof_data = coast.Profile(config=fn_cfg_prof)
 prof_data.read_en4(fn_prof)
 profile_analysis = coast.ProfileAnalysis()
 
 # Take just the data we want so it is faster
-prof_data.dataset = prof_data.dataset[['temperature','practical_salinity']]
+prof_data.dataset = prof_data.dataset[["temperature", "practical_salinity"]]
 
 # Average all data across all seasons
 prof_gridded = profile_analysis.average_into_grid_boxes(prof_data, grid_lon, grid_lat)
 
 # Average data for each season
-prof_gridded_DJF = profile_analysis.average_into_grid_boxes(prof_data, grid_lon, grid_lat, season="DJF", var_modifier="_DJF")
-prof_gridded_MAM = profile_analysis.average_into_grid_boxes(prof_data, grid_lon, grid_lat, season="MAM", var_modifier="_MAM")
-prof_gridded_JJA = profile_analysis.average_into_grid_boxes(prof_data, grid_lon, grid_lat, season="JJA", var_modifier="_JJA")
-prof_gridded_SON = profile_analysis.average_into_grid_boxes(prof_data, grid_lon, grid_lat, season="SON", var_modifier="_SON")
+prof_gridded_DJF = profile_analysis.average_into_grid_boxes(
+    prof_data, grid_lon, grid_lat, season="DJF", var_modifier="_DJF"
+)
+prof_gridded_MAM = profile_analysis.average_into_grid_boxes(
+    prof_data, grid_lon, grid_lat, season="MAM", var_modifier="_MAM"
+)
+prof_gridded_JJA = profile_analysis.average_into_grid_boxes(
+    prof_data, grid_lon, grid_lat, season="JJA", var_modifier="_JJA"
+)
+prof_gridded_SON = profile_analysis.average_into_grid_boxes(
+    prof_data, grid_lon, grid_lat, season="SON", var_modifier="_SON"
+)
 
 # Merge together
 ds_prof_gridded = xr.merge(
