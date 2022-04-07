@@ -4,6 +4,12 @@
 Created on Tue Mar 22 13:10:36 2022
 
 @author: jrule
+
+This example reads in CMEMS model data (parent model) and SRIL34 model data (child model).
+The CMEMS data is subsetted within the coordinates of the SRIL34 model. As example, the salinity data
+is interpolated horizontally and vertically. Because the SRIL34 model uses hybrid vertical coordinates,
+the vertical interpolation is done point by point (this can be slow). 
+Example figures of the original mode, interpolated model and difference between model are plotted.
 """
 #################################################
 # 1. Import libraries
