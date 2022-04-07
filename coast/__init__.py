@@ -13,6 +13,7 @@ from . import plot_util
 from . import crps_util
 from .index import Indexed
 from .profile import Profile
+from .profile_analysis import ProfileAnalysis
 from .track import Track
 from .lagrangian import Lagrangian
 from .oceanparcels import Oceanparcels
@@ -21,8 +22,10 @@ from .argos import Argos
 from .altimetry import Altimetry
 from .timeseries import Timeseries
 from .tidegauge import Tidegauge
-from .tidegauge_multiple import TidegaugeMultiple
+from .tidegauge_analysis import TidegaugeAnalysis
 from .config_parser import ConfigParser
+from .xesmf_convert import xesmf_convert
+from .process_data import Process_data
 
 # Set default for logging level when coast is imported
 import logging

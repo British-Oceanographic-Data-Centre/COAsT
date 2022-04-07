@@ -157,7 +157,7 @@ class Coast:
         """
         Indexes COAsT object along specified dimensions using xarray isel.
         Input is of same form as xarray.isel. Basic use, hand in either:
-            1. Dictionary with keys = dimensions, values = indices
+            1. dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
         """
         obj_copy = self.copy()
@@ -271,18 +271,18 @@ class Coast:
         debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
 
         # Convert to radians for calculations
-        lon1 = xr.ufuncs.deg2rad(lon1)
-        lat1 = xr.ufuncs.deg2rad(lat1)
-        lon2 = xr.ufuncs.deg2rad(lon2)
-        lat2 = xr.ufuncs.deg2rad(lat2)
+        lon1 = np.deg2rad(lon1)
+        lat1 = np.deg2rad(lat1)
+        lon2 = np.deg2rad(lon2)
+        lat2 = np.deg2rad(lat2)
 
         # Latitude and longitude differences
         dlat = (lat2 - lat1) / 2
         dlon = (lon2 - lon1) / 2
 
         # Haversine function.
-        distance = xr.ufuncs.sin(dlat) ** 2 + xr.ufuncs.cos(lat1) * xr.ufuncs.cos(lat2) * xr.ufuncs.sin(dlon) ** 2
-        distance = 2 * 6371.007176 * xr.ufuncs.arcsin(xr.ufuncs.sqrt(distance))
+        distance = np.sin(dlat) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon) ** 2
+        distance = 2 * 6371.007176 * np.arcsin(np.sqrt(distance))
 
         return distance
 

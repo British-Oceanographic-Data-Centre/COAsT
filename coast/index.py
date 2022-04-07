@@ -30,6 +30,7 @@ class Indexed(Coast):
         self.keep_all_vars = False
 
         if config:
+            print(config)
             self.json_config = ConfigParser(config)
             self.chunks = self.json_config.config.chunks
             self.dim_mapping = self.json_config.config.dataset.dimension_map
@@ -62,3 +63,9 @@ class Indexed(Coast):
 
         if self.coord_vars is not None:
             self.dataset = self.dataset.set_coords(self.coord_vars)
+
+    def insert_dataset(self, dataset, apply_config_mappings=False):
+        """Insert a dataset straight into this object instance"""
+        self.dataset = dataset
+        if apply_config_mappings:
+            self.apply_config_mappings()

@@ -1,0 +1,89 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {"time_counter":5},
+	"grid_ref": {
+		"t-grid": [
+			"glamt",
+			"gphit",
+			"e1t",
+			"e2t",
+			"e3t_0",
+			"deptht_0",
+			"tmask",
+			"bottom_level",
+			"mbathy",
+			"hbatt"
+		]
+	},
+	"dataset": {
+		"dimension_map": {
+			"time_counter": "t_dim",
+			"deptht": "z_dim",
+			"y": "y_dim",
+			"x": "x_dim",
+			"x_grid_T": "x_dim",
+			"y_grid_T": "y_dim"
+		},
+		"variable_map": {
+			"time_counter": "time",
+			"N1_p": "phosphate",
+                        "N3_n": "nitrogen_nitrate",
+			"N5_s": "silicate",
+                        "N4_n": "nitrogen_ammonium",
+			"O3_c": "dic",
+                        "O2_o": "oxygen",
+                        "O3_TA": "alkalinity",
+                        "O3_pH": "ph",
+                        "O3_fair": "co2_flux"
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
+	},
+	"domain": {
+		"dimension_map": {
+			"t": "t_dim0",
+			"x": "x_dim",
+			"y": "y_dim",
+			"z": "z_dim"
+		},
+		"variable_map": {
+			"time_counter": "time0",
+			"glamt": "longitude",
+			"gphit": "latitude",
+			"e1t": "e1",
+			"e2t": "e2",
+			"e3t_0": "e3_0",
+			"tmask":"mask",
+			"deptht_0": "depth_0",
+			"bottom_level": "bottom_level",
+			"mbathy":"bottom_level",
+			"hbatt":"bathymetry"
+		}
+	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
+	"processing_flags": [
+		"example_flag1",
+		"example_flag2"
+	]
+}

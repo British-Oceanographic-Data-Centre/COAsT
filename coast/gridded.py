@@ -11,6 +11,8 @@ from . import general_utils, stats_util
 from .coast import Coast
 from .config_parser import ConfigParser
 from .logging_util import get_slug, debug, info, warn, error, warning
+from . import logging_util
+import logging
 import pandas as pd
 
 
@@ -269,7 +271,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
         debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
-        dist2 = xr.ufuncs.square(self.dataset.latitude - lat) + xr.ufuncs.square(self.dataset.longitude - lon)
+        dist2 = np.square(self.dataset.latitude - lat) + np.square(self.dataset.longitude - lon)
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
@@ -287,7 +289,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
         internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
         internal_lon = dataset_domain[self.grid_vars[0]]  # [f"glam{self.grid_ref.replace('-grid','')}"]
-        dist2 = xr.ufuncs.square(internal_lat - lat) + xr.ufuncs.square(internal_lon - lon)
+        dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
@@ -889,3 +891,14 @@ class Gridded(Coast):  # TODO Complete this docstring
             print("Unknown direction setting. Choose cart2polar or polar2cart")
 
         return
+
+    def time_slice(self, date0, date1):
+        """Return new Gridded object, indexed between dates date0 and date1"""
+        dataset = self.dataset
+        t_ind = pd.to_datetime(dataset.time.values) >= date0
+        dataset = dataset.isel(t_dim=t_ind)
+        t_ind = pd.to_datetime(dataset.time.values) < date1
+        dataset = dataset.isel(t_dim=t_ind)
+        gridded_out = Gridded()
+        gridded_out.dataset = dataset
+        return gridded_out
