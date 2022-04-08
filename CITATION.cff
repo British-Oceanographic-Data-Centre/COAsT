@@ -1,48 +1,37 @@
 cff-version: 1.2.0
+type: software
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Polton"
-given-names: "Jeff A."
-orcid: "https://orcid.org/0000-0003-0131-5250"
-
-- family-names: "Byrne"
-given-names: "David"
-orcid: "https://orcid.org/0000-0002-9994-3468"
-
-- family-names: "Wise"
-given-names: "Anthony"
-orcid: "https://orcid.org/0000-0003-2985-9516"
-
-- family-names: "Holt"
-given-names: "Jason"
-orcid: "https://orcid.org/0000-0002-3298-8477"
-
-- family-names: "Katavouta"
-given-names: "Anna"
-orcid: "https://orcid.org/0000-0002-1587-4996"
-
-- family-names: "Rulent"
-given-names: "Julia"
-orcid: "https://orcid.org/0000-0002-2357-4838"
-
-- family-names: "Gardner"
-given-names: "Thomas"
-
-- family-names: "Cazaly"
-given-names: "Matthew"
-
-- family-names: "Hearn"
-given-names: "Malcolm"
-
-- family-names: "Jennings"
-given-names: "Rob"
-
-- family-names: "Luong"
-given-names: "Quyen"
-
-- family-names: "Loch"
-given-names: "Stephen"
-
+ - family-names: "Polton"
+   given-names: "Jeff A."
+   orcid: "https://orcid.org/0000-0003-0131-5250"
+ - family-names: "Byrne"
+   given-names: "David"
+   orcid: "https://orcid.org/0000-0002-9994-3468"
+ - family-names: "Wise"
+   given-names: "Anthony"
+   orcid: "https://orcid.org/0000-0003-2985-9516"
+ - family-names: "Holt"
+   given-names: "Jason"
+   orcid: "https://orcid.org/0000-0002-3298-8477"
+ - family-names: "Katavouta"
+   given-names: "Anna"
+   orcid: "https://orcid.org/0000-0002-1587-4996"
+ - family-names: "Rulent"
+   given-names: "Julia"
+   orcid: "https://orcid.org/0000-0002-2357-4838"
+ - family-names: "Gardner"
+   given-names: "Thomas"
+ - family-names: "Cazaly"
+   given-names: "Matthew"
+ - family-names: "Hearn"
+   given-names: "Malcolm"
+ - family-names: "Jennings"
+   given-names: "Rob"
+ - family-names: "Luong"
+   given-names: "Quyen"
+ - family-names: "Loch"
+   given-names: "Stephen"
 title: "British-Oceanographic-Data-Centre/COAsT: v2.0.2"
 version: v2.0.2
 date-released: 2022-04-07
