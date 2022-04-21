@@ -405,10 +405,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         rhobar : Calculate desnity with depth mean T and S
             DESCRIPTION. The default is 'False'.
         Zd_mask : Provide a 3D mask for rhobar calculation
-            DESCRIPTION. The default is empty.        
+            DESCRIPTION. The default is empty.
         CT_AS  : Conservative Temperature and Absolute Salinity already provided
             DESCRIPTION. The default is 'False'.
-        pot_dens :Calculation at zero pressure     
+        pot_dens :Calculation at zero pressure
             DESCRIPTION. The default is 'False'.
         Returns
         -------
@@ -494,19 +494,19 @@ class Gridded(Coast):  # TODO Complete this docstring
                     sal_absolute = np.ma.masked_invalid(sal)
 
                 sal_absolute2D = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
-                 
+
                 # Conservative Temperature
                 if not CT_AS:  # Conservative temperature not provided
-                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))                    
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
                 else:  # conservative temp provided
                     temp_conservative = np.ma.masked_invalid(temp)
-                sal_absolute=sal_absolute2D    
+                sal_absolute = sal_absolute2D
                 temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
                 # In-situ density
-                if not pot_dens:  #restore to 3D as rhobar is 3D. Not really a sensible option hence warning
-                    print('Warning: returning 3D rhobar, consider using pot_dens=True')
-                    sal_absolute = np.repeat(sal_absolute[:,np.newaxis,:,:],shape_ds[1],axis=1)
-                    temp_conservative = np.repeat(temp_conservative[:,np.newaxis,:,:],shape_ds[1],axis=1)
+                if not pot_dens:  # restore to 3D as rhobar is 3D. Not really a sensible option hence warning
+                    print("Warning: returning 3D rhobar, consider using pot_dens=True")
+                    sal_absolute = np.repeat(sal_absolute[:, np.newaxis, :, :], shape_ds[1], axis=1)
+                    temp_conservative = np.repeat(temp_conservative[:, np.newaxis, :, :], shape_ds[1], axis=1)
                 density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
                 new_var_name = "density_bar"
                 coords = {
@@ -515,7 +515,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 }
                 dims = ["y_dim", "x_dim"]
                 if not pot_dens:
-                   dims.insert(0,"z_dim")                   
+                    dims.insert(0, "z_dim")
             attributes = {"units": "kg / m^3", "standard name": "In-situ density (from depth integrated T and S)"}
             if shape_ds[0] != 1:
                 coords["time"] = (("t_dim"), self.dataset.time.values)

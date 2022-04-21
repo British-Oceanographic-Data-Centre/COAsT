@@ -65,11 +65,9 @@ class test_diagnostic_methods(unittest.TestCase):
             11185010.518671108,
         )
 
-        nemo_t.construct_density(rhobar=True,pot_dens=True,CT_AS=True)
-        check2 = np.allclose(nemo_t.dataset.density_bar.values[:,10,10].mean(),
-        1027.199979109874                    
-        )
-        self.assertTrue(check1, msg="check1")        
+        nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True)
+        check2 = np.allclose(nemo_t.dataset.density_bar.values[:, 10, 10].mean(), 1027.199979109874)
+        self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
 
     def test_construct_pycnocline_depth_and_thickness(self):
