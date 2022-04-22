@@ -198,7 +198,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
-                depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
+                depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)             
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
@@ -384,7 +384,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False):
+    def construct_density(self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True,Sbar=True):
 
         """
             Constructs the in-situ density using the salinity, temperture and
@@ -405,11 +405,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         rhobar : Calculate desnity with depth mean T and S
             DESCRIPTION. The default is 'False'.
         Zd_mask : Provide a 3D mask for rhobar calculation
+            Calaculate using calculate_vertical_mask
             DESCRIPTION. The default is empty.        
         CT_AS  : Conservative Temperature and Absolute Salinity already provided
             DESCRIPTION. The default is 'False'.
         pot_dens :Calculation at zero pressure     
             DESCRIPTION. The default is 'False'.
+        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to 
+                        remian depth varying. So Tbar=Flase gives temperature component, Sbar=Flase gives Salinity component      
+            DESCRIPTION. The default is 'True'.
         Returns
         -------
         None.
@@ -417,6 +421,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         """
         debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
+    
         try:
             if eos != "EOS10":
                 raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
@@ -426,7 +431,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     + ": Density calculation can only be performed for a t-grid object,\
                                  the tracer grid for NEMO."
                 )
-
+            No_time=False
             try:
                 shape_ds = (
                     self.dataset.t_dim.size,
@@ -437,6 +442,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 sal = self.dataset.salinity.to_masked_array()
                 temp = self.dataset.temperature.to_masked_array()
             except AttributeError:
+                No_time=True
                 shape_ds = (1, self.dataset.z_dim.size, self.dataset.y_dim.size, self.dataset.x_dim.size)
                 sal = self.dataset.salinity.to_masked_array()[np.newaxis, ...]
                 temp = self.dataset.temperature.to_masked_array()[np.newaxis, ...]
@@ -468,12 +474,6 @@ class Gridded(Coast):  # TODO Complete this docstring
 
                 density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
                 new_var_name = "density"
-                coords = {
-                    "depth_0": (("z_dim", "y_dim", "x_dim"), self.dataset.depth_0.values),
-                    "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
-                    "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
-                }
-                dims = ["z_dim", "y_dim", "x_dim"]
 
             else:  # calculate with depth integrated T S
                 # prepare coordinate variables
@@ -493,31 +493,52 @@ class Gridded(Coast):  # TODO Complete this docstring
                 else:  # abs salinity provided
                     sal_absolute = np.ma.masked_invalid(sal)
 
-                sal_absolute2D = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
-                 
                 # Conservative Temperature
                 if not CT_AS:  # Conservative temperature not provided
                     temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))                    
                 else:  # conservative temp provided
                     temp_conservative = np.ma.masked_invalid(temp)
-                sal_absolute=sal_absolute2D    
-                temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
-                # In-situ density
-                if not pot_dens:  #restore to 3D as rhobar is 3D. Not really a sensible option hence warning
-                    print('Warning: returning 3D rhobar, consider using pot_dens=True')
-                    sal_absolute = np.repeat(sal_absolute[:,np.newaxis,:,:],shape_ds[1],axis=1)
-                    temp_conservative = np.repeat(temp_conservative[:,np.newaxis,:,:],shape_ds[1],axis=1)
-                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
-                new_var_name = "density_bar"
-                coords = {
+ 
+                if pot_dens and (Sbar and Tbar): # usual case pot_dens and depth averaged everything
+                    sal_absolute      = np.sum(np.ma.masked_less(sal_absolute     , 0) * DZ, axis=1) / DP
+                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                    density = np.repeat(density[:,np.newaxis,:,:],shape_ds[1],axis=1)
+
+                else: #Either insitue desnity or one of Tbar or Sbar Flase
+                    if Sbar:    
+                     sal_absolute      = np.repeat(
+                                         (np.sum(np.ma.masked_less(sal_absolute     , 0) * DZ, axis=1) / DP)
+                                         [:,np.newaxis,:,:]
+                                         ,shape_ds[1],axis=1)                 
+                    if Tbar:
+                     temp_conservative = np.repeat(
+                                         (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)
+                                         [:,np.newaxis,:,:]
+                                         ,shape_ds[1],axis=1)
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))                 
+
+                if Tbar and Sbar:                
+                 new_var_name = "density_bar"
+                else:
+                  if not Tbar:
+                      new_var_name = "density_T"
+                  else:
+                      new_var_name = "density_S"
+
+# rho and rhobar
+            coords = {
+                    "depth_0": (("z_dim", "y_dim", "x_dim"), self.dataset.depth_0.values),
                     "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
                     "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
                 }
-                dims = ["y_dim", "x_dim"]
-                if not pot_dens:
-                   dims.insert(0,"z_dim")                   
-            attributes = {"units": "kg / m^3", "standard name": "In-situ density (from depth integrated T and S)"}
-            if shape_ds[0] != 1:
+            dims = ["z_dim", "y_dim", "x_dim"]
+
+            if pot_dens:
+             attributes = {"units": "kg / m^3", "standard name": "Potential density "}                
+            else:
+             attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
+            if not No_time:
                 coords["time"] = (("t_dim"), self.dataset.time.values)
                 dims.insert(0, "t_dim")
 
@@ -961,3 +982,42 @@ class Gridded(Coast):  # TODO Complete this docstring
         gridded_out = Gridded()
         gridded_out.dataset = dataset
         return gridded_out
+    
+    def calculate_vertical_mask(self,Zmax):
+    
+     """
+        Calculates a 3D mask so a specified level Zmax. 1 for sea; 0 for below sea bed
+        and linearly ramped for last level
+     """
+     Z=self.dataset.variables['depth_0'].values
+     e3_0=self.dataset.variables['e3_0'].values
+    #calculate W-level - might want this done as stanbdard in gridded
+     ZW = np.zeros_like(e3_0)
+     ZW[0, :, :] = 0.0
+     ZW[1:, :, :] = np.cumsum(e3_0, axis=0)[:-1, :, :]
+     mbot=self.dataset.variables['bottom_level'].values.astype(int)
+     mask=mbot!=0
+     ZZ=ZW[1:,:,:]
+     ZZ[ZZ==0]=np.nan
+     ZW[1:,:,:]=ZZ
+    
+     Zd_mask=np.zeros((Z.shape))
+     nz,ny,nx=np.shape(Z)
+     kmax=np.zeros((ny,nx)).astype(int)
+     IIkmax=np.zeros(np.shape(Z))
+    #
+    #careful assumes mbot is 1st sea point above bed ie new definition
+     for i in range(nx):
+         for j in range(ny):
+           if mask[j,i]==1:          
+             Zd_mask[0:mbot[j,i],j,i]=1 # mbot is not python style index so no +1
+             kmax[j,i]=mbot[j,i]
+             if ZW[mbot[j,i],j,i]>Zmax:
+               kkmax=np.max(np.where(ZW[:,j,i]<Zmax))
+               Zd_mask[kkmax+1:,j,i]=0
+               Zd_mask[kkmax,j,i]=(Zmax-ZW[kkmax,j,i])/(ZW[kkmax+1,j,i]-ZW[kkmax,j,i])
+               kmax[j,i]=kkmax
+               IIkmax[kkmax,j,i]=1
+     Ikmax=np.nonzero(IIkmax.ravel())          
+    #%%
+     return Zd_mask,kmax,Ikmax
