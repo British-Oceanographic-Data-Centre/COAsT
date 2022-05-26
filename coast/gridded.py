@@ -516,7 +516,6 @@ class Gridded(Coast):  # TODO Complete this docstring
                             axis=1,
                         )
                     if Tbar:
-<<<<<<< HEAD
                      temp_conservative = np.repeat(
                                          (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)
                                          [:,np.newaxis,:,:]
@@ -526,17 +525,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 
                 if Tbar and Sbar:                
                  new_var_name = "density_bar"
-=======
-                        temp_conservative = np.repeat(
-                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
-                            shape_ds[1],
-                            axis=1,
-                        )
-                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
 
-                if Tbar and Sbar:
-                    new_var_name = "density_bar"
->>>>>>> 7a5e626e2ca2a3908d07df63ed0ed2ce5c12d6b8
                 else:
                     if not Tbar:
                         new_var_name = "density_T"
