@@ -519,6 +519,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                                          ,shape_ds[1],axis=1)
                     density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))                 
 
+                
                 if Tbar and Sbar:                
                  new_var_name = "density_bar"
                 else:
@@ -540,11 +541,11 @@ class Gridded(Coast):  # TODO Complete this docstring
             else:
              attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
             if not No_time:
-
                 coords["time"] = (("t_dim"), self.dataset.time.values)
                 dims.insert(0, "t_dim")
-
-            self.dataset[new_var_name] = xr.DataArray(np.squeeze(density), coords=coords, dims=dims, attrs=attributes)
+            else:
+                density=np.squeeze(density)
+            self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
 
         except AttributeError as err:
             error(err)
