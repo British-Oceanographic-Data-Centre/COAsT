@@ -516,15 +516,15 @@ class Gridded(Coast):  # TODO Complete this docstring
                             axis=1,
                         )
                     if Tbar:
-                     temp_conservative = np.repeat(
-                                         (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)
-                                         [:,np.newaxis,:,:]
-                                         ,shape_ds[1],axis=1)
-                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))                 
+                        temp_conservative = np.repeat(
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
+                            shape_ds[1],
+                            axis=1,
+                        )
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
 
-                
-                if Tbar and Sbar:                
-                 new_var_name = "density_bar"
+                if Tbar and Sbar:
+                    new_var_name = "density_bar"
 
                 else:
                     if not Tbar:
@@ -548,7 +548,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 coords["time"] = (("t_dim"), self.dataset.time.values)
                 dims.insert(0, "t_dim")
             else:
-                density=np.squeeze(density)
+                density = np.squeeze(density)
             self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
 
         except AttributeError as err:
