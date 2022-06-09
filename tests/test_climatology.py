@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from coast import seasons
+from coast.data import seasons
 from coast.diagnostics.climatology import Climatology
 
 
