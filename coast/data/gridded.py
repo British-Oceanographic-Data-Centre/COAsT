@@ -7,7 +7,7 @@ import gsw
 import numpy as np
 import xarray as xr
 
-from . import general_utils, stats_util
+from .._utils import general_utils, stats_util
 from .coast import Coast
 from .config_parser import ConfigParser
 from .._utils.logging_util import get_slug, debug, info, warn, error, warning
