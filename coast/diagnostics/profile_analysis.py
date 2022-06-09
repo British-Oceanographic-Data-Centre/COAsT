@@ -2,7 +2,9 @@
 from ..data.index import Indexed
 import numpy as np
 import xarray as xr
-from .._utils import general_utils, plot_util, Gridded, Profile
+from .._utils import general_utils, plot_util
+from ..data.gridded import Gridded
+from ..data.profile import Profile
 from .._utils.logging_util import get_slug, debug, info, warn, warning
 from scipy import interpolate
 
