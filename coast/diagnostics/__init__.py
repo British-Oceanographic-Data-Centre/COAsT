@@ -1,0 +1,1 @@
+"""Core diagnostics subpackage."""
