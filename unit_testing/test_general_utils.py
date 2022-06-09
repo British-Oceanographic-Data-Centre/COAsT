@@ -4,7 +4,7 @@
 
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
-from coast import general_utils
+from coast._utils import general_utils
 import unittest
 import numpy as np
 import pytz

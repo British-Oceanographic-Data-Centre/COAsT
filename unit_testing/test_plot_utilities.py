@@ -3,7 +3,7 @@
 """
 
 # IMPORT modules. Must have unittest, and probably coast.
-from coast import plot_util
+from coast._utils import plot_util
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
