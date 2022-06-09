@@ -1,7 +1,7 @@
 """Index class."""
 from dask import array
 from dask.distributed import Client
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 from ast import literal_eval

@@ -1,6 +1,6 @@
 import os.path as path_lib
 import warnings
-from coast import Gridded
+from .gridded import Gridded
 
 # from dask import delayed, compute, visualize
 # import graphviz

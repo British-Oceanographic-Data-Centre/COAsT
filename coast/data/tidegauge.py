@@ -7,8 +7,8 @@ import pandas as pd
 import glob
 import re
 import pytz
-from . import general_utils, plot_util, crps_util, stats_util
-from .logging_util import get_slug, debug, error, info
+from .._utils import general_utils, plot_util, crps_util, stats_util
+from .._utils.logging_util import get_slug, debug, error, info
 from typing import Union
 from pathlib import Path
 

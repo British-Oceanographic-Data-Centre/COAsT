@@ -1,5 +1,5 @@
-from .gridded import Gridded
-from .logging_util import info, warn, error
+from ..data.gridded import Gridded
+from .._utils.logging_util import info, warn, error
 import dask.array as da
 from dask import delayed
 import xarray as xr

@@ -1,7 +1,7 @@
 import xarray as xr
 import numpy as np
 import skimage.draw as draw
-from . import general_utils
+from .._utils import general_utils
 
 
 class MaskMaker:

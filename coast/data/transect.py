@@ -9,7 +9,7 @@ import numpy as np
 from scipy.integrate import cumtrapz
 import warnings
 import traceback
-from .logging_util import get_slug, debug, warn, info
+from .._utils.logging_util import get_slug, debug, warn, info
 
 # =============================================================================
 # The TRANSECT module is a place for code related to transects only

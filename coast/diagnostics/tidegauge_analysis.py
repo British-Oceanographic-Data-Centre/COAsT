@@ -1,10 +1,10 @@
 import numpy as np
 import xarray as xr
-from . import Tidegauge, general_utils
+from ..data.tidegauge import Tidegauge
+from .._utils import general_utils, stats_util, crps_util
 import matplotlib.dates as mdates
 import utide as ut
 import scipy.signal as signal
-from coast import stats_util, crps_util
 
 
 class TidegaugeAnalysis:
