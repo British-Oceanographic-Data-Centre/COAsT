@@ -1,3 +1,4 @@
+"""transcet class"""
 from .coast import Coast
 from .gridded import Gridded
 from scipy.ndimage import convolve1d

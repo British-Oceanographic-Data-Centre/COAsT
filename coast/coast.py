@@ -1,3 +1,4 @@
+"""The coast class is the main access point into this package."""
 from dask import array
 import xarray as xr
 import numpy as np

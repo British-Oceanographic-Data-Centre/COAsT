@@ -1,3 +1,4 @@
+"""time series processing helper file"""
 from .gridded import Gridded
 from .logging_util import info, warn, error
 import dask.array as da
