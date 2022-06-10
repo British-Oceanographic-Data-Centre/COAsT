@@ -1,5 +1,5 @@
-from .coast import Coast
-from .gridded import Gridded
+from ..data.coast import Coast
+from ..data.gridded import Gridded
 from scipy.ndimage import convolve1d
 from scipy import interpolate
 import gsw
