@@ -1,10 +1,10 @@
 from .data.coast import Coast, setup_dask_client
-from .diagnostics.mask_maker import MaskMaker
+from ._utils.mask_maker import MaskMaker
 from .data.gridded import Gridded
-from .data.transect import Transect, TransectF, TransectT
+from .diagnostics.transect import Transect, TransectF, TransectT
 from .diagnostics.contour import Contour, ContourF, ContourT
 from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
-from .data.internal_tide import InternalTide
+from .diagnostics.internal_tide import InternalTide
 from .diagnostics.climatology import Climatology
 from ._utils import logging_util, general_utils, plot_util, crps_util
 from .data.index import Indexed
@@ -20,8 +20,8 @@ from .data.timeseries import Timeseries
 from .data.tidegauge import Tidegauge
 from .diagnostics.tidegauge_analysis import TidegaugeAnalysis
 from .data.config_parser import ConfigParser
-from .data.xesmf_convert import xesmf_convert
-from .diagnostics.process_data import Process_data
+from ._utils.xesmf_convert import xesmf_convert
+from ._utils.process_data import Process_data
 
 # Set default for logging level when coast is imported
 import logging
