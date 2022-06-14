@@ -1,0 +1,33 @@
+# Note: keep .gitignore and .dockerignore in sync
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+public/
+*.egg-info/
+.eggs/
+docs/source/generated
+
+# Unit test / coverage reports
+.tox/
+.coverage
+coverage.xml
+junit.xml
+
+# To ensure tests are not included in the distribution
+# prohibit including an __init__.py
+#/tests/__init__.py
+
+# Environments
+venv/

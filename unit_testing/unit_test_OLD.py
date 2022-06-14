@@ -42,9 +42,9 @@ import matplotlib.pyplot as plt
 import datetime
 import os.path as path
 import logging
-import coast.general_utils as general_utils
-import coast.plot_util as plot_util
-import coast.stats_util as stats_util
+import coast._utils.general_utils as general_utils
+import coast._utils.plot_util as plot_util
+import coast._utils.stats_util as stats_util
 from socket import gethostname  # to get hostname
 import traceback
 import xarray.ufuncs as uf

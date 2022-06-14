@@ -3,8 +3,8 @@ from .track import Track
 import numpy as np
 import xarray as xr
 import sklearn.metrics as metrics
-from . import general_utils, plot_util, crps_util
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils import general_utils, plot_util, crps_util
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 
