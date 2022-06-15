@@ -1,0 +1,16 @@
+name: push_notebooks
+
+on:
+  push:
+    branches: develop
+jobs:
+  push-notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.COAST_SITE_TOKEN }}
+          repository: British-Oceanographic-Data-Centre/COAsT-site
+          event-type: push-notebook
+          client-payload: '{"deploy_notebook":true}'
