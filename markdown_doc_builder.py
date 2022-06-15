@@ -1,6 +1,9 @@
 from pathlib import Path
 import subprocess
 from datetime import date
+import sys
+
+subprocess.check_call([sys.executable, "-m", "pip", "install", "docstring2md-0.4.1-py3-none-any.whl"])
 
 root = Path(".")
 coast_dir = root / "coast"
