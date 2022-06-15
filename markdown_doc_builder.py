@@ -32,5 +32,5 @@ for python_file in file_paths:
     process_call = f"export_docstring2md -i {str(python_file.absolute())}"
     markdown_body = subprocess.run(process_call.split(), stdout=subprocess.PIPE).stdout.decode("utf-8")[33:end]
     markdown_header_formatted = markdown_header.format(file_name_min_extension.capitalize(), day_now)
-    with open(Path(f"markdown/{file_name_min_extension}.md"), 'w') as md_file:
+    with open(Path(f"markdown/{file_name_min_extension}.md"), "w") as md_file:
         md_file.write(markdown_header_formatted + markdown_body)

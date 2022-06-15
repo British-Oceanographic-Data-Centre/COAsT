@@ -28,7 +28,7 @@ author = "British Oceanographic Data Centre (BODC)"
 # version = get_distribution("COAsT").version
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.3" #version
+release = "2.0.3"  # version
 
 
 # -- General configuration ---------------------------------------------------
