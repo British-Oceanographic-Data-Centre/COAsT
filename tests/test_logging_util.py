@@ -1,6 +1,6 @@
 # Test with PyTest
 
-from coast import logging_util
+from coast._utils import logging_util
 import logging
 
 

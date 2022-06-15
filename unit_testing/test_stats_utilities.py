@@ -5,7 +5,7 @@
 # IMPORT modules. Must have unittest, and probably coast.
 import unittest
 import coast
-from coast import stats_util
+from coast._utils import stats_util
 import numpy as np
 import unit_test_files as files
 import datetime

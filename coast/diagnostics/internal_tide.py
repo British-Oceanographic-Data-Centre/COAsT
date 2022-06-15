@@ -1,8 +1,8 @@
-from .gridded import Gridded
+from ..data.gridded import Gridded
 import numpy as np
 import xarray as xr
 import copy
-from .logging_util import get_slug, debug
+from .._utils.logging_util import get_slug, debug
 
 
 class InternalTide(Gridded):  # TODO All abstract methods should be implemented

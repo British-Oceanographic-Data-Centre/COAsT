@@ -3,7 +3,7 @@ import xarray as xr
 import numpy as np
 from dask.distributed import Client
 import copy
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 from typing import Optional
 import pydap
 import pydap.cas.get_cookies

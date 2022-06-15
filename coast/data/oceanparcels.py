@@ -1,7 +1,7 @@
 """Oceanparcels class for reading ocean parcels data."""
 from .lagrangian import Lagrangian
 import xarray as xr
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 

@@ -29,7 +29,7 @@ class test_profile_methods(unittest.TestCase):
             processed = profile.process_en4()
             processed.dataset.load()
 
-            check1 = type(processed) == coast.profile.Profile
+            check1 = type(processed) == coast.Profile
             check2 = np.isnan(processed.dataset.temperature.values[0, 0])
             check3 = processed.dataset.dims["id_dim"] == 111
 
@@ -86,7 +86,7 @@ class test_profile_methods(unittest.TestCase):
             difference = pa.difference(processed, model_interpolated)
             difference.dataset.load()
 
-            check1 = type(difference) == coast.profile.Profile
+            check1 = type(difference) == coast.Profile
             check2 = np.isclose(difference.dataset.diff_temperature.values[22, 2], 2.2567890882492065)
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
