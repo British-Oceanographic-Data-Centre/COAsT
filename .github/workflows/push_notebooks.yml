@@ -3,6 +3,8 @@ name: push_notebooks
 on:
   push:
     branches: develop
+    paths:
+      - example_scripts/notebooks/**
 jobs:
   push-notebooks:
     runs-on: ubuntu-latest
