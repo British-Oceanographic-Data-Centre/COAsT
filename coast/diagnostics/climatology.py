@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from .coast import Coast
-from .logging_util import info, warn, error
+from ..data.coast import Coast
+from .._utils.logging_util import info, warn, error
 
 
 class Climatology(Coast):  # TODO All abstract methods should be implemented

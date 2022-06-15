@@ -6,13 +6,13 @@ import numpy as np
 import warnings
 import gsw
 import traceback
-from .coast import Coast
-from .gridded import Gridded
+from ..data.coast import Coast
+from ..data.gridded import Gridded
 from scipy import interpolate
 from scipy.integrate import cumtrapz
 from sklearn.neighbors import BallTree
 from skimage import measure
-from .logging_util import warn, error
+from .._utils.logging_util import warn, error
 
 # =============================================================================
 # The contour module is a place for code related to contours only

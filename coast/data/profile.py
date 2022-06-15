@@ -2,11 +2,11 @@
 from .index import Indexed
 import numpy as np
 import xarray as xr
-from . import general_utils, plot_util
+from .._utils import general_utils, plot_util
 import matplotlib.pyplot as plt
 import glob
 import datetime
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 from typing import Union
 from pathlib import Path
 import pandas as pd
