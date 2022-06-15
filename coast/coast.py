@@ -4,6 +4,14 @@ import numpy as np
 from dask.distributed import Client
 import copy
 from .logging_util import get_slug, debug, info, warn, warning
+from typing import Optional
+import pydap
+import pydap.cas.get_cookies
+import requests
+
+
+COPERNICUS_CAS = "https://cmems-cas.cls.fr/cas/login"
+COPERNICUS_URL = "https://{}.cmems-du.eu/thredds/dodsC/{}"
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
@@ -451,3 +459,30 @@ class Coast:
 
     def plot_movie(self):
         raise NotImplementedError
+
+    @classmethod
+    def from_copernicus(
+            cls,
+            product_id: str,
+            database: str,
+            username: str,
+            password: str,
+            cas_url: str = COPERNICUS_CAS,
+            url_template: str = COPERNICUS_URL
+    ) -> "Coast":
+        session = pydap.cas.get_cookies.setup_session(cas_url, username, password)
+        session.cookies.set("CASTGC", session.cookies.get_dict()['CASTGC'])
+        url = url_template.format(database, product_id)
+        return cls.from_cas(url, session=session)
+
+    @classmethod
+    def from_cas(cls, url: str, session: Optional[requests.Session] = None) -> "Coast":
+        store = xr.backends.PydapDataStore(pydap.client.open_url(url, session=session))
+        with xr.open_dataset(store) as dataset:
+            return cls.from_dataset(dataset)
+
+    @classmethod
+    def from_dataset(cls, dataset: xr.Dataset) -> "Coast":
+        coast = cls()
+        coast.load_dataset(dataset)
+        return coast
