@@ -28,3 +28,5 @@ sandbox.py
 config/nemo_tst_gridded.json
 .coverage
 unit_testing/coverage.txt
+
+example_scripts/notebooks/markdown/*

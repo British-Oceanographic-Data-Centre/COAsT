@@ -3,7 +3,7 @@ from .index import Indexed
 import numpy as np
 import xarray as xr
 import pandas as pd
-from .logging_util import get_slug, debug
+from .._utils.logging_util import get_slug, debug
 from typing import Union
 from pathlib import Path
 

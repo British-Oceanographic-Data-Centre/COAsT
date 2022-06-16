@@ -4,7 +4,7 @@ import numpy as np
 from . import general_utils as gu
 from dask.distributed import Client
 import copy
-from .logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):

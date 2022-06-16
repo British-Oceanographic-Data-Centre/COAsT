@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from coast import seasons
-from coast.climatology import Climatology
+from coast._utils import seasons
+from coast.diagnostics.climatology import Climatology
 
 
 YEARS = [2000, 2001]
