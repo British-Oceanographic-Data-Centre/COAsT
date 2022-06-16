@@ -12,7 +12,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.COAST_SITE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           repository: British-Oceanographic-Data-Centre/COAsT-site
           event-type: push-notebook
           client-payload: '{"deploy_notebook":true}'
