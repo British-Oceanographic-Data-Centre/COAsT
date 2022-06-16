@@ -460,6 +460,41 @@ class Coast:
     def plot_movie(self):
         raise NotImplementedError
 
+    def load_copernicus(
+            self,
+            product_id: str,
+            database: str,
+            username: str,
+            password: str,
+            cas_url: str = COPERNICUS_CAS,
+            url_template: str = COPERNICUS_URL
+    ) -> None:
+        """Load a remote dataset from https://marine.copernicus.eu/ to be streamed via OPeNDAP.
+
+        :param product_id: The ID of the ocean product (https://resources.marine.copernicus.eu/products) to access.
+        :param database: The Copernicus database (usually "nrt" or  "my" to access data from.
+        :param username: The Copernicus CAS username to authenticate with.
+        :param password: The Copernicus CAS password to authenticate with.
+        :param cas_url: The Copernicus CAS url to authenticate with.
+        :param url_template: The URL template to use when accessing a Copernicus dataset.
+        """
+        session = pydap.cas.get_cookies.setup_session(cas_url, username, password)
+        session.cookies.set("CASTGC", session.cookies.get_dict()['CASTGC'])
+        url = url_template.format(database, product_id)
+        self.load_opendap(url, session=session)
+
+    def load_opendap(self, url: str, session: Optional[requests.Session] = None):
+        """Load a remote dataset via OPeNDAP (optionally authenticating with CAS) for streaming.
+        
+
+        :param url: The OPeNDAP URL to stream data from.
+        :param session: The CAS session to authenticate with.
+        :return: Generated object (this) with the underlying OPeNDAP dataset opened.
+        """
+        store = xr.backends.PydapDataStore(pydap.client.open_url(url, session=session))
+        with xr.open_dataset(store) as dataset:
+            return self.load_dataset(dataset)
+
     @classmethod
     def from_copernicus(
             cls,
@@ -481,23 +516,23 @@ class Coast:
         :param url_template: The URL template to use when accessing a Copernicus dataset.
         :return: Generated object (this) with the underlying Copernicus dataset opened.
         """
-        session = pydap.cas.get_cookies.setup_session(cas_url, username, password)
-        session.cookies.set("CASTGC", session.cookies.get_dict()['CASTGC'])
-        url = url_template.format(database, product_id)
-        return cls.from_opendap(url, session=session)
+        coast = cls()
+        coast.load_copernicus(product_id, database, username, password, cas_url=cas_url, url_template=url_template)
+        return coast
 
     @classmethod
-    def from_opendap(cls, url: str, session: Optional[requests.Session] = None) -> "Coast":
-        """Authenticate with CAS to access remote data via OPeNDAP and produce an object able to stream the OPeNDAP
-        dataset.
+    def from_opendap(cls, url: str, session: Optional[requests.Session] = None):
+        """Access a remote dataset via OPeNDAP (optionally authenticating with CAS) and produce an object able to
+        stream the underlying data.
+
 
         :param url: The OPeNDAP URL to stream data from.
         :param session: The CAS session to authenticate with.
         :return: Generated object (this) with the underlying OPeNDAP dataset opened.
         """
-        store = xr.backends.PydapDataStore(pydap.client.open_url(url, session=session))
-        with xr.open_dataset(store) as dataset:
-            return cls.from_dataset(dataset)
+        coast = cls()
+        coast.load_opendap(url, session=session)
+        return coast
 
     @classmethod
     def from_dataset(cls, dataset: xr.Dataset) -> "Coast":
