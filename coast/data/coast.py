@@ -1,7 +1,7 @@
 from dask import array
 import xarray as xr
 import numpy as np
-from . import general_utils as gu
+from .._utils import general_utils as gu
 from dask.distributed import Client
 import copy
 from .._utils.logging_util import get_slug, debug, info, warn, warning
