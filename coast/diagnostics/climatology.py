@@ -1,3 +1,4 @@
+"""Climatology class"""
 import calendar
 from datetime import date
 import traceback

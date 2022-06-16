@@ -1,3 +1,4 @@
+"""A general utility file."""
 import xarray as xr
 import numpy as np
 import sklearn.neighbors as nb

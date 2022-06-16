@@ -1,3 +1,4 @@
+"""Gridded class"""
 import os.path as path_lib
 import warnings
 

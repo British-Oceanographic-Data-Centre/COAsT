@@ -1,3 +1,4 @@
+"""This is file deals with empirical orthogonal functions."""
 import xarray as xr
 import numpy as np
 from scipy import linalg
@@ -5,7 +6,8 @@ from scipy.signal import hilbert
 
 
 def compute_eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_name: str = "t_dim"):
-    """
+    """Compute some numbers is a helper method.
+
     Computes the Empirical Orthogonal Functions (EOFs) of a variable (time series)
     that has 3 dimensions where one is time, i.e. (x,y,time)
 
@@ -36,7 +38,6 @@ def compute_eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_n
     from the original data variable are also included
 
     """
-
     variable = variable.transpose(..., time_dim_name, transpose_coords=False)
     i, j, t = np.shape(variable.data)  # TODO Can someone sciencey give me the proper name for these?
     signal = np.reshape(variable.data, (i * j, t))
@@ -82,7 +83,8 @@ def compute_eofs(variable: xr.DataArray, full_matrices: bool = False, time_dim_n
 
 
 def compute_hilbert_eofs(variable: xr.DataArray, full_matrices=False, time_dim_name: str = "t_dim"):
-    """
+    """Compute with hilbert is a helper method.
+
     Computes the complex Hilbert Empirical Orthogonal Functions (HEOFs) of a
     variable (time series) that has 3 dimensions where one is time, i.e. (x,y,time).
     See https://doi.org/10.1002/joc.1499
@@ -174,7 +176,8 @@ def compute_hilbert_eofs(variable: xr.DataArray, full_matrices=False, time_dim_n
 
 
 def _compute(signal, full_matrices, active_ind, number_points):
-    """
+    """Private compute method is a helper method.
+
     Compute eofs, projections and variance explained using a Singular Value Decomposition
 
     Parameters

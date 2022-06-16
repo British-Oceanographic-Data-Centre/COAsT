@@ -1,3 +1,6 @@
+"""A class to help with writting markdown."""
+
+
 class DocsyTools:  # TODO All abstract methods should be implemented
     """ """
 
