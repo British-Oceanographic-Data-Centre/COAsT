@@ -40,7 +40,7 @@ sci_w.dataset = sci_w.dataset.swap_dims({"depthw": "z_dim"})
 #%% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
-ind_sci = sci_w.subset_indices([51, -4], [60, 15])
+ind_sci = sci_w.subset_indices(start=[51, -4], end=[60, 15])
 sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nswes = northwest europe shelf
 
 #%% Compute a diffusion from w-vel

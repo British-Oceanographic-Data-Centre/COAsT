@@ -244,7 +244,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             error(err)
 
     # Add subset method to NEMO class
-    def subset_indices(self, start: tuple, end: tuple) -> tuple:
+    def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
         """
         based on transect_indices, this method looks to return all indices between the given points.
         This results in a 'box' (Quadrilateral) of indices.
