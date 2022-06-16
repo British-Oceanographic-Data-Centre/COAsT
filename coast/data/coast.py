@@ -461,13 +461,13 @@ class Coast:
         raise NotImplementedError
 
     def load_copernicus(
-            self,
-            product_id: str,
-            database: str,
-            username: str,
-            password: str,
-            cas_url: str = COPERNICUS_CAS,
-            url_template: str = COPERNICUS_URL
+        self,
+        product_id: str,
+        database: str,
+        username: str,
+        password: str,
+        cas_url: str = COPERNICUS_CAS,
+        url_template: str = COPERNICUS_URL,
     ) -> None:
         """Load a remote dataset from https://marine.copernicus.eu/ to be streamed via OPeNDAP.
 
@@ -479,13 +479,13 @@ class Coast:
         :param url_template: The URL template to use when accessing a Copernicus dataset.
         """
         session = pydap.cas.get_cookies.setup_session(cas_url, username, password)
-        session.cookies.set("CASTGC", session.cookies.get_dict()['CASTGC'])
+        session.cookies.set("CASTGC", session.cookies.get_dict()["CASTGC"])
         url = url_template.format(database, product_id)
         self.load_opendap(url, session=session)
 
     def load_opendap(self, url: str, session: Optional[requests.Session] = None):
         """Load a remote dataset via OPeNDAP (optionally authenticating with CAS) for streaming.
-        
+
 
         :param url: The OPeNDAP URL to stream data from.
         :param session: The CAS session to authenticate with.
@@ -497,13 +497,13 @@ class Coast:
 
     @classmethod
     def from_copernicus(
-            cls,
-            product_id: str,
-            database: str,
-            username: str,
-            password: str,
-            cas_url: str = COPERNICUS_CAS,
-            url_template: str = COPERNICUS_URL
+        cls,
+        product_id: str,
+        database: str,
+        username: str,
+        password: str,
+        cas_url: str = COPERNICUS_CAS,
+        url_template: str = COPERNICUS_URL,
     ) -> "Coast":
         """Access a remote dataset from https://marine.copernicus.eu/ and produce an object able to stream the
         underlying dataset via OPeNDAP.
