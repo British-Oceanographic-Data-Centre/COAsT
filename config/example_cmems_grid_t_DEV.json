@@ -1,0 +1,42 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {"time":1},
+	"grid_ref": {
+		"t-grid": []
+	},
+	"dataset": {
+		"dimension_map": {
+			"time": "t_dim",
+			"depth": "z_dim",
+			"longitude": "x_dim",
+			"latitude": "y_dim"
+		},
+		"variable_map": {
+			"time": "time",
+			"longitude": "longitude",
+			"latitude": "latitude",
+			"thetao": "temperature",
+			"so": "salinity",
+                        "depth": "z_dim",
+			"zos": "ssh"
+		},
+		"coord_vars": [
+			"time",
+                        "depth",
+                        "latitude",
+			"longitude"
+		]
+	},
+	"domain": {
+		"dimension_map": {},
+		"variable_map": {}
+	},
+	"static_variables": {
+		"not_grid_vars": [],
+		"delete_vars": []
+	},
+	"processing_flags": []
+}
+
+
