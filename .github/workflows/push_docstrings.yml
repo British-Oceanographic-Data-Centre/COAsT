@@ -1,4 +1,4 @@
-name: push_notebooks
+name: push_docstrings
 
 on:
   push:
