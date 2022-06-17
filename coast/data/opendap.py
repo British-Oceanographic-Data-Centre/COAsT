@@ -12,6 +12,7 @@ import requests
 @dataclass
 class OpendapInfo:
     """A class for accessing streamable OPeNDAP data."""
+
     url: str
     session: Optional[requests.Session] = None
 
