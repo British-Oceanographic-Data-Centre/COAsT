@@ -4,14 +4,7 @@ import numpy as np
 from dask.distributed import Client
 import copy
 from .._utils.logging_util import get_slug, debug, info, warn, warning
-from typing import Optional
-import pydap
-import pydap.cas.get_cookies
-import requests
-
-
-COPERNICUS_CAS = "https://cmems-cas.cls.fr/cas/login"
-COPERNICUS_URL = "https://{}.cmems-du.eu/thredds/dodsC/{}"
+from .opendap import OpendapInfo
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
@@ -23,7 +16,7 @@ class Coast:
         self,
         file: str = None,
         chunks: dict = None,
-        multiple=False,
+        multiple: bool = False,
         workers: int = 2,  # TODO Do something with this unused parameter or delete it
         threads: int = 2,  # TODO Do something with this unused parameter or delete it
         memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter or delete it
@@ -52,12 +45,16 @@ class Coast:
         Loads a file into a COAsT object's dataset variable using xarray
 
         Args:
-            file_or_dir (str)     : file name or directory to multiple files.
-            chunks (dict)  : Chunks to use in Dask [default None]
+            file_or_dir (str): file name, OPeNDAP accessor, or directory to multiple files.
+            chunks (dict): Chunks to use in Dask [default None]
             multiple (bool): If true, load in multiple files from directory.
                              If false load a single file [default False]
         """
-        if multiple:
+        if (opendap := isinstance(file_or_dir, OpendapInfo)) and multiple:
+            raise NotImplementedError("Loading multiple OPeNDAP datasets is not supported")
+        elif opendap:
+            self.load_dataset(file_or_dir.open_dataset(chunks=chunks))
+        elif multiple:
             self.load_multiple(file_or_dir, chunks)
         else:
             self.load_single(file_or_dir, chunks)
@@ -459,88 +456,3 @@ class Coast:
 
     def plot_movie(self):
         raise NotImplementedError
-
-    def load_copernicus(
-        self,
-        product_id: str,
-        database: str,
-        username: str,
-        password: str,
-        cas_url: str = COPERNICUS_CAS,
-        url_template: str = COPERNICUS_URL,
-    ) -> None:
-        """Load a remote dataset from https://marine.copernicus.eu/ to be streamed via OPeNDAP.
-
-        :param product_id: The ID of the ocean product (https://resources.marine.copernicus.eu/products) to access.
-        :param database: The Copernicus database (usually "nrt" or  "my" to access data from.
-        :param username: The Copernicus CAS username to authenticate with.
-        :param password: The Copernicus CAS password to authenticate with.
-        :param cas_url: The Copernicus CAS url to authenticate with.
-        :param url_template: The URL template to use when accessing a Copernicus dataset.
-        """
-        session = pydap.cas.get_cookies.setup_session(cas_url, username, password)
-        session.cookies.set("CASTGC", session.cookies.get_dict()["CASTGC"])
-        url = url_template.format(database, product_id)
-        self.load_opendap(url, session=session)
-
-    def load_opendap(self, url: str, session: Optional[requests.Session] = None):
-        """Load a remote dataset via OPeNDAP (optionally authenticating with CAS) for streaming.
-
-
-        :param url: The OPeNDAP URL to stream data from.
-        :param session: The CAS session to authenticate with.
-        :return: Generated object (this) with the underlying OPeNDAP dataset opened.
-        """
-        store = xr.backends.PydapDataStore(pydap.client.open_url(url, session=session))
-        with xr.open_dataset(store) as dataset:
-            return self.load_dataset(dataset)
-
-    @classmethod
-    def from_copernicus(
-        cls,
-        product_id: str,
-        database: str,
-        username: str,
-        password: str,
-        cas_url: str = COPERNICUS_CAS,
-        url_template: str = COPERNICUS_URL,
-    ) -> "Coast":
-        """Access a remote dataset from https://marine.copernicus.eu/ and produce an object able to stream the
-        underlying dataset via OPeNDAP.
-
-        :param product_id: The ID of the ocean product (https://resources.marine.copernicus.eu/products) to access.
-        :param database: The Copernicus database (usually "nrt" or  "my" to access data from.
-        :param username: The Copernicus CAS username to authenticate with.
-        :param password: The Copernicus CAS password to authenticate with.
-        :param cas_url: The Copernicus CAS url to authenticate with.
-        :param url_template: The URL template to use when accessing a Copernicus dataset.
-        :return: Generated object (this) with the underlying Copernicus dataset opened.
-        """
-        coast = cls()
-        coast.load_copernicus(product_id, database, username, password, cas_url=cas_url, url_template=url_template)
-        return coast
-
-    @classmethod
-    def from_opendap(cls, url: str, session: Optional[requests.Session] = None):
-        """Access a remote dataset via OPeNDAP (optionally authenticating with CAS) and produce an object able to
-        stream the underlying data.
-
-
-        :param url: The OPeNDAP URL to stream data from.
-        :param session: The CAS session to authenticate with.
-        :return: Generated object (this) with the underlying OPeNDAP dataset opened.
-        """
-        coast = cls()
-        coast.load_opendap(url, session=session)
-        return coast
-
-    @classmethod
-    def from_dataset(cls, dataset: xr.Dataset) -> "Coast":
-        """Initialise an object with an underlying XArray dataset.
-
-        :param dataset: The XArray dataset to load.
-        :return: The initialised object with an underlying XArray dataset.
-        """
-        coast = cls()
-        coast.load_dataset(dataset)
-        return coast
