@@ -1,3 +1,4 @@
+"""Mask maker"""
 import xarray as xr
 import numpy as np
 import skimage.draw as draw

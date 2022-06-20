@@ -1,12 +1,14 @@
-name: push_notebooks
+name: push_docstrings
 
 on:
   push:
-    branches: master
+    branches: develop
     paths:
-      - example_scripts/notebooks/**
+      - coast/data/**
+      - coast/_utils/**
+      - coast/diagnostics/**
 jobs:
-  push-notebooks:
+  push-docstrings:
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
@@ -14,5 +16,6 @@ jobs:
         with:
           token: ${{ secrets.COAST_SITE_TOKEN }}
           repository: British-Oceanographic-Data-Centre/COAsT-site
-          event-type: push-notebook
-          client-payload: '{"deploy_notebook":true}'
+          event-type: push-docstring
+          client-payload: '{"deploy_docstring":true}'
+

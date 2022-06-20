@@ -1,3 +1,4 @@
+"""The coast class is the main access point into this package."""
 from dask import array
 import xarray as xr
 import numpy as np
@@ -20,6 +21,18 @@ class Coast:
         threads: int = 2,  # TODO Do something with this unused parameter or delete it
         memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter or delete it
     ):
+        """This is the constructor method.
+
+        This is the access point into the COAsT class. From here all the magic happens.
+
+        Args:
+            file:
+            chunks: how/where to break up the data when reading it in
+            multiple: 
+            workers: optional Dask related input
+            threads: optional Dask related input
+            memory_limit_per_worker: optional Dask related input
+        """
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
         self.earth_raids = 6371.007176  # Radius of the earth in km TODO Could this be module-level?

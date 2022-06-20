@@ -1,3 +1,4 @@
+"""An analysis class for tide gauge."""
 import numpy as np
 import xarray as xr
 from ..data.tidegauge import Tidegauge
