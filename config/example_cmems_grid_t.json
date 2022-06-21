@@ -9,13 +9,13 @@
 		"dimension_map": {
 			"time": "t_dim",
 			"depth": "z_dim",
-			"lon": "x_dim",
-			"lat": "y_dim"
+			"longitude": "x_dim",
+			"latitude": "y_dim"
 		},
 		"variable_map": {
 			"time": "time",
-			"lon": "longitude",
-			"lat": "latitude",
+			"longitude": "longitude",
+			"latitude": "latitude",
 			"thetao": "temperature",
 			"so": "salinity",
                         "depth": "z_dim",
