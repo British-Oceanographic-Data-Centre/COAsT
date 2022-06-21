@@ -16,7 +16,7 @@ def copernicus_fixture():
     return Copernicus(USERNAME, PASSWORD, DATABASE)
 
 
-@pytest.mark.skipif(condition=not USERNAME or not PASSWORD,  reason="Copernicus credentials are not set.")
+@pytest.mark.skipif(condition=not USERNAME or not PASSWORD, reason="Copernicus credentials are not set.")
 def test_get_product(copernicus):
     product = copernicus.get_product(PRODUCT_ID)
     nemo_t = Gridded(fn_data=product, config=str(CONFIG))

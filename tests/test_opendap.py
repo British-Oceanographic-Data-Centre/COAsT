@@ -41,7 +41,9 @@ def test_from_cas(mocker):
 
     setup_session = mocker.patch("coast.data.opendap.setup_session", return_value=mocker.sentinel.session)
 
-    opendap_info = OpendapInfo.from_cas(mocker.sentinel.url, mocker.sentinel.cas_url, mocker.sentinel.username, mocker.sentinel.password)
+    opendap_info = OpendapInfo.from_cas(
+        mocker.sentinel.url, mocker.sentinel.cas_url, mocker.sentinel.username, mocker.sentinel.password
+    )
 
     assert isinstance(opendap_info, OpendapInfo)
     assert opendap_info.url == mocker.sentinel.url

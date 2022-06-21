@@ -6,7 +6,13 @@ from coast import Copernicus, Product
 def copernicus_fixture(mocker):
     mocker.sentinel.template = mocker.Mock()
     mocker.sentinel.template.format.return_value = mocker.sentinel.url
-    return Copernicus(mocker.sentinel.username, mocker.sentinel.password, mocker.sentinel.database, cas_url=mocker.sentinel.cas_url, url_template=mocker.sentinel.template)
+    return Copernicus(
+        mocker.sentinel.username,
+        mocker.sentinel.password,
+        mocker.sentinel.database,
+        cas_url=mocker.sentinel.cas_url,
+        url_template=mocker.sentinel.template,
+    )
 
 
 def test_get_url(copernicus, mocker):
@@ -22,11 +28,15 @@ def test_from_copernicus(copernicus, mocker):
     product = Product.from_copernicus(mocker.sentinel.product_id, copernicus)
 
     assert product == mocker.sentinel.product
-    from_cas.assert_called_with(mocker.sentinel.url, mocker.sentinel.cas_url, mocker.sentinel.username, mocker.sentinel.password)
+    from_cas.assert_called_with(
+        mocker.sentinel.url, mocker.sentinel.cas_url, mocker.sentinel.username, mocker.sentinel.password
+    )
 
 
 def test_get_product(copernicus, mocker):
-    from_copernicus = mocker.patch("coast.data.copernicus.Product.from_copernicus", return_value=mocker.sentinel.product)
+    from_copernicus = mocker.patch(
+        "coast.data.copernicus.Product.from_copernicus", return_value=mocker.sentinel.product
+    )
 
     product = copernicus.get_product(mocker.sentinel.product_id)
 
