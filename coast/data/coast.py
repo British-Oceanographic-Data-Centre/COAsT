@@ -28,7 +28,7 @@ class Coast:
         Args:
             file:
             chunks: how/where to break up the data when reading it in
-            multiple: 
+            multiple:
             workers: optional Dask related input
             threads: optional Dask related input
             memory_limit_per_worker: optional Dask related input

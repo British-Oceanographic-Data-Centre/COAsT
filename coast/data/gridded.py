@@ -245,7 +245,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             error(err)
 
     # Add subset method to NEMO class
-    def subset_indices(self, start: tuple, end: tuple) -> tuple:
+    def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
         """
         based on transect_indices, this method looks to return all indices between the given points.
         This results in a 'box' (Quadrilateral) of indices.
@@ -255,15 +255,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: list of y indices, list of x indices,
         """
         debug(f"Subsetting {get_slug(self)} indices from {start} to {end}")
-        [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
-        [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
+        [j1, i1] = self.find_j_i(lat=start[0], lon=start[1])  # lat , lon
+        [j2, i2] = self.find_j_i(lat=end[0], lon=end[1])  # lat , lon
 
         return list(np.arange(j1, j2 + 1)), list(np.arange(i1, i2 + 1))
 
-    def find_j_i(self, lat: float, lon: float):
+    def find_j_i(self, *, lat: float, lon: float):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
-        Usage: [y,x] = find_j_i(49, -12)
+        Usage: [y,x] = find_j_i(lat=49, lon=-12)
 
         :param lat: latitude
         :param lon: longitude
@@ -274,16 +274,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-    def find_j_i_domain(self, lat: float, lon: float, dataset_domain: xr.DataArray):
-        # TODO add dataset_domain to docstring and remove nonexistent grid_ref
+    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
-        Usage: [y,x] = find_j_i(49, -12, dataset_domain)
+        Usage: [y,x] = find_j_i_domain(lat=49, lon=-12, dataset_domain=dataset_domain)
 
         :param lat: latitude
         :param lon: longitude
-        :param grid_ref: the gphi/glam version a user wishes to search over
-        :return: the y and x coordinates for the given grid_ref variable within the domain file
+        :param dataset_domain: dataset domain
+        :return: the y and x coordinates for the grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
         internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
@@ -302,8 +301,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: array of y indices, array of x indices, number of indices in transect
         """
         debug(f"Fetching transect indices for {start} to {end} from {get_slug(self)}")
-        [j1, i1] = self.find_j_i(start[0], start[1])  # lat , lon
-        [j2, i2] = self.find_j_i(end[0], end[1])  # lat , lon
+        [j1, i1] = self.find_j_i(lat=start[0], lon=start[1])  # lat , lon
+        [j2, i2] = self.find_j_i(lat=end[0], lon=end[1])  # lat , lon
 
         line_length = max(np.abs(j2 - j1), np.abs(i2 - i1)) + 1
 
@@ -488,8 +487,12 @@ class Gridded(Coast):  # TODO Complete this docstring
             )
 
             # Find the corners of the cut out domain.
-            [j0, i0] = self.find_j_i_domain(self.dataset.nav_lat[0, 0], self.dataset.nav_lon[0, 0], dataset_domain)
-            [j1, i1] = self.find_j_i_domain(self.dataset.nav_lat[-1, -1], self.dataset.nav_lon[-1, -1], dataset_domain)
+            [j0, i0] = self.find_j_i_domain(
+                lat=self.dataset.nav_lat[0, 0], lon=self.dataset.nav_lon[0, 0], dataset_domain=dataset_domain
+            )
+            [j1, i1] = self.find_j_i_domain(
+                lat=self.dataset.nav_lat[-1, -1], lon=self.dataset.nav_lon[-1, -1], dataset_domain=dataset_domain
+            )
 
             dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1), x_dim=slice(i0, i1 + 1))
             return dataset_subdomain
