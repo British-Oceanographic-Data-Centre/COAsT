@@ -9,6 +9,9 @@ from pydap.cas.get_cookies import setup_session
 import requests
 
 
+CASTGC = "CASTGC"
+
+
 @dataclass
 class OpendapInfo:
     """A class for accessing streamable OPeNDAP data."""
@@ -50,5 +53,5 @@ class OpendapInfo:
             The instantiated OPeNDAP accessor.
         """
         session = setup_session(cas_url, username, password)
-        session.cookies.set("CASTGC", session.cookies.get_dict()["CASTGC"])
+        session.cookies.set(CASTGC, session.cookies.get_dict()[CASTGC])
         return cls(url, session)

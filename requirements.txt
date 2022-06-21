@@ -1,6 +1,7 @@
 PyYAML==6.0
 oyaml==1.0
 pytest==7.1.1
+pytest-mock==3.7.0
 numpy>=1.22.3
 dask>=2022.3.0
 dask[complete]>=2022.3.0
