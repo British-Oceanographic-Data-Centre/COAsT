@@ -1,3 +1,5 @@
+"""Integration tests for Copernicus functionality."""
+
 import logging
 from pathlib import Path
 from os import environ
@@ -21,12 +23,14 @@ if not CREDENTIALS:
 
 
 @pytest.fixture(name="copernicus")
-def copernicus_fixture():
+def copernicus_fixture() -> Copernicus:
+    """Return a functional Copernicus data accessor."""
     return Copernicus(USERNAME, PASSWORD, DATABASE)
 
 
 @pytest.mark.skipif(condition=not CREDENTIALS,  reason="Copernicus credentials are not set.")
 def test_get_product(copernicus):
+    """Connect to Copernicus, access some metadata and data values and ingest into a Gridded object."""
     product = copernicus.get_product(PRODUCT_ID)
     nemo_t = Gridded(fn_data=product, config=str(CONFIG))
 

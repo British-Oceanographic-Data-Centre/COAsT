@@ -1,14 +1,18 @@
+"""Unit tests for OPeNDAP functionality."""
+
 import pytest
 from coast import OpendapInfo
 from coast.data.opendap import CASTGC
 
 
 @pytest.fixture(name="opendap_info")
-def opendap_info_fixture(mocker):
+def opendap_info_fixture(mocker) -> OpendapInfo:
+    """Return an OPeNDAP accessor with mocked parameters."""
     return OpendapInfo(mocker.sentinel.url, session=mocker.sentinel.session)
 
 
 def test_get_store(opendap_info, mocker) -> None:
+    """Test that a store is instantiated with the correct parameters."""
     open_url = mocker.patch("coast.data.opendap.open_url", return_value=mocker.sentinel.dataset)
     pydap_data_store = mocker.patch("coast.data.opendap.PydapDataStore", return_value=mocker.sentinel.returned_store)
 
@@ -21,6 +25,7 @@ def test_get_store(opendap_info, mocker) -> None:
 
 @pytest.mark.parametrize(["chunking"], [(True,), (False,)])
 def test_open_dataset(opendap_info, mocker, chunking):
+    """Test that a dataset is initialised with the correct parameters."""
     get_store = mocker.patch("coast.data.opendap.OpendapInfo.get_store", return_value=mocker.sentinel.store)
     dataset = mocker.Mock()
     dataset.__enter__ = mocker.Mock()  # Requirement of context manager
@@ -36,6 +41,7 @@ def test_open_dataset(opendap_info, mocker, chunking):
 
 
 def test_from_cas(mocker):
+    """Test that an OPeNDAP accessor is instantiated with the correct parameters."""
     mocker.sentinel.session = mocker.Mock()
     mocker.sentinel.session.cookies.get_dict.return_value = {"CASTGC": mocker.sentinel.castgc}
 
