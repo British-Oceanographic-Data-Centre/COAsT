@@ -28,7 +28,7 @@ def copernicus_fixture() -> Copernicus:
     return Copernicus(USERNAME, PASSWORD, DATABASE)
 
 
-@pytest.mark.skipif(condition=not CREDENTIALS,  reason="Copernicus credentials are not set.")
+@pytest.mark.skipif(condition=not CREDENTIALS, reason="Copernicus credentials are not set.")
 def test_get_product(copernicus):
     """Connect to Copernicus, access some metadata and data values and ingest into a Gridded object."""
     product = copernicus.get_product(PRODUCT_ID)
