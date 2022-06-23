@@ -19,7 +19,7 @@ PASSWORD = environ.get("COPERNICUS_PASSWORD")
 CREDENTIALS = USERNAME is not None and PASSWORD is not None
 
 if not CREDENTIALS:
-    logging.warning("Copernicus credentials not set, integration tests will not be run!")
+    logging.warning("https://marine.copernicus.eu/ credentials not set, integration tests will not be run!")
 
 
 @pytest.fixture(name="copernicus")
