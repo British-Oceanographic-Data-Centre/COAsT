@@ -32,6 +32,8 @@ authors:
    given-names: "Quyen"
  - family-names: "Loch"
    given-names: "Stephen"
+ - family-names: "Gorman"
+   given-names: "Luke"
 title: "British-Oceanographic-Data-Centre/COAsT: v2.0.3"
 version: v2.0.3
 date-released: 2022-04-08
