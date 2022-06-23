@@ -40,12 +40,9 @@ class MarkdownBuilder:
                 # contain methods, so we don't want to convert them
                 continue
 
-            if doc := get_doc(file):
-                # First 33 characters are not required for our docs
-                doc = doc[33:]
-            else:
-                # No docstring returned, skip this file
-                continue
+            if not (doc := get_doc(file)):
+                continue  # No docstring returned, skip this file
+            doc = doc[33:]  # First 33 characters are not required for our docs
 
             # Write the output we've generated to a file
             (output := self.directory / f"{stem}.md").write_text(generate_header(stem) + doc)
