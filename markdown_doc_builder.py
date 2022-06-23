@@ -1,26 +1,12 @@
 """Script to turn google docstrings into markdown"""
 from pathlib import Path
-import subprocess
 from datetime import date
-import sys
+from typing import Generator, List, Optional
+from time import time
+from docstring2md import DocString2MD
 
-# make sure we install the local whl for the docsting2md package
-subprocess.check_call([sys.executable, "-m", "pip", "install", "docstring2md-0.4.1-py3-none-any.whl"])
-
-# find all the python files within coast
-root = Path(".")
-coast_dir = root / "coast"
-file_format = ".py"
-file_paths = []
-glob_prefix = "**/*"
-file_paths.extend(coast_dir.glob(f"{glob_prefix}{file_format}"))
-
-# Make sure we have a markdown folder to write to
-md = root / "markdown"
-md.mkdir(exist_ok=True)
-
-# pre-formatted hugo markdown header where we can dynamical add dates and file names
-markdown_header = """---
+# Pre-formatted Hugo markdown header to which we can dynamically add dates and file names
+MARKDOWN_HEADER = """---
 title: "{0}"
 linkTitle: "{0}"
 date: {1}
@@ -28,22 +14,62 @@ description: >
   Docstrings for the {0} class
 ---"""
 
-day_now = date.today()
-end = None  # variable holder for end of string
 
-for python_file in file_paths:
-    file_name_min_extension = python_file.name[0:-3]
+class MarkdownBuilder:
+    def __init__(self, package: str, glob: str = "**/*.py"):
+        self.package: str = package
+        self.glob: str = glob
 
-    if file_name_min_extension == "__init__":
-        # we might have more than one __init__.py file given the folder structure and these files shouldn't contain
-        # methods, so we don't want to convert them
-        continue
+    @property
+    def directory(self) -> Path:
+        """Make sure we have a markdown folder to write to."""
+        (directory := Path("markdown").resolve(strict=True)).mkdir(exist_ok=True)
+        return directory
 
-    process_call = f"export_docstring2md -i {str(python_file.absolute())}"
-    # The first 33 char ain't needed and look mess within our site
-    markdown_body = subprocess.run(process_call.split(), stdout=subprocess.PIPE).stdout.decode("utf-8")[33:end]
+    @property
+    def files(self) -> Generator[Path, None, None]:
+        """Return all the Python modules within the target package."""
+        return Path(self.package).resolve(strict=True).glob(self.glob)
 
-    # This adds the hugo required header to our markdown string.
-    markdown_header_formatted = markdown_header.format(file_name_min_extension.capitalize(), day_now)
-    with open(Path(f"markdown/{file_name_min_extension}.md"), "w") as md_file:
-        md_file.write(markdown_header_formatted + markdown_body)
+    def generate_docs(self) -> List[Path]:
+        """Generate docs for selected Python modules and output to Markdown files of the same name."""
+        outputs = []
+        for file in self.files:
+            if (stem := file.stem) == "__init__":
+                # We might have more than one __init__.py file depending on package structure and these files shouldn't
+                # contain methods, so we don't want to convert them
+                continue
+
+            if doc := get_doc(file):
+                # First 33 characters are not required for our docs
+                doc = doc[33:]
+            else:
+                # No docstring returned, skip this file
+                continue
+
+            # Write the output we've generated to a file
+            (output := self.directory / f"{stem}.md").write_text(generate_header(stem) + doc)
+            outputs.append(output)
+        return outputs
+
+
+def generate_header(name: str) -> str:
+    """Generate the Hugo-required header for our Markdown string."""
+    return MARKDOWN_HEADER.format(name.capitalize(), date.today())
+
+
+def get_doc(file: Path) -> Optional[str]:
+    module = DocString2MD(module_name=str(file.resolve(strict=True)))
+    module.import_module()
+    return module.get_doc()
+
+
+def main() -> None:
+    start = time()
+    builder = MarkdownBuilder("coast")
+    outputs = builder.generate_docs()
+    print(f"Generated {len(outputs)} Markdown files in {round(time() - start, 2)} seconds!")
+
+
+if __name__ == "__main__":
+    main()
