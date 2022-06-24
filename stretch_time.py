@@ -6,6 +6,7 @@ from pathlib import Path
 import cftime
 from scipy.interpolate import interp1d
 from datetime import datetime
+import matplotlib.pyplot as plt  # plotting
 
 data_dir = Path("E:\\COAsT data\\")
 three_hour = data_dir / "tas_3hr_UKESM1-0-LL_historical_r1i1p1f2_gn_1850_subset.nc"
@@ -26,43 +27,20 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
     else:
         days = 365
     
-    days_in_data = int(time_var.size / (24 / hourly_interval))
-    time_original = np.arange(1, days_in_data + 1, 1)
+    points_in_data = int(time_var.size) #/ (24 / hourly_interval))
+    measures_per_day = 24 / hourly_interval
+    time_original = np.arange(1, points_in_data + 1, 1)
+    extra_days = days - (points_in_data / measures_per_day)
     
-    # first and last 15 stay the same
-    time_str_method2 = np.arange(1, 15 + 1, 1)
-    count_n = int((days - 15 * 2) / (days - days_in_data))
-    extra_days = days - days_in_data
-    t_end = time_str_method2[-1]
-    for _ in range(1, extra_days + 1):
-        tt = np.arange(t_end + 1, count_n + t_end, 1)
-        time_str_method2 = np.append(time_str_method2, tt)
-        t_end = time_str_method2[-1]
-        time_str_method2 = np.append(time_str_method2, (t_end + 0.5))
-
-    # add the last 15 days
-    tt = np.arange(time_str_method2[-1] + 0.5, days_in_data + 1, 1)
-    time_str_method2 = np.append(time_str_method2, tt)
-
-    # for hourly fields
-    n_m = int(24 / hourly_interval)  # number of measurments, every 3 hours
-    count = 1 / (n_m)
-    time_tas_365 = np.arange(count, days + count, count)
+    first_15 = np.arange(1,(15*measures_per_day) + 1)
+    last_15 = np.arange(points_in_data - (15 * measures_per_day) + 1 , points_in_data + 1)
+    extended_days = np.arange((15*measures_per_day) + 1, points_in_data - (15*measures_per_day) +1, (points_in_data - (30*measures_per_day))/(points_in_data - (30*measures_per_day) + (extra_days*measures_per_day)))
+    extended_time = np.append(np.append(first_15, extended_days), last_15)
     
-    # 360 days - 30 = 330 days
-    # 24 hours / hourly interval = number of measures a day (e.g. 3hrly = 24 hours / 3 = 8 measurements per day)
-    # add 365 - 360 = 5 days
-    # 5 / (330 * number of measures per day) this is a fraction of a day that should be added to each day?
-    #### 330 / 5 = 66 so every 66 days add an element (day)
-    # [1 - 360] length = 360
-    # [1, 2, 2+val ...., 360] 
-    #  1 to 330 step value = 5 / (330 * number of measures per day)
-
-
-    # [1 - 365] step = 360/365
     # first_15 = np.arange(1,16)
     # last_15 = np.arange(360-14, 361)
     # 365 element array = np.append(np.append(first_15, np.arange(16, 346, 330/335)), last_15)
+    # np.arange((15*2) + 1, points_in_data - (15*2) +1, (points_in_data - (30*2))/(points_in_data - (30*2) + (extra_days*2)))
     
 
     stretched_variables = []
@@ -72,17 +50,19 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
         try:
 
             interpolate1d = interp1d(time_original, y=data_var[:], axis=0) # Scipy interp retains all dims. (No np.squeeze)
-            new_data = interpolate1d(time_str_method2)
+            new_data = interpolate1d(extended_time)
                
             # Create new stretched variable. 
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
             dim_dict['time'] = xr.cftime_range(
                 start = daily_dataset['time'].data[0].isoformat(),
                 end = daily_dataset['time'].data[-1].isoformat(),
+                periods = extended_time.size,
+                freq = None,
                 calendar="all_leap"
             )
             # Create new data array for stretched variable.
-            data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=("time", "i", "j"))
+            data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=("time", "lat", "lon"))
             stretched_variables.append(data_array)
         except Exception as exc:
             print(f"{var_name} -- {traceback.format_exc()}")
@@ -91,11 +71,21 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
     return new_dataset
 
 
-new_ds = add_time(daily_dataset)
-#new_ds = add_time(three_hour_dataset, hourly_interval=3)
+old_ds = three_hour_dataset
+new_ds = add_time(old_ds, hourly_interval=3)
 print(new_ds)
 print(new_ds.time)
-print(new_ds.tos.size)
+print(new_ds.tas.size)
+new_data = [d[0][0] for d in new_ds['tas'][:]]
+new_times = [d.isoformat() for d in new_ds['time'].data[:]]
+old_times = [d.isoformat() for d in old_ds['time'].data[:]]
+old_data = [d[0][0] for d in old_ds['tas'][:]]
+
+
+plt.plot(new_times, new_data, "g.")
+plt.plot(old_times, old_data, 'r.')
+plt.show()
+
 
 
 
