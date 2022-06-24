@@ -43,8 +43,7 @@ PACKAGE = SimpleNamespace(
             "statsmodels>=0.13.2",
             "pydap>=3.2.2",
             "lxml>=4.9.0",  # Required for pydap CAS parsing,
-            "requests>=2.27.1"
-
+            "requests>=2.27.1",
         ],
         "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
         "packages": ["coast"],
