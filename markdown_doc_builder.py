@@ -23,7 +23,7 @@ class MarkdownBuilder:
     @property
     def directory(self) -> Path:
         """Make sure we have a markdown folder to write to."""
-        (directory := Path("markdown").resolve(strict=True)).mkdir(exist_ok=True)
+        (directory := Path("markdown").resolve(strict=False)).mkdir(exist_ok=True, parents=True)
         return directory
 
     @property
