@@ -16,6 +16,7 @@ daily = data_dir / "tos_Oday_UKESM1-0-LL_historical_r1i1p1f2_gn_1850_subset.nc"
 daily_dataset = xr.load_dataset(daily)
 three_hour_dataset = xr.load_dataset(three_hour)
 
+
 # TODO: Convert stretch time to xrray usage. Also to retain dims.
 def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850, hourly_interval: int = 24):
     """Add days to allow add leap year support."""
@@ -36,6 +37,7 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
     last_15 = np.arange(points_in_data - (15 * measures_per_day) + 1 , points_in_data + 1)
     extended_days = np.arange((15*measures_per_day) + 1, points_in_data - (15*measures_per_day) +1, (points_in_data - (30*measures_per_day))/(points_in_data - (30*measures_per_day) + (extra_days*measures_per_day)))
     extended_time = np.append(np.append(first_15, extended_days), last_15)
+    
     
     # first_15 = np.arange(1,16)
     # last_15 = np.arange(360-14, 361)
@@ -68,11 +70,11 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
             print(f"{var_name} -- {traceback.format_exc()}")
         # Create new dataset from all stretched variables.
         new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables})
-    return new_dataset
+    return new_dataset, time_original, extended_time
 
 
 old_ds = three_hour_dataset
-new_ds = add_time(old_ds, hourly_interval=3)
+new_ds, og_time, extended_time = add_time(old_ds, hourly_interval=3)
 print(new_ds)
 print(new_ds.time)
 print(new_ds.tas.size)
@@ -82,8 +84,8 @@ old_times = [d.isoformat() for d in old_ds['time'].data[:]]
 old_data = [d[0][0] for d in old_ds['tas'][:]]
 
 
-plt.plot(new_times, new_data, "g.")
-plt.plot(old_times, old_data, 'r.')
+plt.plot(extended_time, new_data, "g.")
+plt.plot(og_time, old_data, 'r.')
 plt.show()
 
 
