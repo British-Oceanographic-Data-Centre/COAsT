@@ -5,6 +5,7 @@ import numpy as np
 from dask.distributed import Client
 import copy
 from .._utils.logging_util import get_slug, debug, info, warn, warning
+from .opendap import OpendapInfo
 
 
 def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
@@ -16,7 +17,7 @@ class Coast:
         self,
         file: str = None,
         chunks: dict = None,
-        multiple=False,
+        multiple: bool = False,
         workers: int = 2,  # TODO Do something with this unused parameter or delete it
         threads: int = 2,  # TODO Do something with this unused parameter or delete it
         memory_limit_per_worker: str = "2GB",  # TODO Do something with this unused parameter or delete it
@@ -57,12 +58,16 @@ class Coast:
         Loads a file into a COAsT object's dataset variable using xarray
 
         Args:
-            file_or_dir (str)     : file name or directory to multiple files.
-            chunks (dict)  : Chunks to use in Dask [default None]
+            file_or_dir (str): file name, OPeNDAP accessor, or directory to multiple files.
+            chunks (dict): Chunks to use in Dask [default None]
             multiple (bool): If true, load in multiple files from directory.
                              If false load a single file [default False]
         """
-        if multiple:
+        if (opendap := isinstance(file_or_dir, OpendapInfo)) and multiple:
+            raise NotImplementedError("Loading multiple OPeNDAP datasets is not supported")
+        elif opendap:
+            self.load_dataset(file_or_dir.open_dataset(chunks=chunks))
+        elif multiple:
             self.load_multiple(file_or_dir, chunks)
         else:
             self.load_single(file_or_dir, chunks)

@@ -25,6 +25,10 @@ PACKAGE = SimpleNamespace(
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
         "install_requires": [
+            "PyYAML==6.0",
+            "oyaml==1.0",
+            "pytest==7.1.1",
+            "pytest-mock==3.7.0",
             "numpy>=1.22.3",
             "dask>=2022.3.0",
             "dask[complete]>=2022.3.0",
@@ -37,8 +41,11 @@ PACKAGE = SimpleNamespace(
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",
             "statsmodels>=0.13.2",
+            "pydap>=3.2.2",
+            "lxml>=4.9.0",  # Required for pydap CAS parsing,
+            "requests>=2.27.1",
         ],
-        "python_requires": ">=3.8",
+        "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
         "packages": ["coast"],
         "include_package_data": True,
         "github": "British-Oceanographic-Data-Centre",
