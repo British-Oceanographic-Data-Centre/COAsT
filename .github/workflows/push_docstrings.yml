@@ -2,7 +2,7 @@ name: push_docstrings
 
 on:
   push:
-    branches: develop
+    branches: master
     paths:
       - coast/data/**
       - coast/_utils/**
