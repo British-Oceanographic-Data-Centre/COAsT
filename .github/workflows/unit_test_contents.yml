@@ -18,6 +18,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Generate contents.
+        env:
+          IS_ACTION: true
         run: |
           pip install .
           python unit_testing/generate_unit_test_contents.py
