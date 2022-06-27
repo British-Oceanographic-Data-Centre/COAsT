@@ -32,5 +32,5 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout $GITHUB_HEAD_REF
           git commit -am "Commit generated unit test contents."
-          git push
+          git push origin $GITHUB_HEAD_REF
           
