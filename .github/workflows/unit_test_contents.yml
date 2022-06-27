@@ -5,7 +5,7 @@ on:
     branches: feature/generate-test-contents
 
 jobs:
-  build-and-publish:
+  generate-test-contents:
     runs-on: ubuntu-latest
     strategy:
       matrix:
