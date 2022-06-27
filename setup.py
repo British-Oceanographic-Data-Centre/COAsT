@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from sys import argv
 from types import SimpleNamespace
 
@@ -46,7 +46,7 @@ PACKAGE = SimpleNamespace(
             "requests>=2.27.1",
         ],
         "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
-        "packages": ["coast"],
+        "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],
         "include_package_data": True,
         "github": "British-Oceanographic-Data-Centre",
     }

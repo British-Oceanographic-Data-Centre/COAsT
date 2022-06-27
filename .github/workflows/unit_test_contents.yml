@@ -19,11 +19,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Generate contents.
         run: |
-          python -m pip install --upgrade pip virtualenv
-          python -m pip install -r requirements.txt
-          pip install dask[complete]
-          sh setup_environment.sh
-          sh build.sh
-          python -m pip install dist/COAsT-*.tar.gz
+          pip install .
           python unit_testing/generate_unit_test_contents.py
           
