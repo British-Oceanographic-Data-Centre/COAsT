@@ -1,13 +1,9 @@
-import calendar
 import traceback
 from typing import List
-from utide import hours_per_cycle
 import xarray as xr
 import numpy as np
 from pathlib import Path
-import cftime
 from scipy.interpolate import interp1d
-from datetime import datetime
 import matplotlib.pyplot as plt  # plotting
 import pandas as pd
 
@@ -23,6 +19,9 @@ def get_start_year(time_data: np.ndarray) -> int:
     return time_data[0].timetuple()[0]
 
 def get_end_year(time_data: np.ndarray) -> int:
+    last_day = time_data[-1].timetuple()
+    if last_day[1:6] == (1,1,0,0,0):
+        return last_day[0] - 1
     return time_data[-1].timetuple()[0]
 
 def get_date_range(time_data: np.ndarray, hourly_interval) -> List:
@@ -52,11 +51,11 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
     
     time_data = dataset[time_var_name].data
     date_range = get_date_range(time_data, hourly_interval)
-    days = len(date_range)
-    print(days)
+    measures_per_day = 24 / hourly_interval
+    days = len(date_range) / measures_per_day
      
     points_in_data = int(len(time_data))
-    measures_per_day = 24 / hourly_interval
+    
     time_original = np.arange(1, points_in_data + 1, 1)
     extra_days = days - (points_in_data / measures_per_day)
     
@@ -79,8 +78,8 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
             # Create new stretched variable. 
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
             dim_dict[time_var_name] = xr.cftime_range(
-                start = daily_dataset[time_var_name].data[0].isoformat(),
-                end = daily_dataset[time_var_name].data[-1].isoformat(),
+                start = dataset[time_var_name].data[0].isoformat(),
+                end = dataset[time_var_name].data[-1].isoformat(),
                 periods = extended_time.size,
                 freq = None,
                 calendar="all_leap"
@@ -88,25 +87,25 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
             # Create new data array for stretched variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims= data_var.dims)
             stretched_variables.append(data_array)
-        except Exception as exc:
+        except Exception:
             print(f"{var_name} -- {traceback.format_exc()}")
         # Create new dataset from all stretched variables.
         new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables})
     return new_dataset, time_original, extended_time
 
 
-old_ds = daily_dataset
-new_ds, og_time, extended_time = add_time(old_ds, hourly_interval=24)
+old_ds = three_hour_dataset
+new_ds, og_time, extended_time = add_time(old_ds, hourly_interval=3)
 
 print(new_ds.time)
 
-new_data = [d[0][0] for d in new_ds['tos'].data[:]]
+new_data = [d[0][0] for d in new_ds['tas'].data[:]]
 new_times = [d.isoformat() for d in new_ds['time'].data[:]]
 old_times = [d.isoformat() for d in old_ds['time'].data[:]]
-old_data = [d[0][0] for d in old_ds['tos'].data[:]]
+old_data = [d[0][0] for d in old_ds['tas'].data[:]]
 
-print(old_data[:20])
-print(new_data[:20])
+print(len(old_data))
+print(len(new_data))
 
 
 plt.plot(og_time, old_data, 'r.')
