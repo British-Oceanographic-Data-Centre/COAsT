@@ -24,5 +24,6 @@ jobs:
           pip install dask[complete]
           sh setup_environment.sh
           sh build.sh
+          python -m pip install dist/COAsT-*.tar.gz
           python unit_testing/generate_unit_test_contents.py
           
