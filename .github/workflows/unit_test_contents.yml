@@ -1,0 +1,24 @@
+name: Generate and commit unit test contents file.
+
+on:
+  push:
+    branches: feature/generate_test_contents
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.8 ]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python-version }} for running python script.
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Generate contents.
+        run: |
+          pip install .
+          python unit_testing/generate_unit_test_contents.py
+          
