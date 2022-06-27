@@ -23,4 +23,14 @@ jobs:
         run: |
           pip install .
           python unit_testing/generate_unit_test_contents.py
+      - name: Commit changes
+        run: |
+          git config --global user.name "ContentsBot"
+          git config --global author.name "ContentsBot"
+          git config --global user.email "bodcsoft@bodc.ac.uk"
+          git config --global author.email "bodcsoft@bodc.ac.uk"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git checkout $GITHUB_HEAD_REF
+          git commit -am "Commit generated unit test contents."
+          git push
           
