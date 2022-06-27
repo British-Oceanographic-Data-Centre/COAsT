@@ -1,8 +1,6 @@
 name: Generate and commit unit test contents file.
 
-on:
-  push:
-    branches: feature/generate-test-contents
+on: pull_request
 
 jobs:
   generate-test-contents:
