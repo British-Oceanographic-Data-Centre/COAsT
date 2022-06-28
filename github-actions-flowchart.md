@@ -84,8 +84,8 @@ flowchart LR
 graph LR
     subgraph generate - runs on pull_request
     A[checkout COAsT]-->B;    
-    B[install package] -- v0.70.0 -->C;
-    C[make example files dir]-- v12 --> D;
+    B[install package]-->C;
+    C[make example files dir]--> D;
     D[run generate_unit_test_contents.py]-->E
     E[commit changes]
     end;
