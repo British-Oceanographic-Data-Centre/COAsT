@@ -91,7 +91,7 @@ class TidegaugeAnalysis:
         n_time = ds.sizes["t_dim"]
 
         # Harmonic analysis datenums -- for utide to work correctly < 0.3.0
-        #time = mdates.date2num(ds.time.values)
+        # time = mdates.date2num(ds.time.values)
         time = ds.time.values  # accepts np.datetime64 uTide >= 0.3.0
 
         # Create empty list of analyses
@@ -141,7 +141,7 @@ class TidegaugeAnalysis:
         n_time = len(data_array.time)
 
         # Harmonic analysis datenums -- needed for utide < 0.3.0
-        #time = mdates.date2num(data_array.time)
+        # time = mdates.date2num(data_array.time)
         time = data_array.time  # accepts np.datetime64 uTide >= 0.3.0
 
         # Get  coordinates from data_array and convert to Dataset for output
