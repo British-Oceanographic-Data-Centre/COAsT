@@ -33,12 +33,12 @@ def get_end_year(time_data: np.ndarray) -> int:
     return last_day.dt.year.data
 
 
-def get_date_range(time_data: np.ndarray, hourly_interval) -> List:
+def get_date_range(time_data: np.ndarray, hourly_interval: int) -> List:
     """Return a date range for given time data and an hourly interval.
 
     Args:
         time_data (np.ndarray): Array of time data.
-        hourly_interval (_type_): Hourly interval of new range.
+        hourly_interval (int): Hourly interval of new range.
 
     Returns:
         List: List of dates within a range.
