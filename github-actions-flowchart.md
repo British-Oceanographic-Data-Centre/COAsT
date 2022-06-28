@@ -79,7 +79,17 @@ flowchart LR
     end
     click a1 "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
 ```
-
+### Generate unit test contents file
+```mermaid
+graph LR
+    subgraph generate-test-contents - runs on pull_request
+    A[checkout COAsT]-->B;    
+    B[install package]-->C;
+    C[make example files dir]--> D;
+    D[run generate_unit_test_contents.py]-->E
+    E[commit changes]
+    end;
+```
 ## COAsT-site
 These are the actions used on the COAsT-site repo. 
 
