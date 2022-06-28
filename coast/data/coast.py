@@ -5,6 +5,7 @@ import numpy as np
 from dask.distributed import Client
 import copy
 from .._utils.logging_util import get_slug, debug, info, warn, warning
+from .._utils.coordinates import Coordinates, Coordinates3D, Coordinates4D, Numeric
 from .opendap import OpendapInfo
 
 
@@ -467,5 +468,70 @@ class Coast:
         info("Displaying plot!")
         plt.show()
 
+    def set_constraint(self, start: Coordinates, end: Coordinates, drop: bool = True) -> None:
+        self.dataset = self.constrain(start, end, drop=drop)
+
+    def constrain(self, start: Coordinates, end: Coordinates, drop: bool = True):
+        return constrain(self.dataset, start, end, drop=drop)
+
+    @property
+    def x_dim(self):
+        return x_dim(self.dataset)
+
+    @property
+    def y_dim(self):
+        return y_dim(self.dataset)
+
+    @property
+    def z_dim(self):
+        return z_dim(self.dataset)
+
+    @property
+    def t_dim(self):
+        return t_dim(self.dataset)
+
+    def get_coord(self, dim: str):
+        # Really not a fan of this, is there an easier way to get the mapping?
+        return get_coord(self.dataset, dim)
+
     def plot_movie(self):
         raise NotImplementedError
+
+
+def create_constraint(start: Numeric, end: Numeric, dim: xr.DataArray, drop: bool = True):
+    return np.logical_and(dim >= start, dim <= end)
+
+
+def get_coord(dataset: xr.Dataset, dim: str):
+    return dataset[list(dataset[f"{dim.lower()}_dim"].coords)[0]]
+
+
+def x_dim(dataset: xr.Dataset):
+    return get_coord(dataset, "x")
+
+
+def y_dim(dataset: xr.Dataset):
+    return get_coord(dataset, "y")
+
+
+def z_dim(dataset: xr.Dataset):
+    return get_coord(dataset, "z")
+
+
+def t_dim(dataset: xr.Dataset):
+    return get_coord(dataset, "t")
+
+
+def constrain(dataset: xr.Dataset, start: Coordinates, end: Coordinates, drop: bool = True):
+    assert type(start) == type(end), "Coordinates must be of the same dimensionality!"
+
+    constrained = dataset
+    if start.x is not None and end.x is not None:
+        constrained = constrained.where(create_constraint(start.x, end.x, x_dim(constrained), drop=drop), drop=drop)
+    if start.y is not None and end.y is not None:
+        constrained = constrained.where(create_constraint(start.y, end.y, y_dim(constrained), drop=drop), drop=drop)
+    if isinstance(start, Coordinates3D) and start.z is not None and end.z is not None:
+        constrained = constrained.where(create_constraint(start.z, end.y, z_dim(constrained), drop=drop), drop=drop)
+    if isinstance(start, Coordinates4D) and start.t is not None and end.t is not None:
+        constrained = constrained.where(create_constraint(start.t, end.t, t_dim(constrained), drop=drop), drop=drop)
+    return constrained
