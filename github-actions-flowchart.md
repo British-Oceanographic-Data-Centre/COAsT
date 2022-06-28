@@ -49,7 +49,7 @@ graph LR
 ### interactions with other repos
 ```mermaid
 flowchart LR
-    subgraph b1[push_notebooks - runs on push to develop]
+    subgraph b1[push_notebooks - runs on push to master]
         direction LR
         subgraph b2[COAsT site - markdown ]
             direction TB
@@ -65,7 +65,7 @@ flowchart LR
 ```
 ```mermaid
 flowchart LR
-    subgraph b3[push_docstrings - runs on push to develop]
+    subgraph b3[push_docstrings - runs on push to master]
         direction LR
         subgraph b4[COAsT site - docstrings ]
             direction TB
