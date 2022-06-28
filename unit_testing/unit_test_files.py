@@ -9,7 +9,8 @@ For example:
     get_dom = unit_test_files.fn_nemo_dom
 """
 
-import os.path as path
+from os import path
+
 
 # All directories relative to unit_testing diretory
 dn_files = "./example_files/"  # Example data directory
