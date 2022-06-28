@@ -85,7 +85,7 @@ with open(fn_contents, "w") as file:
     for test in tests_to_do:
         test_name = test.__name__
         file.write("{0}. {1}\n".format(test_count, test_name))
-        method_count = 97
+        method_count = 97  # alphabetical method counter: a, b, c ...
 
         # Loop over methods in module. If begins with 'test_' then write to file
         for method in dir(test):
