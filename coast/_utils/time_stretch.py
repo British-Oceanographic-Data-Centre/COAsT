@@ -28,7 +28,7 @@ def get_end_year(time_data: np.ndarray) -> int:
         int: End date.
     """
     last_day = time_data[-1]
-    if last_day.dt.month.data == 1 and last_day.dt.day.data == 1:
+    if last_day.dt.month.data == 1 and last_day.dt.day.data == 1 and last_day.dt.hour == 0 and last_day.dt.minute == 0:
         return last_day.dt.year.data
     return last_day.dt.year.data + 1
 
