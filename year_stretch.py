@@ -30,15 +30,15 @@ import xarray as xr
 # TODO: get to work with multiyear data?
 def stretch_time(time_var: np.ndarray, data_var: np.ndarray, year: int = 1850, hourly_interval: int = 24):
     """Returns a copy of the time and interpolated data variable where time is stretched to 365/366 days.
-    
+
     Args:
         time_var (ndarray): Time variable.
         data_var (ndarray): Data variable.
         year (int): Year of the data.
-        hourly_interval (int): Interval of data. Defaults to 24 for daily. 
+        hourly_interval (int): Interval of data. Defaults to 24 for daily.
     Returns:
         Tuple[ndarray, ndarray]: Tuple containing the new time and data arrays. (Time, Data).
-    
+
     """
 
     if calendar.isleap(year):
@@ -63,19 +63,18 @@ def stretch_time(time_var: np.ndarray, data_var: np.ndarray, year: int = 1850, h
     return new_time, interpolated_data
 
 
-
 def old_add_time(dataset: Dataset, time_var_name: str = "time", year: int = 1850, hourly_interval: int = 24):
     """Add days to allow add leap year support."""
-    
+
     time_var = dataset.variables[time_var_name][:]
-    
+
     if calendar.isleap(year):
         days = 366
     else:
         days = 365
-    
+
     days_in_data = int(time_var.size / (24 / hourly_interval))
-    
+
     # first and last 15 stay the same
     time_str_method2 = np.arange(1, 15 + 1, 1)
     count_n = int((days - 15 * 2) / (days - days_in_data))
@@ -95,13 +94,13 @@ def old_add_time(dataset: Dataset, time_var_name: str = "time", year: int = 1850
     n_m = int(24 / hourly_interval)  # number of measurments, every 3 hours
     count = 1 / (n_m)
     time_tas_365 = np.arange(count, days + count, count)
-    
+
     # Create new stretched time dim and variable.
-    dataset.createDimension("stretched_time", size = time_tas_365.size)
-    dataset.createVariable("stretched_time", float, dimensions=("stretched_time",) )
+    dataset.createDimension("stretched_time", size=time_tas_365.size)
+    dataset.createVariable("stretched_time", float, dimensions=("stretched_time",))
     dataset.variables["stretched_time"][:] = time_tas_365
-    
-    dataset_variables = [var for _,var in dataset.variables.items()]
+
+    dataset_variables = [var for _, var in dataset.variables.items()]
     for data_var in dataset_variables:
         if time_var_name not in data_var.dimensions:
             continue
@@ -110,30 +109,29 @@ def old_add_time(dataset: Dataset, time_var_name: str = "time", year: int = 1850
             for ih in range(0, n_m):
                 tt = np.interp(time_str_method2, time_or, np.squeeze(data_var[ih : time_var.size : n_m, 0, 0]))
                 tas_str_method2[ih : days * n_m : n_m] = tt
-            # Create new stretched variable. 
+            # Create new stretched variable.
             new_var_name = f"{data_var.name}_stretched"
             dataset.createVariable(new_var_name, float, dimensions=("stretched_time",))
             dataset.variables[new_var_name][:] = tas_str_method2
         except Exception as exc:
             print(exc)
-        
+
     return dataset
-    
-    
-    
+
+
 def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850, hourly_interval: int = 24):
     """Add days to allow add leap year support."""
-    
+
     time_var = dataset[time_var_name][:]
-    
+
     if calendar.isleap(year):
         days = 366
     else:
         days = 368
-    
+
     days_in_data = int(time_var.size / (24 / hourly_interval))
     time_or = np.arange(1, days_in_data + 1, 1)
-    
+
     # first and last 15 stay the same
     time_str_method2 = np.arange(1, 15 + 1, 1)
     count_n = int((days - 15 * 2) / (days - days_in_data))
@@ -153,7 +151,7 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
     n_m = int(24 / hourly_interval)  # number of measurments, every 3 hours
     count = 1 / (n_m)
     time_tas_365 = np.arange(count, days + count, count)
-    
+
     stretched_variables = []
     for var_name, data_var in dataset.variables.items():
         if time_var_name not in data_var.dims:
@@ -161,13 +159,13 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
         try:
             tas_str_method2 = np.empty(shape=(days * n_m))
             for ih in range(0, n_m):
-                #tt = np.interp(time_str_method2, time_or, np.squeeze(data_var[ih : time_var.size : n_m, 0, 0]))
-                interpolate2d = interp1d(x = time_or, y=data_var[:], axis=0, fill_value="extrapolate")
+                # tt = np.interp(time_str_method2, time_or, np.squeeze(data_var[ih : time_var.size : n_m, 0, 0]))
+                interpolate2d = interp1d(x=time_or, y=data_var[:], axis=0, fill_value="extrapolate")
                 new_data = interpolate2d(time_str_method2)
-                #tas_str_method2[ih : days * n_m : n_m] = tt
-            # Create new stretched variable. 
+                # tas_str_method2[ih : days * n_m : n_m] = tt
+            # Create new stretched variable.
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
-            dim_dict['time'] = time_tas_365
+            dim_dict["time"] = time_tas_365
             # Create new data array for strected variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=("time", "i", "j"))
             stretched_variables.append(data_array)
@@ -176,12 +174,6 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", year: int = 1850,
         # Create new dataset from all stretched variables.
         new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables})
     return new_dataset
-    
-    
-    
-    
-    
-
 
 
 data_dir = Path("E:\\COAsT data\\")
@@ -195,14 +187,14 @@ daily_dataset = xr.load_dataset(daily)
 # Read in file
 # this is a 1 year files: for 3 hours tas and for daily
 file_360_hour = Dataset(three_hour)
-file_360_hour_diskless = Dataset(three_hour_edit , mode='a')
+file_360_hour_diskless = Dataset(three_hour_edit, mode="a")
 tas_360 = file_360_hour.variables["tas"][:]
 time_tas_360 = file_360_hour.variables["time"][:]
 
 file_360_daily = Dataset(daily)
-with open(daily, 'rb') as f:
+with open(daily, "rb") as f:
     nc_bytes = f.read()
-file_360_daily_diskless = Dataset(daily_edit , mode='a')
+file_360_daily_diskless = Dataset(daily_edit, mode="a")
 tos_360 = file_360_daily.variables["tos"][:]
 time_tos_360 = file_360_daily.variables["time"][:]
 
@@ -261,8 +253,8 @@ tt = np.arange(time_str_method2[-1] + 0.5, 360 + 1, 1)
 time_str_method2 = np.append(time_str_method2, tt)
 
 tos_str_method2 = np.interp(time_str_method2, time_or, np.squeeze(tos_360[:, 0, 0]))
-dataset = old_add_time(dataset= file_360_daily_diskless, hourly_interval=24)
-xr_dataset = add_time(dataset= daily_dataset, hourly_interval=24)
+dataset = old_add_time(dataset=file_360_daily_diskless, hourly_interval=24)
+xr_dataset = add_time(dataset=daily_dataset, hourly_interval=24)
 
 # for 3 hourly fields
 n_m = int(24 / 3)  # number of measurments, every 3 hours
@@ -271,7 +263,7 @@ for ih in range(0, n_m):
     tt = np.interp(time_str_method2, time_or, np.squeeze(tas_360[ih : time_tas_360.size : n_m, 0, 0]))
     tas_str_method2[ih : days * n_m : n_m] = tt
 
-#dataset = add_time(dataset= file_360_hour_diskless, hourly_interval=3)
+# dataset = add_time(dataset= file_360_hour_diskless, hourly_interval=3)
 
 #############Check things#########################
 plt.plot(new_time_daily, new_tos_str_method1, "b.")
@@ -287,30 +279,34 @@ plt.show()
 
 
 plt.plot(time_str_method2, tos_str_method2, "g.")
-new_daily = [d[0][0] for d in xr_dataset['tos'][:]]
-plt.plot(xr_dataset['time'][:],new_daily, "b.")
-plt.plot(file_360_daily_diskless.variables['stretched_time'][:], file_360_daily_diskless.variables['tos_stretched'][:], "y.")
+new_daily = [d[0][0] for d in xr_dataset["tos"][:]]
+plt.plot(xr_dataset["time"][:], new_daily, "b.")
+plt.plot(
+    file_360_daily_diskless.variables["stretched_time"][:], file_360_daily_diskless.variables["tos_stretched"][:], "y."
+)
 plt.plot(time_tos_360, np.squeeze(tos_360[:, 0, 0]), "r.")
 plt.show()
 
 plt.plot(time_tas_365, tas_str_method2, "g.")
-plt.plot(file_360_hour_diskless.variables['stretched_time'][:], file_360_hour_diskless.variables['tas_stretched'][:], "b.")
+plt.plot(
+    file_360_hour_diskless.variables["stretched_time"][:], file_360_hour_diskless.variables["tas_stretched"][:], "b."
+)
 plt.plot(time_tas_360 * 365 / 360, np.squeeze(tas_360[:, 0, 0]), "r.")
 plt.show()
 
-#plt.plot(time_str_method2, tas_str_method2[1 : 365 * 8 : 8], "g.")
-#plt.plot(time_or, np.squeeze(tas_360[1 : 360 * 8 : 8, 0, 0]), "r.")
-#plt.show()
+# plt.plot(time_str_method2, tas_str_method2[1 : 365 * 8 : 8], "g.")
+# plt.plot(time_or, np.squeeze(tas_360[1 : 360 * 8 : 8, 0, 0]), "r.")
+# plt.show()
 
 
 # Compare old method results to new generalised method results.
-print(np.array_equal(time_tos_365, new_time_daily)) 
+print(np.array_equal(time_tos_365, new_time_daily))
 print(np.array_equal(tas_str_method1, new_tas_str_method1))
 
 print(np.array_equal(time_tas_365, new_time_three_hour))
 print(np.array_equal(tos_str_method1, new_tos_str_method1))
 
-print(np.array_equal(time_tos_365, file_360_daily_diskless.variables['stretched_time'][:]))
-print(np.array_equal(time_tas_365, file_360_hour_diskless.variables['stretched_time'][:]))
-print(np.array_equal(tas_str_method2, file_360_hour_diskless.variables['tas_stretched'][:]))
-print(np.array_equal(tos_str_method2, file_360_daily_diskless.variables['tos_stretched'][:]))
+print(np.array_equal(time_tos_365, file_360_daily_diskless.variables["stretched_time"][:]))
+print(np.array_equal(time_tas_365, file_360_hour_diskless.variables["stretched_time"][:]))
+print(np.array_equal(tas_str_method2, file_360_hour_diskless.variables["tas_stretched"][:]))
+print(np.array_equal(tos_str_method2, file_360_daily_diskless.variables["tos_stretched"][:]))

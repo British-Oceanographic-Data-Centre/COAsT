@@ -79,7 +79,7 @@ def extend_number_of_days(points_in_data: int, measures_per_day: int, extra_days
 def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: int = 24) -> xr.Dataset:
     """Method to stretch time and interpolate data for new time index.
 
-    Args: 
+    Args:
         dataset (xr.Dataset): Original dataset.
         time_var_name (str, optional): Name of time variable within dataset. Defaults to "time".
         hourly_interval (int, optional): Interval of data measurements in hours. Defaults to 24.
@@ -117,11 +117,11 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
             # Create new stretched variable.
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
             dim_dict[time_var_name] = xr.cftime_range(
-                start = str(dataset[time_var_name][0].dt.strftime("%Y-%m-%d %H:%M:%S").data),
-                end = str(dataset[time_var_name][-1].dt.strftime("%Y-%m-%d %H:%M:%S").data),
-                periods = extended_time.size,
-                freq = None,
-                calendar="all_leap"
+                start=str(dataset[time_var_name][0].dt.strftime("%Y-%m-%d %H:%M:%S").data),
+                end=str(dataset[time_var_name][-1].dt.strftime("%Y-%m-%d %H:%M:%S").data),
+                periods=extended_time.size,
+                freq=None,
+                calendar="all_leap",
             )
             # Create new data array for stretched variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=data_var.dims)
@@ -129,5 +129,5 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
         except Exception:
             print(f"{var_name} -- {traceback.format_exc()}")
     # Create new dataset from all stretched variables.
-    new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables if var.name != time_var_name })
+    new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables if var.name != time_var_name})
     return new_dataset
