@@ -29,8 +29,8 @@ def get_end_year(time_data: np.ndarray) -> int:
     """
     last_day = time_data[-1]
     if last_day.dt.month.data == 1 and last_day.dt.day.data == 1:
-        return last_day.dt.year.data - 1
-    return last_day.dt.year.data
+        return last_day.dt.year.data
+    return last_day.dt.year.data + 1
 
 
 def get_date_range(time_data: np.ndarray, hourly_interval: int) -> List:
@@ -45,9 +45,10 @@ def get_date_range(time_data: np.ndarray, hourly_interval: int) -> List:
     """
     return pd.date_range(
         f"{get_start_year(time_data)}-01-01 00:00:00",
-        f"{get_end_year(time_data)}-12-31 23:59:59",
+        f"{get_end_year(time_data)}-01-01 00:00:00",
         freq=f"{hourly_interval}H",
-    ).tolist()
+        inclusive="left",
+    )
 
 
 def extend_number_of_days(points_in_data: int, measures_per_day: int, extra_days: int) -> np.ndarray:
@@ -91,12 +92,12 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
     time_data = dataset[time_var_name]
     date_range = get_date_range(time_data, hourly_interval)
     measures_per_day = 24 / hourly_interval
-    days = len(date_range) / measures_per_day
+    standard_days = len(date_range) / measures_per_day
 
     points_in_data = int(len(time_data))
 
     time_original = np.arange(1, points_in_data + 1, 1)
-    extra_days = days - (points_in_data / measures_per_day)
+    extra_days = standard_days - (points_in_data / measures_per_day)
 
     extended_time = extend_number_of_days(
         points_in_data=points_in_data, measures_per_day=measures_per_day, extra_days=extra_days
@@ -107,7 +108,6 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
         if time_var_name not in data_var.dims:
             continue
         try:
-
             # Interpolate data.
             interpolate1d = interp1d(
                 time_original, y=data_var[:], axis=0
@@ -116,13 +116,7 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
 
             # Create new stretched variable.
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
-            dim_dict[time_var_name] = xr.cftime_range(
-                start=str(dataset[time_var_name][0].dt.strftime("%Y-%m-%d %H:%M:%S").data),
-                end=str(dataset[time_var_name][-1].dt.strftime("%Y-%m-%d %H:%M:%S").data),
-                periods=extended_time.size,
-                freq=None,
-                calendar="all_leap",
-            )
+            dim_dict[time_var_name] = date_range
             # Create new data array for stretched variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=data_var.dims)
             stretched_variables.append(data_array)
