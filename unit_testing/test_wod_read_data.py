@@ -32,7 +32,7 @@ class test_wod_read_data(unittest.TestCase):
             my_list = ["dic", "temperature", "alkalinity"]
             wod_profile = coast.Profile.reshape_2d(wod_profile_1D, my_list)
 
-            check1 = type(wod_profile) == coast.profile.Profile
+            check1 = type(wod_profile) == coast.Profile
             check2 = list(wod_profile.dataset.coords) == ["time", "latitude", "longitude"]
 
             self.assertTrue(check1, "check1")

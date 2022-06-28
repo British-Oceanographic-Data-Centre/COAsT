@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 import datetime
 import logging
-import coast.general_utils as general_utils
+import coast._utils.general_utils as general_utils
 
 
 # -----------------------------------------------------------------------------#

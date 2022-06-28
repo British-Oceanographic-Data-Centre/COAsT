@@ -18,11 +18,11 @@
       d. day_of_week
       e. getitem
 
-3. test_xesmf_convert
-      a. basic_conversion_to_xesmf
-
-4. test_gridded_harmonics
+3. test_gridded_harmonics
       a. combine_and_convert_harmonics
+
+4. test_xesmf_convert
+      a. basic_conversion_to_xesmf
 
 5. test_diagnostic_methods
       a. compute_vertical_spatial_derivative
@@ -54,61 +54,52 @@
       h. time_slice
       i. time_std
 
-10. test_tidegauge_analysis
-      a. difference
-      b. harmonic_analysis_utide
-      c. match_missing_values
-      d. threshold_statistics
-
-11. test_eof_methods
+10. test_eof_methods
       a. compute_heofs
       b. compute_regular_eof
 
-12. test_contour_f_methods
+11. test_contour_f_methods
       a. calculate_flow_across_contour
       b. calculate_pressure_gradient_driven_flow
       c. extract_isobath_contour_between_two_points
 
-13. test_contour_t_methods
+12. test_contour_t_methods
       a. along_contour_2d_flow
       b. along_contour_flow
       c. calculate_pressure_along_contour
 
-14. test_profile_methods
+13. test_profile_methods
       a. compare_processed_profile_with_model
       b. load_process_and_compare_profile_data
 
-15. test_plot_utilities
+14. test_plot_utilities
       a. determine_clim_by_stdev
       b. determine_colorbar_extension
       c. geo_axes
       d. scatter_with_fit
 
-16. test_stats_utilities
+15. test_stats_utilities
       a. find_maxima
 
-17. test_maskmaker_methods
+16. test_maskmaker_methods
       a. fill_polygon_by_index
       b. fill_polygon_by_lonlat
 
-18. test_climatology
+17. test_climatology
       a. monthly_and_seasonal_climatology
 
-19. test_wod_read_data
+18. test_wod_read_data
       a. load_wod
       b. reshape_wod
 
-20. test_bgc_gridded_initialisation
+19. test_bgc_gridded_initialisation
       a. gridded_load_bgc_data
       b. gridded_load_bgc_data_and_domain
       c. gridded_load_bgc_dimensions_correctly_renamed
       d. gridded_load_bgc_domain_only
       e. gridded_load_bgc_variables_correctly_renamed
 
-21. test_process_data_methods
-      a. statsmodel_seasonal_decompose
-
-22. test_example_scripts
+20. test_example_scripts
       a. altimetry_tutorial
       b. amm15_example_plot
       c. anchor_plots_of_nsea_wvel
@@ -118,8 +109,9 @@
       g. internal_tide_pycnocline_diagnostics
       h. seasia_dic_example_plot
       i. seasia_r12_example_plot
-      j. tidetable_tutorial
-      k. transect_tutorial
-      l. wcssp_india_example_plot
-      m. wod_bgc_ragged_example
+      j. tidegauge_validation_tutorial
+      k. tidetable_tutorial
+      l. transect_tutorial
+      m. wcssp_india_example_plot
+      n. wod_bgc_ragged_example
 

@@ -22,8 +22,10 @@ authors:
    orcid: "https://orcid.org/0000-0002-2357-4838"
  - family-names: "Gardner"
    given-names: "Thomas"
+   orcid: "https://orcid.org/0000-0001-5452-5791"
  - family-names: "Cazaly"
    given-names: "Matthew"
+   orcid: "https://orcid.org/0000-0002-0679-4054"
  - family-names: "Hearn"
    given-names: "Malcolm"
  - family-names: "Jennings"
@@ -32,6 +34,8 @@ authors:
    given-names: "Quyen"
  - family-names: "Loch"
    given-names: "Stephen"
+ - family-names: "Gorman"
+   given-names: "Luke"
 title: "British-Oceanographic-Data-Centre/COAsT: v2.0.3"
 version: v2.0.3
 date-released: 2022-04-08

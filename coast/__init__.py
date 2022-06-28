@@ -1,31 +1,29 @@
-from .coast import Coast
-from .coast import setup_dask_client
-from .mask_maker import MaskMaker
-from .gridded import Gridded
-from .transect import Transect, TransectF, TransectT
-from .contour import Contour, ContourF, ContourT
-from .eof import compute_eofs, compute_hilbert_eofs
-from .internal_tide import InternalTide
-from .climatology import Climatology
-from . import logging_util
-from . import general_utils
-from . import plot_util
-from . import crps_util
-from .index import Indexed
-from .profile import Profile
-from .profile_analysis import ProfileAnalysis
-from .track import Track
-from .lagrangian import Lagrangian
-from .oceanparcels import Oceanparcels
-from .glider import Glider
-from .argos import Argos
-from .altimetry import Altimetry
-from .timeseries import Timeseries
-from .tidegauge import Tidegauge
-from .tidegauge_analysis import TidegaugeAnalysis
-from .config_parser import ConfigParser
-from .xesmf_convert import xesmf_convert
-from .process_data import Process_data
+from .data.coast import Coast, setup_dask_client
+from ._utils.mask_maker import MaskMaker
+from .data.gridded import Gridded
+from .diagnostics.transect import Transect, TransectF, TransectT
+from .diagnostics.contour import Contour, ContourF, ContourT
+from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
+from .diagnostics.internal_tide import InternalTide
+from .diagnostics.climatology import Climatology
+from ._utils import logging_util, general_utils, plot_util, crps_util
+from .data.index import Indexed
+from .data.profile import Profile
+from .diagnostics.profile_analysis import ProfileAnalysis
+from .data.track import Track
+from .data.lagrangian import Lagrangian
+from .data.oceanparcels import Oceanparcels
+from .data.glider import Glider
+from .data.argos import Argos
+from .data.altimetry import Altimetry
+from .data.timeseries import Timeseries
+from .data.tidegauge import Tidegauge
+from .diagnostics.tidegauge_analysis import TidegaugeAnalysis
+from .data.config_parser import ConfigParser
+from ._utils.xesmf_convert import xesmf_convert
+from ._utils.process_data import Process_data
+from .data.opendap import OpendapInfo
+from .data.copernicus import Copernicus, Product
 
 # Set default for logging level when coast is imported
 import logging

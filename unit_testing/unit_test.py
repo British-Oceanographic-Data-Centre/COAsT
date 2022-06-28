@@ -59,7 +59,7 @@ tests_to_do = [
     test_wod_read_data,
     test_bgc_gridded_initialisation,
     test_process_data_methods,
-    test_example_scripts,
+    # test_example_scripts,
 ]
 
 

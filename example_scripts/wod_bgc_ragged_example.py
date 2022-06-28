@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import datetime
 import numpy as np
 import xarray as xr
-import coast.general_utils as general_utils
+import coast._utils.general_utils as general_utils
 import scipy as sp
 
 # ====================== UNIV PARAMS ===========================
