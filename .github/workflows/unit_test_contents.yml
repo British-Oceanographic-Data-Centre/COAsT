@@ -30,7 +30,3 @@ jobs:
           git checkout $GITHUB_HEAD_REF
           git diff-index --quiet $GITHUB_HEAD_REF || git commit -am "Commit generated unit test contents."
           git push origin $GITHUB_HEAD_REF
-
-          
-
-          

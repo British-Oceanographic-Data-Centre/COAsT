@@ -9,7 +9,7 @@ For example:
     get_dom = unit_test_files.fn_nemo_dom
 """
 
-from os import path, getenv
+from os import path
 
 
 # All directories relative to unit_testing diretory
