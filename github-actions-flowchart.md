@@ -82,7 +82,7 @@ flowchart LR
 ### Generate unit test contents file
 ```mermaid
 graph LR
-    subgraph generate - runs on pull_request
+    subgraph generate-test-contents - runs on pull_request
     A[checkout COAsT]-->B;    
     B[install package]-->C;
     C[make example files dir]--> D;
