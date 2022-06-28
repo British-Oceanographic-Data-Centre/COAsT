@@ -9,8 +9,8 @@ For example:
     get_dom = unit_test_files.fn_nemo_dom
 """
 
-from os import path, getenv, system
-import sys
+from os import path, getenv
+
 
 # All directories relative to unit_testing diretory
 dn_files = "./example_files/"  # Example data directory
@@ -18,11 +18,8 @@ dn_config = "./config"  # Example config file directory
 dn_fig = "./unit_testing/figures/"  # Figure saving directory
 dn_scripts = "./example_scripts"  # Example scripts directory
 
-# skip if it's an action and the files don't exist
-# want it to run if not action and files don't exist
-
 # Check dn_files directory
-if getenv("IS_ACTION") == None and not path.isdir(dn_files):
+if not path.isdir(dn_files):
     print("please go download the examples file from https://linkedsystems.uk/erddap/files/COAsT_example_files/")
     dn_files = input("what is the path to the example files:\n")
     if not path.isdir(dn_files):
