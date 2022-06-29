@@ -44,10 +44,10 @@ def get_date_range(time_data: np.ndarray, hourly_interval: int) -> List:
         List: List of dates within a range.
     """
     return pd.date_range(
-        f"{get_start_year(time_data)}-01-01 00:00:00",
+        f"{time_data[0].dt.strftime('%Y-%m-%d %H:%M:%S').data}",
         f"{get_end_year(time_data)}-01-01 00:00:00",
         freq=f"{hourly_interval}H",
-        inclusive="left",
+        inclusive="both",
     )
 
 
@@ -77,7 +77,7 @@ def extend_number_of_days(points_in_data: int, measures_per_day: int, extra_days
     return extended_time
 
 
-def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: int = 24) -> xr.Dataset:
+def stretch_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: int = 24) -> xr.Dataset:
     """Method to stretch time and interpolate data for new time index.
 
     Args:
@@ -90,9 +90,9 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
     """
 
     time_data = dataset[time_var_name]
-    date_range = get_date_range(time_data, hourly_interval)
     measures_per_day = 24 / hourly_interval
-    standard_days = len(date_range) / measures_per_day
+    standard_date_range = get_date_range(time_data, hourly_interval)
+    standard_days = len(standard_date_range) / measures_per_day
 
     points_in_data = int(len(time_data))
 
@@ -116,7 +116,7 @@ def add_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interval: 
 
             # Create new stretched variable.
             dim_dict = {dim: dataset[dim][:] for dim in data_var.dims if dim != time_var_name}
-            dim_dict[time_var_name] = date_range
+            dim_dict[time_var_name] = standard_date_range
             # Create new data array for stretched variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=data_var.dims)
             stretched_variables.append(data_array)
