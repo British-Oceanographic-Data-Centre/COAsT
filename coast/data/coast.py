@@ -5,7 +5,7 @@ import numpy as np
 from dask.distributed import Client
 import copy
 from .._utils.logging_util import get_slug, debug, info, warn, warning
-from .._utils.coordinates import Coordinates, Coordinates3D, Coordinates4D, Numeric
+from .._utils.coordinates import Coordinates, Coordinates3D, Coordinates4D, Coordinate
 from .opendap import OpendapInfo
 
 
@@ -526,7 +526,7 @@ class Coast:
         raise NotImplementedError
 
 
-def create_constraint(start: Numeric, end: Numeric, dim: xr.DataArray) -> np.typing.NDArray[bool]:
+def create_constraint(start: Coordinate, end: Coordinate, dim: xr.DataArray) -> np.typing.NDArray[bool]:
     """Create a mask to exclude coordinates that do not fall within a range of two arbitrary values.
 
     Args:

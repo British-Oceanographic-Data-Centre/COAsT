@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from numpy import number
+from numpy import number, datetime64
 from numbers import Number
 from typing import Union, Optional
 
 
 Numeric = Optional[Union[Number, number]]
+Coordinate = Union[Numeric, datetime64]
 
 
 @dataclass
@@ -26,7 +27,7 @@ class Coordinates3D(Coordinates2D):
 class Coordinates4D(Coordinates3D):
     """Represent a point in one-to-four-dimensional spacetime with optional X, Y, Z, and T coordinates."""
 
-    t: Numeric  # TODO Should this be a datetime or is it likely to be something like a Unix timestamp?
+    t: datetime64
 
 
 Coordinates = Union[Coordinates2D, Coordinates3D, Coordinates4D]
