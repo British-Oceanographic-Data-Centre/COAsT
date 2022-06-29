@@ -91,8 +91,37 @@ class Tidegauge(Timeseries):
         print(f"{get_slug(self)} initialised")
 
     ############ tide gauge methods ###########################################
-    def read_gesla_v5(self, fn_gesla, date_start=None, date_end=None):
-        pass
+    def read_gesla(self, fn_gesla, date_start=None, date_end=None, format="v3"):
+        """
+        For reading from a GESLA2 (Format version 3.0) or GESLA3 (Format v5.0)
+        file(s) into an xarray dataset.
+
+        v3 formatting according to Woodworth et al. (2017).
+        v5 formatting ....
+
+        Website: https://www.gesla.org/
+        If no data lies between the specified dates, a dataset is still created
+        containing information on the tide gauge, but the time dimension will
+        be empty.
+        Parameters
+        ----------
+        fn_gesla (str) : path to gesla tide gauge file, list of files or a glob
+        date_start (datetime) : start date for returning data
+        date_end (datetime) : end date for returning data
+        format (str) : accepts "v3" or "v5"
+
+        Returns
+        -------
+        Creates xarray.dataset within tidegauge object containing loaded data.
+        If multiple files are provided then instead returns a list of NEW
+        tidegauge objects.
+        """
+        if format == "v3":
+            self.read_gesla_v3(fn_gesla, date_start=None, date_end=None)
+        elif format == "v5":
+            print(f"Not written code for format {format}")
+        else:
+            debug(f"Not expecting GESLA text format {format}")
 
     def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
         """
