@@ -469,69 +469,164 @@ class Coast:
         plt.show()
 
     def set_constraint(self, start: Coordinates, end: Coordinates, drop: bool = True) -> None:
+        """Constrain the underlying dataset to values within an arbitrarily sized orthotope.
+
+        Args:
+            start: The start coordinates of the shape to define.
+            end: The end coordinates of the shape to define.
+            drop: Whether values should be dropped from the constrained dataset (if False, they will be NaNed).
+        """
         self.dataset = self.constrain(start, end, drop=drop)
 
-    def constrain(self, start: Coordinates, end: Coordinates, drop: bool = True):
+    def constrain(self, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
+        """Return the underlying dataset with values constrained to an arbitrarily sized orthotope.
+
+        Args:
+            start: The start coordinates of the shape to define.
+            end: The end coordinates of the shape to define.
+            drop: Whether values should be dropped from the constrained dataset (if False, they will be NaNed).
+
+        Returns:
+            The underlying dataset with values constrained to within the defined selection.
+        """
         return constrain(self.dataset, start, end, drop=drop)
 
     @property
-    def x_dim(self):
+    def x_dim(self) -> xr.DataArray:
+        """Return the X coordinate array of the underlying dataset."""
         return x_dim(self.dataset)
 
     @property
-    def y_dim(self):
+    def y_dim(self) -> xr.DataArray:
+        """Return the Y coordinate array of the underlying dataset."""
         return y_dim(self.dataset)
 
     @property
-    def z_dim(self):
+    def z_dim(self) -> xr.DataArray:
+        """Return the Z coordinate array of the underlying dataset."""
         return z_dim(self.dataset)
 
     @property
-    def t_dim(self):
+    def t_dim(self) -> xr.DataArray:
+        """Return the T[ime] coordinate array of the underlying dataset."""
         return t_dim(self.dataset)
 
-    def get_coord(self, dim: str):
-        # Really not a fan of this, is there an easier way to get the mapping?
+    def get_coord(self, dim: str) -> xr.DataArray:
+        """Get the coordinate array for a dimension from the underlying dataset.
+
+        Args:
+            dim: The name of the dimension (i.e. "x", "y", "z", or "t").
+
+        Returns:
+            The corresponding coordinate array from the underlying dataset.
+        """
         return get_coord(self.dataset, dim)
 
     def plot_movie(self):
         raise NotImplementedError
 
 
-def create_constraint(start: Numeric, end: Numeric, dim: xr.DataArray, drop: bool = True):
+def create_constraint(start: Numeric, end: Numeric, dim: xr.DataArray) -> np.typing.NDArray[bool]:
+    """Create a mask to exclude coordinates that do not fall within a range of two arbitrary values.
+
+    Args:
+        start: The start of the range of values to constrain within.
+        end: The end of the range of values ot constrain within.
+        dim: The coordinate array to constrain values from.
+
+    Returns:
+        A mask that can be applied to dim to exclude unwanted values.
+    """
     return np.logical_and(dim >= start, dim <= end)
 
 
-def get_coord(dataset: xr.Dataset, dim: str):
+def get_coord(dataset: xr.Dataset, dim: str) -> xr.DataArray:
+    """Get the coordinate array for a dimension in a dataset.
+
+    Args:
+        dataset: The dataset to interrogate.
+        dim: The name of the dimension (i.e. "x", "y", "z", or "t").
+
+    Returns:
+        The corresponding coordinate array from the provided dataset.
+    """
+    # TODO Really not a fan of this, is there an easier way to get the mapping?
     return dataset[list(dataset[f"{dim.lower()}_dim"].coords)[0]]
 
 
-def x_dim(dataset: xr.Dataset):
+def x_dim(dataset: xr.Dataset) -> xr.DataArray:
+    """Get the X coordinate array for a dimension in a dataset.
+
+    Args:
+        dataset: The dataset to interrogate.
+
+    Returns:
+        The corresponding coordinate array from the provided dataset.
+    """
     return get_coord(dataset, "x")
 
 
-def y_dim(dataset: xr.Dataset):
+def y_dim(dataset: xr.Dataset) -> xr.DataArray:
+    """Get the Y coordinate array for a dimension in a dataset.
+
+    Args:
+        dataset: The dataset to interrogate.
+
+    Returns:
+        The corresponding coordinate array from the provided dataset.
+    """
     return get_coord(dataset, "y")
 
 
-def z_dim(dataset: xr.Dataset):
+def z_dim(dataset: xr.Dataset) -> xr.DataArray:
+    """Get the Z coordinate array for a dimension in a dataset.
+
+    Args:
+        dataset: The dataset to interrogate.
+
+    Returns:
+        The corresponding coordinate array from the provided dataset.
+    """
     return get_coord(dataset, "z")
 
 
-def t_dim(dataset: xr.Dataset):
+def t_dim(dataset: xr.Dataset) -> xr.DataArray:
+    """Get the T[ime] coordinate array for a dimension in a dataset.
+
+    Args:
+        dataset: The dataset to interrogate.
+
+    Returns:
+        The corresponding coordinate array from the provided dataset.
+    """
     return get_coord(dataset, "t")
 
 
-def constrain(dataset: xr.Dataset, start: Coordinates, end: Coordinates, drop: bool = True):
+def constrain(dataset: xr.Dataset, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
+    """Constrain values within a dataset to an arbitrarily sized orthotope.
+
+    Args:
+        dataset: The dataset to constrain values from.
+        start: The start coordinates of the shape to define.
+        end: The end coordinates of the shape to define.
+        drop: Whether values should be dropped from the constrained dataset (if False, they will be NaNed).
+
+    Returns:
+        The provided dataset with values constrained to within the defined selection.
+    """
     assert type(start) == type(end), "Coordinates must be of the same dimensionality!"
 
     constrained = dataset
-    if start.x is not None and end.x is not None:
-        constrained = constrained.where(create_constraint(start.x, end.x, x_dim(constrained), drop=drop), drop=drop)
-    if start.y is not None and end.y is not None:
-        constrained = constrained.where(create_constraint(start.y, end.y, y_dim(constrained), drop=drop), drop=drop)
-    if isinstance(start, Coordinates3D) and start.z is not None and end.z is not None:
-        constrained = constrained.where(create_constraint(start.z, end.y, z_dim(constrained), drop=drop), drop=drop)
-    if isinstance(start, Coordinates4D) and start.t is not None and end.t is not None:
-        constrained = constrained.where(create_constraint(start.t, end.t, t_dim(constrained), drop=drop), drop=drop)
+    if (x_start := start.x is not None) and (x_end := end.x is not None):
+        assert x_start == x_end, "Tried to constrain on X with a missing paired value!"
+        constrained = constrained.where(create_constraint(start.x, end.x, x_dim(constrained)), drop=drop)
+    if (y_start := start.y is not None) and (y_end := end.y is not None):
+        assert y_start == y_end, "Tried to constrain on Y with a missing paired value!"
+        constrained = constrained.where(create_constraint(start.y, end.y, y_dim(constrained)), drop=drop)
+    if isinstance(start, Coordinates3D) and (z_start := start.z is not None) and (z_end := end.z is not None):
+        assert z_start == z_end, "Tried to constrain on Z with a missing paired value!"
+        constrained = constrained.where(create_constraint(start.z, end.y, z_dim(constrained)), drop=drop)
+    if isinstance(start, Coordinates4D) and (t_start := start.t is not None) and (t_end := end.t is not None):
+        assert t_start == t_end, "Tried to constrain on Z with a missing paired value!"
+        constrained = constrained.where(create_constraint(start.t, end.t, t_dim(constrained)), drop=drop)
     return constrained
