@@ -104,12 +104,11 @@ class Tidegauge(Timeseries):
             file_list = fn_gesla
 
         if len(file_list) > 1:  # return list of tidegauge objects
-            #multiple = True
+            # multiple = True
             return self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
         else:  # return single tidegauge obj
-            #multiple = False
+            # multiple = False
             self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
-
 
     def read_gesla(self, fn_gesla, date_start=None, date_end=None, format="v3"):
         """
@@ -143,7 +142,6 @@ class Tidegauge(Timeseries):
         if format == "v5":
             print(f"Not written code for format {format}")
 
-
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         dataset = None
@@ -166,7 +164,7 @@ class Tidegauge(Timeseries):
                     header_dict = self._read_gesla_header_v3(fn)
                 elif format == "v5":
                     header_dict = self._read_gesla_header_v5(fn)
-                dataset = self._read_gesla_data(fn, date_start, date_end, header_length = header_dict["header_length"])
+                dataset = self._read_gesla_data(fn, date_start, date_end, header_length=header_dict["header_length"])
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
