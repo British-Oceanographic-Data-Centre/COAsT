@@ -91,6 +91,26 @@ class Tidegauge(Timeseries):
         print(f"{get_slug(self)} initialised")
 
     ############ tide gauge methods ###########################################
+    def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
+        """
+        Depreciated method.
+        Call generalised method.
+        Returns eiter a tidegauge object or a list of tidegauge objects
+        """
+        # See if its a file list input, or a glob
+        if type(fn_gesla) is not list:
+            file_list = glob.glob(fn_gesla)
+        else:
+            file_list = fn_gesla
+
+        if len(file_list) > 1:  # return list of tidegauge objects
+            #multiple = True
+            return self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
+        else:  # return single tidegauge obj
+            #multiple = False
+            self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
+
+
     def read_gesla(self, fn_gesla, date_start=None, date_end=None, format="v3"):
         """
         For reading from a GESLA2 (Format version 3.0) or GESLA3 (Format v5.0)
@@ -116,33 +136,14 @@ class Tidegauge(Timeseries):
         If multiple files are provided then instead returns a list of NEW
         tidegauge objects.
         """
-        if format == "v3":
-            self.read_gesla_v3(fn_gesla, date_start=None, date_end=None)
-        elif format == "v5":
-            print(f"Not written code for format {format}")
-        else:
+        if format != "v3" and format != "v5":
             debug(f"Not expecting GESLA text format {format}")
+            print(f"Not expecting GESLA text format {format}")
 
-    def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
-        """
-        For reading from a GESLA2 (Format version 3.0) file(s) into an
-        xarray dataset. Formatting according to Woodworth et al. (2017).
-        Website: https://www.gesla.org/
-        If no data lies between the specified dates, a dataset is still created
-        containing information on the tide gauge, but the time dimension will
-        be empty.
-        Parameters
-        ----------
-        fn_gesla (str) : path to gesla tide gauge file, list of files or a glob
-        date_start (datetime) : start date for returning data
-        date_end (datetime) : end date for returning data
+        if format == "v5":
+            print(f"Not written code for format {format}")
 
-        Returns
-        -------
-        Creates xarray.dataset within tidegauge object containing loaded data.
-        If multiple files are provided then instead returns a list of NEW
-        tidegauge objects.
-        """
+
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         dataset = None
@@ -161,8 +162,11 @@ class Tidegauge(Timeseries):
         # Loop over files and put resulting dataset into an output list
         for fn in file_list:
             try:
-                header_dict = self._read_gesla_header_v3(fn)
-                dataset = self._read_gesla_data_v3(fn, date_start, date_end)
+                if format == "v3":
+                    header_dict = self._read_gesla_header_v3(fn)
+                elif format == "v5":
+                    header_dict = self._read_gesla_header_v5(fn)
+                dataset = self._read_gesla_data(fn, date_start, date_end, header_length = header_dict["header_length"])
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
@@ -186,6 +190,100 @@ class Tidegauge(Timeseries):
             self.apply_config_mappings()
 
     @classmethod
+    def _read_gesla_header_v5(cls, fn_gesla):
+        """
+        Reads header from a GESLA file (format version 5.0).
+
+        Parameters
+        ----------
+        fn_gesla (str) : path to gesla tide gauge file
+
+        Returns
+        -------
+        dictionary of attributes
+        """
+        debug(f'Reading GESLA header from "{fn_gesla}"')
+        fid = open(fn_gesla)
+
+        # Read lines one by one (hopefully formatting is consistent)
+        format_version = float(fid.readline().split()[3])
+        # Geographical stuff
+        site_name = fid.readline().split()[3:]
+        site_name = "_".join(site_name)
+        site_code = fid.readline().split()[3:]
+        site_code = "_".join(site_code)
+        country = fid.readline().split()[2:]
+        country = "_".join(country)
+        contributor = fid.readline().split()[2:]
+        contributor = "_".join(contributor)
+        contributor_url = fid.readline().split()[3:]
+        contributor_url = "_".join(contributor_url)
+        contributor_contact = fid.readline().split()[3:]
+        contributor_contact = "_".join(contributor_contact)
+        originator = fid.readline().split()[2:]
+        originator = "_".join(originator)
+        originator_url = fid.readline().split()[3:]
+        originator_url = "_".join(originator_url)
+        originator_contact = fid.readline().split()[3:]
+        originator_contact = "_".join(originator_contact)
+        # Coordinates
+        latitude = float(fid.readline().split()[2])
+        longitude = float(fid.readline().split()[2])
+        coordinate_system = fid.readline().split()[3:]
+        coordinate_system = "_".join(coordinate_system)
+        # Dates
+        start_date = fid.readline().split()[3:5]
+        start_date = " ".join(start_date)
+        start_date = pd.to_datetime(start_date)
+        end_date = fid.readline().split()[3:5]
+        end_date = " ".join(end_date)
+        end_date = pd.to_datetime(end_date)
+        number_of_years = float(fid.readline().split()[4])
+        time_zone_hours = float(fid.readline().split()[4])
+        # Other
+        datum = fid.readline().split()[3:]
+        datum = " ".join(datum)
+        instrument = fid.readline().split()[2:]
+        instrument = " ".join(instrument)
+        precision = float(fid.readline().split()[2])
+        null_value = float(fid.readline().split()[3])
+        gauge_type = fid.readline().split()[3:]
+        gauge_type = " ".join(gauge_type)
+        record_qual = fid.readline().split()[4:]
+        record_qual = " ".join(record_qual)
+
+        debug(f'Read done, close file "{fn_gesla}"')
+        fid.close()
+        # Put all header info into an attributes dictionary
+        header_dict = {
+            "format_version": format_version,
+            "site_name": site_name,
+            "site_code": site_code,
+            "country": country,
+            "contributor": contributor,
+            "contributor_url": contributor_url,
+            "contributor_contact": contributor_contact,
+            "originator": originator,
+            "originator_url": originator_url,
+            "originator_contact": originator_contact,
+            "latitude": latitude,
+            "longitude": longitude,
+            "coordinate_system": coordinate_system,
+            "original_start_date": start_date,
+            "original_end_date": end_date,
+            "number_of_years": number_of_years,
+            "time_zone_hours": time_zone_hours,
+            "datum": datum,
+            "instrument": instrument,
+            "precision": precision,
+            "null_value": null_value,
+            "gauge_type": gauge_type,
+            "record_qual": record_qual,
+            "header_length": 42,
+        }
+        return header_dict
+
+    @classmethod
     def _read_gesla_header_v3(cls, fn_gesla):
         """
         Reads header from a GESLA file (format version 3.0).
@@ -202,7 +300,7 @@ class Tidegauge(Timeseries):
         fid = open(fn_gesla)
 
         # Read lines one by one (hopefully formatting is consistent)
-        fid.readline()  # Skip first line
+        format_version = float(fid.readline().split()[3])
         # Geographical stuff
         site_name = fid.readline().split()[3:]
         site_name = "_".join(site_name)
@@ -213,7 +311,8 @@ class Tidegauge(Timeseries):
         # Coordinates
         latitude = float(fid.readline().split()[2])
         longitude = float(fid.readline().split()[2])
-        coordinate_system = fid.readline().split()[3]
+        coordinate_system = fid.readline().split()[3:]
+        coordinate_system = "_".join(coordinate_system)
         # Dates
         start_date = fid.readline().split()[3:5]
         start_date = " ".join(start_date)
@@ -223,8 +322,10 @@ class Tidegauge(Timeseries):
         end_date = pd.to_datetime(end_date)
         time_zone_hours = float(fid.readline().split()[4])
         # Other
-        fid.readline()  # Datum
-        fid.readline()  # Instrument
+        datum = fid.readline().split()[3:]
+        datum = " ".join(datum)
+        instrument = fid.readline().split()[2:]
+        instrument = " ".join(instrument)
         precision = float(fid.readline().split()[2])
         null_value = float(fid.readline().split()[3])
 
@@ -232,6 +333,7 @@ class Tidegauge(Timeseries):
         fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {
+            "format_version": format_version,
             "site_name": site_name,
             "country": country,
             "contributor": contributor,
@@ -241,15 +343,18 @@ class Tidegauge(Timeseries):
             "original_start_date": start_date,
             "original_end_date": end_date,
             "time_zone_hours": time_zone_hours,
+            "datum": datum,
+            "instrument": instrument,
             "precision": precision,
             "null_value": null_value,
+            "header_length": 32,
         }
         return header_dict
 
     @classmethod
-    def _read_gesla_data_v3(cls, fn_gesla, date_start=None, date_end=None, header_length: int = 32):
+    def _read_gesla_data(cls, fn_gesla, date_start=None, date_end=None, header_length: int = 32):
         """
-        Reads observation data from a GESLA file (format version 3.0).
+        Reads observation data from a GESLA file (format version 3.0 and 5.0).
 
         Parameters
         ----------

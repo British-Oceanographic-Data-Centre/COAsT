@@ -14,7 +14,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
         lowestoft2 = coast.Tidegauge(dataset=lowestoft.dataset)
 
         # Insert some missing values into lowestoft 2
@@ -40,7 +40,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
 
         # Call match_missing_values
         tg1 = tganalysis.demean_timeseries(lowestoft.dataset)
@@ -56,7 +56,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
 
         with self.subTest("Do harmonic analysis"):
             ha = tganalysis.harmonic_analysis_utide(lowestoft.dataset.ssh, min_datapoints=10)
@@ -86,7 +86,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
 
         thresh = tganalysis.threshold_statistics(lowestoft.dataset)
 
@@ -103,7 +103,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
         lowestoft2 = coast.Tidegauge(dataset=lowestoft.dataset)
 
         diff = tganalysis.difference(lowestoft.dataset, lowestoft2.dataset)
@@ -118,6 +118,21 @@ class test_tidegauge_analysis(unittest.TestCase):
 
 
 class test_tidegauge_methods(unittest.TestCase):
+    def test_read_gesla_formats(self):
+        date0 = datetime.datetime(2007, 1, 10)
+        date1 = datetime.datetime(2007, 1, 12)
+
+        lowestoft = coast.Tidegauge()
+        lowestoft.read_gesla(files.fn_tidegauge_v3, date_start=date0, date_end=date1, format="v3")
+        check1 = np.isclose(lowestoft.dataset.ssh.isel(t_dim=0).values, 2.818)
+
+        liverpool = coast.Tidegauge()
+        liverpool.read_gesla(files.fn_tidegauge_v5, date_start=date0, date_end=date1, format="v5")
+        check2 = np.isclose(liverpool.dataset.ssh.isel(t_dim=0).values, 5.033)
+
+        self.assertTrue(check1, "check1")
+        self.assertTrue(check2, "check2")
+
     def test_read_gesla_and_compare_to_model(self):
 
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
@@ -128,7 +143,7 @@ class test_tidegauge_methods(unittest.TestCase):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
             lowestoft = coast.Tidegauge()
-            lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
 
             # TEST: Check attribute dictionary and length of sea_level.
             check1 = len(lowestoft.dataset.ssh.isel(id_dim=0)) == 193
@@ -167,7 +182,7 @@ class test_tidegauge_methods(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
         tmean = tganalysis.time_mean(lowestoft.dataset, date0, datetime.datetime(2007, 1, 11))
         check1 = np.isclose(tmean.dataset.ssh.values[0], 1.91486598)
         self.assertTrue(check1, "check1")
@@ -177,7 +192,7 @@ class test_tidegauge_methods(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
         tstd = tganalysis.time_std(lowestoft.dataset, date0, datetime.datetime(2007, 1, 11))
         check1 = np.isclose(tstd.dataset.ssh.values[0], 0.5419484060517006)
         self.assertTrue(check1, "check1")
@@ -187,7 +202,7 @@ class test_tidegauge_methods(unittest.TestCase):
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
         lowestoft = coast.Tidegauge()
-        lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+        lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
         tslice = tganalysis.time_slice(lowestoft.dataset, date0=date0, date1=datetime.datetime(2007, 1, 11))
         check1 = pd.to_datetime(tslice.dataset.time.values[0]) == date0
         check2 = pd.to_datetime(tslice.dataset.time.values[-1]) == datetime.datetime(2007, 1, 11)
@@ -201,7 +216,7 @@ class test_tidegauge_methods(unittest.TestCase):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
             lowestoft = coast.Tidegauge()
-            lowestoft.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
             resampled = tganalysis.resample_mean(lowestoft.dataset, "1H")
             check1 = pd.to_datetime(resampled.dataset.time.values[2]) == datetime.datetime(2007, 1, 10, 2, 0, 0)
             check2 = resampled.dataset.dims["t_dim"] == 49
@@ -225,9 +240,9 @@ class test_tidegauge_methods(unittest.TestCase):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
             lowestoft = coast.Tidegauge()
-            lowestoft.read_gesla_v3(files.fn_tidegauge, date0, date1)
+            lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
             multi_tg = coast.Tidegauge()
-            tg_list = multi_tg.read_gesla_v3(files.fn_multiple_tidegauge, date_start=date0, date_end=date1)
+            tg_list = multi_tg.read_gesla(files.fn_multiple_tidegauge, date_start=date0, date_end=date1)
 
             # TEST: Check length of list
             check1 = len(tg_list) == 2
@@ -276,7 +291,7 @@ class test_tidegauge_methods(unittest.TestCase):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 20)
             lowestoft2 = coast.Tidegauge()
-            lowestoft2.read_gesla_v3(files.fn_tidegauge, date_start=date0, date_end=date1)
+            lowestoft2.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
             tganalysis = coast.TidegaugeAnalysis()
 
             # Use comparison of neighbourhood method (method="comp" is assumed)
