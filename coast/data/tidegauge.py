@@ -91,6 +91,9 @@ class Tidegauge(Timeseries):
         print(f"{get_slug(self)} initialised")
 
     ############ tide gauge methods ###########################################
+    def read_gesla_v5(self, fn_gesla, date_start=None, date_end=None):
+        pass
+
     def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
         """
         For reading from a GESLA2 (Format version 3.0) file(s) into an
