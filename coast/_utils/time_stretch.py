@@ -1,9 +1,10 @@
-import traceback
 from typing import List
 import xarray as xr
 import numpy as np
 from scipy.interpolate import interp1d
 import pandas as pd
+
+from .logging_util import warning
 
 
 def get_start_year(time_data: np.ndarray) -> int:
@@ -120,8 +121,8 @@ def stretch_time(dataset: xr.Dataset, time_var_name: str = "time", hourly_interv
             # Create new data array for stretched variable.
             data_array = xr.DataArray(data=new_data, coords=dim_dict, name=var_name, dims=data_var.dims)
             stretched_variables.append(data_array)
-        except Exception:
-            print(f"{var_name} -- {traceback.format_exc()}")
+        except TypeError as exc:
+            warning(f"Cannot interpolate data for variable: {var_name}. This variable will be skipped.\n{exc}")
     # Create new dataset from all stretched variables.
     new_dataset = xr.Dataset(data_vars={var.name: var for var in stretched_variables if var.name != time_var_name})
     return new_dataset
