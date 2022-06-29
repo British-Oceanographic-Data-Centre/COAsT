@@ -469,7 +469,7 @@ class Coast:
         plt.show()
 
     def set_constraint(self, start: Coordinates, end: Coordinates, drop: bool = True) -> None:
-        """Constrain the underlying dataset to values within an arbitrarily sized orthotope.
+        """Constrain the underlying dataset to values within an arbitrarily sized hyperrectangle.
 
         Args:
             start: The start coordinates of the shape to define.
@@ -479,7 +479,7 @@ class Coast:
         self.dataset = self.constrain(start, end, drop=drop)
 
     def constrain(self, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
-        """Return the underlying dataset with values constrained to an arbitrarily sized orthotope.
+        """Return the underlying dataset with values constrained to an arbitrarily sized hyperrectangle.
 
         Args:
             start: The start coordinates of the shape to define.
@@ -603,7 +603,7 @@ def t_dim(dataset: xr.Dataset) -> xr.DataArray:
 
 
 def constrain(dataset: xr.Dataset, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
-    """Constrain values within a dataset to an arbitrarily sized orthotope.
+    """Constrain values within a dataset to an arbitrarily sized hyperrectangle.
 
     Args:
         dataset: The dataset to constrain values from.
