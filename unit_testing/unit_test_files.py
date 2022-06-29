@@ -40,7 +40,7 @@ fn_multiple_tidegauge = path.join(dn_files, "tide_gauges/l*")
 fn_gladstone = path.join(dn_files, "Gladstone_2020-10_HLW.txt")
 fn_nemo_harmonics = path.join(dn_files, "coast_nemo_harmonics.nc")
 fn_nemo_harmonics_dom = path.join(dn_files, "coast_nemo_harmonics_dom.nc")
-fn_profile = path.join(dn_files, "coast_example_EN4_201008.nc")
+fn_profile = path.join(dn_files, "coast_example_en4_201008.nc")
 fn_wod = path.join(dn_files, "WOD_example_ragged_standard_level.nc")
 fn_nemo_bgc = path.join(dn_files, "coast_example_SEAsia_BGC_1990.nc")
 
