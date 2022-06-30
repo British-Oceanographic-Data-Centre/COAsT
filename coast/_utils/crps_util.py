@@ -6,27 +6,28 @@ Probability Score.
     -> crps_song_moving(): Same as above for moving obs
 """
 
+from typing import Union, Tuple
 import numpy as np
+import xarray as xr
 from . import general_utils
 
 
-def crps_empirical(sample, obs):
+def crps_empirical(sample: np.ndarray, obs: float) -> Union[np.ndarray, float]:
     """Calculates CRPS for a single observations against a sample of values.
+
     This sample of values may be an ensemble of model forecasts or a model
     neighbourhood. This is a comparison of a Heaviside function defined by
     the observation value and an Empirical Distribution Function (EDF)
     defined by the sample of values. This sample is sorted to create the
-    EDF.
-
-    The calculation method is that outlined by Hersbach et al. (2000).
+    EDF.The calculation method is that outlined by Hersbach et al. (2000).
     Each member of a supplied sample is weighted equally.
 
     Args:
         sample (array): Array of points (ensemble or neighbourhood)
-        xa (float): A single 'observation' value which to compare against
+        obs (float): A single 'observation' value which to compare against
                     sample CDF.
     Returns:
-        A single CRPS value.
+        np.ndarray: A single CRPS value.
     """
 
     def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
@@ -83,10 +84,17 @@ def crps_empirical(sample, obs):
     return crps
 
 
-def crps_empirical_loop(sample, obs):
+def crps_empirical_loop(sample: np.ndarray, obs: float) -> float:
     """Like crps_empirical, however a loop is used instead of numpy
     boolean indexing. For large samples, will be slower but consume less
     memory.
+
+    Args:
+        sample (array): Array of points (ensemble or neighbourhood)
+        obs (float): A single 'observation' value which to compare against
+                    sample CDF.
+    Returns:
+        float: A single CRPS integral value.
     """
 
     def calc(alpha, beta, p):  # TODO It would be better to define this outside of the function
@@ -130,34 +138,32 @@ def crps_empirical_loop(sample, obs):
 
 
 def crps_sonf_fixed(
-    mod_array,
-    obs_lon,
-    obs_lat,
-    obs_var,
-    obs_time,
+    mod_array: xr.DataArray,
+    obs_lon: float,
+    obs_lat: float,
+    obs_var: np.ndarray,
+    obs_time: np.ndarray,
     nh_radius: float,
     time_interp: str,
-):
-    """
-    Handles the calculation of single-observation neighbourhood forecast CRPS
-    for a time series at a fixed observation location. Differs from
-    crps_sonf_moving in that it only need calculate a model neighbourhood once.
-    Parameters
-    ----------
-    mod_array   : (xarray DataArray) DataArray from a Model Dataset
-    obs_lon     : (float) Longitude of fixed observation point
-    obs_lat     : (float) Latitude of fixed observation point
-    obs_var     : (array) of floatArray of variable values, e.g time series
-    obs_time    : (array) of datetimeArray of times, corresponding to obs_var
-    nh_radius   : (float) Neighbourhood radius in km
-    time_interp : (str) Type of time interpolation to use
-    Returns
-    -------
-    crps_list     : Array of CRPS values
-    n_model_pts   : Array containing the number of model points used for
-                    each CRPS value
-    contains_land : Array of bools indicating where a model neighbourhood
-                    contained land.
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Single-observation neighbourhood forecast CRPS for a time series at a fixed observation location.
+
+    Handles the calculation of single-observation neighbourhood forecast CRPS for a time series at a fixed observation location.
+    Differs from crps_sonf_moving in that it only need calculate a model neighbourhood once.
+
+    Args:
+        mod_array (xr.DataArray): DataArray from a Model Dataset.
+        obs_lon (float): Longitude of fixed observation point.
+        obs_lat (float): Latitude of fixed observation point.
+        obs_var (np.ndarray): of floatArray of variable values, e.g time series.
+        obs_time (np.ndarray): of datetimeArray of times, corresponding to obs_var.
+        nh_radius (float): Neighbourhood radius in km.
+        time_interp (str): Type of time interpolation to use.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: Array of CRPS values, array containing the number of model points used for
+        each CRPS value and an array of bools indicating where a model neighbourhood
+        contained land.
     """
 
     # Define output arrays
@@ -201,29 +207,33 @@ def crps_sonf_fixed(
     return crps_list, n_model_pts, contains_land
 
 
-def crps_sonf_moving(mod_array, obs_lon, obs_lat, obs_var, obs_time, nh_radius: float, time_interp: str, obs_batch=10):
-    """
-    Handles the calculation of single-observation neighbourhood forecast CRPS
-    for a moving observation instrument. Differs from crps_sonf_fixed in that
-    latitude and longitude are arrays of locations. Mod_array must contain
-    dimensions x_dim, y_dim and t_dim and coordinates longitude, latitude,
-    time.
-    Parameters
-    ----------
-    mod_array   : (xarray DataArray) DataArray from a Model Dataset
-    obs_lon     : (1Darray) Longitudes of fixed observation point
-    obs_lat     : (1Darray) Latitudes of fixed observation point
-    obs_var     : (1Darray) of floatArray of variable values, e.g time series
-    obs_time    : (1Darray) of datetimeArray of times, corresponding to obs_var
-    nh_radius   : (float) Neighbourhood radius in km
-    time_interp : (str) Type of time interpolation to use
-    Returns
-    -------
-    crps_list     : Array of CRPS values
-    n_model_pts   : Array containing the number of model points used for
-                    each CRPS value
-    contains_land : Array of bools indicating where a model neighbourhood
-                    contained land.
+def crps_sonf_moving(
+    mod_array: xr.DataArray,
+    obs_lon: np.ndarray,
+    obs_lat: np.ndarray,
+    obs_var: np.ndarray,
+    obs_time: np.ndarray,
+    nh_radius: float,
+    time_interp: str,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Handles the calculation of single-observation neighbourhood forecast CRPS for a moving observation instrument.
+
+    Differs from crps_sonf_fixed in that latitude and longitude are arrays of locations. Mod_array must contain
+    dimensions x_dim, y_dim and t_dim and coordinates longitude, latitude, time.
+
+    Args:
+        mod_array (xr.DataArray):  DataArray from a Model Dataset.
+        obs_lon (np.ndarray): Longitudes of fixed observation point.
+        obs_lat (np.ndarray): Latitudes of fixed observation point.
+        obs_var (np.ndarray): of floatArray of variable values, e.g time series.
+        obs_time: (np.ndarray): of datetimeArray of times, corresponding to obs_var.
+        nh_radius (float): Neighbourhood radius in km.
+        time_interp (str): Type of time interpolation to use.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: Array of CRPS values,
+            Array containing the number of model points used for each CRPS value,
+            Array of bools indicating where a model neighbourhood contained land.
     """
 
     # Define output arrays
