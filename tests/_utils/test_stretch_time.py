@@ -17,12 +17,22 @@ def mock_dataset(request):
         data_var = xr.DataArray(data=data, coords={TIME_VAR_NAME: times})
         return xr.Dataset(data_vars={DATA_VAR_NAME: data_var})
     if request.param == "mock_3hr_dataset":
-        times = xr.cftime_range("1850-01-01 03:00:00", "1851-01-01 00:00:00", freq="3H", calendar="360_day",)
+        times = xr.cftime_range(
+            "1850-01-01 03:00:00",
+            "1851-01-01 00:00:00",
+            freq="3H",
+            calendar="360_day",
+        )
         data = np.random.rand(360 * 8)
         data_var = xr.DataArray(data=data, coords={TIME_VAR_NAME: times})
         return xr.Dataset(data_vars={DATA_VAR_NAME: data_var})
     if request.param == "mock_non_leap_dataset":
-        times = xr.cftime_range("1904-01-01 06:00:00", "1905-01-01 00:00:00", freq="6H", calendar="noleap",)
+        times = xr.cftime_range(
+            "1904-01-01 06:00:00",
+            "1905-01-01 00:00:00",
+            freq="6H",
+            calendar="noleap",
+        )
         data = np.random.rand(365 * 4)
         data_var = xr.DataArray(data=data, coords={TIME_VAR_NAME: times})
         return xr.Dataset(data_vars={DATA_VAR_NAME: data_var})
