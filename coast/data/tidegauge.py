@@ -98,7 +98,7 @@ class Tidegauge(Timeseries):
         Returns eiter a tidegauge object or a list of tidegauge objects
         """
         # See if its a file list input, or a glob
-        if type(fn_gesla) is not list:
+        if not isinstance(fn_gesla, list):
             file_list = glob.glob(fn_gesla)
         else:
             file_list = fn_gesla
@@ -136,18 +136,15 @@ class Tidegauge(Timeseries):
         tidegauge objects.
         """
         if format != "v3" and format != "v5":
-            debug(f"Not expecting GESLA text format {format}")
-            print(f"Not expecting GESLA text format {format}")
+            raise NotImplementedError(f"Not written code for format {format}")
 
-        if format == "v5":
-            print(f"Not written code for format {format}")
 
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         dataset = None
 
         # See if its a file list input, or a glob
-        if type(fn_gesla) is not list:
+        if not isinstance(fn_gesla, list):
             file_list = glob.glob(fn_gesla)
         else:
             file_list = fn_gesla
@@ -201,57 +198,54 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading GESLA header from "{fn_gesla}"')
-        fid = open(fn_gesla)
+        with open(fn_gesla) as fid:
+            # Read lines one by one (hopefully formatting is consistent)
+            format_version = float(fid.readline().split()[3])
+            # Geographical stuff
+            site_name = fid.readline().split()[3:]
+            site_name = "_".join(site_name)
+            site_code = fid.readline().split()[3:]
+            site_code = "_".join(site_code)
+            country = fid.readline().split()[2:]
+            country = "_".join(country)
+            contributor = fid.readline().split()[2:]
+            contributor = "_".join(contributor)
+            contributor_url = fid.readline().split()[3:]
+            contributor_url = "_".join(contributor_url)
+            contributor_contact = fid.readline().split()[3:]
+            contributor_contact = "_".join(contributor_contact)
+            originator = fid.readline().split()[2:]
+            originator = "_".join(originator)
+            originator_url = fid.readline().split()[3:]
+            originator_url = "_".join(originator_url)
+            originator_contact = fid.readline().split()[3:]
+            originator_contact = "_".join(originator_contact)
+            # Coordinates
+            latitude = float(fid.readline().split()[2])
+            longitude = float(fid.readline().split()[2])
+            coordinate_system = fid.readline().split()[3:]
+            coordinate_system = "_".join(coordinate_system)
+            # Dates
+            start_date = fid.readline().split()[3:5]
+            start_date = " ".join(start_date)
+            start_date = pd.to_datetime(start_date)
+            end_date = fid.readline().split()[3:5]
+            end_date = " ".join(end_date)
+            end_date = pd.to_datetime(end_date)
+            number_of_years = float(fid.readline().split()[4])
+            time_zone_hours = float(fid.readline().split()[4])
+            # Other
+            datum = fid.readline().split()[3:]
+            datum = " ".join(datum)
+            instrument = fid.readline().split()[2:]
+            instrument = " ".join(instrument)
+            precision = float(fid.readline().split()[2])
+            null_value = float(fid.readline().split()[3])
+            gauge_type = fid.readline().split()[3:]
+            gauge_type = " ".join(gauge_type)
+            record_qual = fid.readline().split()[4:]
+            record_qual = " ".join(record_qual)
 
-        # Read lines one by one (hopefully formatting is consistent)
-        format_version = float(fid.readline().split()[3])
-        # Geographical stuff
-        site_name = fid.readline().split()[3:]
-        site_name = "_".join(site_name)
-        site_code = fid.readline().split()[3:]
-        site_code = "_".join(site_code)
-        country = fid.readline().split()[2:]
-        country = "_".join(country)
-        contributor = fid.readline().split()[2:]
-        contributor = "_".join(contributor)
-        contributor_url = fid.readline().split()[3:]
-        contributor_url = "_".join(contributor_url)
-        contributor_contact = fid.readline().split()[3:]
-        contributor_contact = "_".join(contributor_contact)
-        originator = fid.readline().split()[2:]
-        originator = "_".join(originator)
-        originator_url = fid.readline().split()[3:]
-        originator_url = "_".join(originator_url)
-        originator_contact = fid.readline().split()[3:]
-        originator_contact = "_".join(originator_contact)
-        # Coordinates
-        latitude = float(fid.readline().split()[2])
-        longitude = float(fid.readline().split()[2])
-        coordinate_system = fid.readline().split()[3:]
-        coordinate_system = "_".join(coordinate_system)
-        # Dates
-        start_date = fid.readline().split()[3:5]
-        start_date = " ".join(start_date)
-        start_date = pd.to_datetime(start_date)
-        end_date = fid.readline().split()[3:5]
-        end_date = " ".join(end_date)
-        end_date = pd.to_datetime(end_date)
-        number_of_years = float(fid.readline().split()[4])
-        time_zone_hours = float(fid.readline().split()[4])
-        # Other
-        datum = fid.readline().split()[3:]
-        datum = " ".join(datum)
-        instrument = fid.readline().split()[2:]
-        instrument = " ".join(instrument)
-        precision = float(fid.readline().split()[2])
-        null_value = float(fid.readline().split()[3])
-        gauge_type = fid.readline().split()[3:]
-        gauge_type = " ".join(gauge_type)
-        record_qual = fid.readline().split()[4:]
-        record_qual = " ".join(record_qual)
-
-        debug(f'Read done, close file "{fn_gesla}"')
-        fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {
             "format_version": format_version,
@@ -295,40 +289,37 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading GESLA header from "{fn_gesla}"')
-        fid = open(fn_gesla)
+        with open(fn_gesla) as fid:
+            # Read lines one by one (hopefully formatting is consistent)
+            format_version = float(fid.readline().split()[3])
+            # Geographical stuff
+            site_name = fid.readline().split()[3:]
+            site_name = "_".join(site_name)
+            country = fid.readline().split()[2:]
+            country = "_".join(country)
+            contributor = fid.readline().split()[2:]
+            contributor = "_".join(contributor)
+            # Coordinates
+            latitude = float(fid.readline().split()[2])
+            longitude = float(fid.readline().split()[2])
+            coordinate_system = fid.readline().split()[3:]
+            coordinate_system = "_".join(coordinate_system)
+            # Dates
+            start_date = fid.readline().split()[3:5]
+            start_date = " ".join(start_date)
+            start_date = pd.to_datetime(start_date)
+            end_date = fid.readline().split()[3:5]
+            end_date = " ".join(end_date)
+            end_date = pd.to_datetime(end_date)
+            time_zone_hours = float(fid.readline().split()[4])
+            # Other
+            datum = fid.readline().split()[3:]
+            datum = " ".join(datum)
+            instrument = fid.readline().split()[2:]
+            instrument = " ".join(instrument)
+            precision = float(fid.readline().split()[2])
+            null_value = float(fid.readline().split()[3])
 
-        # Read lines one by one (hopefully formatting is consistent)
-        format_version = float(fid.readline().split()[3])
-        # Geographical stuff
-        site_name = fid.readline().split()[3:]
-        site_name = "_".join(site_name)
-        country = fid.readline().split()[2:]
-        country = "_".join(country)
-        contributor = fid.readline().split()[2:]
-        contributor = "_".join(contributor)
-        # Coordinates
-        latitude = float(fid.readline().split()[2])
-        longitude = float(fid.readline().split()[2])
-        coordinate_system = fid.readline().split()[3:]
-        coordinate_system = "_".join(coordinate_system)
-        # Dates
-        start_date = fid.readline().split()[3:5]
-        start_date = " ".join(start_date)
-        start_date = pd.to_datetime(start_date)
-        end_date = fid.readline().split()[3:5]
-        end_date = " ".join(end_date)
-        end_date = pd.to_datetime(end_date)
-        time_zone_hours = float(fid.readline().split()[4])
-        # Other
-        datum = fid.readline().split()[3:]
-        datum = " ".join(datum)
-        instrument = fid.readline().split()[2:]
-        instrument = " ".join(instrument)
-        precision = float(fid.readline().split()[2])
-        null_value = float(fid.readline().split()[3])
-
-        debug(f'Read done, close file "{fn_gesla}"')
-        fid.close()
         # Put all header info into an attributes dictionary
         header_dict = {
             "format_version": format_version,
@@ -634,7 +625,7 @@ class Tidegauge(Timeseries):
 
         """
         # Ensure the date objects are datetime
-        if type(time_guess) is not np.datetime64:
+        if not isinstance(time_guess, np.datetime64):
             debug("Convert date to np.datetime64")
             time_guess = np.datetime64(time_guess)
 
@@ -757,7 +748,7 @@ class Tidegauge(Timeseries):
             debug(f"url request: {url}")
         else:
             # Check date_start and date_end are timetime objects
-            if (type(cls.date_start) is np.datetime64) & (type(cls.date_end) is np.datetime64):
+            if isinstance(cls.date_start, np.datetime64) & isinstance(cls.date_end, np.datetime64):
                 info(f"GETting data from {cls.date_start} to {cls.date_end}")
                 startdate = cls.date_start.item().strftime("%Y-%m-%d")
                 enddate = cls.date_end.item().strftime("%Y-%m-%d")
@@ -998,7 +989,7 @@ class Tidegauge(Timeseries):
         debug(f"Plotting timeseries for {get_slug(self)}")
         fig = plt.figure(figsize=(10, 10))
         # Check input is a list (even for one variable)
-        if type(var_list) is str:
+        if isinstance(var_list, str):
             var_list = [var_list]
 
         for var_str in var_list:
