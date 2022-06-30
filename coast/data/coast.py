@@ -410,7 +410,7 @@ class Coast:
         return smaller
 
     def plot_simple_2d(
-        self, x: xr.DataVariable, y: xr.DataVariable, data: xr.DataArray, cmap: matplotlib.cm, plot_info: Dict
+        self, x: xr.Variable, y: xr.Variable, data: xr.DataArray, cmap: matplotlib.cm, plot_info: Dict
     ) -> plt:
         """This is a simple method that will plot data in a 2d. It is a wrapper for matplotlib's 'pcolormesh' method.
 
@@ -424,8 +424,8 @@ class Coast:
             - ylabel
 
         Args:
-            x (xr.DataVariable): The variable contain the x axis information.
-            y (xr.DataVariable): The variable contain the y axis information.
+            x (xr.Variable): The variable contain the x axis information.
+            y (xr.Variable): The variable contain the y axis information.
             data (xr.DataArray): the DataArray a user wishes to plot.
             cmap (matplotlib.cm): Matplotlib color map.
             plot_info (Dict): Dict containing all the required information for setting the figure.
