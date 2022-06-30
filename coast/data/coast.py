@@ -1,6 +1,10 @@
 """The coast class is the main access point into this package."""
+from typing import Any, Dict, List
+
 from dask import array
 import xarray as xr
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 from dask.distributed import Client
 import copy
@@ -27,12 +31,12 @@ class Coast:
         This is the access point into the COAsT class. From here all the magic happens.
 
         Args:
-            file:
-            chunks: how/where to break up the data when reading it in
-            multiple:
-            workers: optional Dask related input
-            threads: optional Dask related input
-            memory_limit_per_worker: optional Dask related input
+            file (str): Input file.
+            chunks (dict): how/where to break up the data when reading it in.
+            multiple (bool): Specify whether you are loading multiple files or not.
+            workers (int): optional Dask related input.
+            threads (int): optional Dask related input.
+            memory_limit_per_worker (str): optional Dask related input.
         """
         debug(f"Creating a new {get_slug(self)}")
         self.dataset = None
@@ -53,15 +57,13 @@ class Coast:
             self.load(file, chunks, multiple)
         debug(f"{get_slug(self)} initialised")
 
-    def load(self, file_or_dir, chunks: dict = None, multiple=False):
-        """
-        Loads a file into a COAsT object's dataset variable using xarray
+    def load(self, file_or_dir: str, chunks: Dict = None, multiple: bool = False):
+        """Loads a file into a COAsT object's dataset variable using xarray.
 
         Args:
             file_or_dir (str): file name, OPeNDAP accessor, or directory to multiple files.
-            chunks (dict): Chunks to use in Dask [default None]
-            multiple (bool): If true, load in multiple files from directory.
-                             If false load a single file [default False]
+            chunks (dict): Chunks to use in Dask [default None].
+            multiple (bool): If true, load in multiple files from directory. If false load a single file [default False].
         """
         if (opendap := isinstance(file_or_dir, OpendapInfo)) and multiple:
             raise NotImplementedError("Loading multiple OPeNDAP datasets is not supported")
@@ -75,46 +77,55 @@ class Coast:
     def __getitem__(self, name: str):
         return self.dataset[name]
 
-    def load_single(self, file, chunks: dict = None):
-        """Loads a single file into COAsT object's dataset variable."""
+    def load_single(self, file: str, chunks: Dict = None):
+        """Loads a single file into COAsT object's dataset variable.
+
+        Args:
+            file (str): Input file.
+            chunks (Dict): Chunks to use in Dask [default None].
+        """
         info(f"Loading a single file ({file} for {get_slug(self)}")
         self.dataset = xr.open_dataset(file, chunks=chunks)
 
-    def load_multiple(self, directory_to_files, chunks: dict = None):
-        """Loads multiple files from directory into dataset variable."""
-        info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
-        self.dataset = xr.open_mfdataset(
-            directory_to_files, chunks=chunks, parallel=True, combine="by_coords"
-        )  # , compat='override')
+    def load_multiple(self, directory_to_files: str, chunks: Dict = None):
+        """Loads multiple files from directory into dataset variable.
 
-    def load_dataset(self, dataset):
+        Args:
+            directory_to_files (str):
+            chunks (Dict): Chunks to use in Dask [default None].
         """
-        :param dataset: The dataset to use
-        :type dataset: xarray.Dataset
+        info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
+        self.dataset = xr.open_mfdataset(directory_to_files, chunks=chunks, parallel=True, combine="by_coords")
+
+    def load_dataset(self, dataset: xr.Dataset):
+        """Loads a dataset.
+
+        Args:
+            dataset (xr.Dataset): Dataset to load.
         """
         self.dataset = dataset
         debug(f"Dataset for {get_slug(self)} set to {get_slug(dataset)}")
 
     def set_dimension_mapping(self):
+        """Set mapping of dimensions."""
         self.dim_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"dim_mapping for {get_slug(self)} set to {self.dim_mapping}")
 
     def set_variable_mapping(self):
+        """Set mapping of variable."""
         self.var_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"var_mapping for {get_slug(self)} set to {self.var_mapping}")
 
     def set_grid_ref_attribute(self):
+        """Set grid reference attribute."""
         self.grid_ref_attr_mapping = None  # TODO Object attributes should be defined in the __init__
         debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
-    def set_dimension_names(self, dim_mapping: dict):
-        """
-        Relabel dimensions in COAsT object xarray.dataset to ensure
-        consistent naming throughout the COAsT package.
+    def set_dimension_names(self, dim_mapping: Dict):
+        """Relabel dimensions in COAsT object xarray.dataset to ensure consistent naming throughout the COAsT package.
 
         Args:
-            dim_mapping (dict): keys are dimension names to change and values
-                                new dimension names
+            dim_mapping (Dict): keys are dimension names to change and values new dimension names.
         """
         debug(f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}")
         if dim_mapping is None:
@@ -128,14 +139,11 @@ class Coast:
                     f"{chr(10)}Error message of '{err}'"
                 )
 
-    def set_variable_names(self, var_mapping: dict):
-        """
-        Relabel variables in COAsT object xarray.dataset to ensure
-        consistent naming throughout the COAsT package.
+    def set_variable_names(self, var_mapping: Dict):
+        """Relabel variables in COAsT object xarray.dataset to ensure consistent naming throughout the COAsT package.
 
         Args:
-            var_mapping (dict): keys are variable names to change and values
-                                are new variable names
+            var_mapping (Dict): keys are variable names to change and values are new variable names
         """
         debug(f"Setting variable names for {get_slug(self)} with mapping {var_mapping}")
         if var_mapping is None:
@@ -149,10 +157,11 @@ class Coast:
                     f"{chr(10)}Error message of '{err}'"
                 )
 
-    def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: dict):  # TODO is this still used?
-        """
-        Set attributes for variables to access within package.
-        Set grid attributes to identify with grid variable is associated with.
+    def set_variable_grid_ref_attribute(self, grid_ref_attr_mapping: Dict):  # TODO is this still used?
+        """Set attributes for variables to access within package and set grid attributes to identify which grid variable is associated with.
+
+        Args:
+            grid_ref_attr_mapping (Dict): Dict containing mappings.
         """
         debug(f"Setting variable attributes for {get_slug(self)} with mapping {grid_ref_attr_mapping}")
         if grid_ref_attr_mapping is None:
@@ -167,55 +176,75 @@ class Coast:
                 )
 
     def copy(self):
+        """Method to copy self."""
         new = copy.copy(self)
         debug(f"Copied {get_slug(self)} to new {get_slug(new)}")
         return new
 
-    def isel(self, indexers: dict = None, drop: bool = False, **kwargs):
-        """
-        Indexes COAsT object along specified dimensions using xarray isel.
+    def isel(self, indexers: Dict = None, drop: bool = False, **kwargs):
+        """Indexes COAsT object along specified dimensions using xarray isel.
+
         Input is of same form as xarray.isel. Basic use, hand in either:
-            1. dictionary with keys = dimensions, values = indices
-            2. **kwargs of form dimension = indices
+        1. dictionary with keys = dimensions, values = indices
+        2. **kwargs of form dimension = indices.
+
+        Args:
+            indexers (Dict): A dict with keys matching dimensions and values given by integers, slice objects or arrays.
+            drop (bool): If drop=True, drop coordinates variables indexed by integers instead of making them scalar.
+            **kwargs (Any): The keyword arguments form of indexers. One of indexers or indexers_kwargs must be provided.
         """
         obj_copy = self.copy()
         debug(f"Indexing (isel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.isel(indexers, drop, **kwargs)
         return obj_copy
 
-    def sel(self, indexers: dict = None, drop: bool = False, **kwargs):
-        """
-        Indexes COAsT object along specified dimensions using xarray sel.
+    def sel(self, indexers: Dict = None, drop: bool = False, **kwargs):
+        """Indexes COAsT object along specified dimensions using xarray sel.
+
         Input is of same form as xarray.sel. Basic use, hand in either:
             1. Dictionary with keys = dimensions, values = indices
             2. **kwargs of form dimension = indices
+
+        Args:
+            indexers (Dict): A dict with keys matching dimensions and values given by scalars, slices or arrays of tick labels.
+            drop (bool): If drop=True, drop coordinates variables in indexers instead of making them scalar.
+            **kwargs (Any): The keyword arguments form of indexers. One of indexers or indexers_kwargs must be provided.
         """
         obj_copy = self.copy()
         debug(f"Indexing (sel) {get_slug(obj_copy)}")
         obj_copy.dataset = obj_copy.dataset.sel(indexers, drop, **kwargs)
         return obj_copy
 
-    def rename(self, rename_dict, **kwargs):
+    def rename(self, rename_dict: Dict, **kwargs):
+        """Rename dataset.
+
+        Args:
+            rename_dict (Dict): Dictionary whose keys are current variable or dimension names and whose values are the desired names.
+            **kwargs (Any): Keyword form of name_dict. One of name_dict or names must be provided.
+        """
         debug(f"Renaming {get_slug(self.dataset)} with dict {rename_dict}")
         self.dataset = self.dataset.rename(rename_dict, **kwargs)
         return  # TODO Should this return something? If not, the statement is not needed
 
     def subset(self, **kwargs):
-        """
-        Subsets all variables within the dataset inside self (a COAsT object).
-        Input is a set of keyword argument pairs of the form:
-            dimension_name = indices
+        """Subsets all variables within the dataset inside self (a COAsT object).
+
+        Input is a set of keyword argument pairs of the form: dimension_name = indices.
         The entire object is then subsetted along this dimension at indices
+
+        Args:
+            **kwargs (Any): The keyword arguments form of indexers. One of indexers or indexers_kwargs must be provided.
         """
         debug(f"Subsetting {get_slug(self)}")
         self.dataset = self.dataset.isel(kwargs)
 
     def subset_as_copy(self, **kwargs):
-        """
-        Similar to COAsT.subset() however applies the subsetting to a copy of
-        the original COAsT object. This subsetted copy is then returned.
-        Useful for preserving the original object whilst creating smaller
-        subsetted object copies.
+        """Similar to COAsT.subset() however applies the subsetting to a copy of the original COAsT object.
+
+        This subsetted copy is then returned.Useful for preserving the original object whilst creating smaller subsetted object copies.
+
+        Args:
+            **kwargs (Any): The keyword arguments form of indexers. One of indexers or indexers_kwargs must be provided.
         """
         debug(f"Subsetting as copy {get_slug(self.dataset)}")
         obj_copy = self.copy()
@@ -226,15 +255,17 @@ class Coast:
         raise NotImplementedError  # TODO Should this class be decorated as an abstractclass?
 
     def subset_indices_by_distance(self, centre_lon: float, centre_lat: float, radius: float):
-        """
-        This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
+        """This method returns a `tuple` of indices within the `radius` of the lon/lat point given by the user.
 
-        Distance is calculated as haversine - see `self.calculate_haversine_distance`
+        Distance is calculated as haversine - see `self.calculate_haversine_distance`.
 
-        :param centre_lon: The longitude of the users central point
-        :param centre_lat: The latitude of the users central point
-        :param radius: The haversine distance (in km) from the central point
-        :return: All indices in a `tuple` with the haversine distance of the central point
+        Args:
+            centre_lon (float): The longitude of the users central point.
+            centre_lat (float): The latitude of the users central point.
+            radius (float): The haversine distance (in km) from the central point.
+
+        Return:
+            Tuple[xr.DataArray, xr.DataArray]: All indices in a `tuple` with the haversine distance of the central point.
         """
         debug(f"Subsetting {self} indices by distance")
         # Flatten NEMO domain stuff.
@@ -250,16 +281,15 @@ class Coast:
 
         return xr.DataArray(indices[0]), xr.DataArray(indices[1])
 
-    def subset_indices_lonlat_box(self, lonbounds, latbounds):
+    def subset_indices_lonlat_box(self, lonbounds: List, latbounds: List) -> np.ndarray:
         """Generates array indices for data which lies in a given lon/lat box.
 
-        Keyword arguments:
-        lon       -- Longitudes, 1D or 2D.
-        lat       -- Latitudes, 1D or 2D
-        lonbounds -- Array of form [min_longitude=-180, max_longitude=180]
-        latbounds -- Array of form [min_latitude, max_latitude]
+        Args:
+            lonbounds: Longitude boundaries. List of form [min_longitude=-180, max_longitude=180].
+            latbounds: Latitude boundaries. List of form [min_latitude, max_latitude].
 
-        return: Indices corresponding to datapoints inside specified box
+        Returns:
+            np.ndarray: Indices corresponding to datapoints inside specified box.
         """
         debug(f"Subsetting {get_slug(self)} indices within lon/lat")
         lon_str = "longitude"
@@ -274,16 +304,22 @@ class Coast:
         return np.where(ff)
 
     @staticmethod
-    def calculate_haversine_distance(lon1, lat1, lon2, lat2):  # TODO This could be a static method
-        """
-        # Estimation of geographical distance using the Haversine function.
-        # Input can be single values or 1D arrays of locations. This
-        # does NOT create a distance matrix but outputs another 1D array.
-        # This works for either location vectors of equal length OR a single loc
-        # and an arbitrary length location vector.
-        #
-        # lon1, lat1 :: Location(s) 1.
-        # lon2, lat2 :: Location(s) 2.
+    def calculate_haversine_distance(
+        lon1: Any, lat1: Any, lon2: Any, lat2: Any
+    ) -> float:  # TODO This could be a static method
+        """Estimation of geographical distance using the Haversine function.
+
+        Input can be single values or 1D arrays of locations. This does NOT create a distance matrix but outputs another 1D array.
+        This works for either location vectors of equal length OR a single location and an arbitrary length location vector.
+
+        Args:
+            lon1 (Any): Angles in degrees.
+            lat1 (Any): Angles in degrees.
+            lon2 (Any): Angles in degrees.
+            lat2 (Any): Angles in degrees.
+
+        Returns:
+            float: Haversine distance between points.
         """
 
         debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
@@ -306,21 +342,22 @@ class Coast:
 
     def get_subset_as_xarray(
         self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
-    ):
-        """
-        This method gets a subset of the data across the x/y indices given for the chosen variable.
+    ) -> xr.DataArray:
+        """This method gets a subset of the data across the x/y indices given for the chosen variable.
 
         Setting time_counter to None will treat `var` as only having 3 dimensions depth, y, x
-
         there is a check on `var` to see the size of the time_counter, if 1 then time_counter is fixed to index 0.
 
-        :param var: the name of the variable to get data from
-        :param points_x: a list/array of indices for the x dimension
-        :param points_y: a list/array of indices for the y dimension
-        :param line_length: (Optional) the length of your subset (assuming simple line transect)  TODO This is unsued
-        :param time_counter: (Optional) which time slice to get data from, if None and the variable only has one a time
-                             channel of length 1 then time_counter is fixed too an index of 0
-        :return: data across all depths for the chosen variable along the given indices
+        Args:
+            var (str): The name of the variable to get data from.
+            points_x (slice): A list/array of indices for the x dimension.
+            points_y (slice): A list/array of indices for the y dimension.
+            line_length (int): The length of your subset (assuming simple line transect). TODO This is unused.
+            time_counter (int): Which time slice to get data from, if None and the variable only has one a time
+                channel of length 1 then time_counter is fixed too an index of 0.
+
+        Returns:
+            xr.DataArray: Data across all depths for the chosen variable along the given indices.
         """
         debug(f"Subsetting {var} from {get_slug(self)}")
         try:
@@ -344,14 +381,17 @@ class Coast:
     def get_2d_subset_as_xarray(
         self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
     ):
-        """
+        """Get 2d subset as an xarray.
 
-        :param var:
-        :param points_x:
-        :param points_y:
-        :param line_length:
-        :param time_counter:
-        :return:
+        Args:
+            var (str): Member of dataset.
+            points_x (slice): Keys matching dimensions.
+            points_y (slice): Keys matching dimensions.
+            line_length (int): Unused.
+            time_counter (int): Time counter.
+
+        Return:
+            xr.Dataset: Subset.
         """
 
         debug(f"Fetching {var} subset as xarray")
@@ -369,29 +409,28 @@ class Coast:
 
         return smaller
 
-    def plot_simple_2d(self, x, y, data: xr.DataArray, cmap, plot_info: dict):
-        """
-        This is a simple method that will plot data in a 2d. It is a wrapper for matplotlib's 'pcolormesh' method.
+    def plot_simple_2d(
+        self, x: xr.Variable, y: xr.Variable, data: xr.DataArray, cmap: matplotlib.cm, plot_info: Dict
+    ) -> plt:
+        """This is a simple method that will plot data in a 2d. It is a wrapper for matplotlib's 'pcolormesh' method.
 
         `cmap` and `plot_info` are required to run this method, `cmap` is passed directly to `pcolormesh`.
-
         `plot_info` contains all the required information for setting the figure;
-         - ylim
-         - xlim
-         - clim
-         - title
-         - fig_size
-         - ylabel
+            - ylim
+            - xlim
+            - clim
+            - title
+            - fig_size
+            - ylabel
 
-        :param x: The variable contain the x axis information
-        :param y: The variable contain the y axis information
-        :param data: the DataArray a user wishes to plot
-        :param cmap:
-        :param plot_info:
-        :return:
+        Args:
+            x (xr.Variable): The variable contain the x axis information.
+            y (xr.Variable): The variable contain the y axis information.
+            data (xr.DataArray): the DataArray a user wishes to plot.
+            cmap (matplotlib.cm): Matplotlib color map.
+            plot_info (Dict): Dict containing all the required information for setting the figure.
         """
         info("Generating simple 2D plot...")
-        import matplotlib.pyplot as plt
 
         plt.close("all")
 
@@ -411,6 +450,7 @@ class Coast:
         return plt
 
     def plot_cartopy(self, var: str, plot_var: array, params, time_counter: int = 0):
+        """Plot cartopy."""
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
@@ -468,4 +508,5 @@ class Coast:
         plt.show()
 
     def plot_movie(self):
+        """Plot movie."""
         raise NotImplementedError
