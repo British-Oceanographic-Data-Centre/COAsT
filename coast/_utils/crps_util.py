@@ -162,8 +162,8 @@ def crps_sonf_fixed(
 
     Returns:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: Array of CRPS values, array containing the number of model points used for
-        each CRPS value and an array of bools indicating where a model neighbourhood
-        contained land.
+            each CRPS value and an array of bools indicating where a model neighbourhood
+            contained land.
     """
 
     # Define output arrays
