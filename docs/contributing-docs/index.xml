@@ -1,4 +1,459 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing: Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/</link><description>Recent content in Contributing: Documentation on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing: Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/</link><description>Recent content in Contributing: Documentation on COAsT</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Github Actions Flowchart</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_actions_flowchart/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_actions_flowchart/</guid><description>
+&lt;h1 id="github-actions-diagram">GitHub actions diagram&lt;/h1>
+&lt;p>This is a collection of flowcharts for all the GitHub actions used across the COAsT and COAsT-site repos&lt;/p>
+&lt;h2 id="coast">COAsT&lt;/h2>
+&lt;h3 id="building-packages">building Packages&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR;
+subgraph publish_package - runs on push to master
+A1[Setup python]-- 3.8 -->B1;
+B1[Install dependencies]-->C1;
+C1[Setup Enviroment]-->D1;
+D1[Build package]-->E1;
+E1[Test Package Install]-->F1
+F1[Publish to pypi]-->G1
+G1[Generate Conda Metadata]-->H1
+H1[Publish to Anaconda]
+end;
+subgraph build_package - runs on push to non-master
+A[Setup python]-- 3.8 and 3.9 -->B;
+B[Install dependencies]-->C;
+C[Setup Enviroment]-->D;
+D[Build package]-->E;
+E[Test Package Install]-->F
+F[Generate Conda Metadata]
+end;
+&lt;/div>
+&lt;h3 id="verification-and-formatting">Verification and Formatting&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph formatting - runs on pull requests
+A[Setup python]-- 3.9 -->B;
+B[Install black]-->C;
+C[Check formatting]--> D;
+D[Apply formatting]
+end;
+subgraph verifiy_package - runs for every push
+A1[Setup python]-- 3.8 and 3.9 -->B1;
+B1[Install dependencies]-->C1;
+C1[Lint]-->D1;
+D1[Test]
+end;
+click B1 "https://www.github.com" "tooltip"
+&lt;/div>
+&lt;h3 id="interactions-with-other-repos">interactions with other repos&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b1[push_notebooks - runs on push to master]
+direction LR
+subgraph b2[COAsT site - markdown ]
+direction TB
+a[checkout docsy site] -->b
+b[checkout coast] -->c
+c[add python] -->d
+d[covert notebooks] -->e
+e[commit changes]
+end
+t[Repository Dispatch] -- event pushed --> b2
+end
+click a "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b3[push_docstrings - runs on push to master]
+direction LR
+subgraph b4[COAsT site - docstrings ]
+direction TB
+a1[checkout docsy site] -->b1
+b1[checkout coast] -->c1
+c1[add python] -->d1
+d1[covert docstrings] -->e1
+e1[commit changes]
+end
+r[Repository Dispatch] -- event pushed --> b4
+end
+click a1 "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;h3 id="generate-unit-test-contents-file">Generate unit test contents file&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph generate-test-contents - runs on pull_request
+A[checkout COAsT]-->B;
+B[install package]-->C;
+C[make example files dir]--> D;
+D[run generate_unit_test_contents.py]-->E
+E[commit changes]
+end;
+&lt;/div>
+&lt;h2 id="coast-site">COAsT-site&lt;/h2>
+&lt;p>These are the actions used on the COAsT-site repo.&lt;/p>
+&lt;h3 id="convert-to-markdown">Convert to markdown&lt;/h3>
+&lt;p>See &lt;a href="#interactions-with-other-repos">Interactions with other repos&lt;/a> for the related markdown and docstring workflows&lt;/p>
+&lt;h3 id="build-site">Build site&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph hugo - runs on push to master
+A[checkout site]-->B;
+B[Setup Hugo] -- v0.70.0 -->C;
+C[Setup Nodejs]-- v12 --> D;
+D[Build]-->E
+E[Deploy]
+end;
+&lt;/div></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
 &lt;p>For COAsT development we use a Github workflow to manage version control and collaboration. Git allows use to keep track of changes made to the COAsT code base, avoid breaking existing code and work as a group on a single package. Any contributor needs to use this workflow to add their code. Below is some guidance on using git with COAsT, including a typical workflow and cheat sheet.&lt;/p>
 &lt;p>For more information on git, see:&lt;/p>
 &lt;p>Github (&lt;a href="https://github.com/">https://github.com/&lt;/a>)&lt;/p>

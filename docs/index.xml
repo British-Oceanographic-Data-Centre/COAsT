@@ -1,4 +1,65 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/</link><description>Recent content in Documentation on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: The Gridded class</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</guid><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/</link><description>Recent content in Documentation on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
+&lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
+&lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
+&lt;h1 id="code-styling-conventions">Code Styling Conventions&lt;/h1>
+&lt;p>Let&amp;rsquo;s keep things simple to start with&amp;hellip;&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Indentation should be achieved with spaces rather than tabs and each new level of indentation should be indented by four columns (i.e four spaces).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Any single line, including its indentation characters, should not exceed 79 characters in length.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Top-level (i.e at the module/file level rather than inside a function or class) function and class definitions should be separated by two blank lines.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Method (functions within a class) definitions are separated by a single blank line.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Usually, &amp;ldquo;import&amp;rdquo; statements should be on separate lines, that is to say that you should have one line per distinct module or package import. An exception to this rule is when multiple objects are imported from a single module or package, using a &amp;ldquo;from&amp;rdquo; statement, in which case individual objects can be imported on the same line, separated by commas.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>PEP 8 does not make a recommendation relating to the use of double or single quotes in general use, but for the sake of consistency, this document suggests the use of double quotes wherever practical. This recommendation is intended for the sake of consistency with triple-quoted strings, as per Docstring Conventions (PEP 257).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Operators should be separated by single columns (i.e one space) either side, unless inside parentheses, in which case no whitespace is required.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Comments (beginning with the # character) should be indented as if they were code. In the case of inline comments, separate the comment with two spaces following the code it shares the line with.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>All functions should contain a docstring, which provides basic information on its usage. For this project, the &lt;a href="https://www.python.org/dev/peps/pep-0287/">reStructuredText docstring format&lt;/a> is suggested.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When it comes to naming variables and functions, snake case (lower_case_words_separated_by_underscores) is preferred. There are however a few exceptions to this rule:
+Class names should be styled as camel case (EveryNewWordIsCapitalised).
+Constants (Variables that should not be changed) can be indicated by the use of screaming snake case (UPPER_CASE_WORDS_SEPARATED_BY_UNDERSCORES). Note that this library currently targets Python 3.7, so the use of &lt;a href="https://www.python.org/dev/peps/pep-0591/">typing.Final&lt;/a> official support for constant variables, new as of Python 3.8: is not currently supported.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>In general, it is suggested to avoid the use of single-character variable names, but this is acceptable in certain cases, such as when defining coordinates (such as x, y and z), as these will be commonly recognized and enforcing different rules could cause confusion.
+PEP 8 advises the following regarding names to avoid:
+&amp;ldquo;Never use the characters &amp;lsquo;l&amp;rsquo; (lowercase letter el), &amp;lsquo;O&amp;rsquo; (uppercase letter oh), or &amp;lsquo;I&amp;rsquo; (uppercase letter eye) as single character variable names.&amp;rdquo;
+These specific characters should be avoided because they present an accessibility issue, as under many fonts these characters may be difficult to distinguish or completely indistinguishable from numerals one (1) and zero (0).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>In the interest of readability, where named iterator variables are required, this document suggests the use of double characters (e.g. &amp;ldquo;ii&amp;rdquo; rather than &amp;ldquo;i&amp;rdquo;).&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="object-oriented-programming">Object-Oriented Programming&lt;/h1>
+&lt;p>The general principles of OOP are fairly straightforward and well documented, so I won&amp;rsquo;t waste your precious time by regurgitating that particular wall of text here. Instead, I&amp;rsquo;ll focus on some general pointers specific to this language and use case.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>In Python, all class attributes are technically public, but semantically, attributes can be designated as non-public by including leading underscores in the name. For instance, &amp;ldquo;my_variable&amp;rdquo; becomes &amp;ldquo;_my_variable&amp;rdquo;. These attributes are generally referred to as &amp;ldquo;protected&amp;rdquo;.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When you define a Python class, it is a best practice to inherit from the base object type. This convention stems from Python 2.X, as classes and types were not originally synonymous. This behaviour is implicit in Python 3.X but the convention has persisted nonetheless. Classes defined this way are referred to as &amp;ldquo;new-style&amp;rdquo; classes.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When defining a class that inherits from another, it is important to remember that overridden methods (in particular, this behaviour is important when dealing with __init__ methods) do not implicitly call the parent method. What this means is that unless you want to deliberately prevent the behaviour of the parent class (this is a very niche use-case), it is important to include a reference to the parent method. An example of this is: super().__init__()
+This functionality is advantageous as it prevents unnecessary duplication of code, which is a key tenet of object-oriented software.&lt;/p>
+&lt;/li>
+&lt;/ul></description></item><item><title>Docs: The Gridded class</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/intro_gridded_class/</guid><description>
 &lt;p>This script is designed to be a brief introduction to the Gridded class including:&lt;/p>
 &lt;pre>&lt;code>1. Creation of a Gridded object
 2. Loading data into the Gridded object.
@@ -78,68 +139,7 @@ and read/load your NEMO-ERSEM data into a gridded object, example:&lt;/p>
 &lt;p class="card-text">
 &lt;/p>
 &lt;/div>
-&lt;/div></description></item><item><title>Docs: Python: Style</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_style/</guid><description>
-&lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
-&lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
-&lt;h1 id="code-styling-conventions">Code Styling Conventions&lt;/h1>
-&lt;p>Let&amp;rsquo;s keep things simple to start with&amp;hellip;&lt;/p>
-&lt;ul>
-&lt;li>
-&lt;p>Indentation should be achieved with spaces rather than tabs and each new level of indentation should be indented by four columns (i.e four spaces).&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Any single line, including its indentation characters, should not exceed 79 characters in length.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Top-level (i.e at the module/file level rather than inside a function or class) function and class definitions should be separated by two blank lines.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Method (functions within a class) definitions are separated by a single blank line.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Usually, &amp;ldquo;import&amp;rdquo; statements should be on separate lines, that is to say that you should have one line per distinct module or package import. An exception to this rule is when multiple objects are imported from a single module or package, using a &amp;ldquo;from&amp;rdquo; statement, in which case individual objects can be imported on the same line, separated by commas.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>PEP 8 does not make a recommendation relating to the use of double or single quotes in general use, but for the sake of consistency, this document suggests the use of double quotes wherever practical. This recommendation is intended for the sake of consistency with triple-quoted strings, as per Docstring Conventions (PEP 257).&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Operators should be separated by single columns (i.e one space) either side, unless inside parentheses, in which case no whitespace is required.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Comments (beginning with the # character) should be indented as if they were code. In the case of inline comments, separate the comment with two spaces following the code it shares the line with.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>All functions should contain a docstring, which provides basic information on its usage. For this project, the &lt;a href="https://www.python.org/dev/peps/pep-0287/">reStructuredText docstring format&lt;/a> is suggested.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>When it comes to naming variables and functions, snake case (lower_case_words_separated_by_underscores) is preferred. There are however a few exceptions to this rule:
-Class names should be styled as camel case (EveryNewWordIsCapitalised).
-Constants (Variables that should not be changed) can be indicated by the use of screaming snake case (UPPER_CASE_WORDS_SEPARATED_BY_UNDERSCORES). Note that this library currently targets Python 3.7, so the use of &lt;a href="https://www.python.org/dev/peps/pep-0591/">typing.Final&lt;/a> official support for constant variables, new as of Python 3.8: is not currently supported.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>In general, it is suggested to avoid the use of single-character variable names, but this is acceptable in certain cases, such as when defining coordinates (such as x, y and z), as these will be commonly recognized and enforcing different rules could cause confusion.
-PEP 8 advises the following regarding names to avoid:
-&amp;ldquo;Never use the characters &amp;lsquo;l&amp;rsquo; (lowercase letter el), &amp;lsquo;O&amp;rsquo; (uppercase letter oh), or &amp;lsquo;I&amp;rsquo; (uppercase letter eye) as single character variable names.&amp;rdquo;
-These specific characters should be avoided because they present an accessibility issue, as under many fonts these characters may be difficult to distinguish or completely indistinguishable from numerals one (1) and zero (0).&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>In the interest of readability, where named iterator variables are required, this document suggests the use of double characters (e.g. &amp;ldquo;ii&amp;rdquo; rather than &amp;ldquo;i&amp;rdquo;).&lt;/p>
-&lt;/li>
-&lt;/ul>
-&lt;h1 id="object-oriented-programming">Object-Oriented Programming&lt;/h1>
-&lt;p>The general principles of OOP are fairly straightforward and well documented, so I won&amp;rsquo;t waste your precious time by regurgitating that particular wall of text here. Instead, I&amp;rsquo;ll focus on some general pointers specific to this language and use case.&lt;/p>
-&lt;ul>
-&lt;li>
-&lt;p>In Python, all class attributes are technically public, but semantically, attributes can be designated as non-public by including leading underscores in the name. For instance, &amp;ldquo;my_variable&amp;rdquo; becomes &amp;ldquo;_my_variable&amp;rdquo;. These attributes are generally referred to as &amp;ldquo;protected&amp;rdquo;.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>When you define a Python class, it is a best practice to inherit from the base object type. This convention stems from Python 2.X, as classes and types were not originally synonymous. This behaviour is implicit in Python 3.X but the convention has persisted nonetheless. Classes defined this way are referred to as &amp;ldquo;new-style&amp;rdquo; classes.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>When defining a class that inherits from another, it is important to remember that overridden methods (in particular, this behaviour is important when dealing with __init__ methods) do not implicitly call the parent method. What this means is that unless you want to deliberately prevent the behaviour of the parent class (this is a very niche use-case), it is important to include a reference to the parent method. An example of this is: super().__init__()
-This functionality is advantageous as it prevents unnecessary duplication of code, which is a key tenet of object-oriented software.&lt;/p>
-&lt;/li>
-&lt;/ul></description></item><item><title>Docs: Python: Structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</guid><description>
+&lt;/div></description></item><item><title>Docs: Python: Structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/python_structure/</guid><description>
 &lt;p>** Notes on Object Structure and Loading (for contributors):&lt;/p>
 &lt;p>COAsT is an object-orientated package, meaning that data is stored within Python object
 structures. In addition to data storage, these objects contain methods (subroutines)
@@ -272,7 +272,462 @@ of the observed or derived quantities above. So to take a look at the
 &lt;/code>&lt;/pre>&lt;p>As stats and crps are also Altimetry objects, quick_plot() can also be used:&lt;/p>
 &lt;pre>&lt;code>fig, ax = crps.quick_plot(&amp;quot;crps&amp;quot;)
 fig, ax = stats.quick_plot(&amp;quot;absolute_error&amp;quot;)
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Github Actions Flowchart</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_actions_flowchart/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_actions_flowchart/</guid><description>
+&lt;h1 id="github-actions-diagram">GitHub actions diagram&lt;/h1>
+&lt;p>This is a collection of flowcharts for all the GitHub actions used across the COAsT and COAsT-site repos&lt;/p>
+&lt;h2 id="coast">COAsT&lt;/h2>
+&lt;h3 id="building-packages">building Packages&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR;
+subgraph publish_package - runs on push to master
+A1[Setup python]-- 3.8 -->B1;
+B1[Install dependencies]-->C1;
+C1[Setup Enviroment]-->D1;
+D1[Build package]-->E1;
+E1[Test Package Install]-->F1
+F1[Publish to pypi]-->G1
+G1[Generate Conda Metadata]-->H1
+H1[Publish to Anaconda]
+end;
+subgraph build_package - runs on push to non-master
+A[Setup python]-- 3.8 and 3.9 -->B;
+B[Install dependencies]-->C;
+C[Setup Enviroment]-->D;
+D[Build package]-->E;
+E[Test Package Install]-->F
+F[Generate Conda Metadata]
+end;
+&lt;/div>
+&lt;h3 id="verification-and-formatting">Verification and Formatting&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph formatting - runs on pull requests
+A[Setup python]-- 3.9 -->B;
+B[Install black]-->C;
+C[Check formatting]--> D;
+D[Apply formatting]
+end;
+subgraph verifiy_package - runs for every push
+A1[Setup python]-- 3.8 and 3.9 -->B1;
+B1[Install dependencies]-->C1;
+C1[Lint]-->D1;
+D1[Test]
+end;
+click B1 "https://www.github.com" "tooltip"
+&lt;/div>
+&lt;h3 id="interactions-with-other-repos">interactions with other repos&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b1[push_notebooks - runs on push to master]
+direction LR
+subgraph b2[COAsT site - markdown ]
+direction TB
+a[checkout docsy site] -->b
+b[checkout coast] -->c
+c[add python] -->d
+d[covert notebooks] -->e
+e[commit changes]
+end
+t[Repository Dispatch] -- event pushed --> b2
+end
+click a "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b3[push_docstrings - runs on push to master]
+direction LR
+subgraph b4[COAsT site - docstrings ]
+direction TB
+a1[checkout docsy site] -->b1
+b1[checkout coast] -->c1
+c1[add python] -->d1
+d1[covert docstrings] -->e1
+e1[commit changes]
+end
+r[Repository Dispatch] -- event pushed --> b4
+end
+click a1 "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;h3 id="generate-unit-test-contents-file">Generate unit test contents file&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph generate-test-contents - runs on pull_request
+A[checkout COAsT]-->B;
+B[install package]-->C;
+C[make example files dir]--> D;
+D[run generate_unit_test_contents.py]-->E
+E[commit changes]
+end;
+&lt;/div>
+&lt;h2 id="coast-site">COAsT-site&lt;/h2>
+&lt;p>These are the actions used on the COAsT-site repo.&lt;/p>
+&lt;h3 id="convert-to-markdown">Convert to markdown&lt;/h3>
+&lt;p>See &lt;a href="#interactions-with-other-repos">Interactions with other repos&lt;/a> for the related markdown and docstring workflows&lt;/p>
+&lt;h3 id="build-site">Build site&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph hugo - runs on push to master
+A[checkout site]-->B;
+B[Setup Hugo] -- v0.70.0 -->C;
+C[Setup Nodejs]-- v12 --> D;
+D[Build]-->E
+E[Deploy]
+end;
+&lt;/div></description></item><item><title>Docs: Github Workflow</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/github_workflow/</guid><description>
 &lt;p>For COAsT development we use a Github workflow to manage version control and collaboration. Git allows use to keep track of changes made to the COAsT code base, avoid breaking existing code and work as a group on a single package. Any contributor needs to use this workflow to add their code. Below is some guidance on using git with COAsT, including a typical workflow and cheat sheet.&lt;/p>
 &lt;p>For more information on git, see:&lt;/p>
 &lt;p>Github (&lt;a href="https://github.com/">https://github.com/&lt;/a>)&lt;/p>
@@ -6399,164 +6854,5 @@ Instantiate OpendapInfo with a session authenticated against CAS.&lt;br />
 &lt;br />
 &lt;b>Returns:&lt;/b>&lt;br />
                 The instantiated OPeNDAP accessor.&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Plot_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</link><pubDate>Wed, 29 Jun 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</guid><description>
-&lt;h3 id="objects">Objects&lt;/h3>
-&lt;p>&lt;a href="#r2_lin">r2_lin()&lt;/a>&lt;br />
-&lt;a href="#scatter_with_fit">scatter_with_fit()&lt;/a>&lt;br />
-&lt;a href="#create_geo_subplots">create_geo_subplots()&lt;/a>&lt;br />
-&lt;a href="#create_geo_axes">create_geo_axes()&lt;/a>&lt;br />
-&lt;a href="#ts_diagram">ts_diagram()&lt;/a>&lt;br />
-&lt;a href="#geo_scatter">geo_scatter()&lt;/a>&lt;br />
-&lt;a href="#determine_colorbar_extension">determine_colorbar_extension()&lt;/a>&lt;br />
-&lt;a href="#determine_clim_by_standard_deviation">determine_clim_by_standard_deviation()&lt;/a>&lt;br />&lt;/p>
-&lt;p>Python definitions used to help with plotting routines.&lt;/p>
-&lt;p>&lt;em>Methods Overview&lt;/em>
--&amp;gt; geo_scatter(): Geographical scatter plot.&lt;/p>
-&lt;h4 id="r2_lin">r2_lin()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">r2_lin&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fit&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-For calculating r-squared of a linear fit. Fit should be a python polyfit object.&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="scatter_with_fit">scatter_with_fit()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">scatter_with_fit&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">y&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">s&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">c&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">k&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">yex&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dofit&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">True&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-Does a scatter plot with a linear fit. Will also draw y=x for&lt;br />
-comparison.&lt;br />
-&lt;br />
-Parameters&lt;br />
-&amp;mdash;&amp;mdash;&amp;mdash;-&lt;br />
-x                : (array) Values for the x-axis&lt;br />
-y                : (array) Values for the y-axis&lt;br />
-s                : (float or array) Marker size(s)&lt;br />
-c                : (float or array) Marker colour(s)&lt;br />
-yex : (bool) True to plot y=x&lt;br />
-dofit : (bool) True to calculate and plot linear fit&lt;br />
-&lt;br />
-Returns&lt;br />
-&amp;mdash;&amp;mdash;-&lt;br />
-Figure and axis objects for further customisation&lt;br />
-&lt;br />
-Example Useage&lt;br />
-&amp;mdash;&amp;mdash;-&lt;br />
-x = np.arange(0,50)&lt;br />
-y = np.arange(0,50)/1.5&lt;br />
-f,a = scatter_with_fit(x,y)&lt;br />
-a.set_title(&amp;lsquo;Example scatter with fit&amp;rsquo;)&lt;br />
-a.set_xlabel(&amp;lsquo;Example x axis&amp;rsquo;)&lt;br />
-a.set_ylabel(&amp;lsquo;Example y axis&amp;rsquo;)&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="create_geo_subplots">create_geo_subplots()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">create_geo_subplots&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">lonbounds&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">latbounds&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">n_r&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">n_c&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">figsize&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">unknown&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-A routine for creating an axis for any geographical plot. Within the&lt;br />
-specified longitude and latitude bounds, a map will be drawn up using&lt;br />
-cartopy. Any type of matplotlib plot can then be added to this figure.&lt;br />
-&lt;b> For example:&lt;/b>&lt;br />
-Example Useage&lt;br />
-#############&lt;br />
-                f,a = create_geo_axes(lonbounds, latbounds)&lt;br />
-                sca = a.scatter(stats.longitude, stats.latitude, c=stats.corr,&lt;br />
-                                                                                vmin=.75, vmax=1,&lt;br />
-                                                                                edgecolors='k&amp;rsquo;, linewidths=.5, zorder=100)&lt;br />
-                f.colorbar(sca)&lt;br />
-                a.set_title(&amp;lsquo;SSH correlations &lt;br />
-Monthly PSMSL tide gauge vs CO9_AMM15p0&amp;rsquo;,&lt;br />
-                                                                fontsize=9)&lt;br />&lt;/p>
-&lt;ul>
-&lt;li>Note: For scatter plots, it is useful to set zorder = 100 (or similar&lt;br />
-                                positive number)&lt;br />
-&lt;br />
-&lt;br />&lt;/li>
-&lt;/ul>
-&lt;/blockquote>
-&lt;h4 id="create_geo_axes">create_geo_axes()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">create_geo_axes&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">lonbounds&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">latbounds&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-A routine for creating an axis for any geographical plot. Within the&lt;br />
-specified longitude and latitude bounds, a map will be drawn up using&lt;br />
-cartopy. Any type of matplotlib plot can then be added to this figure.&lt;br />
-&lt;b> For example:&lt;/b>&lt;br />
-&lt;br />
-Example Useage&lt;br />
-#############&lt;br />
-&lt;br />
-                f,a = create_geo_axes(lonbounds, latbounds)&lt;br />
-                sca = a.scatter(stats.longitude, stats.latitude, c=stats.corr,&lt;br />
-                                                                                vmin=.75, vmax=1,&lt;br />
-                                                                                edgecolors='k&amp;rsquo;, linewidths=.5, zorder=100)&lt;br />
-                f.colorbar(sca)&lt;br />
-                a.set_title(&amp;lsquo;SSH correlations &lt;br />
-Monthly PSMSL tide gauge vs CO9_AMM15p0&amp;rsquo;,&lt;br />
-                                                                fontsize=9)&lt;br />
-&lt;br />&lt;/p>
-&lt;ul>
-&lt;li>Note: For scatter plots, it is useful to set zorder = 100 (or similar&lt;br />
-                                positive number)&lt;br />
-&lt;br />
-&lt;br />&lt;/li>
-&lt;/ul>
-&lt;/blockquote>
-&lt;h4 id="ts_diagram">ts_diagram()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">ts_diagram&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">salinity&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">depth&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-None&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="geo_scatter">geo_scatter()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">geo_scatter&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">longitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">latitude&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">c&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">s&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">scatter_kwargs&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">coastline_kwargs&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">gridline_kwargs&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">figure_kwargs&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">unknown&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">title&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">figsize&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-Uses CartoPy to create a geographical scatter plot with land boundaries.&lt;br />
-&lt;br />
-                Parameters&lt;br />
-                &amp;mdash;&amp;mdash;&amp;mdash;-&lt;br />
-                longitude : (array) Array of longitudes of marker locations&lt;br />
-                latitude : (array) Array of latitudes of marker locations&lt;br />
-                colors                : (array) Array of values to use for colouring markers&lt;br />
-                title                : (str) Plot title, to appear at top of figure&lt;br />
-                xlim                : (tuple) Tuple of limits to apply to the x-axis (longitude axis)&lt;br />
-                ylim                : (tuple) Limits to apply to the y-axis (latitude axis)&lt;br />
-&lt;br />
-                Returns&lt;br />
-                &amp;mdash;&amp;mdash;-&lt;br />
-                Figure and axis objects for further customisation&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="determine_colorbar_extension">determine_colorbar_extension()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">determine_colorbar_extension&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">color_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">vmin&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">vmax&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-Can be used to automatically determine settings for colorbar&lt;br />
-extension arrows. Color_data is the data used for the colormap, vmin&lt;br />
-and vmax are the colorbar limits. Will output a string: &amp;ldquo;both&amp;rdquo;, &amp;ldquo;max&amp;rdquo;,&lt;br />
-&amp;ldquo;min&amp;rdquo; or &amp;ldquo;neither&amp;rdquo;, which can be inserted straight into a call to&lt;br />
-matplotlib.pyplot.colorbar().&lt;br />
-&lt;br />&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="determine_clim_by_standard_deviation">determine_clim_by_standard_deviation()&lt;/h4>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">determine_clim_by_standard_deviation&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">color_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">n_std_dev&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2.5&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
-&lt;p>&lt;br />
-Automatically determine color limits based on number of standard&lt;br />
-deviations from the mean of the color data (color_data). Useful if there&lt;br />
-are outliers in the data causing difficulties in distinguishing most of&lt;br />
-the data. Outputs vmin and vmax which can be passed to plotting routine&lt;br />
-or plt.clim().&lt;br />
 &lt;br />&lt;/p>
 &lt;/blockquote></description></item></channel></rss>
