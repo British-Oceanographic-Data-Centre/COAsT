@@ -138,7 +138,6 @@ class Tidegauge(Timeseries):
         if format != "v3" and format != "v5":
             raise NotImplementedError(f"Not written code for format {format}")
 
-
         debug(f'Reading "{fn_gesla}" as a GESLA file with {get_slug(self)}')
         # TODO Maybe include start/end dates
         dataset = None
