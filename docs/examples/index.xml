@@ -135,7 +135,7 @@ of the observed or derived quantities above. So to take a look at the
 &lt;/code>&lt;/pre>&lt;p>As stats and crps are also Altimetry objects, quick_plot() can also be used:&lt;/p>
 &lt;pre>&lt;code>fig, ax = crps.quick_plot(&amp;quot;crps&amp;quot;)
 fig, ax = stats.quick_plot(&amp;quot;absolute_error&amp;quot;)
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Notebooks</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/</guid><description/></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/climatology/</guid><description>
 &lt;p>This is a demonstration script for using the Climatology object in the COAsT
 package. This object has methods for analysing climatological data. Further examples can be found in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/blob/master/example_scripts/climatology_example.py">COAsT github&lt;/a> repository.&lt;/p>
 &lt;h1 id="climatological-means">Climatological means&lt;/h1>
@@ -677,7 +677,7 @@ cont_f.data_cross_flow.transport_across_AB_spg
 &lt;p class="card-text">
 &lt;/p>
 &lt;/div>
-&lt;/div></description></item><item><title>Docs: Empirical Orthogonal Functions</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</link><pubDate>Wed, 25 Nov 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</guid><description>
+&lt;/div></description></item><item><title>Docs: Remote Datasets</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/remote-datasets/</link><pubDate>Tue, 15 Sep 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/remote-datasets/</guid><description/></item><item><title>Docs: Empirical Orthogonal Functions</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</link><pubDate>Wed, 25 Nov 2020 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/eofs/</guid><description>
 &lt;p>Using COAsT to compute the Empirical Orthogonal Functions (EOFs) of your data.&lt;/p>
 &lt;h2 id="load-data-and-compute-eofs">Load data and compute EOFs&lt;/h2>
 &lt;p>Load packages and define some file paths&lt;/p>
