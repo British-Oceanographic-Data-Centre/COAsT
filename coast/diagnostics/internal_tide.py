@@ -228,7 +228,38 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             },
             dims=["y_dim", "x_dim"],
         )
-
+    def calc_pea(self,gridded_t: xr.Dataset,Zd_mask, CT_AS=True):
+        # Calculates Potential Engergy Anomaly
+        
+         g=9.81
+         #Z=gridded_t.dataset.variables['depth_0'].values
+         #DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask
+         _, depth_0_4d = xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.depth_0)
+         _, e3_0_4d =    xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.e3_0.squeeze())
+         DP=e3_0_4d.sum(dim="z_dim", skipna=True) #water depth or Zmax , 
+         DP=xr.broadcast()
+#         nt=gridded_t.dataset.dims['t_dim']
+        
+         if not 'density' in list(gridded_t.dataset.keys()):     
+                gridded_t.construct_density(CT_AS=True,pot_dens=True)
+         if not 'density_bar' in list(gridded_t.dataset.keys()):
+                gridded_t.construct_density(CT_AS=True,rhobar=True,Zd_mask=Zd_mask,pot_dens=True)
+         rho=gridded_t.dataset.variables['density'].values #density 
+         rho[np.isnan(rho)]=0
+         rhobar=gridded_t.dataset.variables['density_bar'].values #density with depth-mean T and S
+        
+#         z_axis=0
+#         if len(gridded_t.dataset['density'].shape) == 4:   # includes time as first axis
+#          Z=np.repeat(Z[np.newaxis,:,:,:],nt,axis=0)
+#          DZ=np.repeat(DZ[np.newaxis,:,:,:],nt,axis=0)
+#          DP=np.repeat(DP[np.newaxis,:,:],nt,axis=0)          
+#          z_axis=1
+         
+         PEA=(depth_0_4d*(rho-rhobar)*e3_0_4d).sum(dim="z_dim", skipna=True)*g/DP
+        
+         return PEA
+ 
+    
     def quick_plot(self, var: xr.DataArray = None):
         """
 
