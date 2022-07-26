@@ -229,15 +229,29 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             dims=["y_dim", "x_dim"],
         )
     def calc_pea(self,gridded_t: xr.Dataset,Zd_mask, CT_AS=True):
-        # Calculates Potential Engergy Anomaly
-        
+         """
+            Calculates Potential Engergy Anomaly
+            Example Usage
+            -------------
+            # load some example data
+            dn_files = "~/work/coast_demo/COAsT_example_files/"
+            dn_fig = 'unit_testing/figures/'
+            fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
+            fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
+            gridded_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat,
+                         dn_files + fn_nemo_dom, grid_ref='t-grid', config='config/example_nemo_grid_t.json')
+            Zd_mask,kmax,Ikmax=gridded_t.calculate_vertical_mask(200.)
+            IT=coast.InternalTide(gridded_t,gridded_t)
+            IT.calc_pea(gridded_t,Zd_mask)
+         """        
+#%%
          g=9.81
          #Z=gridded_t.dataset.variables['depth_0'].values
          #DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask
-         _, depth_0_4d = xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.depth_0)
-         _, e3_0_4d =    xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.e3_0.squeeze())
-         DP=e3_0_4d.sum(dim="z_dim", skipna=True) #water depth or Zmax , 
-         DP=xr.broadcast()
+         _, z_4d = xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.depth_0)
+         _, dz_4d =    xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.e3_0.squeeze() *Zd_mask)
+         H=dz_4d.sum(dim="z_dim", skipna=True) #water depth or Zmax , 
+#         H=xr.broadcast(gridded_t.dataset.salinity,H)[0]
 #         nt=gridded_t.dataset.dims['t_dim']
         
          if not 'density' in list(gridded_t.dataset.keys()):     
@@ -246,7 +260,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
                 gridded_t.construct_density(CT_AS=True,rhobar=True,Zd_mask=Zd_mask,pot_dens=True)
          rho=gridded_t.dataset.variables['density'].values #density 
          rho[np.isnan(rho)]=0
-         rhobar=gridded_t.dataset.variables['density_bar'].values #density with depth-mean T and S
+         rhobar=gridded_t.dataset.variables['density_bar'] #density with depth-mean T and S
         
 #         z_axis=0
 #         if len(gridded_t.dataset['density'].shape) == 4:   # includes time as first axis
@@ -255,10 +269,18 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 #          DP=np.repeat(DP[np.newaxis,:,:],nt,axis=0)          
 #          z_axis=1
          
-         PEA=(depth_0_4d*(rho-rhobar)*e3_0_4d).sum(dim="z_dim", skipna=True)*g/DP
-        
-         return PEA
- 
+         PEA=(z_4d*(rho-rhobar)*dz_4d).sum(dim="z_dim", skipna=True)*g/H
+#%%
+#         return PEA
+         coords = {
+             "time": ("t_dim", gridded_t.dataset.time.values),
+             "latitude": (("y_dim", "x_dim"), gridded_t.dataset.latitude.values),
+             "longitude": (("y_dim", "x_dim"), gridded_t.dataset.longitude.values),
+         }
+         dims = ["t_dim", "y_dim", "x_dim"]
+         attributes = {"units": "J / m^3", "standard name": "Potential Energy Anomaly"}
+         self.dataset['PEA'] = xr.DataArray(PEA, coords=coords, dims=dims, attrs=attributes)
+
     
     def quick_plot(self, var: xr.DataArray = None):
         """
