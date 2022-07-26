@@ -24,7 +24,7 @@ from ._utils.xesmf_convert import xesmf_convert
 from ._utils.process_data import Process_data
 from .data.opendap import OpendapInfo
 from .data.copernicus import Copernicus, Product
-
+from .diagnostics.nemo_filenames import nemo_filenames
 # Set default for logging level when coast is imported
 import logging
 
