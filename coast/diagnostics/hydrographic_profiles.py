@@ -54,7 +54,8 @@ class Hydrographic_Profiles(Indexed):
      self.profile=Profile()
      dataset=xr.load_dataset(filename_profile)
      self.profile.insert_dataset(dataset)
-     
+     dataset=xr.load_dataset(filename_gridded)
+     self.gridded.dataset=dataset
      
      
 
