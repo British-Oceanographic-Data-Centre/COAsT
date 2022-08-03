@@ -270,11 +270,36 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
         debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
+
         dist2 = np.square(self.dataset.latitude - lat) + np.square(self.dataset.longitude - lon)
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray):
+
+    def find_j_i_list(self, *, lat: float, lon: float,n_nn=1):
+        """
+        A routine to find the nearest y x coordinates for a list of latitude and longitude values
+        Usage: [y,x] = find_j_i(lat=[49,50,51], lon=[-12,-11,10])
+
+        :param lat: latitude
+        :param lon: longitude
+        :optional n_nn=1 number of nearest neighbours
+        :return: the j, i coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w. and a distance measure
+        """
+        grid_lon=self.dataset.longitude.values
+        grid_lat=self.dataset.latitude.values
+        #efficient nearest neighbour search    
+        import scipy.spatial as sp   
+        XY=np.dstack([grid_lat.ravel(),grid_lon.ravel()])[0]
+        XYp=np.dstack([lat,lon])[0]   
+        mytree=sp.cKDTree(XY)
+        dist,indx=mytree.query(XYp,n_nn)
+        I=np.nonzero(np.isnan(lon))
+        indx[I]=0
+        i,j=np.unravel_index(indx,grid_lon.shape)
+        return [i,j,dist]
+
+    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray, KDTree=False):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
         Usage: [y,x] = find_j_i_domain(lat=49, lon=-12, dataset_domain=dataset_domain)

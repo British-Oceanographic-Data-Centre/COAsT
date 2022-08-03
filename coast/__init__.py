@@ -26,6 +26,7 @@ from ._utils.process_data import Process_data
 from .data.opendap import OpendapInfo
 from .data.copernicus import Copernicus, Product
 from .diagnostics.nemo_filenames import nemo_filenames
+from .diagnostics.hydrographic_profiles import Hydrographic_Profiles
 # Set default for logging level when coast is imported
 import logging
 
