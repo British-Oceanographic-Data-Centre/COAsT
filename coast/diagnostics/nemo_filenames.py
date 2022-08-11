@@ -1,4 +1,4 @@
-def nemo_filenames(dpath,runtype,ystart,ystop):
+def nemo_filenames(dpath,runtype,ystart,ystop,grid='T'):
 #from ..data.gridded import Gridded
 #class nemo_filenames(Gridded):
 #    def __init_(self,dpath,runtype,ystart,ystop):
@@ -22,7 +22,7 @@ def nemo_filenames(dpath,runtype,ystart,ystop):
                 if im<10:
                      MNTH='0'+ MNTH
                 YEAR=str(iy)
-                new_name="{0}/SENEMO_1m_{1}0101_{1}1231_grid_T_{1}{2}-{1}{2}.nc".format(dpath,YEAR,MNTH)
+                new_name="{0}/SENEMO_1m_{1}0101_{1}1231_grid_{3}_{1}{2}-{1}{2}.nc".format(dpath,YEAR,MNTH,grid)
                 names.append(new_name)
                 
         else:

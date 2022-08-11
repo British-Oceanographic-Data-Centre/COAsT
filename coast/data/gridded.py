@@ -92,6 +92,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.set_timezero_depths(
                 dataset_domain
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
+
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
 
@@ -120,6 +121,16 @@ class Gridded(Coast):  # TODO Complete this docstring
                     f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
+#       #Rename variables #jth need to do here to allow for various bathymetry variable names
+#         This causes problems with dataset.reset_coords() - ??
+#        for key, value in self.config.domain.variable_map.items():
+#                  try:
+#                      dataset_domain = dataset_domain.rename_vars({key: value})
+#                  except ValueError as err:
+#                      warning(
+#                          f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}."
+#                          f"{chr(10)}Error message of '{err}'"
+#                      )         
 
         return dataset_domain
 
@@ -135,6 +146,8 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # Reset & set specified coordinates
         self.dataset = self.dataset.reset_coords()
+
+
         for var in self.config.dataset.coord_var:
             try:
                 self.dataset = self.dataset.set_coords(var)
@@ -142,6 +155,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 warning(f"Issue with settings coordinates using value {var}.{chr(10)}Error message of {err}")
 
         # Delete specified variables
+
         for var in self.config.code_processing.delete_variables:
             try:
                 self.dataset = self.dataset.drop(var)
@@ -175,26 +189,38 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
 
         try:
+          calc_bathy=dataset_domain['calc_bathy']
+
+        except:
+          calc_bathy=False
+
+
+        print(calc_bathy)
+        try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
-        except:    
+        except :    
             try:
-                bathymetry = dataset_domain.bathymetry.squeeze() # jth add a second option here better done iwth config file??
-            except AttributeError as err:
-                bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
-                (
-                    warnings.warn(
-                        f"The model domain loaded, '{self.filename_domain}', does not contain the "
-                        "bathy_metry' variable. This will result in the "
-                        "NEMO.dataset.bathymetry variable being set to zero, which "
-                        "may result in unexpected behaviour from routines that require "
-                        "this variable."
+                bathymetry = dataset_domain.hbatt.squeeze() # jth add a second option here better done iwth config file??
+            except :
+                try:
+                    bathymetry = dataset_domain.bathymetry.squeeze() # jth add a second option here better done iwth config file??
+    
+                except AttributeError as err:
+                    bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+                    (
+                        warnings.warn(
+                            f"The model domain loaded, '{self.filename_domain}', does not contain the "
+                            "bathy_metry' variable. This will result in the "
+                            "NEMO.dataset.bathymetry variable being set to zero, which "
+                            "may result in unexpected behaviour from routines that require "
+                            "this variable."
+                        )
                     )
-                )
-                debug(
-                    f"The bathy_metry variable was missing from the domain_cfg for "
-                    f"{get_slug(self)} with {get_slug(dataset_domain)}"
-                    f"{chr(10)}Error message of {err}"
-                    )
+                    debug(
+                        f"The bathy_metry variable was missing from the domain_cfg for "
+                        f"{get_slug(self)} with {get_slug(dataset_domain)}"
+                        f"{chr(10)}Error message of {err}"
+                        )
        
         try:
             if self.grid_ref == "t-grid":
@@ -202,6 +228,10 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
+
+                if calc_bathy:
+                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain,bathymetry)
+
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
@@ -227,9 +257,12 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
-                bathymetry[:-1, :-1] = 0.25 * (
-                    bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
-                )
+                if calc_bathy:
+                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain)
+                else:     
+                    bathymetry[:-1, :-1] = 0.25 * (
+                        bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
+                    )
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
@@ -247,7 +280,30 @@ class Gridded(Coast):  # TODO Complete this docstring
             }
         except ValueError as err:
             error(err)
+    
+    def calc_bathymetry(self, dataset_domain,bathymetry):
+        #NEMO approach to definfing bathymetry
 
+           
+        e3t= dataset_domain.e3t_0.squeeze()
+        tmask=xr.zeros_like(e3t)
+        bottom_level=dataset_domain.bottom_level.values.squeeze()
+        top_level=dataset_domain.top_level.values.squeeze()
+
+        for k in range(1,e3t.shape[0]+1):
+            tmask[k-1,:,:]= np.logical_and( k <= bottom_level, k >=top_level)
+
+        if self.grid_ref == "t-grid":
+            bathymetry[:,:]=np.sum(e3t.values * tmask.values,axis=0)
+
+        elif self.grid_ref == "f-grid":
+            e3f=np.squeeze(dataset_domain.e3f_0.values)
+            mask=xr.zeros_like(e3f)
+            mask[:-1, :-1] = tmask[:-1, :-1] * tmask[:-1, 1:] + tmask[1:, :-1] + tmask[1:, 1:]            
+            bathymetry[:-1, :-1]=np.sum(e3f* mask,axis=0)
+        return bathymetry    #probably usefulto keep the mask as well
+              
+    
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
         """

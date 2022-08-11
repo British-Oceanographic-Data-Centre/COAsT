@@ -50,7 +50,8 @@
 			"depthu_0": "depth_0",
 			"bottom_level": "bottom_level",
 			"umask": "mask",
-			"bathymetry": "bathy_metry"
+			"bathymetry": "bathy_metry",
+                        "hbatt":"bathy_metry"
 		}
 	},
 	"static_variables": {
