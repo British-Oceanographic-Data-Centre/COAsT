@@ -292,12 +292,24 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         if self.grid_ref == "t-grid":
             bathymetry[:,:]=np.sum(e3t.values * tmask.values,axis=0)
-
+            # bathymetry=(e3t*tmask).sum(dim="nav_lev")
+            
+        elif self.grid_ref == "u-grid":               
+            e3u=dataset_domain.e3u_0.squeeze()
+            mask=xr.zeros_like(e3u)
+            mask[:,:, :-1] = tmask[:,:, :-1] * tmask[:,:, 1:]            
+            bathymetry[:,:]=np.sum(e3u.values* mask.values,axis=0)
+        elif self.grid_ref == "v-grid":               
+            e3v=dataset_domain.e3v_0.squeeze()
+            mask=xr.zeros_like(e3v)
+            mask[:,:-1, :] = tmask[:,:-1, :] * tmask[:,1:, :]            
+            bathymetry[:,:]=np.sum(e3v.values* mask.values,axis=0)            
         elif self.grid_ref == "f-grid":
             e3f=dataset_domain.e3f_0.squeeze()
             mask=xr.zeros_like(e3f)
-            mask[:-1, :-1] = tmask[:-1, :-1] * tmask[:-1, 1:] + tmask[1:, :-1] + tmask[1:, 1:]            
+            mask[:,:-1, :-1] = tmask[:,:-1, :-1] * tmask[:,:-1, 1:] * tmask[:,1:, :-1] * tmask[:,1:, 1:]            
             bathymetry[:,:]=np.sum(e3f.values* mask.values,axis=0)
+            #bathymetry=(e3t*mask).sum(dim="nav_lev")
 #%%
         return bathymetry    #probably usefulto keep the mask as well
             
