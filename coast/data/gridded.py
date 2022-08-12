@@ -190,12 +190,9 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         try:
           calc_bathy=dataset_domain['calc_bathy']
-
         except:
           calc_bathy=False
 
-
-        print(calc_bathy)
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
         except :    
@@ -258,7 +255,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
                 if calc_bathy:
-                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain)
+                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain,bathymetry)
                 else:     
                     bathymetry[:-1, :-1] = 0.25 * (
                         bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
@@ -282,9 +279,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             error(err)
     
     def calc_bathymetry(self, dataset_domain,bathymetry):
-        #NEMO approach to definfing bathymetry
+        #NEMO approach to defining bathymetry
 
-           
+#%%           
         e3t= dataset_domain.e3t_0.squeeze()
         tmask=xr.zeros_like(e3t)
         bottom_level=dataset_domain.bottom_level.values.squeeze()
@@ -297,12 +294,13 @@ class Gridded(Coast):  # TODO Complete this docstring
             bathymetry[:,:]=np.sum(e3t.values * tmask.values,axis=0)
 
         elif self.grid_ref == "f-grid":
-            e3f=np.squeeze(dataset_domain.e3f_0.values)
+            e3f=dataset_domain.e3f_0.squeeze()
             mask=xr.zeros_like(e3f)
             mask[:-1, :-1] = tmask[:-1, :-1] * tmask[:-1, 1:] + tmask[1:, :-1] + tmask[1:, 1:]            
-            bathymetry[:-1, :-1]=np.sum(e3f* mask,axis=0)
+            bathymetry[:,:]=np.sum(e3f.values* mask.values,axis=0)
+#%%
         return bathymetry    #probably usefulto keep the mask as well
-              
+            
     
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
