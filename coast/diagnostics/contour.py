@@ -290,7 +290,7 @@ class ContourF(Contour):
         self.data_cross_flow = xr.Dataset()
 
     def calc_cross_contour_flow(self, gridded_u: Coast, gridded_v: Coast):
-    
+
         """Method that will calculate the flow across the contour and store this data
         within Contour_f.data_cross_flow, which is an xarray.Dataset. Specifically
         Contour_f.normal_velocities are the velocities across the contour
@@ -358,7 +358,7 @@ class ContourF(Contour):
 
         # Note that subsetting the dataset first instead of subsetting each array seperately,
         # as we do here, is neater but significantly slower.
-        
+
         # jth these appear to fail if any dr_ are empty, so added some try's
 
         tmp_velocities = xr.full_like(u_ds.u_velocity, np.nan)

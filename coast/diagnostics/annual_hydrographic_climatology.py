@@ -15,7 +15,7 @@ class Annual_Climatology(Gridded):
 
         # calculate a depth mask
         Zd_mask, kmax, Ikmax = gridded_t.calculate_vertical_mask(Zmax)
- 
+
         ny = gridded_t.dataset.dims["y_dim"]
         nx = gridded_t.dataset.dims["x_dim"]
 
@@ -28,7 +28,7 @@ class Annual_Climatology(Gridded):
 
         PEAy = np.zeros((12, ny, nx))
 
-        nyear = int(nt / 12) #hard wired for monthly data starting in Jan
+        nyear = int(nt / 12)  # hard wired for monthly data starting in Jan
         for iy in range(nyear):
             print("Calc PEA", iy)
             it = np.arange((iy) * 12, (iy) * 12 + 12).astype(int)

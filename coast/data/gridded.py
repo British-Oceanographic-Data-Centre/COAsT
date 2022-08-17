@@ -178,7 +178,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             calc_bathy = dataset_domain["calc_bathy"]
         except:
             calc_bathy = False
-        #jth NEMO bathymetry can be called bathymetr, bathy_metry or hbatt in varios versions
+        # jth NEMO bathymetry can be called bathymetr, bathy_metry or hbatt in varios versions
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
         except:
@@ -195,7 +195,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 except AttributeError as err:
                     bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
                     (
-                        #jth warnign needs to change
+                        # jth warnign needs to change
                         warnings.warn(
                             f"The model domain loaded, '{self.filename_domain}', does not contain the "
                             "bathy_metry' variable. This will result in the "
@@ -233,7 +233,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[1:, :, :-1] = depth_0[0, :, :-1] + np.cumsum(e3w_0_on_u[1:, :, :], axis=0)
                 if calc_bathy:
                     bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                else:    #jth only valid for pure sigma
+                else:  # jth only valid for pure sigma
                     bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
             elif self.grid_ref == "v-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
@@ -243,7 +243,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[1:, :-1, :] = depth_0[0, :-1, :] + np.cumsum(e3w_0_on_v[1:, :, :], axis=0)
                 if calc_bathy:
                     bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                else: #jth only valid for pure sigma
+                else:  # jth only valid for pure sigma
                     bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
             elif self.grid_ref == "f-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
@@ -281,11 +281,11 @@ class Gridded(Coast):  # TODO Complete this docstring
         grid locations.
         Works with z-coordinates on u- and v- faces where bathymerty is defiend
         at the top of the cliff, not at the bottom
-       
+
         """
-        #jth not set for lazy loading
-        #jth here modifies exisiting bathymetry variable, coudl creat one instead.
-        
+        # jth not set for lazy loading
+        # jth here modifies exisiting bathymetry variable, coudl creat one instead.
+
         e3t = dataset_domain.e3t_0.squeeze()
         tmask = xr.zeros_like(e3t)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
@@ -314,8 +314,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             mask[:, :-1, :-1] = tmask[:, :-1, :-1] * tmask[:, :-1, 1:] * tmask[:, 1:, :-1] * tmask[:, 1:, 1:]
             bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
 
-
-        return bathymetry  #jth probably useful to keep the mask as well
+        return bathymetry  # jth probably useful to keep the mask as well
 
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
@@ -1123,5 +1122,5 @@ class Gridded(Coast):  # TODO Complete this docstring
                         kmax[j, i] = kkmax
                         IIkmax[kkmax, j, i] = 1
         Ikmax = np.nonzero(IIkmax.ravel())
-    
+
         return Zd_mask, kmax, Ikmax
