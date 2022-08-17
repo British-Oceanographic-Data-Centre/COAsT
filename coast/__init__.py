@@ -28,6 +28,7 @@ from .data.copernicus import Copernicus, Product
 from .diagnostics.experiments import experiments
 from .diagnostics.experiments import nemo_filenames
 from .diagnostics.hydrographic_profiles import Hydrographic_Profiles
+
 # Set default for logging level when coast is imported
 import logging
 
