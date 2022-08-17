@@ -75,7 +75,7 @@ class test_diagnostic_methods(unittest.TestCase):
         nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Tbar=False)
         check3 = np.allclose(
             nemo_t.dataset.density_T.sel(x_dim=10, y_dim=10).mean(dim=["t_dim", "z_dim"]).item(), 1026.4989384403814
-        )     
+        )
         self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
         self.assertTrue(check3, msg="check3")

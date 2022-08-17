@@ -121,16 +121,16 @@ class Gridded(Coast):  # TODO Complete this docstring
                     f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
-#       #Rename variables #jth need to do here to allow for various bathymetry variable names
-#         This causes problems with dataset.reset_coords() - ??
-#        for key, value in self.config.domain.variable_map.items():
-#                  try:
-#                      dataset_domain = dataset_domain.rename_vars({key: value})
-#                  except ValueError as err:
-#                      warning(
-#                          f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}."
-#                          f"{chr(10)}Error message of '{err}'"
-#                      )         
+        #       #Rename variables #jth need to do here to allow for various bathymetry variable names
+        #         This causes problems with dataset.reset_coords() - ??
+        #        for key, value in self.config.domain.variable_map.items():
+        #                  try:
+        #                      dataset_domain = dataset_domain.rename_vars({key: value})
+        #                  except ValueError as err:
+        #                      warning(
+        #                          f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}."
+        #                          f"{chr(10)}Error message of '{err}'"
+        #                      )
 
         return dataset_domain
 
@@ -146,7 +146,6 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # Reset & set specified coordinates
         self.dataset = self.dataset.reset_coords()
-
 
         for var in self.config.dataset.coord_var:
             try:
@@ -189,19 +188,23 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
 
         try:
-          calc_bathy=dataset_domain['calc_bathy']
+            calc_bathy = dataset_domain["calc_bathy"]
         except:
-          calc_bathy=False
+            calc_bathy = False
 
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
-        except :    
+        except:
             try:
-                bathymetry = dataset_domain.hbatt.squeeze() # jth add a second option here better done iwth config file??
-            except :
+                bathymetry = (
+                    dataset_domain.hbatt.squeeze()
+                )  # jth add a second option here better done iwth config file??
+            except:
                 try:
-                    bathymetry = dataset_domain.bathymetry.squeeze() # jth add a second option here better done iwth config file??
-    
+                    bathymetry = (
+                        dataset_domain.bathymetry.squeeze()
+                    )  # jth add a second option here better done iwth config file??
+
                 except AttributeError as err:
                     bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
                     (
@@ -217,8 +220,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                         f"The bathy_metry variable was missing from the domain_cfg for "
                         f"{get_slug(self)} with {get_slug(dataset_domain)}"
                         f"{chr(10)}Error message of {err}"
-                        )
-       
+                    )
+
         try:
             if self.grid_ref == "t-grid":
                 e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
@@ -227,7 +230,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
 
                 if calc_bathy:
-                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain,bathymetry)
+                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
 
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
@@ -255,8 +258,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
                 if calc_bathy:
-                     bathymetry =   Gridded.calc_bathymetry(self, dataset_domain,bathymetry)
-                else:     
+                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
+                else:
                     bathymetry[:-1, :-1] = 0.25 * (
                         bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
                     )
@@ -277,43 +280,42 @@ class Gridded(Coast):  # TODO Complete this docstring
             }
         except ValueError as err:
             error(err)
-    
-    def calc_bathymetry(self, dataset_domain,bathymetry):
-        #NEMO approach to defining bathymetry
 
-#%%           
-        e3t= dataset_domain.e3t_0.squeeze()
-        tmask=xr.zeros_like(e3t)
-        bottom_level=dataset_domain.bottom_level.values.squeeze()
-        top_level=dataset_domain.top_level.values.squeeze()
+    def calc_bathymetry(self, dataset_domain, bathymetry):
+        # NEMO approach to defining bathymetry
 
-        for k in range(1,e3t.shape[0]+1):
-            tmask[k-1,:,:]= np.logical_and( k <= bottom_level, k >=top_level)
+        #%%
+        e3t = dataset_domain.e3t_0.squeeze()
+        tmask = xr.zeros_like(e3t)
+        bottom_level = dataset_domain.bottom_level.values.squeeze()
+        top_level = dataset_domain.top_level.values.squeeze()
+
+        for k in range(1, e3t.shape[0] + 1):
+            tmask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
 
         if self.grid_ref == "t-grid":
-            bathymetry[:,:]=np.sum(e3t.values * tmask.values,axis=0)
+            bathymetry[:, :] = np.sum(e3t.values * tmask.values, axis=0)
             # bathymetry=(e3t*tmask).sum(dim="nav_lev")
-            
-        elif self.grid_ref == "u-grid":               
-            e3u=dataset_domain.e3u_0.squeeze()
-            mask=xr.zeros_like(e3u)
-            mask[:,:, :-1] = tmask[:,:, :-1] * tmask[:,:, 1:]            
-            bathymetry[:,:]=np.sum(e3u.values* mask.values,axis=0)
-        elif self.grid_ref == "v-grid":               
-            e3v=dataset_domain.e3v_0.squeeze()
-            mask=xr.zeros_like(e3v)
-            mask[:,:-1, :] = tmask[:,:-1, :] * tmask[:,1:, :]            
-            bathymetry[:,:]=np.sum(e3v.values* mask.values,axis=0)            
+
+        elif self.grid_ref == "u-grid":
+            e3u = dataset_domain.e3u_0.squeeze()
+            mask = xr.zeros_like(e3u)
+            mask[:, :, :-1] = tmask[:, :, :-1] * tmask[:, :, 1:]
+            bathymetry[:, :] = np.sum(e3u.values * mask.values, axis=0)
+        elif self.grid_ref == "v-grid":
+            e3v = dataset_domain.e3v_0.squeeze()
+            mask = xr.zeros_like(e3v)
+            mask[:, :-1, :] = tmask[:, :-1, :] * tmask[:, 1:, :]
+            bathymetry[:, :] = np.sum(e3v.values * mask.values, axis=0)
         elif self.grid_ref == "f-grid":
-            e3f=dataset_domain.e3f_0.squeeze()
-            mask=xr.zeros_like(e3f)
-            mask[:,:-1, :-1] = tmask[:,:-1, :-1] * tmask[:,:-1, 1:] * tmask[:,1:, :-1] * tmask[:,1:, 1:]            
-            bathymetry[:,:]=np.sum(e3f.values* mask.values,axis=0)
-            #bathymetry=(e3t*mask).sum(dim="nav_lev")
-#%%
-        return bathymetry    #probably usefulto keep the mask as well
-            
-    
+            e3f = dataset_domain.e3f_0.squeeze()
+            mask = xr.zeros_like(e3f)
+            mask[:, :-1, :-1] = tmask[:, :-1, :-1] * tmask[:, :-1, 1:] * tmask[:, 1:, :-1] * tmask[:, 1:, 1:]
+            bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
+            # bathymetry=(e3t*mask).sum(dim="nav_lev")
+        #%%
+        return bathymetry  # probably usefulto keep the mask as well
+
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
         """
@@ -345,8 +347,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-
-    def find_j_i_list(self, *, lat: float, lon: float,n_nn=1):
+    def find_j_i_list(self, *, lat: float, lon: float, n_nn=1):
         """
         A routine to find the nearest y x coordinates for a list of latitude and longitude values
         Usage: [y,x] = find_j_i(lat=[49,50,51], lon=[-12,-11,10])
@@ -356,18 +357,19 @@ class Gridded(Coast):  # TODO Complete this docstring
         :optional n_nn=1 number of nearest neighbours
         :return: the j, i coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w. and a distance measure
         """
-        grid_lon=self.dataset.longitude.values
-        grid_lat=self.dataset.latitude.values
-        #efficient nearest neighbour search    
-        import scipy.spatial as sp   
-        XY=np.dstack([grid_lat.ravel(),grid_lon.ravel()])[0]
-        XYp=np.dstack([lat,lon])[0]   
-        mytree=sp.cKDTree(XY)
-        dist,indx=mytree.query(XYp,n_nn)
-        I=np.nonzero(np.isnan(lon))
-        indx[I]=0
-        i,j=np.unravel_index(indx,grid_lon.shape)
-        return [i,j,dist]
+        grid_lon = self.dataset.longitude.values
+        grid_lat = self.dataset.latitude.values
+        # efficient nearest neighbour search
+        import scipy.spatial as sp
+
+        XY = np.dstack([grid_lat.ravel(), grid_lon.ravel()])[0]
+        XYp = np.dstack([lat, lon])[0]
+        mytree = sp.cKDTree(XY)
+        dist, indx = mytree.query(XYp, n_nn)
+        I = np.nonzero(np.isnan(lon))
+        indx[I] = 0
+        i, j = np.unravel_index(indx, grid_lon.shape)
+        return [i, j, dist]
 
     def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray, KDTree=False):
         """
@@ -477,7 +479,9 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True):
+    def construct_density(
+        self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+    ):
 
         """
             Constructs the in-situ density using the salinity, temperture and
@@ -526,7 +530,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     + ": Density calculation can only be performed for a t-grid object,\
                                  the tracer grid for NEMO."
                 )
-            No_time = False            
+            No_time = False
             try:
                 shape_ds = (
                     self.dataset.t_dim.size,
@@ -550,24 +554,24 @@ class Gridded(Coast):  # TODO Complete this docstring
             # Absolute Pressure
             if pot_dens:
                 pressure_absolute = 0.0  # calculate potential density
-            else:    
+            else:
                 pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
             if not rhobar:  # calculate full depth
                 # Absolute Salinity
-                if not  CT_AS: # abs salinity not provided 
+                if not CT_AS:  # abs salinity not provided
                     sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
-                else: # abs salinity provided
+                else:  # abs salinity provided
                     sal_absolute = np.ma.masked_invalid(sal)
                 sal_absolute = np.ma.masked_less(sal_absolute, 0)
                 # Conservative Temperature
-                if not  CT_AS: # conservative temp not provided                    
+                if not CT_AS:  # conservative temp not provided
                     temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
-                else: # conservative temp provided
+                else:  # conservative temp provided
                     temp_conservative = np.ma.masked_invalid(temp)
                 # In-situ density
                 density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
-                new_var_name="density"    
-            else: #calculate with depth integrated T S
+                new_var_name = "density"
+            else:  # calculate with depth integrated T S
                 # prepare coordinate variables
                 if np.size(Zd_mask) == 0:
                     DZ = self.dataset.e3_0.to_masked_array()
@@ -639,7 +643,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             else:
                 density = np.squeeze(density)
             self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
-              
+
         except AttributeError as err:
             error(err)
 
@@ -1082,7 +1086,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         gridded_out = Gridded()
         gridded_out.dataset = dataset
         return gridded_out
-    
+
     def calculate_vertical_mask(self, Zmax):
 
         """
