@@ -9,39 +9,26 @@ class Annual_Climatology(Gridded):
     Calculates a mean annual cycle from multi-annual monthly data
     Because it calculates dervied properties (e.g PEA), data must be loaded.
     Currently hardwired to calculate SST, SSS and PEA, placing these in the Gridded Objected
-
     """
 
     def __init__(self, gridded_t, gridded_t_out, Zmax=200.0):
 
-        #%%
+        # calculate a depth mask
         Zd_mask, kmax, Ikmax = gridded_t.calculate_vertical_mask(Zmax)
-        # Calculate and save first time, otherwise read
-        # try:
-        # A=np.load(domain_outpath + '/' +DOMNAM + '_' + EXPNAM + '_Zd_mask.npz')
-        # Zd_mask=A['Zd_mask']
-        # kmax=A['kmax']
-        # Ikmax=A['Ikmax']
-        # print('read mask')
-        # except:
-        #   print('calculating mask')
-        #   Zd_mask,kmax,Ikmax=gridded_t.calculate_vertical_mask(Zmax)
-        #   np.savez(domain_outpath + '/' +DOMNAM + '_' + EXPNAM + '_Zd_mask.npz',Zd_mask=Zd_mask,kmax=kmax,Ikmax=Ikmax)
-        #%%
+ 
         ny = gridded_t.dataset.dims["y_dim"]
         nx = gridded_t.dataset.dims["x_dim"]
 
         nt = gridded_t.dataset.dims["t_dim"]
-        #%%
-        print(nx, ny)
+
         SSTy = np.zeros((12, ny, nx))
         SSSy = np.zeros((12, ny, nx))
         PEAy = np.zeros((12, ny, nx))
-        # NBTy=np.zeros((12,ny,nx))
+        # NBTy=np.zeros((12,ny,nx)) #will add near bed temperature later
 
-        #%%
         PEAy = np.zeros((12, ny, nx))
-        nyear = int(nt / 12)
+
+        nyear = int(nt / 12) #hard wired for monthly data starting in Jan
         for iy in range(nyear):
             print("Calc PEA", iy)
             it = np.arange((iy) * 12, (iy) * 12 + 12).astype(int)

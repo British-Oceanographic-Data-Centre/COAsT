@@ -92,7 +92,6 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.set_timezero_depths(
                 dataset_domain
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
-
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
 
@@ -121,16 +120,6 @@ class Gridded(Coast):  # TODO Complete this docstring
                     f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
-        #       #Rename variables #jth need to do here to allow for various bathymetry variable names
-        #         This causes problems with dataset.reset_coords() - ??
-        #        for key, value in self.config.domain.variable_map.items():
-        #                  try:
-        #                      dataset_domain = dataset_domain.rename_vars({key: value})
-        #                  except ValueError as err:
-        #                      warning(
-        #                          f"{get_slug(self)}: Problem renaming variables from {get_slug(self.dataset)}: {key} -> {value}."
-        #                          f"{chr(10)}Error message of '{err}'"
-        #                      )
 
         return dataset_domain
 
@@ -146,7 +135,6 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # Reset & set specified coordinates
         self.dataset = self.dataset.reset_coords()
-
         for var in self.config.dataset.coord_var:
             try:
                 self.dataset = self.dataset.set_coords(var)
@@ -154,7 +142,6 @@ class Gridded(Coast):  # TODO Complete this docstring
                 warning(f"Issue with settings coordinates using value {var}.{chr(10)}Error message of {err}")
 
         # Delete specified variables
-
         for var in self.config.code_processing.delete_variables:
             try:
                 self.dataset = self.dataset.drop(var)
@@ -186,28 +173,29 @@ class Gridded(Coast):  # TODO Complete this docstring
         The depths are assigned to domain_dataset.depth_0
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
-
+        # keyword to allow calcution of bathymetry from scale factors
         try:
             calc_bathy = dataset_domain["calc_bathy"]
         except:
             calc_bathy = False
-
+        #jth NEMO bathymetry can be called bathymetr, bathy_metry or hbatt in varios versions
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
         except:
             try:
                 bathymetry = (
                     dataset_domain.hbatt.squeeze()
-                )  # jth add a second option here better done iwth config file??
+                )  # jth add a second option here better done with config file?
             except:
                 try:
                     bathymetry = (
                         dataset_domain.bathymetry.squeeze()
-                    )  # jth add a second option here better done iwth config file??
+                    )  # jth add a second option here better done with config file??
 
                 except AttributeError as err:
                     bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
                     (
+                        #jth warnign needs to change
                         warnings.warn(
                             f"The model domain loaded, '{self.filename_domain}', does not contain the "
                             "bathy_metry' variable. This will result in the "
@@ -228,7 +216,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
-
+                # calculate bathymetry from scale factors
                 if calc_bathy:
                     bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
 
@@ -243,14 +231,20 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
                 depth_0[1:, :, :-1] = depth_0[0, :, :-1] + np.cumsum(e3w_0_on_u[1:, :, :], axis=0)
-                bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
+                if calc_bathy:
+                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
+                else:    #jth only valid for pure sigma
+                    bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
             elif self.grid_ref == "v-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_v = 0.5 * (e3w_0[:, :-1, :] + e3w_0[:, 1:, :])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
                 depth_0[1:, :-1, :] = depth_0[0, :-1, :] + np.cumsum(e3w_0_on_v[1:, :, :], axis=0)
-                bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
+                if calc_bathy:
+                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
+                else: #jth only valid for pure sigma
+                    bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
             elif self.grid_ref == "f-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_f = 0.25 * (e3w_0[:, :-1, :-1] + e3w_0[:, :-1, 1:] + e3w_0[:, 1:, :-1] + e3w_0[:, 1:, 1:])
@@ -282,9 +276,16 @@ class Gridded(Coast):  # TODO Complete this docstring
             error(err)
 
     def calc_bathymetry(self, dataset_domain, bathymetry):
-        # NEMO approach to defining bathymetry
-
-        #%%
+        """
+        NEMO approach to defining bathymetry by summing scale factors at various
+        grid locations.
+        Works with z-coordinates on u- and v- faces where bathymerty is defiend
+        at the top of the cliff, not at the bottom
+       
+        """
+        #jth not set for lazy loading
+        #jth here modifies exisiting bathymetry variable, coudl creat one instead.
+        
         e3t = dataset_domain.e3t_0.squeeze()
         tmask = xr.zeros_like(e3t)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
@@ -312,9 +313,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             mask = xr.zeros_like(e3f)
             mask[:, :-1, :-1] = tmask[:, :-1, :-1] * tmask[:, :-1, 1:] * tmask[:, 1:, :-1] * tmask[:, 1:, 1:]
             bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
-            # bathymetry=(e3t*mask).sum(dim="nav_lev")
-        #%%
-        return bathymetry  # probably usefulto keep the mask as well
+
+
+        return bathymetry  #jth probably useful to keep the mask as well
 
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
@@ -500,7 +501,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         eos : equation of state, optional
             DESCRIPTION. The default is 'EOS10'.
 
-        rhobar : Calculate desnity with depth mean T and S
+        rhobar : Calculate density with depth mean T and S
             DESCRIPTION. The default is 'False'.
         Zd_mask : Provide a 3D mask for rhobar calculation
             Calculate using calculate_vertical_mask
@@ -511,7 +512,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         pot_dens :Calculation at zero pressure
             DESCRIPTION. The default is 'False'.
         Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to
-                        remian depth varying. So Tbar=Flase gives temperature component, Sbar=Flase gives Salinity component
+                        remain depth varying. So Tbar=Flase gives temperature component, Sbar=Flase gives Salinity component
             DESCRIPTION. The default is 'True'.
 
         Returns
@@ -601,7 +602,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
                     density = np.repeat(density[:, np.newaxis, :, :], shape_ds[1], axis=1)
 
-                else:  # Either insitue desnity or one of Tbar or Sbar Flase
+                else:  # Either insitue density or one of Tbar or Sbar Flase
                     if Sbar:
                         sal_absolute = np.repeat(
                             (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
@@ -1088,7 +1089,6 @@ class Gridded(Coast):  # TODO Complete this docstring
         return gridded_out
 
     def calculate_vertical_mask(self, Zmax):
-
         """
         Calculates a 3D mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level
@@ -1123,5 +1123,5 @@ class Gridded(Coast):  # TODO Complete this docstring
                         kmax[j, i] = kkmax
                         IIkmax[kkmax, j, i] = 1
         Ikmax = np.nonzero(IIkmax.ravel())
-        #%%
+    
         return Zd_mask, kmax, Ikmax

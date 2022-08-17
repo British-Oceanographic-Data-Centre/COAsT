@@ -245,7 +245,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         IT=coast.InternalTide(gridded_t,gridded_t)
         IT.calc_pea(gridded_t,Zd_mask)
         """
-        #%%
+        #may be duplicated in other branches. Uses the integral of T&S rathern than integral of rho approach
         g = 9.81
         # Z=gridded_t.dataset.variables['depth_0'].values
         # DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask

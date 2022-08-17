@@ -1,8 +1,8 @@
-import os
+
 import numpy as np
 import xarray as xr
 import gsw
-from netCDF4 import Dataset
+
 from ..data.profile import Profile
 from ..data.index import Indexed
 from dask.diagnostics import ProgressBar
@@ -14,28 +14,49 @@ Re = 6367456 * np.pi / 180
 class Hydrographic_Profiles(Indexed):
 
     ###############################################################################
-    def __init__(self, filename="none", datasetnames="none", config="", regionbounds=[], recalc=False):
-        # Reads and manipulates lists of hydrographic profiles
-        # if called with datasetnames and regionbounds, extract profiles in these bounds
+    def __init__(self, filename="none", datasetnames="none", 
+                                                   config="", regionbounds=[]):
+        """
+        Reads and manipulates lists of hydrographic profiles
+        if called with datasetnames and regionbounds, extract profiles in these
+        bounds, and if a filenames is provided, saves them there
+        """
         if datasetnames != "none" and len(regionbounds) == 4:
             self.extractprofiles(datasetnames, regionbounds, config)
             if filename != "none":
                 self.saveprofiles(filename)
 
     def extractprofiles(self, datasetnames, regionbounds, config):
-        #    data_size=400
+        """
+        Parameters
+        ----------
+        datasetnames : list of file names
+           
+        regionbounds : [lon min, lon max, lat min lat max]
+            
+        config : a configuration file (optional)
+            
 
+        Returns
+        -------
+        None.
+
+        """
         x_min = regionbounds[0]
         x_max = regionbounds[1]
         y_min = regionbounds[2]
         y_max = regionbounds[3]
         self.profile = Profile(config=config)
         self.profile.read_en4(datasetnames, multiple=True)
-        self.profile = self.profile.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
+        self.profile = self.profile.subset_indices_lonlat_box(
+                            lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
         self.profile = self.profile.process_en4()
 
     ########################################################################################
     def saveprofiles(self, filename):
+        """
+        Saves profile and gridded objects to netcdf
+        """
         filename_profile = filename[:-3] + "_profile.nc"
         filename_gridded = filename[:-3] + "_gridded.nc"
 
@@ -44,7 +65,7 @@ class Hydrographic_Profiles(Indexed):
             self.profile.dataset.to_netcdf(filename_profile)
         print("saving gridded data")
         with ProgressBar():
-            self.profile.dataset.to_netcdf(filename_gridded)
+            self.gridded.dataset.to_netcdf(filename_gridded)
 
     def loadprofiles(self, filename):
         filename_profile = filename[:-3] + "_profile.nc"
@@ -57,9 +78,19 @@ class Hydrographic_Profiles(Indexed):
 
     ##############################################################################
     def match_to_grid(self, gridded, **kwargs):
-        # Match profiles locations to grid
-        # optionally provide region of grid to sub-set [jmin,jmax,imin,imax]
+        """
+        Match profiles locations to grid, finding 4 nearest neighbours for each profile
+        Parameters
+        ----------
+        gridded : gridded object
+        **kwargs : 
+            limits = [jmin,jmax,imin,imax] - subset to this region
+            rmax = 7000 m maxmimum search distance
+        Returns
+        -------
+        None.
 
+        """       
         self.gridded = gridded
         limits = kwargs.get("limits", [0, 0, 0, 0])
 
@@ -81,7 +112,7 @@ class Hydrographic_Profiles(Indexed):
         i_min = self.profile.dataset.i_min.values
         j_min = self.profile.dataset.j_min.values
 
-        #%%
+        
         # Sort 4 NN by distance on grid
         ii = np.nonzero(np.isnan(lon_prf))
         i_prf[ii, :] = 0
@@ -108,19 +139,32 @@ class Hydrographic_Profiles(Indexed):
         j_prf = j_prf + j_min
         i_prf[ii, :] = 0  # should the be nan?
         j_prf[ii, :] = 0
-        #%%
+        
         self.profile.dataset["i_prf"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
         self.profile.dataset["j_prf"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
         self.profile.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
 
     ###############################################################################
     def stratificationmetrics(self, **kwargs):
+        """
+        Calculates various stratification metrics for observed  profiles
+        Currently: PEA, PEAT, SST, SSS, NBT
+        Parameters
+        ----------
+        **kwargs : 
+           Zmax = 200 m maximum depth of integration
+           DZMAX = 30 m depth of surface layer
+        Returns
+        -------
+        None.
+
+        """
         Zmax = kwargs.get("Zmax", 200)  # Maximum depth for integration and nbt
-        DZMAX = kwargs.get("DZmax", 30)  # How close to surface
-        #%%
+        DZMAX = kwargs.get("DZmax", 30)  # How close to surface o rbottom
+        
         i_prf = self.profile.dataset.i_prf - self.profile.dataset.i_min
         j_prf = self.profile.dataset.j_prf - self.profile.dataset.j_min
-        D = self.gridded.dataset.bathymetry
+        D = self.gridded.dataset.bathymetry # uses bathymetry from gridded object
         i_prf = np.ma.masked_less(i_prf, 0)
         j_prf = np.ma.masked_less(j_prf, 0)
 
@@ -133,7 +177,7 @@ class Hydrographic_Profiles(Indexed):
         PEA = np.ones((nprof)) * np.nan
         PEAT = np.ones((nprof)) * np.nan
         quart = [0, 0.25, 0.5, 0.75, 1]
-        # fix memory issues for very large data sets, if this still nbeeded with xarray?
+        # fix memory issues for very large data sets, if this still needed with xarray?
         if nprof < 1000000:
             npr = nprof
         else:
@@ -244,13 +288,11 @@ class Hydrographic_Profiles(Indexed):
                     S = Hydrographic_Profiles.fillholes(S)
                     tmp[ip, :] = T
                     sal[ip, :] = S
-            #%%
-            ###############################################################################
 
             ###############################################################################
             print("Calculate metrics")
             metrics = Hydrographic_Profiles.profile_metrics(tmp, sal, ZZ, DZ, Zd_mask, lon, lat)
-            #%%
+            
             PEAc = metrics["PEA"]
             PEATc = metrics["PEAT"]
             PEAc[good_profile == 0] = np.nan
@@ -261,7 +303,7 @@ class Hydrographic_Profiles(Indexed):
             PEA[Ichnk] = PEAc
             PEAT[Ichnk] = PEATc
             # Next chunk
-        #%%
+        
         DT = sst - nbt
         self.profile.dataset["PEA"] = xr.DataArray(PEA, dims=["id_dim"])
         self.profile.dataset["PEAT"] = xr.DataArray(PEAT, dims=["id_dim"])
@@ -316,20 +358,6 @@ class Hydrographic_Profiles(Indexed):
         return var_dom
 
     ###############################################################################
-
-    def nn_search(X, Y, Xpnts, Ypnts, n_nn):  # redundent - can delete
-        # efficient nearest neighbour search
-        import scipy.spatial as sp
-
-        XY = np.dstack([Y.ravel(), X.ravel()])[0]
-        XYp = np.dstack([Ypnts, Xpnts])[0]
-        mytree = sp.cKDTree(XY)
-        dist, indx = mytree.query(XYp, n_nn)
-        I = np.nonzero(np.isnan(Xpnts))
-        indx[I] = 0
-        i, j = np.unravel_index(indx, X.shape)
-        return i, j, dist
-
     ###########################################
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
         import numpy as np
@@ -341,7 +369,7 @@ class Hydrographic_Profiles(Indexed):
 
     ###############################################################################
     # Functions for stratification metrics
-    #%%
+    
     def fillholes(Y):
         YY = np.ones(np.shape(Y))
         YY[:] = Y
@@ -372,7 +400,6 @@ class Hydrographic_Profiles(Indexed):
                     YY[Jp] = YYp + (YY[j] - YYp) * pT
         return YY
 
-    #%%
     ###########################################
     def chunks(lst, n):
         """Yield successive n-sized chunks from lst."""
@@ -381,7 +408,7 @@ class Hydrographic_Profiles(Indexed):
 
     ###########################################
     def profile_metrics(tmp, sal, Z, DZ, Zd_mask, lon, lat):
-        #%%
+        
         metrics = {}
         g = 9.81
         DD = np.sum(DZ * Zd_mask, axis=1)
@@ -406,11 +433,11 @@ class Hydrographic_Profiles(Indexed):
 
         metrics["PEA"] = PEA
         metrics["PEAT"] = PEAT
-        #%%
+        
         return metrics
 
     ###########################################
-    #%%
+
     def grid_vars_mnth(self, var, i_var, j_var, mnth_var):
         VAR = self.profile.dataset[var].values
         nx = self.gridded.dataset.dims["x_dim"]
@@ -433,4 +460,4 @@ class Hydrographic_Profiles(Indexed):
         return VAR_g, nVAR_g
 
 
-#%%
+

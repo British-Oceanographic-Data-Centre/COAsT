@@ -1,7 +1,25 @@
-<<<<<<< HEAD:coast/diagnostics/experiments.py
-# Set of functions to control data handling
+"""Set of functions to control basic experimnet file handling"""
 
 def experiments(experiments='experiments.json'):
+    """
+    Reads a json formatted files, default name is experiments.json  
+    for lists of:
+      experiment names (exp_names)
+      directory names (dir names)
+      domain file names (domains)
+      file names (file_names)
+   
+
+    Parameters
+    ----------
+    experiments : TYPE, optional
+        DESCRIPTION. The default is 'experiments.json'.
+
+    Returns
+    -------
+    exp_names,dirs,domains,file_names  
+
+    """    
     import json
     import numpy as np
     with open(experiments, "r") as j:
@@ -32,9 +50,6 @@ def experiments(experiments='experiments.json'):
 
 
 def nemo_filenames(dpath,runtype,ystart,ystop,grid='T'):
-#from ..data.gridded import Gridded
-#class nemo_filenames(Gridded):
-#    def __init_(self,dpath,runtype,ystart,ystop):
         """
            Creates a list of NEMO file names from a set of standard templates
             Parameters
@@ -43,7 +58,10 @@ def nemo_filenames(dpath,runtype,ystart,ystop,grid='T'):
             runtype : hardwired set of standard nemo filenames
             ystart : start year
             ystop : stop year
-           
+            grid (optional) NEMO grid type
+            
+            -------
+            names :lis tof nemo file names
         """
         
         #produce a list of nemo filenames
@@ -62,36 +80,4 @@ def nemo_filenames(dpath,runtype,ystart,ystop,grid='T'):
             print('Runtype: '+ runtype + 'not coded yet, returning empty list' )
             names=[]        
         return names   
-=======
-def nemo_filenames(dpath, runtype, ystart, ystop, grid="T"):
-    # from ..data.gridded import Gridded
-    # class nemo_filenames(Gridded):
-    #    def __init_(self,dpath,runtype,ystart,ystop):
-    """
-    Creates a list of NEMO file names from a set of standard templates
-     Parameters
-     ----------
-     dpath : path to the files
-     runtype : hardwired set of standard nemo filenames
-     ystart : start year
-     ystop : stop year
->>>>>>> e46dd7682b65f5f8274f6520b6299da093ada379:coast/diagnostics/nemo_filenames.py
 
-    """
-
-    # produce a list of nemo filenames
-    names = []
-    if runtype == "SENEMO":
-        for iy in range(ystart, ystop + 1):
-            for im in range(1, 12 + 1):
-                MNTH = str(im)
-                if im < 10:
-                    MNTH = "0" + MNTH
-                YEAR = str(iy)
-                new_name = "{0}/SENEMO_1m_{1}0101_{1}1231_grid_{3}_{1}{2}-{1}{2}.nc".format(dpath, YEAR, MNTH, grid)
-                names.append(new_name)
-
-    else:
-        print("Runtype: " + runtype + "not coded yet, returning empty list")
-        names = []
-    return names
