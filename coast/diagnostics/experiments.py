@@ -1,6 +1,7 @@
 """Set of functions to control basic experimnet file handling"""
 import numpy as np
 
+
 def experiments(experiments="experiments.json"):
     """
     Reads a json formatted files, default name is experiments.json
@@ -22,7 +23,6 @@ def experiments(experiments="experiments.json"):
 
     """
     import json
-
 
     with open(experiments, "r") as j:
         json_content = json.loads(j.read())
@@ -76,7 +76,7 @@ def nemo_filenames(dpath, runtype, ystart, ystop, grid="T"):
                     MNTH = "0" + MNTH
                 YEAR = str(iy)
                 new_name = "{0}/SENEMO_1m_{1}0101_{1}1231_grid_{3}_{1}{2}-{1}{2}.nc".format(dpath, YEAR, MNTH, grid)
-                names=np.append(names,new_name)
+                names = np.append(names, new_name)
 
     else:
         print("Runtype: " + runtype + "not coded yet, returning empty list")
