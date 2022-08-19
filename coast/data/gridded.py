@@ -195,7 +195,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             calc_bathy = dataset_domain["calc_bathy"]
         except:
             calc_bathy = False
-        # jth NEMO bathymetry can be called bathymetr, bathy_metry or hbatt in varios versions
+        # jth NEMO bathymetry can be called bathymetry, bathy_metry or hbatt in various versions
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
         except:
@@ -242,6 +242,10 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3t_0)
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
+                # calculate bathymetry from scale factors
+                if calc_bathy:
+                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
+                
             elif self.grid_ref == "u-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
@@ -311,7 +315,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         for k in range(1, e3t.shape[0] + 1):
             tmask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
 
-        if self.grid_ref == "t-grid":
+        if self.grid_ref == "t-grid" or  self.grid_ref == "w-grid":
             bathymetry[:, :] = np.sum(e3t.values * tmask.values, axis=0)
             # bathymetry=(e3t*tmask).sum(dim="nav_lev")
 
