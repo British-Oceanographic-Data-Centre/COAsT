@@ -245,7 +245,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 # calculate bathymetry from scale factors
                 if calc_bathy:
                     bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                
+
             elif self.grid_ref == "u-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
@@ -315,7 +315,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         for k in range(1, e3t.shape[0] + 1):
             tmask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
 
-        if self.grid_ref == "t-grid" or  self.grid_ref == "w-grid":
+        if self.grid_ref == "t-grid" or self.grid_ref == "w-grid":
             bathymetry[:, :] = np.sum(e3t.values * tmask.values, axis=0)
             # bathymetry=(e3t*tmask).sum(dim="nav_lev")
 
