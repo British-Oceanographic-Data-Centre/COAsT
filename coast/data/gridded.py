@@ -94,7 +94,21 @@ class Gridded(Coast):  # TODO Complete this docstring
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
+###################
+        Make_LonLat_2D=kwargs.get('Make_LonLat_2D',False)
+        if Make_LonLat_2D:
+            # Expand 1D latitude, longitude variables to 2D
+            #jth is there a lazy way of doing this?
+            if len(self.dataset.longitude.shape)==1:
+                lat=self.dataset.latitude.values
+                lon=self.dataset.longitude.values               
+                nx=self.dataset.longitude.size
+                ny=self.dataset.latitude.size
+                self.dataset['latitude'] = xr.DataArray(np.repeat(lat[:,np.newaxis],nx
+                                       ,axis=1),dims=['y_dim','x_dim']) 
 
+                self.dataset['longitude'] = xr.DataArray(np.repeat(lon[np.newaxis,:],ny
+                                       ,axis=0),dims=['y_dim','x_dim']) 
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
         # Define grid specific variables to pull across
