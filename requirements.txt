@@ -17,3 +17,5 @@ statsmodels>=0.13.2
 pydap>=3.2.2
 lxml>=4.9.0  # Required for pydap CAS parsing
 requests>=2.27.1
+xesmf>=0.3.0
+esmpy>=8.0.0
