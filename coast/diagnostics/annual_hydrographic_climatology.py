@@ -63,8 +63,8 @@ class Annual_Climatology(Gridded):
         }
         dims = ["mon_dim", "y_dim", "x_dim"]
         attributes_SST = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
-        attributes_SSS = {"units": "", "standard name": "Absolution Sea Surface Salinity"}
-        attributes_PEA = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to 200m"}
+        attributes_SSS = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
+        attributes_PEA = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(Zmax) + "m"}
         gridded_t_out.dataset["SSTy"] = xr.DataArray(np.squeeze(SSTy), coords=coords, dims=dims, attrs=attributes_SST)
         gridded_t_out.dataset["SSSy"] = xr.DataArray(np.squeeze(SSSy), coords=coords, dims=dims, attrs=attributes_SSS)
         gridded_t_out.dataset["PEAy"] = xr.DataArray(np.squeeze(PEAy), coords=coords, dims=dims, attrs=attributes_PEA)
