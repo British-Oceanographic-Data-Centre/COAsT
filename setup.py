@@ -45,7 +45,7 @@ PACKAGE = SimpleNamespace(
             "lxml>=4.9.0",  # Required for pydap CAS parsing,
             "requests>=2.27.1",
             "xesmf>=0.3.0",
-            #"esmpy>=8.0.0",
+            # "esmpy>=8.0.0",
         ],
         "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
         "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],
