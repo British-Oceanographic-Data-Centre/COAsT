@@ -155,7 +155,6 @@ class MaskMaker:
         vertices_lat = [65, 60, 59, 52.5, 47.5, 45, 40, 63]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath > 200) * (bath > 0) * (~np.isnan(bath))
-
         return mask
 
     @classmethod
@@ -164,7 +163,6 @@ class MaskMaker:
         vertices_lat = [56.4, 55, 52, 50.7, 51.5, 55.3]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
-
         return mask
 
     @classmethod
@@ -173,5 +171,4 @@ class MaskMaker:
         vertices_lat = [60, 52.5, 52.5, 60]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
-
         return mask
