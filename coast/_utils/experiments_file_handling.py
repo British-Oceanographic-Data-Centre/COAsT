@@ -3,6 +3,7 @@
 import json
 from typing import List
 
+
 def experiments(experiments="experiments.json"):
     """
     Reads a json formatted files, default name is experiments.json
@@ -47,6 +48,7 @@ def experiments(experiments="experiments.json"):
         if np.min(lengths[np.nonzero(lengths)[0]]) != np.max(lengths[np.nonzero(lengths)[0]]):
             print("Warning DIFFERENT NUMBER OF NAMES PROVIDED, CHECK JSON FILE")
     return exp_names, dirs, domains, file_names
+
 
 def nemo_filename_maker(directory, year_start: int, year_stop: int, grid: str = "T") -> List:
     """Creates a list of NEMO file names from a set of standard templates.
