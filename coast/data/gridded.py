@@ -117,10 +117,19 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dataset_domain = dataset_domain.rename_dims(mapping)
             except ValueError as err:
                 warning(
-                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{get_slug(self)}: Problem renaming domain dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
-
+        # Rename domain variables.
+        for key, value in self.config.domain.variable_map.items():
+            mapping = {key: value}
+            try:
+                dataset_domain = dataset_domain.rename_vars(mapping)
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming domain variable from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
