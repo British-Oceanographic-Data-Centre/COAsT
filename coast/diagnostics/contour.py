@@ -2,7 +2,6 @@
 import matplotlib.pyplot as plt
 import xarray as xr
 
-# import xarray.ufuncs as uf #jth ufuncs is depreciated
 import numpy as np
 import warnings
 import gsw
