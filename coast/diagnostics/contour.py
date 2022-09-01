@@ -1,7 +1,6 @@
 """Contour classes"""
 import matplotlib.pyplot as plt
 import xarray as xr
-import xarray.ufuncs as uf
 import numpy as np
 import warnings
 import gsw
