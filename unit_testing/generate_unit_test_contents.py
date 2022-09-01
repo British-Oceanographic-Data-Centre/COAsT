@@ -3,7 +3,7 @@ Run this file from the main COAsT directory to generate a new unit_test_contents
 file based on the imported modules in tests_to_do
 
 If you have added new tests to the unit test, you should do this before pushing
-to github.
+to GitHub.
 
 The easiest way to do this is to copy and paste your new tests modules below
 (or straight from unit_test.py).
