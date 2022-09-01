@@ -232,11 +232,11 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
     def calc_pea(self, gridded_t: xr.Dataset, Zd_mask, CT_AS=True):
         """
         Calculates Potential Engergy Anomaly
-        
+
         The density and depth averaged density can be supplied within gridded_t as "density" and
         "density_bar" DataArrays, respectively. If they are not supplied they will be calculated.
         "density_bar" is calcuated using depth averages of temperature and salinity.
-        
+
         Example Usage
         -------------
         # load some example data
