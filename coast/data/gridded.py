@@ -518,8 +518,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         for var in grid_vars:
             try:
                 new_name = self.config.domain.variable_map[var]
-                m = re.search('depth[a-z]_0', var)  # Check necessary because of hardcoded calculated depth variable names.
-                if(m):
+                m = re.search(
+                    "depth[a-z]_0", var
+                )  # Check necessary because of hardcoded calculated depth variable names.
+                if m:
                     self.dataset[new_name] = dataset_domain[var].squeeze()
                 else:
                     self.dataset[new_name] = dataset_domain[new_name].squeeze()
