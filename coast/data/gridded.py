@@ -294,8 +294,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
-        internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[self.grid_vars[0]]  # [f"glam{self.grid_ref.replace('-grid','')}"]
+        internal_lat = dataset_domain['latitude']  # [f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain['longitude']  # [f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
@@ -517,7 +517,11 @@ class Gridded(Coast):  # TODO Complete this docstring
         for var in grid_vars:
             try:
                 new_name = self.config.domain.variable_map[var]
-                self.dataset[new_name] = dataset_domain[var].squeeze()
+                if("depth" in var):
+                    self.dataset[new_name] = dataset_domain[var].squeeze()
+                else:
+                    self.dataset[new_name] = dataset_domain[new_name].squeeze()
+
                 debug("map: {} --> {}".format(var, new_name))
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
