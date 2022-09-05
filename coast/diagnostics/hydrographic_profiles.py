@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import xarray as xr
 import gsw
@@ -320,7 +321,7 @@ class Hydrographic_Profiles(Indexed):
             self.gridded.dataset["n" + varname] = xr.DataArray(nvar, dims=["12", "y_dim", "x_dim"])
 
     ###############################################################################
-
+    @staticmethod
     def makefilenames(path, dataset, yr_start, yr_stop):
         if dataset == "EN4":
             datasetnames = []
@@ -330,7 +331,7 @@ class Hydrographic_Profiles(Indexed):
                     IM = str(im)
                     if im < 10:
                         IM = "0" + IM
-                    name = path + "/" + "EN.4.2.1.f.profiles.l09." + YR + IM + ".nc"
+                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{YR}{IM}.nc")
                     datasetnames.append(name)
             return datasetnames
         print("Data set not coded")
@@ -338,6 +339,7 @@ class Hydrographic_Profiles(Indexed):
     # Functions
     ###############################################################################
     # Functions for match to grid
+    @staticmethod
     def subsetgrid(var_dom, limits):
         i_min = limits[0]
         i_max = limits[1]
@@ -363,7 +365,7 @@ class Hydrographic_Profiles(Indexed):
 
     ###############################################################################
     # Functions for stratification metrics
-
+    @staticmethod
     def fillholes(Y):
         YY = np.ones(np.shape(Y))
         YY[:] = Y
@@ -401,6 +403,7 @@ class Hydrographic_Profiles(Indexed):
             yield lst[i : i + n]
 
     ###########################################
+    @staticmethod
     def profile_metrics(tmp, sal, Z, DZ, Zd_mask, lon, lat):
 
         metrics = {}
