@@ -96,9 +96,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             debug(f"Initialised {get_slug(self)}")
 
     def make_lonLat_2d(self):
-        """Expand 1D latitude and longitude variables to 2D.
-
-        """
+        """Expand 1D latitude and longitude variables to 2D."""
 
         # jth is there a lazy way of doing this?
         if len(self.dataset.longitude.shape) == 1:
@@ -106,13 +104,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             lon = self.dataset.longitude.values
             nx = self.dataset.longitude.size
             ny = self.dataset.latitude.size
-            self.dataset["latitude"] = xr.DataArray(
-                np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"]
-            )
+            self.dataset["latitude"] = xr.DataArray(np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"])
 
-            self.dataset["longitude"] = xr.DataArray(
-                np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"]
-            )
+            self.dataset["longitude"] = xr.DataArray(np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"])
 
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
