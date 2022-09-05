@@ -303,9 +303,7 @@ class Hydrographic_Profiles(Indexed):
             december = 13  # range is non-inclusive so we need 12 + 1
             for yr in range(yr_start, yr_stop + 1):
                 for im in range(january, december):
-                    if im < 10:
-                        im = f"0{im}"
-                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im}.nc")
+                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im:02}.nc")
                     datasetnames.append(name)
             return datasetnames
         print("Data set not coded")
