@@ -24,15 +24,15 @@ class Gridded(Coast):  # TODO Complete this docstring
     """
 
     def __init__(
-        self,
-        fn_data=None,
-        fn_domain=None,  # TODO Super init not called + add a docstring
-        multiple=False,
-        config: str = " ",
-        workers=2,
-        threads=2,
-        memory_limit_per_worker="2GB",
-        **kwargs,
+            self,
+            fn_data=None,
+            fn_domain=None,  # TODO Super init not called + add a docstring
+            multiple=False,
+            config: str = " ",
+            workers=2,
+            threads=2,
+            memory_limit_per_worker="2GB",
+            **kwargs,
     ):
         debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
@@ -90,7 +90,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             if self.fn_data is not None:
                 dataset_domain = self.trim_domain_size(dataset_domain)
             self.set_timezero_depths(
-                dataset_domain
+                dataset_domain, **kwargs
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
@@ -193,10 +193,6 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         # keyword to allow calcution of bathymetry from scale factors
 
-        calc_bathy = False
-        if "calc_bathy" in dataset_domain:
-            calc_bathy = dataset_domain["calc_bathy"]
-
         # All bathymetry should now be mapped to bathy_metry
         try:
             if calculate_bathymetry:  # calculate bathymetry from scale factors
@@ -260,7 +256,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
                 if not calculate_bathymetry:
                     bathymetry[:-1, :-1] = 0.25 * (
-                        bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
+                            bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
                     )
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
@@ -322,7 +318,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             e3f = dataset_domain.e3f_0.squeeze()
             mask = xr.zeros_like(e3f)
             mask[:, :-1, :-1] = (
-                time_mask[:, :-1, :-1] * time_mask[:, :-1, 1:] * time_mask[:, 1:, :-1] * time_mask[:, 1:, 1:]
+                    time_mask[:, :-1, :-1] * time_mask[:, :-1, 1:] * time_mask[:, 1:, :-1] * time_mask[:, 1:, 1:]
             )
             bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
 
@@ -492,7 +488,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         return interpolated
 
     def construct_density(
-        self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+            self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
     ):
 
         """
@@ -668,7 +664,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         """
         debug(f"Trimming {get_slug(self)} variables with {get_slug(dataset_domain)}")
         if (self.dataset["x_dim"].size != dataset_domain["x_dim"].size) or (
-            self.dataset["y_dim"].size != dataset_domain["y_dim"].size
+                self.dataset["y_dim"].size != dataset_domain["y_dim"].size
         ):
             info(
                 "The domain  and dataset objects are different sizes:"
@@ -913,7 +909,8 @@ class Gridded(Coast):  # TODO Complete this docstring
             e1e2u = ds_dom.e1u * ds_dom.e2u
             # interpolate onto u-grid
             e3u_temp = (
-                (0.5 / e1e2u[:, :-1]) * ((e1e2t[:, :-1] * e3t_dt[:, :, :, :-1]) + (e1e2t[:, 1:] * e3t_dt[:, :, :, 1:]))
+                    (0.5 / e1e2u[:, :-1]) * (
+                        (e1e2t[:, :-1] * e3t_dt[:, :, :, :-1]) + (e1e2t[:, 1:] * e3t_dt[:, :, :, 1:]))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             # u mask
             e3u_temp = e3u_temp.where(e3t_dt[:, :, :, 1:] != 0, 0)
@@ -934,7 +931,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         if e3v:
             e1e2v = ds_dom.e1v * ds_dom.e2v
             e3v_temp = (
-                (0.5 / e1e2v[:-1, :]) * ((e1e2t[:-1, :] * e3t_dt[:, :, :-1, :]) + (e1e2t[1:, :] * e3t_dt[:, :, 1:, :]))
+                    (0.5 / e1e2v[:-1, :]) * (
+                        (e1e2t[:-1, :] * e3t_dt[:, :, :-1, :]) + (e1e2t[1:, :] * e3t_dt[:, :, 1:, :]))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             e3v_temp = e3v_temp.where(e3t_dt[:, :, 1:, :] != 0, 0)
             e3v_temp = e3v_temp.where(e3v_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
@@ -952,7 +950,8 @@ class Gridded(Coast):  # TODO Complete this docstring
             e1e2f = ds_dom.e1f * ds_dom.e2f
             e3u_dt = e3u_new - ds_dom.e3u_0
             e3f_temp = (
-                (0.5 / e1e2f[:-1, :]) * ((e1e2u[:-1, :] * e3u_dt[:, :, :-1, :]) + (e1e2u[1:, :] * e3u_dt[:, :, 1:, :]))
+                    (0.5 / e1e2f[:-1, :]) * (
+                        (e1e2u[:-1, :] * e3u_dt[:, :, :-1, :]) + (e1e2u[1:, :] * e3u_dt[:, :, 1:, :]))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             e3f_temp = e3f_temp.where(e3u_dt[:, :, 1:, :] != 0, 0)
             e3f_temp = e3f_temp.where(e3f_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
@@ -972,7 +971,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             # levels between top and bottom
             e3w_new = e3w_new.load()
             e3w_new[dict(z_dim=slice(1, None))] = (
-                0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
+                    0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
             )
             # bottom and below levels
             e3w_new = e3w_new.where(e3w_new.z_dim < ds_dom.bottom_level, e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
@@ -1039,13 +1038,13 @@ class Gridded(Coast):  # TODO Complete this docstring
         return nemo_harmonics
 
     def harmonics_convert(
-        self,
-        direction="cart2polar",
-        x_var="harmonic_x",
-        y_var="harmonic_y",
-        a_var="harmonic_a",
-        g_var="harmonic_g",
-        degrees=True,
+            self,
+            direction="cart2polar",
+            x_var="harmonic_x",
+            y_var="harmonic_y",
+            a_var="harmonic_a",
+            g_var="harmonic_g",
+            degrees=True,
     ):
         """
         Converts NEMO harmonics from cartesian to polar or vice versa.
@@ -1125,11 +1124,11 @@ class Gridded(Coast):  # TODO Complete this docstring
         for i in range(nx):
             for j in range(ny):
                 if mask[j, i] == 1:
-                    Zd_mask[0 : mbot[j, i], j, i] = 1  # mbot is not python style index so no +1
+                    Zd_mask[0: mbot[j, i], j, i] = 1  # mbot is not python style index so no +1
                     kmax[j, i] = mbot[j, i]
                     if ZW[mbot[j, i], j, i] > Zmax:
                         kkmax = np.max(np.where(ZW[:, j, i] < Zmax))
-                        Zd_mask[kkmax + 1 :, j, i] = 0
+                        Zd_mask[kkmax + 1:, j, i] = 0
                         Zd_mask[kkmax, j, i] = (Zmax - ZW[kkmax, j, i]) / (ZW[kkmax + 1, j, i] - ZW[kkmax, j, i])
                         kmax[j, i] = kkmax
                         IIkmax[kkmax, j, i] = 1
