@@ -511,7 +511,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
     def copy_domain_vars_to_dataset(self, dataset_domain, grid_vars):
         """
-        Map the domain coordand metric variables to the dataset object.
+        Map the domain coordinates and metric variables to the dataset object.
         Expects the source and target DataArrays to be same sizes.
         """
         debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
