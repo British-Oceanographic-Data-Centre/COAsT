@@ -91,27 +91,23 @@ class Gridded(Coast):  # TODO Complete this docstring
             if self.fn_data is not None:
                 dataset_domain = self.trim_domain_size(dataset_domain)
             self.set_timezero_depths(
-                dataset_domain
+                dataset_domain, **kwargs
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
-        ###################
-        Make_LonLat_2D = kwargs.get("Make_LonLat_2D", False)
-        if Make_LonLat_2D:
-            # Expand 1D latitude, longitude variables to 2D
-            # jth is there a lazy way of doing this?
-            if len(self.dataset.longitude.shape) == 1:
-                lat = self.dataset.latitude.values
-                lon = self.dataset.longitude.values
-                nx = self.dataset.longitude.size
-                ny = self.dataset.latitude.size
-                self.dataset["latitude"] = xr.DataArray(
-                    np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"]
-                )
 
-                self.dataset["longitude"] = xr.DataArray(
-                    np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"]
-                )
+    def make_lonLat_2d(self):
+        """Expand 1D latitude and longitude variables to 2D."""
+
+        # jth is there a lazy way of doing this?
+        if len(self.dataset.longitude.shape) == 1:
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
+            nx = self.dataset.longitude.size
+            ny = self.dataset.latitude.size
+            self.dataset["latitude"] = xr.DataArray(np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"])
+
+            self.dataset["longitude"] = xr.DataArray(np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"])
 
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
@@ -193,21 +189,27 @@ class Gridded(Coast):  # TODO Complete this docstring
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method="nearest", tolerance=tolerance)
         return smaller
 
-    def set_timezero_depths(self, dataset_domain):
+    def set_timezero_depths(self, dataset_domain, calculate_bathymetry=False):
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
         The depths are assigned to domain_dataset.depth_0
+
+        Args:
+            dataset_domain: a complex data object.
+            calculate_bathymetry: Flag that will either calculate bathymetry (true) or load it from dataset_domian file
+            (false).
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         # keyword to allow calcution of bathymetry from scale factors
+
+        # All bathymetry should now be mapped to bathy_metry
         try:
-            calc_bathy = dataset_domain["calc_bathy"]
-        except:
-            calc_bathy = False
-        # jth NEMO bathymetry can be called bathymetry, bathy_metry or hbatt in various versions
-        try:
-            bathymetry = dataset_domain.bathy_metry.squeeze()
+            if calculate_bathymetry:  # calculate bathymetry from scale factors
+                bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)
+            else:
+                bathymetry = dataset_domain.bathy_metry.squeeze()
+
         except AttributeError as err:
             bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
             (
@@ -231,18 +233,12 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
-                # calculate bathymetry from scale factors
-                if calc_bathy:
-                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
 
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
-                # calculate bathymetry from scale factors
-                if calc_bathy:
-                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
 
             elif self.grid_ref == "u-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
@@ -250,34 +246,31 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
                 depth_0[1:, :, :-1] = depth_0[0, :, :-1] + np.cumsum(e3w_0_on_u[1:, :, :], axis=0)
-                if calc_bathy:
-                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                else:  # jth only valid for pure sigma
+                if not calculate_bathymetry:  # jth only valid for pure sigma
                     bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
+
             elif self.grid_ref == "v-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_v = 0.5 * (e3w_0[:, :-1, :] + e3w_0[:, 1:, :])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
                 depth_0[1:, :-1, :] = depth_0[0, :-1, :] + np.cumsum(e3w_0_on_v[1:, :, :], axis=0)
-                if calc_bathy:
-                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                else:  # jth only valid for pure sigma
+                if not calculate_bathymetry:
                     bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
+
             elif self.grid_ref == "f-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_f = 0.25 * (e3w_0[:, :-1, :-1] + e3w_0[:, :-1, 1:] + e3w_0[:, 1:, :-1] + e3w_0[:, 1:, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
-                if calc_bathy:
-                    bathymetry = Gridded.calc_bathymetry(self, dataset_domain, bathymetry)
-                else:
+                if not calculate_bathymetry:
                     bathymetry[:-1, :-1] = 0.25 * (
                         bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
                     )
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
+
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
             dataset_domain[f"depth{self.grid_ref.replace('-grid', '')}_0"] = xr.DataArray(
                 depth_0,
@@ -294,46 +287,52 @@ class Gridded(Coast):  # TODO Complete this docstring
         except ValueError as err:
             error(err)
 
-    def calc_bathymetry(self, dataset_domain, bathymetry):
+    def calc_bathymetry(self, dataset_domain):
         """
         NEMO approach to defining bathymetry by summing scale factors at various
         grid locations.
         Works with z-coordinates on u- and v- faces where bathymerty is defiend
         at the top of the cliff, not at the bottom
 
+        Args:
+            dataset_domain: a complex data object.
+
         """
         # jth not set for lazy loading
-        # jth here modifies exisiting bathymetry variable, coudl creat one instead.
 
         e3t = dataset_domain.e3t_0.squeeze()
-        tmask = xr.zeros_like(e3t)
+        time_mask = xr.zeros_like(e3t)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
         top_level = dataset_domain.top_level.values.squeeze()
+        bathymetry = np.array()
 
         for k in range(1, e3t.shape[0] + 1):
-            tmask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
+            time_mask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
 
         if self.grid_ref == "t-grid" or self.grid_ref == "w-grid":
-            bathymetry[:, :] = np.sum(e3t.values * tmask.values, axis=0)
-            # bathymetry=(e3t*tmask).sum(dim="nav_lev")
+            bathymetry[:, :] = np.sum(e3t.values * time_mask.values, axis=0)
 
         elif self.grid_ref == "u-grid":
             e3u = dataset_domain.e3u_0.squeeze()
             mask = xr.zeros_like(e3u)
-            mask[:, :, :-1] = tmask[:, :, :-1] * tmask[:, :, 1:]
+            mask[:, :, :-1] = time_mask[:, :, :-1] * time_mask[:, :, 1:]
             bathymetry[:, :] = np.sum(e3u.values * mask.values, axis=0)
+
         elif self.grid_ref == "v-grid":
             e3v = dataset_domain.e3v_0.squeeze()
             mask = xr.zeros_like(e3v)
-            mask[:, :-1, :] = tmask[:, :-1, :] * tmask[:, 1:, :]
+            mask[:, :-1, :] = time_mask[:, :-1, :] * time_mask[:, 1:, :]
             bathymetry[:, :] = np.sum(e3v.values * mask.values, axis=0)
+
         elif self.grid_ref == "f-grid":
             e3f = dataset_domain.e3f_0.squeeze()
             mask = xr.zeros_like(e3f)
-            mask[:, :-1, :-1] = tmask[:, :-1, :-1] * tmask[:, :-1, 1:] * tmask[:, 1:, :-1] * tmask[:, 1:, 1:]
+            mask[:, :-1, :-1] = (
+                time_mask[:, :-1, :-1] * time_mask[:, :-1, 1:] * time_mask[:, 1:, :-1] * time_mask[:, 1:, 1:]
+            )
             bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
 
-        return bathymetry  # jth probably useful to keep the mask as well
+        return bathymetry, mask, time_mask
 
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
