@@ -179,11 +179,16 @@ class Gridded(Coast):  # TODO Complete this docstring
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method="nearest", tolerance=tolerance)
         return smaller
 
-    def set_timezero_depths(self, dataset_domain):
+    def set_timezero_depths(self, dataset_domain, calculate_bathymetry=False):
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
         The depths are assigned to domain_dataset.depth_0
+
+        Args:
+            dataset_domain: a complex data object.
+            calculate_bathymetry: Flag that will either calculate bathymetry (true) or load it from dataset_domian file
+            (false).
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
         # keyword to allow calcution of bathymetry from scale factors
@@ -194,7 +199,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # All bathymetry should now be mapped to bathy_metry
         try:
-            if calc_bathy:  # calculate bathymetry from scale factors
+            if calculate_bathymetry:  # calculate bathymetry from scale factors
                 bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)
             else:
                 bathymetry = dataset_domain.bathy_metry.squeeze()
@@ -235,7 +240,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
                 depth_0[1:, :, :-1] = depth_0[0, :, :-1] + np.cumsum(e3w_0_on_u[1:, :, :], axis=0)
-                if not calc_bathy:  # jth only valid for pure sigma
+                if not calculate_bathymetry:  # jth only valid for pure sigma
                     bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
 
             elif self.grid_ref == "v-grid":
@@ -244,7 +249,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
                 depth_0[1:, :-1, :] = depth_0[0, :-1, :] + np.cumsum(e3w_0_on_v[1:, :, :], axis=0)
-                if not calc_bathy:
+                if not calculate_bathymetry:
                     bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
 
             elif self.grid_ref == "f-grid":
@@ -253,7 +258,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
-                if not calc_bathy:
+                if not calculate_bathymetry:
                     bathymetry[:-1, :-1] = 0.25 * (
                         bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
                     )
@@ -282,6 +287,9 @@ class Gridded(Coast):  # TODO Complete this docstring
         grid locations.
         Works with z-coordinates on u- and v- faces where bathymerty is defiend
         at the top of the cliff, not at the bottom
+
+        Args:
+            dataset_domain: a complex data object.
 
         """
         # jth not set for lazy loading
