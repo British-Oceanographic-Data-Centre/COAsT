@@ -93,23 +93,31 @@ class test_gridded_initialisation(unittest.TestCase):
             config=files.fn_config_t_grid,
             calc_bathy=True,
         )
-        assert np.isclose(np.nansum(nemo_t.dataset.bathymetry.values), 116707590.0), " X - Gridded calc_bathy failed on t-grid failed"
+        assert np.isclose(
+            np.nansum(nemo_t.dataset.bathymetry.values), 116707590.0
+        ), " X - Gridded calc_bathy failed on t-grid failed"
         nemo_u = coast.Gridded(
             fn_data=files.fn_nemo_grid_u_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_u_grid,
             calc_bathy=True,
         )
-        assert np.isclose(np.nansum(nemo_u.dataset.bathymetry.values), 116031920.0), " X - Gridded calc_bathy failed on u-grid failed"
+        assert np.isclose(
+            np.nansum(nemo_u.dataset.bathymetry.values), 116031920.0
+        ), " X - Gridded calc_bathy failed on u-grid failed"
         nemo_v = coast.Gridded(
             fn_data=files.fn_nemo_grid_v_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_v_grid,
             calc_bathy=True,
         )
-        assert np.isclose(np.nansum(nemo_v.dataset.bathymetry.values), 116164800.0), " X - Gridded calc_bathy failed on v-grid failed"
+        assert np.isclose(
+            np.nansum(nemo_v.dataset.bathymetry.values), 116164800.0
+        ), " X - Gridded calc_bathy failed on v-grid failed"
         nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid, calc_bathy=True)
-        assert np.isclose(np.nansum(nemo_f.dataset.bathymetry.values), 115460610.0), " X - Gridded calc_bathy failed on f-grid failed"
+        assert np.isclose(
+            np.nansum(nemo_f.dataset.bathymetry.values), 115460610.0
+        ), " X - Gridded calc_bathy failed on f-grid failed"
 
     def test_gridded_load_subregion_with_domain(self):
         amm7 = coast.Gridded(files.fn_nemo_dat_subset, files.fn_nemo_dom, config=files.fn_config_t_grid)
