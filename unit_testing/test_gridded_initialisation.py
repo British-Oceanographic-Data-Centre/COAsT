@@ -1,14 +1,13 @@
-"""
-
-"""
+"""Testing initialisation of gridded objects."""
 
 # IMPORT modules. Must have unittest, and probably coast.
-import coast
 import unittest
+
 import numpy as np
-import os.path as path
 import xarray as xr
+
 import unit_test_files as files
+import coast
 
 
 class test_gridded_initialisation(unittest.TestCase):
