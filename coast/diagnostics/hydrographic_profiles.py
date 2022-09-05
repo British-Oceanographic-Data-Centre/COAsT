@@ -299,13 +299,13 @@ class Hydrographic_Profiles(Indexed):
     def makefilenames(path, dataset, yr_start, yr_stop):
         if dataset == "EN4":
             datasetnames = []
+            january = 1
+            december = 13  # range is non-inclusive so we need 12 + 1
             for yr in range(yr_start, yr_stop + 1):
-                for im in range(1, 13):
-                    YR = str(yr)
-                    IM = str(im)
+                for im in range(january, december):
                     if im < 10:
-                        IM = "0" + IM
-                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{YR}{IM}.nc")
+                        im = f"0{im}"
+                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im}.nc")
                     datasetnames.append(name)
             return datasetnames
         print("Data set not coded")
