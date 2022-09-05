@@ -122,7 +122,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         if not hasattr(gridded_w.dataset, "rho_dz"):
             gridded_w = gridded_t.differentiate(
                 "density", dim="z_dim", out_var_str="rho_dz", out_obj=gridded_w
-            )  # TODO These kwargs don't appear to exist
+            )
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in
         # z_dim, ydim, xdim
