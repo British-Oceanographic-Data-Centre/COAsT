@@ -317,7 +317,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             var_lst = [self.dataset[var]]
 
         fig = None
-        ax = None        
+        ax = None
         for var in var_lst:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.gca()
