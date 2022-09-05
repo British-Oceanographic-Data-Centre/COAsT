@@ -333,8 +333,7 @@ class Hydrographic_Profiles(Indexed):
                     name = path + "/" + "EN.4.2.1.f.profiles.l09." + YR + IM + ".nc"
                     datasetnames.append(name)
             return datasetnames
-        else:
-            print("Data set not coded")
+        print("Data set not coded")
 
     # Functions
     ###############################################################################
@@ -345,12 +344,11 @@ class Hydrographic_Profiles(Indexed):
         j_min = limits[2]
         j_max = limits[3]
         if i_max > i_min:
-            var_dom = var_dom[i_min : i_max + 1, j_min : j_max + 1]
-        else:
-            # special case for wrap-around
-            gvar1 = var_dom[i_min:, j_min : j_max + 1]
-            gvar2 = var_dom[:i_max, j_min : j_max + 1]
-            var_dom = np.concatenate((gvar1, gvar2), axis=0)
+            return var_dom[i_min : i_max + 1, j_min : j_max + 1]
+        # special case for wrap-around
+        gvar1 = var_dom[i_min:, j_min : j_max + 1]
+        gvar2 = var_dom[:i_max, j_min : j_max + 1]
+        var_dom = np.concatenate((gvar1, gvar2), axis=0)
         return var_dom
 
     ###############################################################################
