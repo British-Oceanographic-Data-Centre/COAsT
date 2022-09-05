@@ -120,9 +120,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 
         # Construct stratification if not already done. t-pts --> w-pts
         if not hasattr(gridded_w.dataset, "rho_dz"):
-            gridded_w = gridded_t.differentiate(
-                "density", dim="z_dim", out_var_str="rho_dz", out_obj=gridded_w
-            )
+            gridded_w = gridded_t.differentiate("density", dim="z_dim", out_var_str="rho_dz", out_obj=gridded_w)
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in
         # z_dim, ydim, xdim
