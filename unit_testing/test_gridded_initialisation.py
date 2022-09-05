@@ -92,7 +92,7 @@ class test_gridded_initialisation(unittest.TestCase):
             fn_data=files.fn_nemo_grid_t_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_t_grid,
-            calculated_bathymetry=True
+            calculated_bathymetry=True,
         )
         nemo_t.make_lonLat_2d()
         if not np.isclose(np.nansum(nemo_t.dataset.bathymetry.values), 116707590.0):
@@ -103,7 +103,7 @@ class test_gridded_initialisation(unittest.TestCase):
             fn_data=files.fn_nemo_grid_u_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_u_grid,
-            calculated_bathymetry=True
+            calculated_bathymetry=True,
         )
         nemo_u.make_lonLat_2d()
         if not np.isclose(np.nansum(nemo_u.dataset.bathymetry.values), 116031920.0):
@@ -114,7 +114,7 @@ class test_gridded_initialisation(unittest.TestCase):
             fn_data=files.fn_nemo_grid_v_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_v_grid,
-            calculated_bathymetry=True
+            calculated_bathymetry=True,
         )
         nemo_v.make_lonLat_2d()
         if not np.isclose(np.nansum(nemo_v.dataset.bathymetry.values), 116164800.0):
