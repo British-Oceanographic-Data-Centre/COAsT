@@ -356,8 +356,6 @@ class Hydrographic_Profiles(Indexed):
     ###############################################################################
     ###########################################
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
-        import numpy as np
-
         DX = (Xpts - X[jpts, ipts]) * Re * np.cos(Ypts * np.pi / 180.0)
         DY = (Ypts - Y[jpts, ipts]) * Re
         r = np.sqrt(DX**2 + DY**2)
