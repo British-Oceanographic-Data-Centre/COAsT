@@ -47,7 +47,6 @@ import coast._utils.plot_util as plot_util
 import coast._utils.stats_util as stats_util
 from socket import gethostname  # to get hostname
 import traceback
-import xarray.ufuncs as uf
 
 """
 #################################################
