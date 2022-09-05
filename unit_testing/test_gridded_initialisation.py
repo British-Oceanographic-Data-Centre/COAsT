@@ -91,28 +91,33 @@ class test_gridded_initialisation(unittest.TestCase):
             fn_data=files.fn_nemo_grid_t_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_t_grid,
-            calc_bathy=True,
         )
+        nemo_t.make_lonLat_2d()
+
         if not np.isclose(np.nansum(nemo_t.dataset.bathymetry.values), 116707590.0):
             raise ValueError(" X - Gridded calc_bathy failed on t-grid failed")
         nemo_u = coast.Gridded(
             fn_data=files.fn_nemo_grid_u_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_u_grid,
-            calc_bathy=True,
         )
+        nemo_u.make_lonLat_2d()
+
         if not np.isclose(np.nansum(nemo_u.dataset.bathymetry.values), 116031920.0):
             raise ValueError(" X - Gridded calc_bathy failed on u-grid failed")
         nemo_v = coast.Gridded(
             fn_data=files.fn_nemo_grid_v_dat,
             fn_domain=files.fn_nemo_dom,
             config=files.fn_config_v_grid,
-            calc_bathy=True,
         )
+        nemo_v.make_lonLat_2d()
+
         if not np.isclose(np.nansum(nemo_v.dataset.bathymetry.values), 116164800.0):
             raise ValueError(" X - Gridded calc_bathy failed on v-grid failed")
 
-        nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid, calc_bathy=True)
+        nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid)
+        nemo_f.make_lonLat_2d()
+
         if not np.isclose(np.nansum(nemo_f.dataset.bathymetry.values), 115460610.0):
             raise ValueError(" X - Gridded calc_bathy failed on f-grid failed")
 
