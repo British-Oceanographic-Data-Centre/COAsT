@@ -288,7 +288,6 @@ class ContourF(Contour):
         self.data_cross_flow = xr.Dataset()
 
     def calc_cross_contour_flow(self, gridded_u: Coast, gridded_v: Coast):
-
         """Method that will calculate the flow across the contour and store this data
         within Contour_f.data_cross_flow, which is an xarray.Dataset. Specifically
         Contour_f.normal_velocities are the velocities across the contour
