@@ -2,7 +2,9 @@ import os
 import numpy as np
 import xarray as xr
 import gsw
+from typing import List
 
+from ..data.gridded import Gridded
 from ..data.profile import Profile
 from ..data.index import Indexed
 from dask.diagnostics import ProgressBar
@@ -15,10 +17,10 @@ class Hydrographic_Profiles(Indexed):
 
     ###############################################################################
     def __init__(self, filename="none", datasetnames="none", config="", regionbounds=[]):
-        """
-        Reads and manipulates lists of hydrographic profiles
-        if called with datasetnames and regionbounds, extract profiles in these
-        bounds, and if a filenames is provided, saves them there
+        """Reads and manipulates lists of hydrographic profiles.
+        
+        Reads and manipulates lists of hydrographic profiles if called with datasetnames and regionbounds, 
+        extract profiles in these bounds, and if a filenames is provided, saves them there.
         """
         if datasetnames != "none" and len(regionbounds) == 4:
             self.extractprofiles(datasetnames, regionbounds, config)
@@ -27,19 +29,10 @@ class Hydrographic_Profiles(Indexed):
 
     def extractprofiles(self, datasetnames, regionbounds, config):
         """
-        Parameters
-        ----------
-        datasetnames : list of file names
-
-        regionbounds : [lon min, lon max, lat min lat max]
-
-        config : a configuration file (optional)
-
-
-        Returns
-        -------
-        None.
-
+        Args:
+            datasetnames: list of file names.
+            regionbounds: [lon min, lon max, lat min lat max]
+            config : a configuration file (optional)
         """
         x_min = regionbounds[0]
         x_max = regionbounds[1]
@@ -52,8 +45,7 @@ class Hydrographic_Profiles(Indexed):
 
     ########################################################################################
     def saveprofiles(self, filename):
-        """
-        Saves profile and gridded objects to netcdf
+        """Saves profile and gridded objects to netcdf.
         """
         filename_profile = filename[:-3] + "_profile.nc"
         filename_gridded = filename[:-3] + "_gridded.nc"
@@ -75,24 +67,15 @@ class Hydrographic_Profiles(Indexed):
         self.gridded.dataset = dataset
 
     ##############################################################################
-    def match_to_grid(self, gridded, **kwargs):
-        """
-        Match profiles locations to grid, finding 4 nearest neighbours for each profile
-        Parameters
-        ----------
-        gridded : gridded object
-        **kwargs :
-            limits = [jmin,jmax,imin,imax] - subset to this region
-            rmax = 7000 m maxmimum search distance
-        Returns
-        -------
-        None.
-
+    def match_to_grid(self, gridded: Gridded, limits: List = [0, 0, 0, 0], rmax: int = 7000 ) -> None:
+        """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
+        
+        Args:
+            gridded (Gridded): Gridded object.
+            limits (List): [jmin,jmax,imin,imax] - Subset to this region. 
+            rmax (int): 7000 m maxmimum search distance.
         """
         self.gridded = gridded
-        limits = kwargs.get("limits", [0, 0, 0, 0])
-
-        rmax = kwargs.get("rmax", 7000)
         if sum(limits) != 0:
             gridded.subset(ydim=range(limits[0], limits[1] + 0), xdim=range(limits[2], limits[3] + 1))
         # keep the grid or subset on the hydrographic profiles object
@@ -142,23 +125,15 @@ class Hydrographic_Profiles(Indexed):
         self.profile.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
 
     ###############################################################################
-    def stratificationmetrics(self, **kwargs):
+    def stratificationmetrics(self, Zmax: int =200, DZMAX: int=30) -> None:
+        """Calculates various stratification metrics for observed  profiles.
+        
+        Currently: PEA, PEAT, SST, SSS, NBT.
+        
+        Args:
+            Zmax = 200 m maximum depth of integration.
+            DZMAX = 30 m depth of surface layer.
         """
-        Calculates various stratification metrics for observed  profiles
-        Currently: PEA, PEAT, SST, SSS, NBT
-        Parameters
-        ----------
-        **kwargs :
-           Zmax = 200 m maximum depth of integration
-           DZMAX = 30 m depth of surface layer
-        Returns
-        -------
-        None.
-
-        """
-        Zmax = kwargs.get("Zmax", 200)  # Maximum depth for integration and nbt
-        DZMAX = kwargs.get("DZmax", 30)  # How close to surface o rbottom
-
         i_prf = self.profile.dataset.i_prf - self.profile.dataset.i_min
         j_prf = self.profile.dataset.j_prf - self.profile.dataset.j_min
         D = self.gridded.dataset.bathymetry  # uses bathymetry from gridded object
