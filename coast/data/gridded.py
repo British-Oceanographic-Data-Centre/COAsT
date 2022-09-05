@@ -1,5 +1,6 @@
 """Gridded class"""
 import os.path as path_lib
+import re
 import warnings
 
 # from dask import delayed, compute, visualize
@@ -134,10 +135,19 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dataset_domain = dataset_domain.rename_dims(mapping)
             except ValueError as err:
                 warning(
-                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{get_slug(self)}: Problem renaming domain dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
-
+        # Rename domain variables.
+        for key, value in self.config.domain.variable_map.items():
+            mapping = {key: value}
+            try:
+                dataset_domain = dataset_domain.rename_vars(mapping)
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming domain variable from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
@@ -403,8 +413,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
-        internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[self.grid_vars[0]]  # [f"glam{self.grid_ref.replace('-grid','')}"]
+        internal_lat = dataset_domain["latitude"]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain["longitude"]  # [f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
@@ -704,14 +714,21 @@ class Gridded(Coast):  # TODO Complete this docstring
 
     def copy_domain_vars_to_dataset(self, dataset_domain, grid_vars):
         """
-        Map the domain coordand metric variables to the dataset object.
+        Map the domain coordinates and metric variables to the dataset object.
         Expects the source and target DataArrays to be same sizes.
         """
         debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
         for var in grid_vars:
             try:
                 new_name = self.config.domain.variable_map[var]
-                self.dataset[new_name] = dataset_domain[var].squeeze()
+                m = re.search(
+                    "depth[a-z]_0", var
+                )  # Check necessary because of hardcoded calculated depth variable names.
+                if m:
+                    self.dataset[new_name] = dataset_domain[var].squeeze()
+                else:
+                    self.dataset[new_name] = dataset_domain[new_name].squeeze()
+
                 debug("map: {} --> {}".format(var, new_name))
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
