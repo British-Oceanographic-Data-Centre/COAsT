@@ -208,34 +208,22 @@ class Gridded(Coast):  # TODO Complete this docstring
         # jth NEMO bathymetry can be called bathymetry, bathy_metry or hbatt in various versions
         try:
             bathymetry = dataset_domain.bathy_metry.squeeze()
-        except:
-            try:
-                bathymetry = (
-                    dataset_domain.hbatt.squeeze()
-                )  # jth add a second option here better done with config file?
-            except:
-                try:
-                    bathymetry = (
-                        dataset_domain.bathymetry.squeeze()
-                    )  # jth add a second option here better done with config file??
-
-                except AttributeError as err:
-                    bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
-                    (
-                        # jth warnign needs to change
-                        warnings.warn(
-                            f"The model domain loaded, '{self.filename_domain}', does not contain the "
-                            "bathy_metry' variable. This will result in the "
-                            "NEMO.dataset.bathymetry variable being set to zero, which "
-                            "may result in unexpected behaviour from routines that require "
-                            "this variable."
-                        )
-                    )
-                    debug(
-                        f"The bathy_metry variable was missing from the domain_cfg for "
-                        f"{get_slug(self)} with {get_slug(dataset_domain)}"
-                        f"{chr(10)}Error message of {err}"
-                    )
+        except AttributeError as err:
+            bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+            (
+                warnings.warn(
+                    f"The model domain loaded, '{self.filename_domain}', does not contain the "
+                    "bathy_metry' variable. This will result in the "
+                    "NEMO.dataset.bathymetry variable being set to zero, which "
+                    "may result in unexpected behaviour from routines that require "
+                    "this variable."
+                )
+            )
+            debug(
+                f"The bathy_metry variable was missing from the domain_cfg for "
+                f"{get_slug(self)} with {get_slug(dataset_domain)}"
+                f"{chr(10)}Error message of {err}"
+            )
 
         try:
             if self.grid_ref == "t-grid":
