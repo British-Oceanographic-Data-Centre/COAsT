@@ -197,7 +197,7 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         Args:
             dataset_domain: a complex data object.
-            calculate_bathymetry: Flag that will either calculate bathymetry (true) or load it from dataset_domian file
+            calculate_bathymetry: Flag that will either calculate bathymetry (true) or load it from dataset_domain file
             (false).
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
@@ -277,7 +277,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dims=["z_dim", "y_dim", "x_dim"],
                 attrs={"units": "m", "standard_name": "Depth at time zero on the {}".format(self.grid_ref)},
             )
-            self.dataset["bathy_metry"] = xr.DataArray(
+            self.dataset["bathymetry"] = xr.DataArray(
                 bathymetry,
                 dims=["y_dim", "x_dim"],
                 attrs={

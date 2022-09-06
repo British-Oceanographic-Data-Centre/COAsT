@@ -61,7 +61,7 @@ class test_gridded_initialisation(unittest.TestCase):
             var_name_list = []
             for var_name in nemo_f.dataset.data_vars:
                 var_name_list.append(var_name)
-            if var_name_list == ["bathy_metry", "e1", "e2", "e3_0"]:
+            if var_name_list == ["bathymetry", "e1", "e2", "e3_0"]:
                 check1 = True
         self.assertTrue(check1, msg="check1")
 
@@ -94,7 +94,7 @@ class test_gridded_initialisation(unittest.TestCase):
             calculate_bathymetry=True,
         )
         nemo_t.make_lonLat_2d()
-        if not np.isclose(np.nansum(nemo_t.dataset.bathy_metry.values), 116707590.0):
+        if not np.isclose(np.nansum(nemo_t.dataset.bathymetry.values), 116707590.0):
             raise ValueError(" X - Gridded calc_bathy failed on t-grid failed")
 
     # def test_gridded_calculate_bathymetry_for_u(self):

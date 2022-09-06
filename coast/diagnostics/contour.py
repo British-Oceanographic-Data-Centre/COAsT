@@ -69,7 +69,7 @@ class Contour:
         None
 
         """
-        ax = plt.subplots()
+        fig, ax = plt.subplots()
         lat = gridded.dataset.latitude[xr.DataArray(contour[:, 0]), xr.DataArray(contour[:, 1])]
         lon = gridded.dataset.longitude[xr.DataArray(contour[:, 0]), xr.DataArray(contour[:, 1])]
 
