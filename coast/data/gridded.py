@@ -211,7 +211,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 bathymetry = dataset_domain.bathy_metry.squeeze()
 
         except AttributeError as err:
-            bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+            bathymetry = xr.zeros_like(dataset_domain.e1.squeeze())
             (
                 warnings.warn(
                     f"The model domain loaded, '{self.filename_domain}', does not contain the "
@@ -229,19 +229,19 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         try:
             if self.grid_ref == "t-grid":
-                e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
+                e3w_0 = np.squeeze(dataset_domain.e3_0.values)
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
 
             elif self.grid_ref == "w-grid":
-                e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
+                e3t_0 = np.squeeze(dataset_domain.e3_0.values)
                 depth_0 = np.zeros_like(e3t_0)
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
 
             elif self.grid_ref == "u-grid":
-                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0 = dataset_domain.e3_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
@@ -250,7 +250,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
 
             elif self.grid_ref == "v-grid":
-                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0 = dataset_domain.e3_0.values.squeeze()
                 e3w_0_on_v = 0.5 * (e3w_0[:, :-1, :] + e3w_0[:, 1:, :])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
@@ -259,7 +259,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
 
             elif self.grid_ref == "f-grid":
-                e3w_0 = dataset_domain.e3w_0.values.squeeze()
+                e3w_0 = dataset_domain.e3_0.values.squeeze()
                 e3w_0_on_f = 0.25 * (e3w_0[:, :-1, :-1] + e3w_0[:, :-1, 1:] + e3w_0[:, 1:, :-1] + e3w_0[:, 1:, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
@@ -277,14 +277,15 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dims=["z_dim", "y_dim", "x_dim"],
                 attrs={"units": "m", "standard_name": "Depth at time zero on the {}".format(self.grid_ref)},
             )
-
-            self.dataset["bathymetry"] = bathymetry
-            self.dataset["bathymetry"].attrs = {
-                "units": "m",
+            self.dataset["bathy_metry"] = xr.DataArray(
+                bathymetry,
+                dims=["y_dim", "x_dim"],
+                attrs={"units": "m",
                 "standard_name": "bathymetry",
-                "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref),
-            }
+                "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref)}
+            )
         except ValueError as err:
+            print(err)
             error(err)
 
     def calc_bathymetry(self, dataset_domain):
@@ -300,11 +301,13 @@ class Gridded(Coast):  # TODO Complete this docstring
         """
         # jth not set for lazy loading
 
-        e3t = dataset_domain.e3t_0.squeeze()
+        e3t = dataset_domain.e3_0.squeeze()
         time_mask = xr.zeros_like(e3t)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
+        print("****************bottom_level", type(bottom_level))
         top_level = dataset_domain.top_level.values.squeeze()
-        bathymetry = np.array()
+        bathymetry = np.zeros_like(bottom_level) #np.array([[]])
+        mask = None
 
         for k in range(1, e3t.shape[0] + 1):
             time_mask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
