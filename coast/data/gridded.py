@@ -229,19 +229,19 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         try:
             if self.grid_ref == "t-grid":
-                e3w_0 = np.squeeze(dataset_domain.e3_0.values)
+                e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
 
             elif self.grid_ref == "w-grid":
-                e3t_0 = np.squeeze(dataset_domain.e3_0.values)
+                e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
 
             elif self.grid_ref == "u-grid":
-                e3w_0 = dataset_domain.e3_0.values.squeeze()
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
@@ -250,7 +250,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
 
             elif self.grid_ref == "v-grid":
-                e3w_0 = dataset_domain.e3_0.values.squeeze()
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_v = 0.5 * (e3w_0[:, :-1, :] + e3w_0[:, 1:, :])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
@@ -259,7 +259,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
 
             elif self.grid_ref == "f-grid":
-                e3w_0 = dataset_domain.e3_0.values.squeeze()
+                e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_f = 0.25 * (e3w_0[:, :-1, :-1] + e3w_0[:, :-1, 1:] + e3w_0[:, 1:, :-1] + e3w_0[:, 1:, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
@@ -294,7 +294,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         """
         NEMO approach to defining bathymetry by summing scale factors at various
         grid locations.
-        Works with z-coordinates on u- and v- faces where bathymerty is defiend
+        Works with z-coordinates on u- and v- faces where bathymetry is defined
         at the top of the cliff, not at the bottom
 
         Args:
@@ -303,18 +303,23 @@ class Gridded(Coast):  # TODO Complete this docstring
         """
         # jth not set for lazy loading
 
-        e3t = dataset_domain.e3_0.squeeze()
-        time_mask = xr.zeros_like(e3t)
+        e3_0 = dataset_domain.e3_0.squeeze()
+        time_mask = xr.zeros_like(e3_0)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
         print("****************bottom_level", type(bottom_level))
         top_level = dataset_domain.top_level.values.squeeze()
         bathymetry = np.zeros_like(bottom_level)  # np.array([[]])
         mask = None
 
-        for k in range(1, e3t.shape[0] + 1):
+        for k in range(1, e3_0.shape[0] + 1):
             time_mask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
 
-        if self.grid_ref == "t-grid" or self.grid_ref == "w-grid":
+        if self.grid_ref == "t-grid":
+            e3t = dataset_domain.e3_0.squeeze()
+            bathymetry[:, :] = np.sum(e3t.values * time_mask.values, axis=0)
+
+        elif self.grid_ref == "w-grid":
+            e3t = dataset_domain.e3t_0.squeeze()
             bathymetry[:, :] = np.sum(e3t.values * time_mask.values, axis=0)
 
         elif self.grid_ref == "u-grid":
@@ -330,7 +335,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             bathymetry[:, :] = np.sum(e3v.values * mask.values, axis=0)
 
         elif self.grid_ref == "f-grid":
-            e3f = dataset_domain.e3f_0.squeeze()
+            e3f = dataset_domain.e3_0.squeeze()
             mask = xr.zeros_like(e3f)
             mask[:, :-1, :-1] = (
                 time_mask[:, :-1, :-1] * time_mask[:, :-1, 1:] * time_mask[:, 1:, :-1] * time_mask[:, 1:, 1:]
