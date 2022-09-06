@@ -280,9 +280,11 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.dataset["bathy_metry"] = xr.DataArray(
                 bathymetry,
                 dims=["y_dim", "x_dim"],
-                attrs={"units": "m",
-                "standard_name": "bathymetry",
-                "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref)}
+                attrs={
+                    "units": "m",
+                    "standard_name": "bathymetry",
+                    "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref),
+                },
             )
         except ValueError as err:
             print(err)
@@ -306,7 +308,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         bottom_level = dataset_domain.bottom_level.values.squeeze()
         print("****************bottom_level", type(bottom_level))
         top_level = dataset_domain.top_level.values.squeeze()
-        bathymetry = np.zeros_like(bottom_level) #np.array([[]])
+        bathymetry = np.zeros_like(bottom_level)  # np.array([[]])
         mask = None
 
         for k in range(1, e3t.shape[0] + 1):
