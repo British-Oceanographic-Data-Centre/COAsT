@@ -167,14 +167,14 @@ class test_transect_methods(unittest.TestCase):
         self.assertTrue(check3, msg="check3")
 
     def test_cross_transect_geostrophic_flow(self):
-        nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom,
-                               config=files.fn_config_f_grid,
-                               calculate_bathymetry=True)
+        nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid, calculate_bathymetry=True)
         tran_f = coast.TransectF(nemo_f, (54, -15), (56, -12))
-        nemo_t = coast.Gridded(fn_data=files.fn_nemo_grid_t_dat,
-                               fn_domain=files.fn_nemo_dom,
-                               config=files.fn_config_t_grid,
-                               calculate_bathymetry=True)
+        nemo_t = coast.Gridded(
+            fn_data=files.fn_nemo_grid_t_dat,
+            fn_domain=files.fn_nemo_dom,
+            config=files.fn_config_t_grid,
+            calculate_bathymetry=True,
+        )
         tran_f.calc_geostrophic_flow(nemo_t, config_u=files.fn_config_u_grid, config_v=files.fn_config_v_grid)
         cksum1 = tran_f.data_cross_tran_flow.normal_velocity_hpg.sum(dim=("t_dim", "depth_z_levels", "r_dim")).item()
         cksum2 = tran_f.data_cross_tran_flow.normal_velocity_spg.sum(dim=("t_dim", "r_dim")).item()

@@ -57,9 +57,9 @@ class test_bgc_gridded_initialisation(unittest.TestCase):
 
     def test_gridded_load_bgc_domain_only(self):
         # Check gridded load domain only
-        nemo_f = coast.Gridded(fn_domain=files.fn_nemo_dom_bgc,
-                               config=files.fn_nemo_config_bgc,
-                               calculate_bathymetry=True)
+        nemo_f = coast.Gridded(
+            fn_domain=files.fn_nemo_dom_bgc, config=files.fn_nemo_config_bgc, calculate_bathymetry=True
+        )
 
         check1 = False
         if nemo_f.dataset._coord_names == {"depth_0", "latitude", "longitude"}:
