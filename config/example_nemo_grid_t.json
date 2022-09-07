@@ -62,7 +62,8 @@
 			"deptht_0": "depth_0",
 			"bottom_level": "bottom_level",
 			"mbathy":"bottom_level",
-			"hbatt":"bathymetry"
+			"hbatt":"bathymetry",
+			"bathymetry": "bathy_metry"
 		}
 	},
 	"static_variables": {
