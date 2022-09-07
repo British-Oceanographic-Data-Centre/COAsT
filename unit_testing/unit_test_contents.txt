@@ -1,7 +1,7 @@
      UNIT TEST CONTENTS FILE TEST    
 
 1. test_gridded_initialisation
-      a. gridded_calculate_bathymetry_for_tuvwf
+      a. gridded_calculate_bathymetry_for_t
       b. gridded_calculate_depth0_for_tuvwf
       c. gridded_compute_e3_from_ssh
       d. gridded_load_dimensions_correctly_renamed

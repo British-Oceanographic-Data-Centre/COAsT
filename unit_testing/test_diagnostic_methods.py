@@ -90,7 +90,7 @@ class test_diagnostic_methods(unittest.TestCase):
         with self.subTest("Construct pycnocline depth"):
             log_str = ""
             # initialise Internal Tide object
-            IT = coast.InternalTide(nemo_t, nemo_w)
+            IT = coast.InternalTide(nemo_t)
             if IT is None:  # Test whether object was returned
                 log_str += "No object returned\n"
             # Construct pycnocline variables: depth and thickness

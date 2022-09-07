@@ -12,9 +12,15 @@ class Annual_Climatology(Gridded):
     """
 
     def __init__(self, gridded_t, gridded_t_out, Zmax=200.0):
+        """
+        Args:
+            gridded_t: Input gridded object.
+            gridded_t:
+            Zmax: Max z.
+        """
 
         # calculate a depth mask
-        Zd_mask, kmax, Ikmax = gridded_t.calculate_vertical_mask(Zmax)
+        Zd_mask, _, _ = gridded_t.calculate_vertical_mask(Zmax)
 
         ny = gridded_t.dataset.dims["y_dim"]
         nx = gridded_t.dataset.dims["x_dim"]
@@ -68,6 +74,3 @@ class Annual_Climatology(Gridded):
         gridded_t_out.dataset["SSTy"] = xr.DataArray(np.squeeze(SSTy), coords=coords, dims=dims, attrs=attributes_SST)
         gridded_t_out.dataset["SSSy"] = xr.DataArray(np.squeeze(SSSy), coords=coords, dims=dims, attrs=attributes_SSS)
         gridded_t_out.dataset["PEAy"] = xr.DataArray(np.squeeze(PEAy), coords=coords, dims=dims, attrs=attributes_PEA)
-
-
-#%%

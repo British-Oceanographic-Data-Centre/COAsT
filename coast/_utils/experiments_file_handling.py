@@ -1,4 +1,7 @@
-"""Set of functions to control basic experimnet file handling"""
+"""Set of functions to control basic experiment file handling"""
+
+import json
+from typing import List
 import numpy as np
 
 
@@ -22,8 +25,6 @@ def experiments(experiments="experiments.json"):
     exp_names,dirs,domains,file_names
 
     """
-    import json
-
     with open(experiments, "r") as j:
         json_content = json.loads(j.read())
         try:
@@ -43,7 +44,6 @@ def experiments(experiments="experiments.json"):
         except:
             file_names = []
 
-        # print(lengths)
         # check all non zero lengths are the same
         lengths = np.array([len(exp_names), len(dirs), len(domains), len(file_names)])
         if np.min(lengths[np.nonzero(lengths)[0]]) != np.max(lengths[np.nonzero(lengths)[0]]):
@@ -51,34 +51,26 @@ def experiments(experiments="experiments.json"):
     return exp_names, dirs, domains, file_names
 
 
-def nemo_filenames(dpath, runtype, ystart, ystop, grid="T"):
-    """
-    Creates a list of NEMO file names from a set of standard templates
-     Parameters
-     ----------
-     dpath : path to the files
-     runtype : hardwired set of standard nemo filenames
-     ystart : start year
-     ystop : stop year
-     grid (optional) NEMO grid type
+def nemo_filename_maker(directory, year_start: int, year_stop: int, grid: str = "T") -> List:
+    """Creates a list of NEMO file names from a set of standard templates.
 
-     -------
-     names :lis tof nemo file names
-    """
+    Args:
+        directory: path to the files'
+        year_start: start year
+        year_stop: stop year
+        grid: NEMO grid type defaults to T
 
+    Returns: a list of possible nemo file names
+
+    """
     # produce a list of nemo filenames
-    names = np.array([])
-    if runtype == "SENEMO":
-        for iy in range(ystart, ystop + 1):
-            for im in range(1, 12 + 1):
-                MNTH = str(im)
-                if im < 10:
-                    MNTH = "0" + MNTH
-                YEAR = str(iy)
-                new_name = "{0}/SENEMO_1m_{1}0101_{1}1231_grid_{3}_{1}{2}-{1}{2}.nc".format(dpath, YEAR, MNTH, grid)
-                names = np.append(names, new_name)
+    names = []
+    january = 1
+    december = 13  # range is non-inclusive so we need 12 + 1
 
-    else:
-        print("Runtype: " + runtype + "not coded yet, returning empty list")
-        names = []
+    for year in range(year_start, year_stop + 1):
+        for month in range(january, december):
+            new_name = f"{directory}/SENEMO_1m_{year}0101_{year}1231_grid_{grid}_{year}{month:02}-{year}{month:02}.nc"
+            names.append(new_name)
+
     return names
