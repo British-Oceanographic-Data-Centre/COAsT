@@ -64,7 +64,21 @@ class test_diagnostic_methods(unittest.TestCase):
             .item(),
             11185010.518671108,
         )
+        # Density depth mean T and S limited to 200m
+        Zmax = 200  # m
+        Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(Zmax)
+        nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Zd_mask=Zd_mask)
+        check2 = np.allclose(
+            nemo_t.dataset.density_bar.sel(x_dim=10, y_dim=10).mean(dim=["t_dim", "z_dim"]).item(), 1026.7535233998765
+        )
+        # Temperature component of density (ie from depth mean Sal). full depth
+        nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Tbar=False)
+        check3 = np.allclose(
+            nemo_t.dataset.density_T.sel(x_dim=10, y_dim=10).mean(dim=["t_dim", "z_dim"]).item(), 1026.4989384403814
+        )
         self.assertTrue(check1, msg="check1")
+        self.assertTrue(check2, msg="check2")
+        self.assertTrue(check3, msg="check3")
 
     def test_construct_pycnocline_depth_and_thickness(self):
         nemo_t = None
@@ -76,7 +90,7 @@ class test_diagnostic_methods(unittest.TestCase):
         with self.subTest("Construct pycnocline depth"):
             log_str = ""
             # initialise Internal Tide object
-            IT = coast.InternalTide(nemo_t, nemo_w)
+            IT = coast.InternalTide(nemo_t)
             if IT is None:  # Test whether object was returned
                 log_str += "No object returned\n"
             # Construct pycnocline variables: depth and thickness

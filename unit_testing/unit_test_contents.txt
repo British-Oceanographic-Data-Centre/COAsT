@@ -1,15 +1,16 @@
      UNIT TEST CONTENTS FILE TEST    
 
 1. test_gridded_initialisation
-      a. gridded_calculate_depth0_for_tuvwf
-      b. gridded_compute_e3_from_ssh
-      c. gridded_load_dimensions_correctly_renamed
-      d. gridded_load_domain_only
-      e. gridded_load_multiple
-      f. gridded_load_of_data_and_domain
-      g. gridded_load_of_data_only
-      h. gridded_load_subregion_with_domain
-      i. gridded_load_variables_correctly_renamed
+      a. gridded_calculate_bathymetry_for_t
+      b. gridded_calculate_depth0_for_tuvwf
+      c. gridded_compute_e3_from_ssh
+      d. gridded_load_dimensions_correctly_renamed
+      e. gridded_load_domain_only
+      f. gridded_load_multiple
+      g. gridded_load_of_data_and_domain
+      h. gridded_load_of_data_only
+      i. gridded_load_subregion_with_domain
+      j. gridded_load_variables_correctly_renamed
 
 2. test_general_utils
       a. bst_to_gmt
