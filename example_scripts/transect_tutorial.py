@@ -17,7 +17,6 @@ In this tutorial we take a look at subsetting the model data along a transect (a
 # Load packages and define some file paths
 
 import coast
-import xarray as xr
 import matplotlib.pyplot as plt
 
 fn_nemo_dat_t = "./example_files/nemo_data_T_grid.nc"
