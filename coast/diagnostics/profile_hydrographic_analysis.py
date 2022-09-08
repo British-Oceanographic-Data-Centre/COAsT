@@ -52,7 +52,7 @@ class ProfileHydrography(Indexed):
         """
         Helper method to saves profile and gridded datasets (in self) to netcdf.
         """
-        if filename[:-3] is ".nc":
+        if filename[:-3] == ".nc":
             filename_profile = filename[:-3] + "_profile.nc"
             filename_gridded = filename[:-3] + "_gridded.nc"
         else:
