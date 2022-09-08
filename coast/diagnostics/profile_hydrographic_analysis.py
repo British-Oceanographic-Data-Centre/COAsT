@@ -8,55 +8,73 @@ from ..data.gridded import Gridded
 from ..data.profile import Profile
 from ..data.index import Indexed
 from dask.diagnostics import ProgressBar
+from .._utils.logging_util import get_slug, debug, info, warn, warning
+
 
 #
-Re = 6367456 * np.pi / 180
+earth_radius = 6367456 * np.pi / 180
 
 
-class Hydrographic_Profiles(Indexed):
+class ProfileHydrography(Indexed):
 
     ###############################################################################
-    def __init__(self, filename="none", datasetnames="none", config="", regionbounds=[]):
+    def __init__(self, filename="none", dataset_names="none", config="", region_bounds=[]):
         """Reads and manipulates lists of hydrographic profiles.
 
-        Reads and manipulates lists of hydrographic profiles if called with datasetnames and regionbounds,
+        Reads and manipulates lists of hydrographic profiles if called with dataset_names and region_bounds,
         extract profiles in these bounds, and if a filenames is provided, saves them there.
         """
-        if datasetnames != "none" and len(regionbounds) == 4:
-            self.extractprofiles(datasetnames, regionbounds, config)
+        if dataset_names != "none" and len(region_bounds) == 4:
+            self.extract_profiles(dataset_names, region_bounds, config)
             if filename != "none":
-                self.saveprofiles(filename)
+                self.save_profiles(filename)
 
-    def extractprofiles(self, datasetnames, regionbounds, config):
+    def extract_profiles(self, dataset_names, region_bounds, config):
         """
+        Helper method to load EN4 data file, subset by region and process.
+
         Args:
-            datasetnames: list of file names.
-            regionbounds: [lon min, lon max, lat min lat max]
+            dataset_names: list of file names.
+            region_bounds: [lon min, lon max, lat min lat max]
             config : a configuration file (optional)
         """
-        x_min = regionbounds[0]
-        x_max = regionbounds[1]
-        y_min = regionbounds[2]
-        y_max = regionbounds[3]
+        x_min = region_bounds[0]
+        x_max = region_bounds[1]
+        y_min = region_bounds[2]
+        y_max = region_bounds[3]
         self.profile = Profile(config=config)
-        self.profile.read_en4(datasetnames, multiple=True)
+        self.profile.read_en4(dataset_names, multiple=True)
         self.profile = self.profile.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
         self.profile = self.profile.process_en4()
 
     ########################################################################################
-    def saveprofiles(self, filename):
-        """Saves profile and gridded objects to netcdf."""
-        filename_profile = filename[:-3] + "_profile.nc"
-        filename_gridded = filename[:-3] + "_gridded.nc"
+    def save_profiles(self, filename):
+        """
+        Helper method to saves profile and gridded datasets (in self) to netcdf.
+        """
+        if filename[:-3] is ".nc":
+            filename_profile = filename[:-3] + "_profile.nc"
+            filename_gridded = filename[:-3] + "_gridded.nc"
+        else:
+            warn(
+                "filename: \n"
+                "{0} \n"
+                "was expected to end with .nc".format(
+                    filename
+                ),
+                UserWarning,
+            )
 
         print("saving Profile data")
         with ProgressBar():
             self.profile.dataset.to_netcdf(filename_profile)
         print("saving gridded data")
         with ProgressBar():
-            self.gridded.dataset.to_netcdf(filename_gridded)
+            self.gridded.dataset.to_netcdf(filename_gridded)  ## THIS IS A BIT ODD. WHY IS THERE gridded DATA IN AN INDEX OBJ?
 
-    def loadprofiles(self, filename):
+    def load_profiles(self, filename):
+        """ Helper method to load Profile and Gridded data from netcdf files """
+        ### COMMENT: WHY IS THIS CLASS, WHICH INHERITS FROM INDEXED< LOADING profile AND gridded DATA
         filename_profile = filename[:-3] + "_profile.nc"
         filename_gridded = filename[:-3] + "_gridded.nc"
         self.profile = Profile()
@@ -72,7 +90,11 @@ class Hydrographic_Profiles(Indexed):
         Args:
             gridded (Gridded): Gridded object.
             limits (List): [jmin,jmax,imin,imax] - Subset to this region.
-            rmax (int): 7000 m maxmimum search distance.
+            rmax (int): 7000 m - maxmimum search distance (metres).
+
+        ### NEED TO DESCRIBE THE OUTPUT. WHAT DO i_prf, j_prf, rmin_prf REPRESENT?
+
+        ### THIS LOOKS LIKE SOMETHING THE profile.obs_operator WOULD DO
         """
         self.gridded = gridded
         if sum(limits) != 0:
@@ -103,7 +125,7 @@ class Hydrographic_Profiles(Indexed):
         lon_grd = gridded.dataset.longitude.values
         lat_grd = gridded.dataset.latitude.values
 
-        rr = Hydrographic_Profiles.distance_on_grid(
+        rr = ProfileHydrography.distance_on_grid(
             lat_grd, lon_grd, j_prf[ip, :].ravel(), i_prf[ip, :].ravel(), lat_prf4, lon_prf4
         )
         r[ip, :] = np.reshape(rr, (ip.size, 4))
@@ -124,14 +146,18 @@ class Hydrographic_Profiles(Indexed):
         self.profile.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
 
     ###############################################################################
-    def stratificationmetrics(self, Zmax: int = 200, DZMAX: int = 30) -> None:
-        """Calculates various stratification metrics for observed  profiles.
+    def stratification_metrics(self, Zmax: int = 200, DZMAX: int = 30) -> None:
+        """Calculates various stratification metrics for observed profiles.
 
         Currently: PEA, PEAT, SST, SSS, NBT.
 
         Args:
-            Zmax = 200 m maximum depth of integration.
+            Zmax = 200 m (int) maximum depth of integration.
             DZMAX = 30 m depth of surface layer.
+
+        COMMENT: IMPROVE DOC STRING
+        COMMENT: DEFINE OUTPUTS ESPECIALLY NON-STANDARD: PEAT, NBT, DT.
+        COMMENT: WHAT IS INPUT DZMAX USED FOR.
         """
         i_prf = self.profile.dataset.i_prf - self.profile.dataset.i_min
         j_prf = self.profile.dataset.j_prf - self.profile.dataset.j_min
@@ -154,7 +180,7 @@ class Hydrographic_Profiles(Indexed):
         else:
             npr = int(nprof / 10)
 
-        for ichnk in Hydrographic_Profiles.chunks(range(0, nprof), npr):
+        for ichnk in ProfileHydrography.chunks(range(0, nprof), npr):
             Ichnk = list(ichnk)
             print(min(Ichnk), max(Ichnk))
             tmp = self.profile.dataset.potential_temperature[Ichnk, :].values
@@ -255,14 +281,14 @@ class Hydrographic_Profiles(Indexed):
                             good_profile[ip] = 0
                     ###
 
-                    T = Hydrographic_Profiles.fillholes(T)
-                    S = Hydrographic_Profiles.fillholes(S)
+                    T = ProfileHydrography.fillholes(T)
+                    S = ProfileHydrography.fillholes(S)
                     tmp[ip, :] = T
                     sal[ip, :] = S
 
             ###############################################################################
             print("Calculate metrics")
-            metrics = Hydrographic_Profiles.profile_metrics(tmp, sal, ZZ, DZ, Zd_mask, lon, lat)
+            metrics = ProfileHydrography.profile_metrics(tmp, sal, ZZ, DZ, Zd_mask, lon, lat)
 
             PEAc = metrics["PEA"]
             PEATc = metrics["PEAT"]
@@ -290,7 +316,7 @@ class Hydrographic_Profiles(Indexed):
         for varname in varnames:
             print("Gridding", varname)
             mnth = self.profile.dataset.time.values.astype("datetime64[M]").astype(int) % 12 + 1
-            var, nvar = Hydrographic_Profiles.grid_vars_mnth(self, varname, i_prf, j_prf, mnth)
+            var, nvar = ProfileHydrography.grid_vars_mnth(self, varname, i_prf, j_prf, mnth)
             self.gridded.dataset[varname] = xr.DataArray(var, dims=["12", "y_dim", "x_dim"])
             self.gridded.dataset["n" + varname] = xr.DataArray(nvar, dims=["12", "y_dim", "x_dim"])
 
@@ -298,14 +324,14 @@ class Hydrographic_Profiles(Indexed):
     @staticmethod
     def makefilenames(path, dataset, yr_start, yr_stop):
         if dataset == "EN4":
-            datasetnames = []
+            dataset_names = []
             january = 1
             december = 13  # range is non-inclusive so we need 12 + 1
             for yr in range(yr_start, yr_stop + 1):
                 for im in range(january, december):
                     name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im:02}.nc")
-                    datasetnames.append(name)
-            return datasetnames
+                    dataset_names.append(name)
+            return dataset_names
         print("Data set not coded")
 
     # Functions
@@ -328,8 +354,8 @@ class Hydrographic_Profiles(Indexed):
     ###############################################################################
     ###########################################
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
-        DX = (Xpts - X[jpts, ipts]) * Re * np.cos(Ypts * np.pi / 180.0)
-        DY = (Ypts - Y[jpts, ipts]) * Re
+        DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)
+        DY = (Ypts - Y[jpts, ipts]) * earth_radius
         r = np.sqrt(DX**2 + DY**2)
         return r
 
@@ -368,16 +394,21 @@ class Hydrographic_Profiles(Indexed):
 
     ###########################################
     def chunks(lst, n):
-        """Yield successive n-sized chunks from lst."""
+        """
+        Helper function that yields successive n-sized chunks from lst.
+        COMMENT: CHANGE NAME TO SOMETHING UNIQUE, PERHAPS: chunk_lst()
+        """
         for i in range(0, len(lst), n):
             yield lst[i : i + n]
 
     ###########################################
     @staticmethod
     def profile_metrics(tmp, sal, Z, DZ, Zd_mask, lon, lat):
-
+        """
+        ADD: DOC STRING
+        """
         metrics = {}
-        g = 9.81
+        gravity = 9.81
         DD = np.sum(DZ * Zd_mask, axis=1)
         nz = Z.shape[1]
         lat = np.repeat(lat[:, np.newaxis], nz, axis=1)
@@ -395,8 +426,8 @@ class Hydrographic_Profiles(Indexed):
         Sbar_2d = np.repeat(Sbar[:, np.newaxis], nz, axis=1)
         rhoT = np.ma.masked_invalid(gsw.rho(Sbar_2d, temp_conservative, 0.0))  # density with constant salinity
 
-        PEA = -np.sum(Z * (rho - rhobar_2d) * DZ * Zd_mask, axis=1) * g / DD
-        PEAT = -np.sum(Z * (rhoT - rhobar_2d) * DZ * Zd_mask, axis=1) * g / DD
+        PEA = -np.sum(Z * (rho - rhobar_2d) * DZ * Zd_mask, axis=1) * gravity / DD
+        PEAT = -np.sum(Z * (rhoT - rhobar_2d) * DZ * Zd_mask, axis=1) * gravity / DD
 
         metrics["PEA"] = PEA
         metrics["PEAT"] = PEAT
@@ -406,6 +437,9 @@ class Hydrographic_Profiles(Indexed):
     ###########################################
 
     def grid_vars_mnth(self, var, i_var, j_var, mnth_var):
+        """
+        ADD: DOC STRING
+        """
         VAR = self.profile.dataset[var].values
         nx = self.gridded.dataset.dims["x_dim"]
         ny = self.gridded.dataset.dims["y_dim"]
