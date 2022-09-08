@@ -6,10 +6,10 @@ import copy
 from .._utils.logging_util import get_slug, debug
 
 
-class InternalTide(Gridded):  # TODO All abstract methods should be implemented
+class GriddedStratification(Gridded):  # TODO All abstract methods should be implemented
     """
     Object for handling and storing necessary information, methods and outputs
-    for calculation of internal tide diagnostics.
+    for calculation of stratification diagnostics.
 
     Herein the depth moments of stratification are used as proxies for
     pycnocline depth (as the first  moment of stratification), and pycnocline
@@ -30,10 +30,10 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
     Example basic usage:
     -------------------
         # Create Internal tide diagnostics object
-        IT_obj = INTERNALTIDE(gridded_t, gridded_w) # For Gridded objects on t and w-pts
-        IT_obj.construct_pycnocline_vars( gridded_t, gridded_w )
+        strat_obj = GriddedStratification(gridded_t, gridded_w) # For Gridded objects on t and w-pts
+        strat_obj.construct_pycnocline_vars( gridded_t, gridded_w )
         # Make maps of pycnocline thickness and depth
-        IT_obj.quick_plot()
+        strat_obj.quick_plot()
     """
 
     def __init__(self, gridded_t: xr.Dataset):
@@ -104,12 +104,12 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         gridded_w = coast.Gridded( fn_domain = dn_files + fn_nemo_dom,
                            grid_ref='w-grid')
 
-        # initialise Internal Tide object
-        IT = coast.INTERNALTIDE(gridded_t, gridded_w)
+        # initialise GriddedStratification object
+        strat = coast.GriddedStratification(gridded_t, gridded_w)
         # Construct pycnocline variables: depth and thickness
-        IT.construct_pycnocline_vars( gridded_t, gridded_w )
+        strat.construct_pycnocline_vars( gridded_t, gridded_w )
         # Plot pycnocline depth and thickness
-        IT.quickplot()
+        strat.quickplot()
 
         """
 
@@ -246,8 +246,8 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         gridded_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat,
                      dn_files + fn_nemo_dom, grid_ref='t-grid', config='config/example_nemo_grid_t.json')
         Zd_mask,kmax,Ikmax=gridded_t.calculate_vertical_mask(200.)
-        IT=coast.InternalTide(gridded_t,gridded_t)
-        IT.calc_pea(gridded_t,Zd_mask)
+        strat=coast.GriddedStratification(gridded_t,gridded_t)
+        strat.calc_pea(gridded_t,Zd_mask)
         """
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
         gravity = 9.81
@@ -303,7 +303,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 
         Example Usage
         -------------
-        IT.quick_plot( 'strat_1st_mom_masked' )
+        strat.quick_plot( 'strat_1st_mom_masked' )
 
         """
 

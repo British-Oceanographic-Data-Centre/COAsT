@@ -108,7 +108,7 @@
       d. blz_example_plot
       e. contour_tutorial
       f. export_to_netcdf_tutorial
-      g. internal_tide_pycnocline_diagnostics
+      g. stratification_pycnocline_diagnostics
       h. seasia_dic_example_plot
       i. seasia_r12_example_plot
       j. tidegauge_validation_tutorial

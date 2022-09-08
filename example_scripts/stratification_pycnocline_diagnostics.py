@@ -1,5 +1,5 @@
 """
-internal_tide_pycnocline_diagnostics.py
+stratification_pycnocline_diagnostics.py
 
 Demonstration of pycnocline depth and thickness diagnostics.
 The first and second depth moments of stratification are computed as proxies
@@ -107,28 +107,28 @@ sci_nwes_w = sci_nwes_t.differentiate(
 
 #################################################
 #%% Create internal tide diagnostics object
-print("* Create internal tide diagnostics object")
-IT = coast.InternalTide(sci_nwes_t, sci_nwes_w)
+print("* Create stratification diagnostics object")
+strat = coast.GriddedStratification(sci_nwes_t, sci_nwes_w)
 
 #%%  Construct pycnocline variables: depth and thickness
 print("* Compute density and rho_dz if they didn" "t exist")
 print("* Compute 1st and 2nd moments of stratification as pycnocline vars")
-IT.construct_pycnocline_vars(sci_nwes_t, sci_nwes_w)
+strat.construct_pycnocline_vars(sci_nwes_t, sci_nwes_w)
 
 #%%  Plot pycnocline variables: depth and thickness
 print("* Sample quick plot")
-IT.quick_plot()
+strat.quick_plot()
 
 
 #%% Make transects
 print("* Construct transects to inspect stratification. This is an abuse of the transect code...")
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
-tran_it = coast.TransectT(IT, (51, 2.5), (61, 2.5))
+tran_it = coast.TransectT(strat, (51, 2.5), (61, 2.5))
 tran_w = coast.TransectT(sci_nwes_w, (51, 2.5), (61, 2.5))
 tran_t = coast.TransectT(sci_nwes_t, (51, 2.5), (61, 2.5))
-print(" - I have forced the w-pt nemo data and w-pt IT data into the t-point Transect objects\n")
+print(" - I have forced the w-pt nemo data and w-pt strat data into the t-point Transect objects\n")
 
-lat_sec = tran_t.data.latitude.expand_dims(dim={"z_dim": IT.nz})
+lat_sec = tran_t.data.latitude.expand_dims(dim={"z_dim": strat.nz})
 dep_sec = tran_t.data.depth_0
 tem_sec = tran_t.data.temperature_m.mean(dim="t_dim")
 
@@ -183,10 +183,10 @@ pycnocline and reduced precision on the depth\n"
 )
 
 [JJ, II] = sci_nwes_t.find_j_i(lat=60, lon=2.5)
-zd_plus = IT.dataset.strat_1st_mom[0, JJ, II] + IT.dataset.strat_2nd_mom[0, JJ, II]
-zd_minus = IT.dataset.strat_1st_mom[0, JJ, II] - IT.dataset.strat_2nd_mom[0, JJ, II]
+zd_plus = strat.dataset.strat_1st_mom[0, JJ, II] + strat.dataset.strat_2nd_mom[0, JJ, II]
+zd_minus = strat.dataset.strat_1st_mom[0, JJ, II] - strat.dataset.strat_2nd_mom[0, JJ, II]
 plt.plot(sci_nwes_w.dataset.rho_dz[0, :, JJ, II], sci_nwes_w.dataset.depth_0[:, JJ, II], "+")
-plt.plot(IT.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
+plt.plot(strat.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
 plt.plot(
     [
         0,
@@ -203,7 +203,7 @@ plt.legend()
 plt.show()
 
 plt.plot(sci_nwes_t.dataset.density[0, :, JJ, II], sci_nwes_t.dataset.depth_0[:, JJ, II], "+")
-plt.plot(1027, IT.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
+plt.plot(1027, strat.dataset.strat_1st_mom[0, JJ, II], "o", label="strat_1st_mom")
 plt.plot([1027, 1027], [zd_plus, zd_minus], "-", label="strat_2nd_mom")
 plt.xlim([1026, 1028])
 plt.title("density")
@@ -236,7 +236,7 @@ H = sci_nwes_t.dataset.depth_0[-1, :, :].squeeze()
 lat = sci_nwes_t.dataset.latitude.squeeze()
 lon = sci_nwes_t.dataset.longitude.squeeze()
 
-zd = IT.dataset.strat_1st_mom_masked.where(H > 11).mean(dim="t_dim", skipna=True)  # make nan the land
+zd = strat.dataset.strat_1st_mom_masked.where(H > 11).mean(dim="t_dim", skipna=True)  # make nan the land
 # skipna = True --> ignore masked events when averaging
 # skipna = False --> if once masked then mean is masked.
 
@@ -265,10 +265,10 @@ labels = [str(int(cz.levels[i])) + "m" for i in range(1, len(cz.levels))]
 
 # I expect to see RuntimeWarnings in this block
 title_str = (
-    IT.dataset["time"].mean(dim="t_dim").dt.strftime("%b %Y: ").values
-    + IT.dataset.strat_1st_mom.standard_name
+    strat.dataset["time"].mean(dim="t_dim").dt.strftime("%b %Y: ").values
+    + strat.dataset.strat_1st_mom.standard_name
     + " ("
-    + IT.dataset.strat_1st_mom.units
+    + strat.dataset.strat_1st_mom.units
     + ")"
 )
 plt.title(title_str)

@@ -1,5 +1,5 @@
 from ..data.gridded import Gridded
-from ..diagnostics.internal_tide import InternalTide
+from ..diagnostics.gridded_stratification import GriddedStratification
 import numpy as np
 import xarray as xr
 
@@ -43,7 +43,7 @@ class Annual_Climatology(Gridded):
                 print(itt)
                 gridded_t2 = gridded_t.subset_as_copy(t_dim=itt)
                 print("copied", im)
-                PEA = InternalTide(gridded_t2, gridded_t2)
+                PEA = GriddedStratification(gridded_t2, gridded_t2)
                 PEA.calc_pea(gridded_t2, Zd_mask)
                 PEAy[im, :, :] = PEAy[im, :, :] + PEA.dataset["PEA"].values
         PEAy = PEAy / nyear
