@@ -1,7 +1,6 @@
 FROM conda/miniconda3-centos7
-COPY environment.yml .
-RUN conda env update --prune --file environment.yml
+RUN conda install python=3.8
 COPY setup.cfg .
 COPY setup.py .
-COPY coast .
+COPY coast ./coast
 RUN python -m pip install .
