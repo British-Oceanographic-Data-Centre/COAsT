@@ -4,19 +4,20 @@ import numpy as np
 import xarray as xr
 
 
-class Annual_Climatology(Gridded):
+class GriddedMonthlyHydrographicClimatology(Gridded):
     """
-    Calculates a mean annual cycle from multi-annual monthly data
-    Because it calculates dervied properties (e.g PEA), data must be loaded.
-    Currently hardwired to calculate SST, SSS and PEA, placing these in the Gridded Objected
+    Calculates the monthly climatology for SSS, SST and PEA from multi-annual monthly Gridded data.
+    Derived fields (SSS, SST, PEA) are placed into supplied coast.Gridded object.
     """
 
     def __init__(self, gridded_t, gridded_t_out, Zmax=200.0):
         """
+        Assumes monthly values in gridded_t, starting from Jan and multiyear
+
         Args:
-            gridded_t: Input gridded object.
-            gridded_t:
-            Zmax: Max z.
+            gridded_t: Input Gridded object.
+            gridded_t: Target Gridded object
+            Zmax: Max z for PEA integral calculation
         """
 
         # calculate a depth mask
@@ -27,12 +28,12 @@ class Annual_Climatology(Gridded):
 
         nt = gridded_t.dataset.dims["t_dim"]
 
-        SSTy = np.zeros((12, ny, nx))
-        SSSy = np.zeros((12, ny, nx))
-        PEAy = np.zeros((12, ny, nx))
+        SST_monthy_clim = np.zeros((12, ny, nx))
+        SSS_monthy_clim = np.zeros((12, ny, nx))
+        PEA_monthy_clim = np.zeros((12, ny, nx))
         # NBTy=np.zeros((12,ny,nx)) #will add near bed temperature later
 
-        PEAy = np.zeros((12, ny, nx))
+        PEA_monthy_clim = np.zeros((12, ny, nx))
 
         nyear = int(nt / 12)  # hard wired for monthly data starting in Jan
         for iy in range(nyear):
@@ -45,8 +46,8 @@ class Annual_Climatology(Gridded):
                 print("copied", im)
                 PEA = InternalTide(gridded_t2, gridded_t2)
                 PEA.calc_pea(gridded_t2, Zd_mask)
-                PEAy[im, :, :] = PEAy[im, :, :] + PEA.dataset["PEA"].values
-        PEAy = PEAy / nyear
+                PEA_monthy_clim[im, :, :] = PEA_monthy_clim[im, :, :] + PEA.dataset["PEA"].values
+        PEA_monthy_clim = PEA_monthy_clim / nyear
 
         # need to find efficient method for bottom temperature
         # NBT=np.zeros((nt,ny,nx))
@@ -58,8 +59,8 @@ class Annual_Climatology(Gridded):
         for im in range(12):
             print("Month", im)
             it = np.arange(im, nt, 12).astype(int)
-            SSTy[im, :, :] = np.mean(SST[it, :, :], axis=0)
-            SSSy[im, :, :] = np.mean(SSS[it, :, :], axis=0)
+            SST_monthy_clim[im, :, :] = np.mean(SST[it, :, :], axis=0)
+            SSS_monthy_clim[im, :, :] = np.mean(SSS[it, :, :], axis=0)
         # NBTy[im,:,:]=np.mean(NBT[it,:,:],axis=0)
         # save hard work in netcdf file
         coords = {
@@ -71,6 +72,6 @@ class Annual_Climatology(Gridded):
         attributes_SST = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
         attributes_SSS = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
         attributes_PEA = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(Zmax) + "m"}
-        gridded_t_out.dataset["SSTy"] = xr.DataArray(np.squeeze(SSTy), coords=coords, dims=dims, attrs=attributes_SST)
-        gridded_t_out.dataset["SSSy"] = xr.DataArray(np.squeeze(SSSy), coords=coords, dims=dims, attrs=attributes_SSS)
-        gridded_t_out.dataset["PEAy"] = xr.DataArray(np.squeeze(PEAy), coords=coords, dims=dims, attrs=attributes_PEA)
+        gridded_t_out.dataset["SST_monthy_clim"] = xr.DataArray(np.squeeze(SST_monthy_clim), coords=coords, dims=dims, attrs=attributes_SST)
+        gridded_t_out.dataset["SSS_monthy_clim"] = xr.DataArray(np.squeeze(SSS_monthy_clim), coords=coords, dims=dims, attrs=attributes_SSS)
+        gridded_t_out.dataset["PEA_monthy_clim"] = xr.DataArray(np.squeeze(PEA_monthy_clim), coords=coords, dims=dims, attrs=attributes_PEA)
