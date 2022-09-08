@@ -51,7 +51,8 @@
 			"e3f_0": "e3_0",
 			"depthf_0": "depth_0",
 			"bottom_level": "bottom_level",
-			"hbatf":"bathymetry"
+			"hbatt":"bathy_metry",
+			"bathymetry": "bathy_metry"
 		}
 	},
 	"static_variables": {

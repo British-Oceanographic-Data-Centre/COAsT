@@ -47,7 +47,10 @@ class test_profile_methods(unittest.TestCase):
 
         with self.subTest("Gridded obs_operator"):
             nemo_t = coast.Gridded(
-                fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
+                fn_data=files.fn_nemo_grid_t_dat,
+                fn_domain=files.fn_nemo_dom,
+                config=files.fn_config_t_grid,
+                calculate_bathymetry=True,
             )
             nemo_t.dataset["landmask"] = nemo_t.dataset.bottom_level == 0
             nemo_profiles = processed.obs_operator(nemo_t)
