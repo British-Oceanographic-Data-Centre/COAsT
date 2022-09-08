@@ -72,6 +72,12 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         attributes_SST = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
         attributes_SSS = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
         attributes_PEA = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(Zmax) + "m"}
-        gridded_t_out.dataset["SST_monthy_clim"] = xr.DataArray(np.squeeze(SST_monthy_clim), coords=coords, dims=dims, attrs=attributes_SST)
-        gridded_t_out.dataset["SSS_monthy_clim"] = xr.DataArray(np.squeeze(SSS_monthy_clim), coords=coords, dims=dims, attrs=attributes_SSS)
-        gridded_t_out.dataset["PEA_monthy_clim"] = xr.DataArray(np.squeeze(PEA_monthy_clim), coords=coords, dims=dims, attrs=attributes_PEA)
+        gridded_t_out.dataset["SST_monthy_clim"] = xr.DataArray(
+            np.squeeze(SST_monthy_clim), coords=coords, dims=dims, attrs=attributes_SST
+        )
+        gridded_t_out.dataset["SSS_monthy_clim"] = xr.DataArray(
+            np.squeeze(SSS_monthy_clim), coords=coords, dims=dims, attrs=attributes_SSS
+        )
+        gridded_t_out.dataset["PEA_monthy_clim"] = xr.DataArray(
+            np.squeeze(PEA_monthy_clim), coords=coords, dims=dims, attrs=attributes_PEA
+        )
