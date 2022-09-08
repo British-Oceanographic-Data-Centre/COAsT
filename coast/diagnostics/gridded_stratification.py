@@ -234,20 +234,22 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
 
         The density and depth averaged density can be supplied within gridded_t as "density" and
         "density_bar" DataArrays, respectively. If they are not supplied they will be calculated.
-        "density_bar" is calcuated using depth averages of temperature and salinity.
+        "density_bar" is calculated using depth averages of temperature and salinity.
 
-        Example Usage
-        -------------
-        # load some example data
-        dn_files = "~/work/coast_demo/COAsT_example_files/"
+        Example Usage: PEA in upper 200m
+        --------------------------------
+        # load some example data. E.g.
+        root = "~/work/coast/"
+        dn_files = root + "./example_files/"
+        fn_nemo_grid_t_dat = dn_files + "nemo_data_T_grid_Aug2015.nc"
+        fn_nemo_dom = dn_files + "coast_example_nemo_domain.nc"
+        config_t = root + "./config/example_nemo_grid_t.json"
         dn_fig = 'unit_testing/figures/'
-        fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
-        fn_nemo_dom = 'COAsT_example_NEMO_domain.nc'
-        gridded_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat,
-                     dn_files + fn_nemo_dom, grid_ref='t-grid', config='config/example_nemo_grid_t.json')
+        gridded_t = coast.Gridded(fn_nemo_grid_t_dat, fn_nemo_dom, config=config_t)
         Zd_mask,kmax,Ikmax=gridded_t.calculate_vertical_mask(200.)
-        strat=coast.GriddedStratification(gridded_t,gridded_t)
+        strat=coast.GriddedStratification(gridded_t)
         strat.calc_pea(gridded_t,Zd_mask)
+        strat.quick_plot('PEA')
         """
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
         gravity = 9.81
