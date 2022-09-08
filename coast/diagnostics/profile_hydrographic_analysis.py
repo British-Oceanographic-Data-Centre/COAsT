@@ -57,11 +57,7 @@ class ProfileHydrography(Indexed):
             filename_gridded = filename[:-3] + "_gridded.nc"
         else:
             warn(
-                "filename: \n"
-                "{0} \n"
-                "was expected to end with .nc".format(
-                    filename
-                ),
+                "filename: \n" "{0} \n" "was expected to end with .nc".format(filename),
                 UserWarning,
             )
 
@@ -70,10 +66,12 @@ class ProfileHydrography(Indexed):
             self.profile.dataset.to_netcdf(filename_profile)
         print("saving gridded data")
         with ProgressBar():
-            self.gridded.dataset.to_netcdf(filename_gridded)  ## THIS IS A BIT ODD. WHY IS THERE gridded DATA IN AN INDEX OBJ?
+            self.gridded.dataset.to_netcdf(
+                filename_gridded
+            )  ## THIS IS A BIT ODD. WHY IS THERE gridded DATA IN AN INDEX OBJ?
 
     def load_profiles(self, filename):
-        """ Helper method to load Profile and Gridded data from netcdf files """
+        """Helper method to load Profile and Gridded data from netcdf files"""
         ### COMMENT: WHY IS THIS CLASS, WHICH INHERITS FROM INDEXED< LOADING profile AND gridded DATA
         filename_profile = filename[:-3] + "_profile.nc"
         filename_gridded = filename[:-3] + "_gridded.nc"
