@@ -23,7 +23,8 @@
 		"variable_map": {
 			"time_counter": "time",
 			"voce": "v_velocity",
-			"vomecrty": "v_velocity"
+			"vomecrty": "v_velocity",
+                        "vo": "v_velocity"
 		},
 		"coord_vars": [
 			"longitude",
@@ -48,7 +49,9 @@
 			"e3v_0": "e3_0",
 			"depthv_0": "depth_0",
 			"bottom_level": "bottom_level",
-			"vmask": "mask"
+			"vmask": "mask",
+			"bathymetry": "bathy_metry",
+                        "hbatt": "bathy_metry"
 		}
 	},
 	"static_variables": {

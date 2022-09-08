@@ -1,5 +1,6 @@
 """Gridded class"""
 import os.path as path_lib
+import re
 import warnings
 
 # from dask import delayed, compute, visualize
@@ -90,10 +91,23 @@ class Gridded(Coast):  # TODO Complete this docstring
             if self.fn_data is not None:
                 dataset_domain = self.trim_domain_size(dataset_domain)
             self.set_timezero_depths(
-                dataset_domain
+                dataset_domain, **kwargs
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
+
+    def make_lonLat_2d(self):
+        """Expand 1D latitude and longitude variables to 2D."""
+
+        # jth is there a lazy way of doing this?
+        if len(self.dataset.longitude.shape) == 1:
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
+            nx = self.dataset.longitude.size
+            ny = self.dataset.latitude.size
+            self.dataset["latitude"] = xr.DataArray(np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"])
+
+            self.dataset["longitude"] = xr.DataArray(np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"])
 
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
@@ -117,10 +131,19 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dataset_domain = dataset_domain.rename_dims(mapping)
             except ValueError as err:
                 warning(
-                    f"{get_slug(self)}: Problem renaming dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{get_slug(self)}: Problem renaming domain dimension from {get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
-
+        # Rename domain variables.
+        for key, value in self.config.domain.variable_map.items():
+            mapping = {key: value}
+            try:
+                dataset_domain = dataset_domain.rename_vars(mapping)
+            except ValueError as err:
+                warning(
+                    f"{get_slug(self)}: Problem renaming domain variable from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{chr(10)}Error message of '{err}'"
+                )
         return dataset_domain
 
     def merge_domain_into_dataset(self, dataset_domain):
@@ -166,18 +189,29 @@ class Gridded(Coast):  # TODO Complete this docstring
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method="nearest", tolerance=tolerance)
         return smaller
 
-    def set_timezero_depths(self, dataset_domain):
+    def set_timezero_depths(self, dataset_domain, calculate_bathymetry=False):
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
         The depths are assigned to domain_dataset.depth_0
+
+        Args:
+            dataset_domain: a complex data object.
+            calculate_bathymetry: Flag that will either calculate bathymetry (true) or load it from dataset_domain file
+            (false).
         """
         debug(f"Setting timezero depths for {get_slug(self)} with {get_slug(dataset_domain)}")
+        # keyword to allow calcution of bathymetry from scale factors
 
+        # All bathymetry should now be mapped to bathy_metry
         try:
-            bathymetry = dataset_domain.bathy_metry.squeeze()
+            if calculate_bathymetry:  # calculate bathymetry from scale factors
+                bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)
+            else:
+                bathymetry = dataset_domain.bathy_metry.squeeze()
+
         except AttributeError as err:
-            bathymetry = xr.zeros_like(dataset_domain.e1t.squeeze())
+            bathymetry = xr.zeros_like(dataset_domain.e1.squeeze())
             (
                 warnings.warn(
                     f"The model domain loaded, '{self.filename_domain}', does not contain the "
@@ -192,57 +226,123 @@ class Gridded(Coast):  # TODO Complete this docstring
                 f"{get_slug(self)} with {get_slug(dataset_domain)}"
                 f"{chr(10)}Error message of {err}"
             )
+
         try:
             if self.grid_ref == "t-grid":
                 e3w_0 = np.squeeze(dataset_domain.e3w_0.values)
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
+
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
+
             elif self.grid_ref == "u-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :, :-1] = 0.5 * e3w_0_on_u[0, :, :]
                 depth_0[1:, :, :-1] = depth_0[0, :, :-1] + np.cumsum(e3w_0_on_u[1:, :, :], axis=0)
-                bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
+                if not calculate_bathymetry:  # jth only valid for pure sigma
+                    bathymetry[:, :-1] = 0.5 * (bathymetry[:, :-1] + bathymetry[:, 1:])
+
             elif self.grid_ref == "v-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_v = 0.5 * (e3w_0[:, :-1, :] + e3w_0[:, 1:, :])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :] = 0.5 * e3w_0_on_v[0, :, :]
                 depth_0[1:, :-1, :] = depth_0[0, :-1, :] + np.cumsum(e3w_0_on_v[1:, :, :], axis=0)
-                bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
+                if not calculate_bathymetry:
+                    bathymetry[:-1, :] = 0.5 * (bathymetry[:-1, :] + bathymetry[1:, :])
+
             elif self.grid_ref == "f-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_f = 0.25 * (e3w_0[:, :-1, :-1] + e3w_0[:, :-1, 1:] + e3w_0[:, 1:, :-1] + e3w_0[:, 1:, 1:])
                 depth_0 = np.zeros_like(e3w_0)
                 depth_0[0, :-1, :-1] = 0.5 * e3w_0_on_f[0, :, :]
                 depth_0[1:, :-1, :-1] = depth_0[0, :-1, :-1] + np.cumsum(e3w_0_on_f[1:, :, :], axis=0)
-                bathymetry[:-1, :-1] = 0.25 * (
-                    bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
-                )
+                if not calculate_bathymetry:
+                    bathymetry[:-1, :-1] = 0.25 * (
+                        bathymetry[:-1, :-1] + bathymetry[:-1, 1:] + bathymetry[1:, :-1] + bathymetry[1:, 1:]
+                    )
             else:
                 raise ValueError(str(self) + ": " + self.grid_ref + " depth calculation not implemented")
+
             # Write the depth_0 variable to the domain_dataset DataSet, with grid type
             dataset_domain[f"depth{self.grid_ref.replace('-grid', '')}_0"] = xr.DataArray(
                 depth_0,
                 dims=["z_dim", "y_dim", "x_dim"],
                 attrs={"units": "m", "standard_name": "Depth at time zero on the {}".format(self.grid_ref)},
             )
-
-            self.dataset["bathymetry"] = bathymetry
-            self.dataset["bathymetry"].attrs = {
-                "units": "m",
-                "standard_name": "bathymetry",
-                "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref),
-            }
+            self.dataset["bathymetry"] = xr.DataArray(
+                bathymetry,
+                dims=["y_dim", "x_dim"],
+                attrs={
+                    "units": "m",
+                    "standard_name": "bathymetry",
+                    "description": "depth of last wet w-level on the horizontal {}".format(self.grid_ref),
+                },
+            )
         except ValueError as err:
+            print(err)
             error(err)
+
+    def calc_bathymetry(self, dataset_domain):
+        """
+        NEMO approach to defining bathymetry by summing scale factors at various
+        grid locations.
+        Works with z-coordinates on u- and v- faces where bathymetry is defined
+        at the top of the cliff, not at the bottom
+
+        Args:
+            dataset_domain: a complex data object.
+
+        """
+        # jth not set for lazy loading
+
+        e3_0 = dataset_domain.e3_0.squeeze()
+        time_mask = xr.zeros_like(e3_0)
+        bottom_level = dataset_domain.bottom_level.values.squeeze()
+        print("****************bottom_level", type(bottom_level))
+        top_level = dataset_domain.top_level.values.squeeze()
+        bathymetry = np.zeros_like(bottom_level)  # np.array([[]])
+        mask = None
+
+        for k in range(1, e3_0.shape[0] + 1):
+            time_mask[k - 1, :, :] = np.logical_and(k <= bottom_level, k >= top_level)
+
+        if self.grid_ref == "t-grid":
+            e3t = dataset_domain.e3_0.squeeze()
+            bathymetry[:, :] = np.sum(e3t.values * time_mask.values, axis=0)
+
+        elif self.grid_ref == "w-grid":
+            e3t = dataset_domain.e3t_0.squeeze()
+            bathymetry[:, :] = np.sum(e3t.values * time_mask.values, axis=0)
+
+        elif self.grid_ref == "u-grid":
+            e3u = dataset_domain.e3u_0.squeeze()
+            mask = xr.zeros_like(e3u)
+            mask[:, :, :-1] = time_mask[:, :, :-1] * time_mask[:, :, 1:]
+            bathymetry[:, :] = np.sum(e3u.values * mask.values, axis=0)
+
+        elif self.grid_ref == "v-grid":
+            e3v = dataset_domain.e3v_0.squeeze()
+            mask = xr.zeros_like(e3v)
+            mask[:, :-1, :] = time_mask[:, :-1, :] * time_mask[:, 1:, :]
+            bathymetry[:, :] = np.sum(e3v.values * mask.values, axis=0)
+
+        elif self.grid_ref == "f-grid":
+            e3f = dataset_domain.e3_0.squeeze()
+            mask = xr.zeros_like(e3f)
+            mask[:, :-1, :-1] = (
+                time_mask[:, :-1, :-1] * time_mask[:, :-1, 1:] * time_mask[:, 1:, :-1] * time_mask[:, 1:, 1:]
+            )
+            bathymetry[:, :] = np.sum(e3f.values * mask.values, axis=0)
+
+        return bathymetry, mask, time_mask
 
     # Add subset method to NEMO class
     def subset_indices(self, *, start: tuple, end: tuple) -> tuple:
@@ -270,11 +370,36 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w.
         """
         debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
+
         dist2 = np.square(self.dataset.latitude - lat) + np.square(self.dataset.longitude - lon)
         [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
 
-    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray):
+    def find_j_i_list(self, *, lat: float, lon: float, n_nn=1):
+        """
+        A routine to find the nearest y x coordinates for a list of latitude and longitude values
+        Usage: [y,x] = find_j_i(lat=[49,50,51], lon=[-12,-11,10])
+
+        :param lat: latitude
+        :param lon: longitude
+        :optional n_nn=1 number of nearest neighbours
+        :return: the j, i coordinates for the NEMO object's grid_ref, i.e. t,u,v,f,w. and a distance measure
+        """
+        grid_lon = self.dataset.longitude.values
+        grid_lat = self.dataset.latitude.values
+        # efficient nearest neighbour search
+        import scipy.spatial as sp
+
+        XY = np.dstack([grid_lat.ravel(), grid_lon.ravel()])[0]
+        XYp = np.dstack([lat, lon])[0]
+        mytree = sp.cKDTree(XY)
+        dist, indx = mytree.query(XYp, n_nn)
+        I = np.nonzero(np.isnan(lon))
+        indx[I] = 0
+        i, j = np.unravel_index(indx, grid_lon.shape)
+        return [i, j, dist]
+
+    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray, KDTree=False):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
         Usage: [y,x] = find_j_i_domain(lat=49, lon=-12, dataset_domain=dataset_domain)
@@ -285,8 +410,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         :return: the y and x coordinates for the grid_ref variable within the domain file
         """
         debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
-        internal_lat = dataset_domain[self.grid_vars[1]]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
-        internal_lon = dataset_domain[self.grid_vars[0]]  # [f"glam{self.grid_ref.replace('-grid','')}"]
+        internal_lat = dataset_domain["latitude"]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
+        internal_lon = dataset_domain["longitude"]  # [f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
         [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
         return [y, x]
@@ -382,7 +507,9 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         return interpolated
 
-    def construct_density(self, eos="EOS10"):
+    def construct_density(
+        self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+    ):
 
         """
             Constructs the in-situ density using the salinity, temperture and
@@ -401,6 +528,19 @@ class Gridded(Coast):  # TODO Complete this docstring
         eos : equation of state, optional
             DESCRIPTION. The default is 'EOS10'.
 
+        rhobar : Calculate density with depth mean T and S
+            DESCRIPTION. The default is 'False'.
+        Zd_mask : Provide a 3D mask for rhobar calculation
+            Calculate using calculate_vertical_mask
+            DESCRIPTION. The default is empty.
+
+        CT_AS  : Conservative Temperature and Absolute Salinity already provided
+            DESCRIPTION. The default is 'False'.
+        pot_dens :Calculation at zero pressure
+            DESCRIPTION. The default is 'False'.
+        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to
+                        remain depth varying. So Tbar=Flase gives temperature component, Sbar=Flase gives Salinity component
+            DESCRIPTION. The default is 'True'.
 
         Returns
         -------
@@ -418,7 +558,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     + ": Density calculation can only be performed for a t-grid object,\
                                  the tracer grid for NEMO."
                 )
-
+            No_time = False
             try:
                 shape_ds = (
                     self.dataset.t_dim.size,
@@ -429,6 +569,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 sal = self.dataset.salinity.to_masked_array()
                 temp = self.dataset.temperature.to_masked_array()
             except AttributeError:
+                No_time = True
                 shape_ds = (1, self.dataset.z_dim.size, self.dataset.y_dim.size, self.dataset.x_dim.size)
                 sal = self.dataset.salinity.to_masked_array()[np.newaxis, ...]
                 temp = self.dataset.temperature.to_masked_array()[np.newaxis, ...]
@@ -439,28 +580,97 @@ class Gridded(Coast):  # TODO Complete this docstring
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
             # Absolute Pressure
-            pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
-            # Absolute Salinity
-            sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
-            sal_absolute = np.ma.masked_less(sal_absolute, 0)
-            # Conservative Temperature
-            temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
-            # In-situ density
-            density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+            if pot_dens:
+                pressure_absolute = 0.0  # calculate potential density
+            else:
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
+            if not rhobar:  # calculate full depth
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+                sal_absolute = np.ma.masked_less(sal_absolute, 0)
+                # Conservative Temperature
+                if not CT_AS:  # conservative temp not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+                # In-situ density
+                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                new_var_name = "density"
+            else:  # calculate with depth integrated T S
+                # prepare coordinate variables
+                if np.size(Zd_mask) == 0:
+                    DZ = self.dataset.e3_0.to_masked_array()
+                else:
+                    DZ = self.dataset.e3_0.to_masked_array() * Zd_mask
+                DP = np.sum(DZ, axis=0)
+                # DP=np.repeat(DP[np.newaxis,:,:],shape_ds[1],axis=0)
 
+                DZ = np.repeat(DZ[np.newaxis, :, :, :], shape_ds[0], axis=0)
+                DP = np.repeat(DP[np.newaxis, :, :], shape_ds[0], axis=0)
+
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+
+                # Conservative Temperature
+                if not CT_AS:  # Conservative temperature not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+
+                if pot_dens and (Sbar and Tbar):  # usual case pot_dens and depth averaged everything
+                    sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
+                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                    density = np.repeat(density[:, np.newaxis, :, :], shape_ds[1], axis=1)
+
+                else:  # Either insitue density or one of Tbar or Sbar Flase
+                    if Sbar:
+                        sal_absolute = np.repeat(
+                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
+                            shape_ds[1],
+                            axis=1,
+                        )
+                    if Tbar:
+                        temp_conservative = np.repeat(
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
+                            shape_ds[1],
+                            axis=1,
+                        )
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+
+                if Tbar and Sbar:
+                    new_var_name = "density_bar"
+
+                else:
+                    if not Tbar:
+                        new_var_name = "density_T"
+                    else:
+                        new_var_name = "density_S"
+
+            # rho and rhobar
             coords = {
                 "depth_0": (("z_dim", "y_dim", "x_dim"), self.dataset.depth_0.values),
                 "latitude": (("y_dim", "x_dim"), self.dataset.latitude.values),
                 "longitude": (("y_dim", "x_dim"), self.dataset.longitude.values),
             }
             dims = ["z_dim", "y_dim", "x_dim"]
-            attributes = {"units": "kg / m^3", "standard name": "In-situ density"}
 
-            if shape_ds[0] != 1:
+            if pot_dens:
+                attributes = {"units": "kg / m^3", "standard name": "Potential density "}
+            else:
+                attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
+            if not No_time:
                 coords["time"] = (("t_dim"), self.dataset.time.values)
                 dims.insert(0, "t_dim")
-
-            self.dataset["density"] = xr.DataArray(np.squeeze(density), coords=coords, dims=dims, attrs=attributes)
+            else:
+                density = np.squeeze(density)
+            self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
 
         except AttributeError as err:
             error(err)
@@ -501,14 +711,21 @@ class Gridded(Coast):  # TODO Complete this docstring
 
     def copy_domain_vars_to_dataset(self, dataset_domain, grid_vars):
         """
-        Map the domain coordand metric variables to the dataset object.
+        Map the domain coordinates and metric variables to the dataset object.
         Expects the source and target DataArrays to be same sizes.
         """
         debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
         for var in grid_vars:
             try:
                 new_name = self.config.domain.variable_map[var]
-                self.dataset[new_name] = dataset_domain[var].squeeze()
+                m = re.search(
+                    "depth[a-z]_0", var
+                )  # Check necessary because of hardcoded calculated depth variable names.
+                if m:
+                    self.dataset[new_name] = dataset_domain[var].squeeze()
+                else:
+                    self.dataset[new_name] = dataset_domain[new_name].squeeze()
+
                 debug("map: {} --> {}".format(var, new_name))
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
@@ -904,3 +1121,41 @@ class Gridded(Coast):  # TODO Complete this docstring
         gridded_out = Gridded()
         gridded_out.dataset = dataset
         return gridded_out
+
+    def calculate_vertical_mask(self, Zmax):
+        """
+        Calculates a 3D mask to a specified level Zmax. 1 for sea; 0 for below sea bed
+        and linearly ramped for last level
+        """
+        Z = self.dataset.variables["depth_0"].values
+        e3_0 = self.dataset.variables["e3_0"].values
+        # calculate W-level - might want this done as stanbdard in gridded
+        ZW = np.zeros_like(e3_0)
+        ZW[0, :, :] = 0.0
+        ZW[1:, :, :] = np.cumsum(e3_0, axis=0)[:-1, :, :]
+        mbot = self.dataset.variables["bottom_level"].values.astype(int)
+        mask = mbot != 0
+        ZZ = ZW[1:, :, :]
+        ZZ[ZZ == 0] = np.nan
+        ZW[1:, :, :] = ZZ
+
+        Zd_mask = np.zeros((Z.shape))
+        nz, ny, nx = np.shape(Z)
+        kmax = np.zeros((ny, nx)).astype(int)
+        IIkmax = np.zeros(np.shape(Z))
+        #
+        # careful assumes mbot is 1st sea point above bed ie new definition
+        for i in range(nx):
+            for j in range(ny):
+                if mask[j, i] == 1:
+                    Zd_mask[0 : mbot[j, i], j, i] = 1  # mbot is not python style index so no +1
+                    kmax[j, i] = mbot[j, i]
+                    if ZW[mbot[j, i], j, i] > Zmax:
+                        kkmax = np.max(np.where(ZW[:, j, i] < Zmax))
+                        Zd_mask[kkmax + 1 :, j, i] = 0
+                        Zd_mask[kkmax, j, i] = (Zmax - ZW[kkmax, j, i]) / (ZW[kkmax + 1, j, i] - ZW[kkmax, j, i])
+                        kmax[j, i] = kkmax
+                        IIkmax[kkmax, j, i] = 1
+        Ikmax = np.nonzero(IIkmax.ravel())
+
+        return Zd_mask, kmax, Ikmax

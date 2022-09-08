@@ -1,8 +1,9 @@
 """A class to help with writting markdown."""
+from typing import List, Type
 
 
 class DocsyTools:  # TODO All abstract methods should be implemented
-    """ """
+    """DocsyTools Class"""
 
     def __init__(self):
         return  # TODO Super __init__ should be called at some point
@@ -23,28 +24,22 @@ class DocsyTools:  # TODO All abstract methods should be implemented
 
     @classmethod
     def _get_list_of_methods(
-        cls, class_to_search, methods_to_omit=[], omit_private_methods=True, omit_parent_methods=True
+        cls,
+        class_to_search: Type,
+        methods_to_omit: List = [],
+        omit_private_methods: bool = True,
+        omit_parent_methods: bool = True,
     ):
-        """
-        Returns a list of methods inside a provided COAsT class, with some
-        other options
+        """Method get a list of methods inside a provided COAsT class, with some other options.
 
-        Parameters
-        ----------
-        class_to_search : imported class
-            Class imported from COAsT (e.g. from coast import Profile)
-        methods_to_omit : list
-            List of method strings to omit from the output. The default is [].
-        omit_private_methods : bool, optional
-            If true, omit methods beginning with "_". The default is True.
-        omit_parent_methods : bool, optional
-           If true, omit methods in any parent/ancestor class. The default is True.
+        Args:
+            class_to_search (Type): Class imported from COAsT (e.g. from coast import Profile)
+            methods_to_omit (List): List of method strings to omit from the output. The default is [].
+            omit_private_methods (bool): If true, omit methods beginning with "_". The default is True.
+            omit_parent_methods (bool): If true, omit methods in any parent/ancestor class. The default is True.
 
-        Returns
-        -------
-        methods_to_write : list
-            List of strings denoting method names
-
+        Returns:
+            List[str]: List of strings denoting method names.
         """
 
         # Get list of methods
