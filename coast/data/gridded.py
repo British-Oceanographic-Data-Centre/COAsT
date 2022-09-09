@@ -306,7 +306,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         e3_0 = dataset_domain.e3_0.squeeze()
         time_mask = xr.zeros_like(e3_0)
         bottom_level = dataset_domain.bottom_level.values.squeeze()
-        print("****************bottom_level", type(bottom_level))
+        debug(f"Bottom_level type {type(bottom_level)}")
         top_level = dataset_domain.top_level.values.squeeze()
         bathymetry = np.zeros_like(bottom_level)  # np.array([[]])
         mask = None
