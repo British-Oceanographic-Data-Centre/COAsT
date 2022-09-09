@@ -3,8 +3,10 @@
 # Install jupyter dep.
 pip install jupyter
 # Convert ipynb files to markdown.
-jupyter nbconvert --to notebook --inplace --execute ./example_scripts/notebooks/runnable_notebooks/*.ipynb
-jupyter nbconvert --to markdown ./example_scripts/notebooks/runnable_notebooks/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
+jupyter nbconvert --to notebook --execute ./example_scripts/notebooks/runnable_notebooks/*.ipynb --output-dir ./example_scripts/notebooks/runnable_notebooks/executed/
+jupyter nbconvert --to markdown ./example_scripts/notebooks/runnable_notebooks/executed/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
+rm -rf ./example_scripts/notebooks/runnable_notebooks/executed  # Delete temp executed notebook dir.
+rm -rf ./example_scripts/notebooks/runnable_notebooks/*.nc  # Delete output nc files.
 
 # Loop through generated markdown files.
 for FILE in $(find ./example_scripts/notebooks/markdown -name '*.md'); do 
