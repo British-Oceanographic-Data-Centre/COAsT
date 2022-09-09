@@ -3,9 +3,8 @@
 # Install jupyter dep.
 pip install jupyter
 # Convert ipynb files to markdown.
-jupyter nbconvert --to notebook --inplace --execute example_scripts/notebooks/altimetry_tutorial.ipynb
-jupyter nbconvert --to markdown ./example_scripts/notebooks/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
-jupyter nbconvert --to markdown ./example_scripts/notebooks/**/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
+jupyter nbconvert --to notebook --inplace --execute ./example_scripts/notebooks/runnable_notebooks/*.ipynb
+jupyter nbconvert --to markdown ./example_scripts/notebooks/runnable_notebooks/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
 
 # Loop through generated markdown files.
 for FILE in $(find ./example_scripts/notebooks/markdown -name '*.md'); do 
