@@ -6,6 +6,7 @@ from .diagnostics.contour import Contour, ContourF, ContourT
 from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
 from .diagnostics.internal_tide import InternalTide
 from .diagnostics.climatology import Climatology
+
 # from .diagnostics.gridded_monthly_hydrographic_climatology import GriddedMonthlyHydrographicClimatology
 # from .diagnostics.profile_hydrographic_analysis import ProfileHydrography
 from ._utils import logging_util, general_utils, plot_util, crps_util
