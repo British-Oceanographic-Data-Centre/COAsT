@@ -8,6 +8,6 @@ COPY setup.py .
 COPY notebook_to_md.sh .
 RUN python -m pip install .
 COPY example_scripts ./example_scripts
-COPY config ./example_scripts/notebooks/config
-RUN unzip COAsT_example_files.zip && mv COAsT_example_files ./example_scripts/notebooks/example_files
+COPY config ./example_scripts/notebooks/runnable_notebooks/config
+RUN unzip COAsT_example_files.zip && mv COAsT_example_files ./example_scripts/notebooks/runnable_notebooks/example_files
 RUN bash notebook_to_md.sh
