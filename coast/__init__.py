@@ -6,9 +6,9 @@ from .diagnostics.contour import Contour, ContourF, ContourT
 from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
 from .diagnostics.internal_tide import InternalTide
 from .diagnostics.climatology import Climatology
+from ._utils import logging_util, general_utils, plot_util, crps_util, seasons
 
 # from .diagnostics.annual_hydrographic_climatology import Annual_Climatology
-from ._utils import logging_util, general_utils, plot_util, crps_util
 from .data.index import Indexed
 from .data.profile import Profile
 from .diagnostics.profile_analysis import ProfileAnalysis

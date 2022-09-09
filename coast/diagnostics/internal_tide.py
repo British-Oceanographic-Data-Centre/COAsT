@@ -249,7 +249,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         IT=coast.InternalTide(gridded_t,gridded_t)
         IT.calc_pea(gridded_t,Zd_mask)
         """
-        # may be duplicated in other branches. Uses the integral of T&S rathern than integral of rho approach
+        # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
         gravity = 9.81
         # Z=gridded_t.dataset.variables['depth_0'].values
         # DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask
@@ -283,7 +283,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             "longitude": (("y_dim", "x_dim"), gridded_t.dataset.longitude.values),
         }
         dims = ["t_dim", "y_dim", "x_dim"]
-        attributes = {"units": "J / m^3", "standard name": "Potential Energy Anomaly"}
+        attributes = {"units": "J / m^3", "standard_name": "Potential Energy Anomaly"}
         self.dataset["PEA"] = xr.DataArray(PEA, coords=coords, dims=dims, attrs=attributes)
 
     def quick_plot(self, var: xr.DataArray = None):

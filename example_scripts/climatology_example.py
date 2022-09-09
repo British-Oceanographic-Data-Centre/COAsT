@@ -37,7 +37,7 @@ def make_climatology():
     climatology_frequency = "season"
 
     # Read in multiyear data (This example uses NEMO data from a single file.)
-    nemo_data = coast.NEMO(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, chunks={}).dataset
+    nemo_data = coast.Gridded(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, chunks={}).dataset
     # Select specific data variables.
     data = nemo_data[["temperature", "ssh", "salinity"]]
 
@@ -59,7 +59,7 @@ def make_multiyear_climatology():
     fn_nemo_domain = None
 
     # Read in multiyear data (This example uses NEMO data from multiple datafiles.)
-    nemo_data = coast.NEMO(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, multiple=True, chunks={}).dataset
+    nemo_data = coast.Gridded(fn_data=fn_nemo_data, fn_domain=fn_nemo_domain, multiple=True, chunks={}).dataset
     # Select specific data variables.
     data = nemo_data[["temperature", "ssh", "salinity"]]
 

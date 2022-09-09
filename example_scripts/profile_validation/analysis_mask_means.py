@@ -20,7 +20,6 @@ You can use this script with example files by setting:
 
 import coast
 import numpy as np
-import xarray as xr
 
 fn_dom = "<PATH_TO_NEMO_DOMAIN_FILE>"
 fn_cfg_nemo = "<PATH_TO_COAST_GRIDDED_CONFIG_FILE>"

@@ -4,9 +4,10 @@
 pip install jupyter
 # Convert ipynb files to markdown.
 jupyter nbconvert --to markdown ./example_scripts/notebooks/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
+jupyter nbconvert --to markdown ./example_scripts/notebooks/**/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
 
 # Loop through generated markdown files.
-for FILE in ./example_scripts/notebooks/markdown/*.md; do 
+for FILE in $(find ./example_scripts/notebooks/markdown -name '*.md'); do 
     # Get filename information.
     fullname=$(basename $FILE)
     filename=${fullname%.*}
