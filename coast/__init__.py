@@ -7,8 +7,8 @@ from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
 from .diagnostics.internal_tide import InternalTide
 from .diagnostics.climatology import Climatology
 from ._utils import logging_util, general_utils, plot_util, crps_util, seasons
-from .diagnostics.annual_hydrographic_climatology import Annual_Climatology
-from ._utils import logging_util, general_utils, plot_util, crps_util
+
+# from .diagnostics.annual_hydrographic_climatology import Annual_Climatology
 from .data.index import Indexed
 from .data.profile import Profile
 from .diagnostics.profile_analysis import ProfileAnalysis
@@ -28,7 +28,8 @@ from .data.opendap import OpendapInfo
 from .data.copernicus import Copernicus, Product
 from ._utils.experiments_file_handling import experiments
 from ._utils.experiments_file_handling import nemo_filename_maker
-from .diagnostics.hydrographic_profiles import Hydrographic_Profiles
+
+# from .diagnostics.hydrographic_profiles import Hydrographic_Profiles
 
 # Set default for logging level when coast is imported
 import logging
