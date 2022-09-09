@@ -504,35 +504,35 @@ nemo_w = coast.Gridded(fn_domain=dn_files + fn_nemo_dom, config=fn_config_w_grid
 try:
     log_str = ""
     # initialise Internal Tide object
-    IT = coast.InternalTide(nemo_t, nemo_w)
-    if IT is None:  # Test whether object was returned
+    strat = coast.GriddedStratification(nemo_t, nemo_w)
+    if strat is None:  # Test whether object was returned
         log_str += "No object returned\n"
     # Construct pycnocline variables: depth and thickness
-    IT.construct_pycnocline_vars(nemo_t, nemo_w)
+    strat.construct_pycnocline_vars(nemo_t, nemo_w)
 
     if not hasattr(nemo_t.dataset, "density"):
         log_str += "Did not create density variable\n"
     if not hasattr(nemo_w.dataset, "rho_dz"):
         log_str += "Did not create rho_dz variable\n"
 
-    if not hasattr(IT.dataset, "strat_1st_mom"):
+    if not hasattr(strat.dataset, "strat_1st_mom"):
         log_str += "Missing strat_1st_mom variable\n"
-    if not hasattr(IT.dataset, "strat_1st_mom_masked"):
+    if not hasattr(strat.dataset, "strat_1st_mom_masked"):
         log_str += "Missing strat_1st_mom_masked variable\n"
-    if not hasattr(IT.dataset, "strat_2nd_mom"):
+    if not hasattr(strat.dataset, "strat_2nd_mom"):
         log_str += "Missing strat_2nd_mom variable\n"
-    if not hasattr(IT.dataset, "strat_2nd_mom_masked"):
+    if not hasattr(strat.dataset, "strat_2nd_mom_masked"):
         log_str += "Missing strat_2nd_mom_masked variable\n"
-    if not hasattr(IT.dataset, "mask"):
+    if not hasattr(strat.dataset, "mask"):
         log_str += "Missing mask variable\n"
 
     # Check the calculations are as expected
     if (
-        np.isclose(IT.dataset.strat_1st_mom.sum(), 3.74214231e08)
-        and np.isclose(IT.dataset.strat_2nd_mom.sum(), 2.44203298e08)
-        and np.isclose(IT.dataset.mask.sum(), 450580)
-        and np.isclose(IT.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
-        and np.isclose(IT.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
+        np.isclose(strat.dataset.strat_1st_mom.sum(), 3.74214231e08)
+        and np.isclose(strat.dataset.strat_2nd_mom.sum(), 2.44203298e08)
+        and np.isclose(strat.dataset.mask.sum(), 450580)
+        and np.isclose(strat.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
+        and np.isclose(strat.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
     ):
         print(str(sec) + chr(subsec) + " OK - pyncocline depth and thickness good")
 
@@ -545,7 +545,7 @@ except:
 
 subsec = subsec + 1
 try:
-    fig, ax = IT.quick_plot("strat_1st_mom_masked")
+    fig, ax = strat.quick_plot("strat_1st_mom_masked")
     fig.tight_layout()
     fig.savefig(dn_fig + "strat_1st_mom.png")
     print(str(sec) + chr(subsec) + " OK - pycnocline depth plot saved")
@@ -2158,7 +2158,7 @@ try:
     from example_scripts import transect_tutorial  # This runs on example_files
     from example_scripts import contour_tutorial  # This runs on example_files
     from example_scripts import (
-        internal_tide_pycnocline_diagnostics,
+        stratification_pycnocline_diagnostics,
     )  # This runs on example_files unless it is on livljobs, then it is AMM60 data
 
     print(" ")
@@ -2193,9 +2193,9 @@ try:
         print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
 
         subsec = subsec + 1  # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
-        from example_scripts import internal_tide_pycnocline_diagnostics
+        from example_scripts import stratification_pycnocline_diagnostics
 
-        print(str(sec) + chr(subsec) + " OK - tutorial on internal tides")
+        print(str(sec) + chr(subsec) + " OK - tutorial on pycnocline diagnostics")
     else:
         print("Don't forget to test on a LIVLJOBS machine")
 

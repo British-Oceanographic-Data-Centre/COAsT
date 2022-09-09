@@ -90,34 +90,34 @@ class test_diagnostic_methods(unittest.TestCase):
         with self.subTest("Construct pycnocline depth"):
             log_str = ""
             # initialise Internal Tide object
-            IT = coast.InternalTide(nemo_t)
-            if IT is None:  # Test whether object was returned
+            strat = coast.GriddedStratification(nemo_t)
+            if strat is None:  # Test whether object was returned
                 log_str += "No object returned\n"
             # Construct pycnocline variables: depth and thickness
-            IT.construct_pycnocline_vars(nemo_t, nemo_w)
+            strat.construct_pycnocline_vars(nemo_t, nemo_w)
 
             if not hasattr(nemo_t.dataset, "density"):
                 log_str += "Did not create density variable\n"
             if not hasattr(nemo_w.dataset, "rho_dz"):
                 log_str += "Did not create rho_dz variable\n"
 
-            if not hasattr(IT.dataset, "strat_1st_mom"):
+            if not hasattr(strat.dataset, "strat_1st_mom"):
                 log_str += "Missing strat_1st_mom variable\n"
-            if not hasattr(IT.dataset, "strat_1st_mom_masked"):
+            if not hasattr(strat.dataset, "strat_1st_mom_masked"):
                 log_str += "Missing strat_1st_mom_masked variable\n"
-            if not hasattr(IT.dataset, "strat_2nd_mom"):
+            if not hasattr(strat.dataset, "strat_2nd_mom"):
                 log_str += "Missing strat_2nd_mom variable\n"
-            if not hasattr(IT.dataset, "strat_2nd_mom_masked"):
+            if not hasattr(strat.dataset, "strat_2nd_mom_masked"):
                 log_str += "Missing strat_2nd_mom_masked variable\n"
-            if not hasattr(IT.dataset, "mask"):
+            if not hasattr(strat.dataset, "mask"):
                 log_str += "Missing mask variable\n"
 
             # Check the calculations are as expected
-            check1 = np.isclose(IT.dataset.strat_1st_mom.sum(), 3.74214231e08)
-            check2 = np.isclose(IT.dataset.strat_2nd_mom.sum(), 2.44203298e08)
-            check3 = np.isclose(IT.dataset.mask.sum(), 450580)
-            check4 = np.isclose(IT.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
-            check5 = np.isclose(IT.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
+            check1 = np.isclose(strat.dataset.strat_1st_mom.sum(), 3.74214231e08)
+            check2 = np.isclose(strat.dataset.strat_2nd_mom.sum(), 2.44203298e08)
+            check3 = np.isclose(strat.dataset.mask.sum(), 450580)
+            check4 = np.isclose(strat.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
+            check5 = np.isclose(strat.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
 
             self.assertTrue(check1, msg=log_str)
             self.assertTrue(check2, msg=log_str)
@@ -126,7 +126,7 @@ class test_diagnostic_methods(unittest.TestCase):
             self.assertTrue(check5, msg=log_str)
 
         with self.subTest("Plot pycnocline depth"):
-            fig, ax = IT.quick_plot("strat_1st_mom_masked")
+            fig, ax = strat.quick_plot("strat_1st_mom_masked")
             fig.tight_layout()
             fig.savefig(files.dn_fig + "strat_1st_mom.png")
             plt.close("all")

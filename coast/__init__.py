@@ -4,12 +4,12 @@ from .data.gridded import Gridded
 from .diagnostics.transect import Transect, TransectF, TransectT
 from .diagnostics.contour import Contour, ContourF, ContourT
 from .diagnostics.eof import compute_eofs, compute_hilbert_eofs
-from .diagnostics.internal_tide import InternalTide
+from .diagnostics.gridded_stratification import GriddedStratification
 from .diagnostics.climatology import Climatology
+from ._utils import logging_util, general_utils, plot_util, crps_util, seasons
 
 # from .diagnostics.gridded_monthly_hydrographic_climatology import GriddedMonthlyHydrographicClimatology
 # from .diagnostics.profile_hydrographic_analysis import ProfileHydrography
-from ._utils import logging_util, general_utils, plot_util, crps_util
 from .data.index import Indexed
 from .data.profile import Profile
 from .diagnostics.profile_analysis import ProfileAnalysis
