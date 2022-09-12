@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Install jupyter dep.
-pip install jupyter
 # Convert ipynb files to markdown.
 jupyter nbconvert --to notebook --execute ./example_scripts/notebooks/runnable_notebooks/*.ipynb --output-dir ./example_scripts/notebooks/runnable_notebooks/executed/
 jupyter nbconvert --to markdown ./example_scripts/notebooks/runnable_notebooks/executed/*.ipynb --output-dir ./example_scripts/notebooks/markdown/
