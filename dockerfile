@@ -1,9 +1,13 @@
-FROM docker-repo.bodc.me/bodc/conda:latest
-RUN conda install -c conda-forge gcc cartopy
-COPY --chown=bodc:bodc . .
-COPY requirements.txt .
-RUN python -m pip install --upgrade pip virtualenv
-RUN python -m pip install -r requirements.txt
-RUN pip install dask[complete]
-RUN sh setup_environment.sh
-RUN sh build.sh
+FROM conda/miniconda3-centos7
+RUN yum install wget unzip -y
+RUN conda install python=3.8 cartopy
+RUN wget https://linkedsystems.uk/erddap/files/COAsT_example_files/COAsT_example_files.zip
+COPY coast ./coast
+COPY setup.cfg .
+COPY setup.py .
+COPY notebook_to_md.sh .
+RUN python -m pip install .
+COPY example_scripts ./example_scripts
+COPY config ./example_scripts/notebooks/runnable_notebooks/config
+RUN unzip COAsT_example_files.zip && mv COAsT_example_files ./example_scripts/notebooks/runnable_notebooks/example_files
+RUN bash notebook_to_md.sh

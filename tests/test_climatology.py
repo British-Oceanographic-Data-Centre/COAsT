@@ -49,5 +49,5 @@ def test_multiyear_averages(test_dataset):
     # Assert there are 8 year_period index values in ds_mean. (One for each DATE RANGE.)
     assert len(ds_mean["year_period"]) == len(DATE_RANGES)
     # Assert dataset years are all values defined within the YEARS list.
-    dataset_years = set(ds_mean["year_period_level_0"].data)
+    dataset_years = set(ds_mean["year"].data)
     assert set(dataset_years).issubset(YEARS)

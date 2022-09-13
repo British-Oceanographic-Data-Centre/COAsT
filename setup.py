@@ -6,7 +6,7 @@ from types import SimpleNamespace
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "2.0.3",
+        "version": "3.0.4",
         "description": "This is the Coast Ocean Assessment Tool",
         "url": "https://www.bodc.ac.uk",
         "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
@@ -37,13 +37,15 @@ PACKAGE = SimpleNamespace(
             "netCDF4>=1.5.8",
             "scipy>=1.8.0",
             "gsw>=3.4.0",
-            "utide>=0.2.6",
+            "utide>=0.3.0",
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",
             "statsmodels>=0.13.2",
             "pydap>=3.2.2",
             "lxml>=4.9.0",  # Required for pydap CAS parsing,
             "requests>=2.27.1",
+            # "xesmf>=0.3.0",  # Optional. Not part of main package
+            # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],
         "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
         "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],

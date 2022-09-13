@@ -64,7 +64,21 @@ class test_diagnostic_methods(unittest.TestCase):
             .item(),
             11185010.518671108,
         )
+        # Density depth mean T and S limited to 200m
+        Zmax = 200  # m
+        Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(Zmax)
+        nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Zd_mask=Zd_mask)
+        check2 = np.allclose(
+            nemo_t.dataset.density_bar.sel(x_dim=10, y_dim=10).mean(dim=["t_dim", "z_dim"]).item(), 1026.7535233998765
+        )
+        # Temperature component of density (ie from depth mean Sal). full depth
+        nemo_t.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Tbar=False)
+        check3 = np.allclose(
+            nemo_t.dataset.density_T.sel(x_dim=10, y_dim=10).mean(dim=["t_dim", "z_dim"]).item(), 1026.4989384403814
+        )
         self.assertTrue(check1, msg="check1")
+        self.assertTrue(check2, msg="check2")
+        self.assertTrue(check3, msg="check3")
 
     def test_construct_pycnocline_depth_and_thickness(self):
         nemo_t = None
@@ -76,34 +90,34 @@ class test_diagnostic_methods(unittest.TestCase):
         with self.subTest("Construct pycnocline depth"):
             log_str = ""
             # initialise Internal Tide object
-            IT = coast.InternalTide(nemo_t, nemo_w)
-            if IT is None:  # Test whether object was returned
+            strat = coast.GriddedStratification(nemo_t)
+            if strat is None:  # Test whether object was returned
                 log_str += "No object returned\n"
             # Construct pycnocline variables: depth and thickness
-            IT.construct_pycnocline_vars(nemo_t, nemo_w)
+            strat.construct_pycnocline_vars(nemo_t, nemo_w)
 
             if not hasattr(nemo_t.dataset, "density"):
                 log_str += "Did not create density variable\n"
             if not hasattr(nemo_w.dataset, "rho_dz"):
                 log_str += "Did not create rho_dz variable\n"
 
-            if not hasattr(IT.dataset, "strat_1st_mom"):
+            if not hasattr(strat.dataset, "strat_1st_mom"):
                 log_str += "Missing strat_1st_mom variable\n"
-            if not hasattr(IT.dataset, "strat_1st_mom_masked"):
+            if not hasattr(strat.dataset, "strat_1st_mom_masked"):
                 log_str += "Missing strat_1st_mom_masked variable\n"
-            if not hasattr(IT.dataset, "strat_2nd_mom"):
+            if not hasattr(strat.dataset, "strat_2nd_mom"):
                 log_str += "Missing strat_2nd_mom variable\n"
-            if not hasattr(IT.dataset, "strat_2nd_mom_masked"):
+            if not hasattr(strat.dataset, "strat_2nd_mom_masked"):
                 log_str += "Missing strat_2nd_mom_masked variable\n"
-            if not hasattr(IT.dataset, "mask"):
+            if not hasattr(strat.dataset, "mask"):
                 log_str += "Missing mask variable\n"
 
             # Check the calculations are as expected
-            check1 = np.isclose(IT.dataset.strat_1st_mom.sum(), 3.74214231e08)
-            check2 = np.isclose(IT.dataset.strat_2nd_mom.sum(), 2.44203298e08)
-            check3 = np.isclose(IT.dataset.mask.sum(), 450580)
-            check4 = np.isclose(IT.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
-            check5 = np.isclose(IT.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
+            check1 = np.isclose(strat.dataset.strat_1st_mom.sum(), 3.74214231e08)
+            check2 = np.isclose(strat.dataset.strat_2nd_mom.sum(), 2.44203298e08)
+            check3 = np.isclose(strat.dataset.mask.sum(), 450580)
+            check4 = np.isclose(strat.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
+            check5 = np.isclose(strat.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
 
             self.assertTrue(check1, msg=log_str)
             self.assertTrue(check2, msg=log_str)
@@ -112,7 +126,7 @@ class test_diagnostic_methods(unittest.TestCase):
             self.assertTrue(check5, msg=log_str)
 
         with self.subTest("Plot pycnocline depth"):
-            fig, ax = IT.quick_plot("strat_1st_mom_masked")
+            fig, ax = strat.quick_plot("strat_1st_mom_masked")
             fig.tight_layout()
             fig.savefig(files.dn_fig + "strat_1st_mom.png")
             plt.close("all")

@@ -39,9 +39,9 @@ class test_example_scripts(unittest.TestCase):
 
         plt.close("all")
 
-    def test_internal_tide_pycnocline_diagnostics(self):
+    def test_stratification_pycnocline_diagnostics(self):
         if "livljobs" in gethostname().lower():
-            from example_scripts import internal_tide_pycnocline_diagnostics
+            from example_scripts import stratification_pycnocline_diagnostics
 
             plt.close("all")
 
@@ -75,9 +75,9 @@ class test_example_scripts(unittest.TestCase):
 
             plt.close("all")
 
-    def test_internal_tide_pycnocline_diagnostics(self):
+    def test_stratification_pycnocline_diagnostics(self):
         if "livljobs" in gethostname().lower():
-            from example_scripts import internal_tide_pycnocline_diagnostics
+            from example_scripts import stratification_pycnocline_diagnostics
 
             plt.close("all")
 

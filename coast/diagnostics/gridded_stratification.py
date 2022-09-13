@@ -1,14 +1,15 @@
 from ..data.gridded import Gridded
+import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 import copy
 from .._utils.logging_util import get_slug, debug
 
 
-class InternalTide(Gridded):  # TODO All abstract methods should be implemented
+class GriddedStratification(Gridded):  # TODO All abstract methods should be implemented
     """
     Object for handling and storing necessary information, methods and outputs
-    for calculation of internal tide diagnostics.
+    for calculation of stratification diagnostics.
 
     Herein the depth moments of stratification are used as proxies for
     pycnocline depth (as the first  moment of stratification), and pycnocline
@@ -29,13 +30,13 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
     Example basic usage:
     -------------------
         # Create Internal tide diagnostics object
-        IT_obj = INTERNALTIDE(gridded_t, gridded_w) # For Gridded objects on t and w-pts
-        IT_obj.construct_pycnocline_vars( gridded_t, gridded_w )
+        strat_obj = GriddedStratification(gridded_t, gridded_w) # For Gridded objects on t and w-pts
+        strat_obj.construct_pycnocline_vars( gridded_t, gridded_w )
         # Make maps of pycnocline thickness and depth
-        IT_obj.quick_plot()
+        strat_obj.quick_plot()
     """
 
-    def __init__(self, gridded_t: xr.Dataset, gridded_w: xr.Dataset):  # TODO gridded_w is unused
+    def __init__(self, gridded_t: xr.Dataset):
         # TODO Super __init__ should be called at some point
         debug(f"Creating new {get_slug(self)}")
         self.dataset = xr.Dataset()
@@ -49,7 +50,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         self.nx = gridded_t.dataset.dims["x_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def construct_pycnocline_vars(self, gridded_t: xr.Dataset, gridded_w: xr.Dataset, strat_thres=-0.01):
+    def construct_pycnocline_vars(self, gridded_t: Gridded, gridded_w: Gridded, strat_thres=-0.01):
         """
         Computes depth moments of stratification. Under the assumption that the
         stratification approximately represents a two-layer fluid, these can be
@@ -67,9 +68,9 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 
         Parameters
         ----------
-        gridded_t : xr.Dataset
+        gridded_t : Gridded
             Gridded object on t-points.
-        gridded_w : xr.Dataset, optional
+        gridded_w : Gridded, optional
             Gridded object on w-points.
         strat_thres: float - Optional
             limiting stratification (rho_dz < 0) to trigger masking of mixed waters
@@ -103,12 +104,12 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         gridded_w = coast.Gridded( fn_domain = dn_files + fn_nemo_dom,
                            grid_ref='w-grid')
 
-        # initialise Internal Tide object
-        IT = coast.INTERNALTIDE(gridded_t, gridded_w)
+        # initialise GriddedStratification object
+        strat = coast.GriddedStratification(gridded_t, gridded_w)
         # Construct pycnocline variables: depth and thickness
-        IT.construct_pycnocline_vars( gridded_t, gridded_w )
+        strat.construct_pycnocline_vars( gridded_t, gridded_w )
         # Plot pycnocline depth and thickness
-        IT.quickplot()
+        strat.quickplot()
 
         """
 
@@ -119,9 +120,7 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 
         # Construct stratification if not already done. t-pts --> w-pts
         if not hasattr(gridded_w.dataset, "rho_dz"):
-            gridded_w = gridded_t.differentiate(
-                "density", dim="z_dim", out_var_str="rho_dz", out_obj=gridded_w
-            )  # TODO These kwargs don't appear to exist
+            gridded_w = gridded_t.differentiate("density", dim="z_dim", out_var_str="rho_dz", out_obj=gridded_w)
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in
         # z_dim, ydim, xdim
@@ -229,6 +228,66 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             dims=["y_dim", "x_dim"],
         )
 
+    def calc_pea(self, gridded_t: xr.Dataset, Zd_mask):
+        """
+        Calculates Potential Energy Anomaly
+
+        The density and depth averaged density can be supplied within gridded_t as "density" and
+        "density_bar" DataArrays, respectively. If they are not supplied they will be calculated.
+        "density_bar" is calculated using depth averages of temperature and salinity.
+
+        Example Usage: PEA in upper 200m
+        --------------------------------
+        # load some example data. E.g.
+        root = "~/work/coast/"
+        dn_files = root + "./example_files/"
+        fn_nemo_grid_t_dat = dn_files + "nemo_data_T_grid_Aug2015.nc"
+        fn_nemo_dom = dn_files + "coast_example_nemo_domain.nc"
+        config_t = root + "./config/example_nemo_grid_t.json"
+        dn_fig = 'unit_testing/figures/'
+        gridded_t = coast.Gridded(fn_nemo_grid_t_dat, fn_nemo_dom, config=config_t)
+        Zd_mask,kmax,Ikmax=gridded_t.calculate_vertical_mask(200.)
+        strat=coast.GriddedStratification(gridded_t)
+        strat.calc_pea(gridded_t,Zd_mask)
+        strat.quick_plot('PEA')
+        """
+        # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
+        gravity = 9.81
+        # Z=gridded_t.dataset.variables['depth_0'].values
+        # DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask
+        _, z_4d = xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.depth_0)
+        _, dz_4d = xr.broadcast(gridded_t.dataset.salinity, gridded_t.dataset.e3_0.squeeze() * Zd_mask)
+        height = dz_4d.sum(dim="z_dim", skipna=True)  # water depth or Zmax ,
+        #         H=xr.broadcast(gridded_t.dataset.salinity,H)[0]
+        #         nt=gridded_t.dataset.dims['t_dim']
+
+        if not "density" in gridded_t.dataset:
+            gridded_t.construct_density(CT_AS=True, pot_dens=True)
+        if not "density_bar" in gridded_t.dataset:
+            gridded_t.construct_density(CT_AS=True, rhobar=True, Zd_mask=Zd_mask, pot_dens=True)
+        rho = gridded_t.dataset.variables["density"].values  # density
+        rho[np.isnan(rho)] = 0
+        rhobar = gridded_t.dataset.variables["density_bar"]  # density with depth-mean T and S
+
+        #         z_axis=0
+        #         if len(gridded_t.dataset['density'].shape) == 4:   # includes time as first axis
+        #          Z=np.repeat(Z[np.newaxis,:,:,:],nt,axis=0)
+        #          DZ=np.repeat(DZ[np.newaxis,:,:,:],nt,axis=0)
+        #          DP=np.repeat(DP[np.newaxis,:,:],nt,axis=0)
+        #          z_axis=1
+
+        PEA = (z_4d * (rho - rhobar) * dz_4d).sum(dim="z_dim", skipna=True) * gravity / height
+        #%%
+        #         return PEA
+        coords = {
+            "time": ("t_dim", gridded_t.dataset.time.values),
+            "latitude": (("y_dim", "x_dim"), gridded_t.dataset.latitude.values),
+            "longitude": (("y_dim", "x_dim"), gridded_t.dataset.longitude.values),
+        }
+        dims = ["t_dim", "y_dim", "x_dim"]
+        attributes = {"units": "J / m^3", "standard_name": "Potential Energy Anomaly"}
+        self.dataset["PEA"] = xr.DataArray(PEA, coords=coords, dims=dims, attrs=attributes)
+
     def quick_plot(self, var: xr.DataArray = None):
         """
 
@@ -246,10 +305,9 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
 
         Example Usage
         -------------
-        IT.quick_plot( 'strat_1st_mom_masked' )
+        strat.quick_plot( 'strat_1st_mom_masked' )
 
         """
-        import matplotlib.pyplot as plt
 
         debug(f"Generating quick plot for {get_slug(self)}")
 
@@ -258,6 +316,8 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
         else:
             var_lst = [self.dataset[var]]
 
+        fig = None
+        ax = None
         for var in var_lst:
             fig = plt.figure(figsize=(10, 10))
             ax = fig.gca()
@@ -279,4 +339,4 @@ class InternalTide(Gridded):  # TODO All abstract methods should be implemented
             plt.clim([0, 50])
             plt.colorbar()
             plt.show()
-        return fig, ax  # TODO if var_lst is empty this will cause an error
+        return fig, ax
