@@ -9,8 +9,8 @@ jupyter nbconvert --to notebook --execute example_scripts/notebooks/runnable_not
 echo "starting notebook convert"
 jupyter nbconvert --to markdown example_scripts/notebooks/runnable_notebooks/executed/${directory}/*.ipynb --output-dir example_scripts/notebooks/markdown/${directory}/
 echo "starting clean up (rm)"
-rm -rf example_scripts/notebooks/runnable_notebooks/executed/${directory}  # Delete temp executed notebook dir.
-rm -rf example_scripts/notebooks/runnable_notebooks/${directory}/*.nc  # Delete output nc files.
+#rm -rf example_scripts/notebooks/runnable_notebooks/executed/${directory}  # Delete temp executed notebook dir.
+#rm -rf example_scripts/notebooks/runnable_notebooks/${directory}/*.nc  # Delete output nc files.
 
 mkdir -p example_scripts/notebooks/markdown_images/${directory}/ # image folder
 
