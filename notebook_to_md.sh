@@ -36,6 +36,6 @@ EOM
     # Echo hugo header to beginning of generated md file.
     echo "$VAR" | cat - $FILE > temp && mv temp $FILE
     sed -i "s+${filename}_files/+/COAsT/${filename}_files/+g" $FILE
-    mv  example_scripts/notebooks/markdown/${directory}/${filename}_files example_scripts/notebooks/markdown_images/${directory}/
+    [ -d /example_scripts/notebooks/markdown/${directory}/${filename}_files ] && mv  example_scripts/notebooks/markdown/${directory}/${filename}_files example_scripts/notebooks/markdown_images/${directory}/
 done
 
