@@ -1,4 +1,5 @@
 """The coast class is the main access point into this package."""
+from typing import Optional
 from dask import array
 import xarray as xr
 import numpy as np
@@ -537,7 +538,18 @@ def create_constraint(start: Coordinate, end: Coordinate, dim: xr.DataArray) -> 
     Returns:
         A mask that can be applied to dim to exclude unwanted values.
     """
-    return np.logical_and(dim >= start, dim <= end)
+    minimum = dim.min().item()
+    maximum = dim.max().item()
+
+    mask = np.logical_and(dim >= start, dim <= end)
+    if start < minimum or start > maximum:
+        diff = start % minimum
+        mask = np.logical_or(mask, dim >= maximum + diff)
+    if end > maximum or end < minimum:
+        diff = end % maximum
+        mask = np.logical_or(mask, dim <= minimum + diff)
+
+    return mask
 
 
 def get_coord(dataset: xr.Dataset, dim: str) -> xr.DataArray:
