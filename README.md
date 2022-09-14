@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/COAsT.svg)](https://pypi.org/project/COAsT/#history) 
 [![Anaconda-Server Badge](https://anaconda.org/bodc/coast/badges/latest_release_date.svg)](https://anaconda.org/bodc/coast)
+[![Anaconda-Server Badge](https://anaconda.org/bodc/coast/badges/installer/conda.svg)](https://conda.anaconda.org/bodc)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6778993.svg)](https://doi.org/10.5281/zenodo.6778993)
 ```
 __________________________________________________________________________________________
