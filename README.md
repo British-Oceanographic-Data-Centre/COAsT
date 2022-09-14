@@ -1,3 +1,5 @@
+![PyPI version](https://badge.fury.io/py/COAsT.svg) 
+![Anaconda version](https://anaconda.org/bodc/coast/badges/version.svg)  
 ```
 __________________________________________________________________________________________
 
