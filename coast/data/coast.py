@@ -510,6 +510,9 @@ class Coast:
     def set_constraint(self, start: Coordinates, end: Coordinates, drop: bool = True) -> None:
         """Constrain the underlying dataset to values within an arbitrarily sized hyperrectangle.
 
+        Coordinates that exceed the boundaries of the dataset will wrap around. i.e. a longitude value of 190 applied
+        to a dataset with a maximum value of 180 would wrap to -10.
+
         Args:
             start: The start coordinates of the shape to define.
             end: The end coordinates of the shape to define.
@@ -519,6 +522,9 @@ class Coast:
 
     def constrain(self, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
         """Return the underlying dataset with values constrained to an arbitrarily sized hyperrectangle.
+
+        Coordinates that exceed the boundaries of the dataset will wrap around. i.e. a longitude value of 190 applied
+        to a dataset with a maximum value of 180 would wrap to -10.
 
         Args:
             start: The start coordinates of the shape to define.
@@ -568,6 +574,9 @@ class Coast:
 
 def create_constraint(start: Coordinate, end: Coordinate, dim: xr.DataArray) -> np.typing.NDArray[bool]:
     """Create a mask to exclude coordinates that do not fall within a range of two arbitrary values.
+
+    Coordinates that exceed the boundaries of the dataset will wrap around. i.e. a longitude value of 190 applied
+    to a dataset with a maximum value of 180 would wrap to -10.
 
     Args:
         start: The start of the range of values to constrain within.
@@ -655,6 +664,9 @@ def t_dim(dataset: xr.Dataset) -> xr.DataArray:
 
 def constrain(dataset: xr.Dataset, start: Coordinates, end: Coordinates, drop: bool = True) -> xr.Dataset:
     """Constrain values within a dataset to an arbitrarily sized hyperrectangle.
+
+    Coordinates that exceed the boundaries of the dataset will wrap around. i.e. a longitude value of 190 applied
+    to a dataset with a maximum value of 180 would wrap to -10.
 
     Args:
         dataset: The dataset to constrain values from.
