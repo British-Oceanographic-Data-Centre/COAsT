@@ -2129,85 +2129,8 @@ except:
     print(str(sec) + chr(subsec) + " FAILED.")
 
 # %%
-"""
-###############################################################################
-## ( N ) Example script testing                                              ##
-###############################################################################
-"""
-sec = "N"
-subsec = 96
 
-print(str(sec) + ". Example script testing")
-print("++++++++++++++++++++++++")
-print("  script output follows  ")
-print(" ")
-#
-# -----------------------------------------------------------------------------#
-# %% ( Na ) Example script testing                                               #
-#                                                                             #
-subsec = subsec + 1
-# Test machine name (to check for file access) in order to test additional scripts.
-example_script_flag = True if "livljobs" in gethostname().lower() else False
 
-try:
-    # Do a thing
-    from example_scripts import altimetry_tutorial  # This runs on example_files
-    from example_scripts import tidegauge_tutorial  # This runs on example_files
-    from example_scripts import tidetable_tutorial  # This runs on example_files
-    from example_scripts import export_to_netcdf_tutorial  # This runs on example_files
-    from example_scripts import transect_tutorial  # This runs on example_files
-    from example_scripts import contour_tutorial  # This runs on example_files
-    from example_scripts import (
-        stratification_pycnocline_diagnostics,
-    )  # This runs on example_files unless it is on livljobs, then it is AMM60 data
-
-    print(" ")
-    print("  script output ends  ")
-    print("++++++++++++++++++++++++")
-    print(str(sec) + chr(subsec) + " OK - tutorials on example_files data")
-    subsec = subsec + 1
-
-    if example_script_flag:
-        from example_scripts import amm15_example_plot
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on AMM15 data")
-
-        subsec = subsec + 1
-        from example_scripts import anchor_plots_of_nsea_wvel
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on AMM60 data")
-
-        subsec = subsec + 1
-        from example_scripts import blz_example_plot
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on Belize data")
-
-        subsec = subsec + 1
-        from example_scripts import seasia_r12_example_plot
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on seasia data")
-
-        subsec = subsec + 1
-        from example_scripts import wcssp_india_example_plot
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on WCSSP-India data")
-
-        subsec = subsec + 1  # ON LIVLJOBS THIS RUNS TWICE FOR AMM60 DATA.
-        from example_scripts import stratification_pycnocline_diagnostics
-
-        print(str(sec) + chr(subsec) + " OK - tutorial on pycnocline diagnostics")
-    else:
-        print("Don't forget to test on a LIVLJOBS machine")
-
-    # TEST: <description here>
-    check1 = example_script_flag
-    if check1:
-        print(str(sec) + " OK - example_scripts ran on", gethostname())
-    else:
-        print(str(sec) + " X - example_scripts failed on", gethostname())
-
-except:
-    print(str(sec) + chr(subsec) + " FAILED.")
 
 # %% Close log file
 #################################################
