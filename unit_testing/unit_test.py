@@ -30,7 +30,6 @@ from test_stats_utilities import test_stats_utilities
 from test_maskmaker_methods import test_maskmaker_methods
 from test_climatology import test_climatology
 from test_wod_read_data import test_wod_read_data
-from test_example_scripts import test_example_scripts
 from test_process_data import test_process_data_methods
 from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
 
@@ -59,7 +58,6 @@ tests_to_do = [
     test_wod_read_data,
     test_bgc_gridded_initialisation,
     test_process_data_methods,
-    # test_example_scripts,
 ]
 
 
