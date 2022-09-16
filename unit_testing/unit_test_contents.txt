@@ -101,19 +101,3 @@
       d. gridded_load_bgc_domain_only
       e. gridded_load_bgc_variables_correctly_renamed
 
-20. test_example_scripts
-      a. altimetry_tutorial
-      b. amm15_example_plot
-      c. anchor_plots_of_nsea_wvel
-      d. blz_example_plot
-      e. contour_tutorial
-      f. export_to_netcdf_tutorial
-      g. seasia_dic_example_plot
-      h. seasia_r12_example_plot
-      i. stratification_pycnocline_diagnostics
-      j. tidegauge_validation_tutorial
-      k. tidetable_tutorial
-      l. transect_tutorial
-      m. wcssp_india_example_plot
-      n. wod_bgc_ragged_example
-
