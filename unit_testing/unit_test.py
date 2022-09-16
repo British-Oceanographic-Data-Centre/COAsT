@@ -12,7 +12,7 @@ fn_contents = "./unit_testing/unit_test_contents.txt"
 
 # Set TEST imports and list of tests to do.
 # Import tests to test. From a module (file) import a testCase class (See template)
-from test_TEMPLATE import test_TEMPLATE
+# from test_TEMPLATE import test_TEMPLATE
 from test_gridded_initialisation import test_gridded_initialisation
 from test_gridded_harmonics import test_gridded_harmonics
 from test_general_utils import test_general_utils
