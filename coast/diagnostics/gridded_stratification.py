@@ -97,7 +97,7 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
         dn_files = "./example_files/"
         dn_fig = 'unit_testing/figures/'
         fn_nemo_grid_t_dat = 'nemo_data_T_grid_Aug2015.nc'
-        fn_nemo_dom = 'COAsT_example_Nemo_domain.nc'
+        fn_nemo_dom = 'coast_example_nemo_domain.nc'
         gridded_t = coast.Gridded(dn_files + fn_nemo_grid_t_dat,
                      dn_files + fn_nemo_dom, grid_ref='t-grid')
         # create an empty w-grid object, to store stratification
