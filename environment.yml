@@ -1,10 +1,10 @@
-name: jeff
+name: coast
 channels:
   - anaconda
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.8
+  - python==3.8.10
   - pip>=22.2.2
   - cartopy
   - gsw>=3.4.0
@@ -24,3 +24,4 @@ dependencies:
     - lxml>=4.9.0
     - requests>=2.27.1
     - spyder>=5.1.5
+    - jupyterlab
