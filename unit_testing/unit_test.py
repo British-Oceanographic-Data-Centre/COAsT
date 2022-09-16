@@ -7,7 +7,7 @@
 calculate_coverage = False
 
 # Set the following to True to also auto-generate a new unit_test_contents file.
-generate_unit_test_contents = True
+generate_unit_test_contents = False
 fn_contents = "./unit_testing/unit_test_contents.txt"
 
 # Set TEST imports and list of tests to do.
