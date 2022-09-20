@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  coast:
+    image: coast_lite
+    container_name: coast_container
+    volumes:
+      - ./example_files:/example_files
+      - ./config:/config
+      - ./example_scripts:/example_scripts
+    restart: always
+    build: .
+    stdin_open: true 
+    tty: true

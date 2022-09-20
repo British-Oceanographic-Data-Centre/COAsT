@@ -3,7 +3,7 @@ Run this file from the main COAsT directory to generate a new unit_test_contents
 file based on the imported modules in tests_to_do
 
 If you have added new tests to the unit test, you should do this before pushing
-to github.
+to GitHub.
 
 The easiest way to do this is to copy and paste your new tests modules below
 (or straight from unit_test.py).
@@ -35,7 +35,6 @@ from test_plot_utilities import test_plot_utilities
 from test_stats_utilities import test_stats_utilities
 from test_maskmaker_methods import test_maskmaker_methods
 from test_climatology import test_climatology
-from test_example_scripts import test_example_scripts
 from test_wod_read_data import test_wod_read_data
 from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
 
@@ -65,7 +64,6 @@ tests_to_do = [
     test_climatology,
     test_wod_read_data,
     test_bgc_gridded_initialisation,
-    test_example_scripts,
 ]
 
 # Auto generate contents file. Define output file:

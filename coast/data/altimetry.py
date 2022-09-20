@@ -52,20 +52,21 @@ class Altimetry(Track):
 
     """
 
-    def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None):
+    def __init__(self, file_path: str = None, multiple=False, config: Union[Path, str] = None, quiet: bool = False):
         """Initialization and file reading.
 
         Args:
             file_path (str): path to data file
             multiple (boolean): True if reading multiple files otherwise False
             config (Union[Path, str]): path to json config file.
+            quiet (boolean): supress warning if not wanted. E.g. for intermediate step in creating object.
         """
         debug(f"Creating a new {get_slug(self)}")
         super().__init__(config)
 
-        if file_path is None:
+        if file_path is None and quiet is False:
             warn("Object created but no file or directory specified: \n" "{0}".format(str(self)), UserWarning)
-        else:
+        elif file_path is not None:
             self.read_cmems(file_path, multiple)
             self.apply_config_mappings()
 
@@ -273,7 +274,7 @@ class Altimetry(Track):
             time_interp,
         )
         if create_new_object:
-            new_object = Altimetry()
+            new_object = Altimetry(quiet=True)
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
             new_dataset["crps"] = (("t_dim"), crps_list)
             new_dataset["crps_n_model_pts"] = (("t_dim"), n_model_pts)
@@ -381,7 +382,7 @@ class Altimetry(Track):
         cov = self.time_covariance(var_str0, var_str1, date0, date1)
 
         if create_new_object:
-            new_object = Altimetry()
+            new_object = Altimetry(quiet=True)
             new_dataset = self.dataset[["longitude", "latitude", "time"]]
             new_dataset["absolute_error"] = ae
             new_dataset["error"] = diff
