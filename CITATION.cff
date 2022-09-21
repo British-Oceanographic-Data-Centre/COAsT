@@ -37,6 +37,6 @@ authors:
  - family-names: "Gorman"
    given-names: "Luke"
    orcid: "https://orcid.org/0000-0002-2414-4311"
-title: "British-Oceanographic-Data-Centre/COAsT: v3.0.3"
-version: v3.0.4
-date-released: 2022-06-29
+title: "British-Oceanographic-Data-Centre/COAsT: v3.1.0"
+version: v3.1.0
+date-released: 2022-09-20

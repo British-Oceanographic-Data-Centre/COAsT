@@ -6,13 +6,13 @@ from types import SimpleNamespace
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "3.0.4",
+        "version": "3.1.0",
         "description": "This is the Coast Ocean Assessment Tool",
         "url": "https://www.bodc.ac.uk",
         "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
         "author": "British Oceanographic Data Centre (BODC)",
         "author_email": "bodcsoft@bodc.ac.uk",
-        "license": "Put something here",
+        "license": "MIT License",
         "license_family": "OTHER",
         "setup_requires": ["wheel"],
         "classifiers": [
