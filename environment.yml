@@ -1,4 +1,4 @@
-name: coast_dev3
+name: coast
 channels:
   - anaconda
   - conda-forge
