@@ -33,7 +33,7 @@ sci_w = coast.Gridded(dir_nam + fil_nam, dom_nam, config=config)
 sci_w.dataset.chunk(chunks)
 
 #% NEMO output is not standard with u,v fields included with w-pts. Tidy to avoid confusion
-sci_w.dataset = sci_w.dataset.drop(["uo", "vo", "depthv"])
+sci_w.dataset = sci_w.dataset.drop_vars(["uo", "vo", "depthv"])
 sci_w.dataset = sci_w.dataset.swap_dims({"depthw": "z_dim"})
 
 #################################################

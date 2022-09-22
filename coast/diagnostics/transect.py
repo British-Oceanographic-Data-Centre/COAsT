@@ -235,7 +235,7 @@ class Transect:
 
         ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         coast = NaturalEarthFeature(
-            category="physical", scale="50m", facecolor=[0.8, 0.8, 0.8], name="coastline", alpha=0.5
+            category="physical", scale="110m", facecolor=[0.8, 0.8, 0.8], name="coastline", alpha=0.5
         )
         ax.add_feature(coast, edgecolor="gray")
 

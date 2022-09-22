@@ -80,7 +80,7 @@ class Tidegauge(Timeseries):
 
             # If new_time_coords, replace existing time dimension with new
             if new_time_coords is not None:
-                ds_coords = xr.Dataset(self.dataset.coords).drop("time")
+                ds_coords = xr.Dataset(self.dataset.coords).drop_vars("time")
                 ds_coords["time"] = ("t_dim", new_time_coords)
                 ds_coords = ds_coords.set_coords("time")
                 self.dataset = ds_coords.copy()
@@ -675,7 +675,7 @@ class Tidegauge(Timeseries):
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
             # return self.dataset.ssh[ index[np.argmax( self.dataset.ssh[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
             nearest_2 = self.dataset[measure_var].isel(time=index[0 : 1 + 1])  # , self.dataset.time[index[0:1+1]]
-            return nearest_2.isel(time=nearest_2.argmax())
+            return nearest_2.isel(time=np.argmax(nearest_2.data))
 
         else:
             debug("Not expecting that option / method")
@@ -1037,8 +1037,8 @@ class Tidegauge(Timeseries):
         X = self.dataset.longitude
         Y = self.dataset.latitude
         fig, ax = plot_util.geo_scatter(X, Y)
-        ax.set_xlim((X - 10, X + 10))
-        ax.set_ylim((Y - 10, Y + 10))
+        ax.set_xlim((np.min(X.data) - 1, np.max(X.data) + 1))
+        ax.set_ylim((np.min(Y.data) - 1, np.min(Y.data) + 1))
         return fig, ax
 
     @classmethod

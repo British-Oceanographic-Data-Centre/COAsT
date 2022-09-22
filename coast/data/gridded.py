@@ -167,7 +167,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         # Delete specified variables
         for var in self.config.code_processing.delete_variables:
             try:
-                self.dataset = self.dataset.drop(var)
+                self.dataset = self.dataset.drop_vars(var)
             except ValueError as err:
                 warning(f"Issue with dropping variable {var}.{chr(10)}Error message of {err}")
 
@@ -372,7 +372,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         debug(f"Finding j,i for {lat},{lon} from {get_slug(self)}")
 
         dist2 = np.square(self.dataset.latitude - lat) + np.square(self.dataset.longitude - lon)
-        [y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        [y, x] = np.unravel_index(np.argmin(dist2.data), dist2.shape)
         return [y, x]
 
     def find_j_i_list(self, *, lat: float, lon: float, n_nn=1):
@@ -413,7 +413,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         internal_lat = dataset_domain["latitude"]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
         internal_lon = dataset_domain["longitude"]  # [f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
-        [_, y, x] = np.unravel_index(dist2.argmin(), dist2.shape)
+        [_, y, x] = np.unravel_index(np.argmin(dist2.data), dist2.shape)
         return [y, x]
 
     def transect_indices(self, start: tuple, end: tuple) -> tuple:
