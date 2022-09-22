@@ -1037,8 +1037,8 @@ class Tidegauge(Timeseries):
         X = self.dataset.longitude
         Y = self.dataset.latitude
         fig, ax = plot_util.geo_scatter(X, Y)
-        ax.set_xlim((X - 10, X + 10))
-        ax.set_ylim((Y - 10, Y + 10))
+        ax.set_xlim((np.min(X.data) - 1, np.max(X.data) + 1))
+        ax.set_ylim((np.min(Y.data) - 1, np.min(Y.data) + 1))
         return fig, ax
 
     @classmethod
