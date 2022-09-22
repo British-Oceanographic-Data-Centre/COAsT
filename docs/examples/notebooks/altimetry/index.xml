@@ -1,5 +1,5 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Altimety</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/altimetry/</link><description>Recent content in Altimety on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/altimetry/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Altimetry tutorial</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/altimetry/altimetry_tutorial/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/altimetry/altimetry_tutorial/</guid><description>
-&lt;p>This is a demonstration script for using the Altimetry object in the COAsT package. This object has strict data formatting requirements, which are outlined in altimetry.py.&lt;/p>
+&lt;p>This is a demonstration script for using the Altimetry object in the COAsT package. This object has strict data formatting requirements, which are outlined in &lt;code>altimetry.py&lt;/code>.&lt;/p>
 &lt;h3 id="relevant-imports-and-filepath-configuration">Relevant imports and filepath configuration&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Begin by importing coast and other packages&lt;/span>
 &lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
@@ -21,7 +21,7 @@
 &lt;span style="color:#8f5902;font-style:italic"># altimetry = coast.Altimetry(fn_altimetry)&lt;/span>
 &lt;span style="color:#000">altimetry&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Altimetry&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_altimetry&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_altimetry_config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>././config/example_altimetry.json
-Altimetry object at 0x55d7343bafc0 initialised
+Altimetry object at 0x56408157efc0 initialised
 &lt;/code>&lt;/pre>
 &lt;h3 id="subsetting">Subsetting&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Before going any further, lets just cut out the bit of the altimetry that&lt;/span>
@@ -31,7 +31,7 @@ Altimetry object at 0x55d7343bafc0 initialised
 &lt;span style="color:#000">ind&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices_lonlat_box&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">45&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">60&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
 &lt;span style="color:#000">ind&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">ind&lt;/span>&lt;span style="color:#000;font-weight:bold">[::&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
 &lt;span style="color:#000">altimetry&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">t_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Subsetting Altimetry object at 0x55d7343bafc0 indices in [-10, 10], [45, 60]
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Subsetting Altimetry object at 0x56408157efc0 indices in [-10, 10], [45, 60]
 &lt;/code>&lt;/pre>
 &lt;h3 id="model-interpolation">Model interpolation&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Before comparing our observations to the model, we will interpolate a model&lt;/span>
@@ -41,7 +41,7 @@ Altimetry object at 0x55d7343bafc0 initialised
 &lt;span style="color:#8f5902;font-style:italic"># Doing this has created a new interpolated variable called interp_ssh and&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># saved it back into our Altimetry object. Take a look at altimetry.dataset&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># to see for yourself.&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Interpolating Gridded object at 0x55d7343bafc0 &amp;quot;ssh&amp;quot; with time_interp &amp;quot;nearest&amp;quot;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Interpolating Gridded object at 0x56408157efc0 &amp;quot;ssh&amp;quot; with time_interp &amp;quot;nearest&amp;quot;
 &lt;/code>&lt;/pre>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#altimetry.dataset # uncomment to print data object summary&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="interpolated-vs-observed">Interpolated vs observed&lt;/h3>
@@ -50,7 +50,7 @@ Altimetry object at 0x55d7343bafc0 initialised
 &lt;span style="color:#8f5902;font-style:italic"># which calculates some simple metrics including differences, RMSE and&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># correlations. NOTE: This may not be a wise choice of variables.&lt;/span>
 &lt;span style="color:#000">stats&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">basic_stats&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;ocean_tide_standard_name&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;interp_ssh&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x55d7343bafc0 initialised
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x56408157efc0 initialised
 /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py:352: FutureWarning: The default value of numeric_only in DataFrame.corr is deprecated. In a future version, it will default to False. Select only valid columns or specify the value of numeric_only to silence this warning.
 corr = pdvar.corr(method=method)
 /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py:366: FutureWarning: The default value of numeric_only in DataFrame.cov is deprecated. In a future version, it will default to False. Select only valid columns or specify the value of numeric_only to silence this warning.
@@ -70,275 +70,20 @@ cov = pdvar.cov()
 &lt;span style="color:#8f5902;font-style:italic"># to basic_stats, `create_new_object` keyword arg can be set to `false` to save output to&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># the original altimetry object.&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#crps.dataset # uncomment to print data object summary&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x55d7343bafc0 initialised
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x56408157efc0 initialised
 &lt;/code>&lt;/pre>
 &lt;h3 id="plotting-data">Plotting data&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Altimetry has a ready built quick_plot() routine for taking a look at any&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># of the observed or derived quantities above. So to take a look at the&lt;/span>
-&lt;span style="color:#8f5902;font-style:italic"># &amp;#39;sla_filtered&amp;#39; variable:&lt;/span>
+&lt;span style="color:#8f5902;font-style:italic"># &amp;#39;ocean_tide_standard_name&amp;#39; variable:&lt;/span>
 &lt;span style="color:#000">fig&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">ax&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;ocean_tide_standard_name&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
-AttributeError Traceback (most recent call last)
-/tmp/ipykernel_3691/1478867203.py in &amp;lt;cell line: 4&amp;gt;()
-2 # of the observed or derived quantities above. So to take a look at the
-3 # 'sla_filtered' variable:
-----&amp;gt; 4 fig, ax = altimetry.quick_plot(&amp;quot;ocean_tide_standard_name&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py in quick_plot(self, color_var_str)
-155 title = &amp;quot;Altimetry observation locations&amp;quot;
-156 info(&amp;quot;Drawing a quick plot...&amp;quot;)
---&amp;gt; 157 fig, ax = plot_util.geo_scatter(self.dataset.longitude, self.dataset.latitude, c=color_var, title=title)
-158 info(&amp;quot;Plot ready, displaying!&amp;quot;)
-159 return fig, ax
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/_utils/plot_util.py in geo_scatter(longitude, latitude, c, s, scatter_kwargs, coastline_kwargs, gridline_kwargs, figure_kwargs, title, figsize)
-280
-281 ax = plt.subplot(111, projection=ccrs.PlateCarree())
---&amp;gt; 282 sca = ax.scatter(longitude, y=latitude, c=c, s=s, zorder=100, **scatter_kwargs)
-283 coast = NaturalEarthFeature(category=&amp;quot;physical&amp;quot;, **coastline_kwargs)
-284 ax.add_feature(coast, edgecolor=&amp;quot;gray&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in wrapper(self, *args, **kwargs)
-308
-309 kwargs['transform'] = transform
---&amp;gt; 310 return func(self, *args, **kwargs)
-311 return wrapper
-312
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in scatter(self, *args, **kwargs)
-1545
-1546 result = matplotlib.axes.Axes.scatter(self, *args, **kwargs)
--&amp;gt; 1547 self.autoscale_view()
-1548 return result
-1549
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-852
-853 def autoscale_view(self, tight=None, scalex=True, scaley=True):
---&amp;gt; 854 matplotlib.axes.Axes.autoscale_view(self, tight=tight,
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in autoscale_view(self, tight, scalex, scaley)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
--&amp;gt; 2972 handle_single_axis(
-2973 scalex, self._shared_axes[&amp;quot;x&amp;quot;], 'x', self.xaxis, self._xmargin,
-2974 x_stickies, self.set_xbound)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in handle_single_axis(scale, shared_axes, name, axis, margin, stickies, set_bound)
-2967 if not self._tight:
-2968 x0, x1 = locator.view_limits(x0, x1)
--&amp;gt; 2969 set_bound(x0, x1)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in set_xbound(self, lower, upper)
-3564 lower, upper = lower
-3565
--&amp;gt; 3566 old_lower, old_upper = self.get_xbound()
-3567 if lower is None:
-3568 lower = old_lower
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xbound(self)
-3536 invert_xaxis, xaxis_inverted
-3537 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3538 left, right = self.get_xlim()
-3539 if left &amp;lt; right:
-3540 return left, right
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xlim(self)
-3594 be greater than the *right* value.
-3595 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3596 return tuple(self.viewLim.intervalx)
-3597
-3598 def _validate_converted_limits(self, limit, convert):
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in viewLim(self)
-813 @property
-814 def viewLim(self):
---&amp;gt; 815 self._unstale_viewLim()
-816 return self._viewLim
-817
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in _unstale_viewLim(self)
-808 for ax in self._shared_axes[name].get_siblings(self):
-809 ax._stale_viewlims[name] = False
---&amp;gt; 810 self.autoscale_view(**{f&amp;quot;scale{name}&amp;quot;: scale
-811 for name, scale in need_scale.items()})
-812
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
---&amp;gt; 857 if scalex and self._autoscaleXon:
-858 bounds = self.get_xbound()
-859 self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
-AttributeError: 'GeoAxesSubplot' object has no attribute '_autoscaleXon'
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/io/__init__.py:241: DownloadWarning: Downloading: https://naturalearth.s3.amazonaws.com/50m_physical/ne_50m_coastline.zip
+warnings.warn(f'Downloading: {url}', DownloadWarning)
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/altimetry_tutorial_files/altimetry_tutorial_15_1.png" alt="png">&lt;/p>
-&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># As stats and crps are also Altimetry objects, quick_plot() can also be used:&lt;/span>
-&lt;span style="color:#8f5902;font-style:italic"># crps quick_plot:&lt;/span>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># As stats and crps are also `altimetry` objects, quick_plot() can also be used:&lt;/span>
 &lt;span style="color:#000">fig&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">ax&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">crps&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;crps&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
-AttributeError Traceback (most recent call last)
-/tmp/ipykernel_3691/3088798311.py in &amp;lt;cell line: 3&amp;gt;()
-1 # As stats and crps are also Altimetry objects, quick_plot() can also be used:
-2 # crps quick_plot:
-----&amp;gt; 3 fig, ax = crps.quick_plot(&amp;quot;crps&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py in quick_plot(self, color_var_str)
-155 title = &amp;quot;Altimetry observation locations&amp;quot;
-156 info(&amp;quot;Drawing a quick plot...&amp;quot;)
---&amp;gt; 157 fig, ax = plot_util.geo_scatter(self.dataset.longitude, self.dataset.latitude, c=color_var, title=title)
-158 info(&amp;quot;Plot ready, displaying!&amp;quot;)
-159 return fig, ax
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/_utils/plot_util.py in geo_scatter(longitude, latitude, c, s, scatter_kwargs, coastline_kwargs, gridline_kwargs, figure_kwargs, title, figsize)
-280
-281 ax = plt.subplot(111, projection=ccrs.PlateCarree())
---&amp;gt; 282 sca = ax.scatter(longitude, y=latitude, c=c, s=s, zorder=100, **scatter_kwargs)
-283 coast = NaturalEarthFeature(category=&amp;quot;physical&amp;quot;, **coastline_kwargs)
-284 ax.add_feature(coast, edgecolor=&amp;quot;gray&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in wrapper(self, *args, **kwargs)
-308
-309 kwargs['transform'] = transform
---&amp;gt; 310 return func(self, *args, **kwargs)
-311 return wrapper
-312
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in scatter(self, *args, **kwargs)
-1545
-1546 result = matplotlib.axes.Axes.scatter(self, *args, **kwargs)
--&amp;gt; 1547 self.autoscale_view()
-1548 return result
-1549
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-852
-853 def autoscale_view(self, tight=None, scalex=True, scaley=True):
---&amp;gt; 854 matplotlib.axes.Axes.autoscale_view(self, tight=tight,
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in autoscale_view(self, tight, scalex, scaley)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
--&amp;gt; 2972 handle_single_axis(
-2973 scalex, self._shared_axes[&amp;quot;x&amp;quot;], 'x', self.xaxis, self._xmargin,
-2974 x_stickies, self.set_xbound)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in handle_single_axis(scale, shared_axes, name, axis, margin, stickies, set_bound)
-2967 if not self._tight:
-2968 x0, x1 = locator.view_limits(x0, x1)
--&amp;gt; 2969 set_bound(x0, x1)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in set_xbound(self, lower, upper)
-3564 lower, upper = lower
-3565
--&amp;gt; 3566 old_lower, old_upper = self.get_xbound()
-3567 if lower is None:
-3568 lower = old_lower
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xbound(self)
-3536 invert_xaxis, xaxis_inverted
-3537 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3538 left, right = self.get_xlim()
-3539 if left &amp;lt; right:
-3540 return left, right
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xlim(self)
-3594 be greater than the *right* value.
-3595 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3596 return tuple(self.viewLim.intervalx)
-3597
-3598 def _validate_converted_limits(self, limit, convert):
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in viewLim(self)
-813 @property
-814 def viewLim(self):
---&amp;gt; 815 self._unstale_viewLim()
-816 return self._viewLim
-817
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in _unstale_viewLim(self)
-808 for ax in self._shared_axes[name].get_siblings(self):
-809 ax._stale_viewlims[name] = False
---&amp;gt; 810 self.autoscale_view(**{f&amp;quot;scale{name}&amp;quot;: scale
-811 for name, scale in need_scale.items()})
-812
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
---&amp;gt; 857 if scalex and self._autoscaleXon:
-858 bounds = self.get_xbound()
-859 self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
-AttributeError: 'GeoAxesSubplot' object has no attribute '_autoscaleXon'
-&lt;/code>&lt;/pre>
-&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/altimetry_tutorial_files/altimetry_tutorial_16_1.png" alt="png">&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/altimetry_tutorial_files/altimetry_tutorial_16_0.png" alt="png">&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># stats quick_plot:&lt;/span>
 &lt;span style="color:#000">fig&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">ax&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">stats&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;absolute_error&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
-AttributeError Traceback (most recent call last)
-/tmp/ipykernel_3691/4195741849.py in &amp;lt;cell line: 2&amp;gt;()
-1 # stats quick_plot:
-----&amp;gt; 2 fig, ax = stats.quick_plot(&amp;quot;absolute_error&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py in quick_plot(self, color_var_str)
-155 title = &amp;quot;Altimetry observation locations&amp;quot;
-156 info(&amp;quot;Drawing a quick plot...&amp;quot;)
---&amp;gt; 157 fig, ax = plot_util.geo_scatter(self.dataset.longitude, self.dataset.latitude, c=color_var, title=title)
-158 info(&amp;quot;Plot ready, displaying!&amp;quot;)
-159 return fig, ax
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/_utils/plot_util.py in geo_scatter(longitude, latitude, c, s, scatter_kwargs, coastline_kwargs, gridline_kwargs, figure_kwargs, title, figsize)
-280
-281 ax = plt.subplot(111, projection=ccrs.PlateCarree())
---&amp;gt; 282 sca = ax.scatter(longitude, y=latitude, c=c, s=s, zorder=100, **scatter_kwargs)
-283 coast = NaturalEarthFeature(category=&amp;quot;physical&amp;quot;, **coastline_kwargs)
-284 ax.add_feature(coast, edgecolor=&amp;quot;gray&amp;quot;)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in wrapper(self, *args, **kwargs)
-308
-309 kwargs['transform'] = transform
---&amp;gt; 310 return func(self, *args, **kwargs)
-311 return wrapper
-312
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in scatter(self, *args, **kwargs)
-1545
-1546 result = matplotlib.axes.Axes.scatter(self, *args, **kwargs)
--&amp;gt; 1547 self.autoscale_view()
-1548 return result
-1549
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-852
-853 def autoscale_view(self, tight=None, scalex=True, scaley=True):
---&amp;gt; 854 matplotlib.axes.Axes.autoscale_view(self, tight=tight,
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in autoscale_view(self, tight, scalex, scaley)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
--&amp;gt; 2972 handle_single_axis(
-2973 scalex, self._shared_axes[&amp;quot;x&amp;quot;], 'x', self.xaxis, self._xmargin,
-2974 x_stickies, self.set_xbound)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in handle_single_axis(scale, shared_axes, name, axis, margin, stickies, set_bound)
-2967 if not self._tight:
-2968 x0, x1 = locator.view_limits(x0, x1)
--&amp;gt; 2969 set_bound(x0, x1)
-2970 # End of definition of internal function 'handle_single_axis'.
-2971
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in set_xbound(self, lower, upper)
-3564 lower, upper = lower
-3565
--&amp;gt; 3566 old_lower, old_upper = self.get_xbound()
-3567 if lower is None:
-3568 lower = old_lower
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xbound(self)
-3536 invert_xaxis, xaxis_inverted
-3537 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3538 left, right = self.get_xlim()
-3539 if left &amp;lt; right:
-3540 return left, right
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in get_xlim(self)
-3594 be greater than the *right* value.
-3595 &amp;quot;&amp;quot;&amp;quot;
--&amp;gt; 3596 return tuple(self.viewLim.intervalx)
-3597
-3598 def _validate_converted_limits(self, limit, convert):
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in viewLim(self)
-813 @property
-814 def viewLim(self):
---&amp;gt; 815 self._unstale_viewLim()
-816 return self._viewLim
-817
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/matplotlib/axes/_base.py in _unstale_viewLim(self)
-808 for ax in self._shared_axes[name].get_siblings(self):
-809 ax._stale_viewlims[name] = False
---&amp;gt; 810 self.autoscale_view(**{f&amp;quot;scale{name}&amp;quot;: scale
-811 for name, scale in need_scale.items()})
-812
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/cartopy/mpl/geoaxes.py in autoscale_view(self, tight, scalex, scaley)
-855 scalex=scalex, scaley=scaley)
-856 # Limit the resulting bounds to valid area.
---&amp;gt; 857 if scalex and self._autoscaleXon:
-858 bounds = self.get_xbound()
-859 self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
-AttributeError: 'GeoAxesSubplot' object has no attribute '_autoscaleXon'
-&lt;/code>&lt;/pre>
-&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/altimetry_tutorial_files/altimetry_tutorial_17_1.png" alt="png">&lt;/p></description></item></channel></rss>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/altimetry_tutorial_files/altimetry_tutorial_17_0.png" alt="png">&lt;/p></description></item></channel></rss>
