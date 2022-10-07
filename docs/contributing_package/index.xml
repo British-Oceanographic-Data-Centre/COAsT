@@ -270,6 +270,11 @@ python COAsT/unit_testing/unit_test.py &amp;gt; coast_test.txt
 &lt;span style="color:#8f5902;font-style:italic">## If OK then clean up&lt;/span>
 &lt;span style="color:#204a87">cd&lt;/span> ..
 rm -rf coast_test
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or, trialling a new (Oct 2022) workflow which seems to dig deeper with useful feedback&lt;/p>
+&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-shell" data-lang="shell">&lt;span style="color:#8f5902;font-style:italic"># create a new conda env with:&lt;/span>
+conda env update --prune --file environment.yml
+&lt;span style="color:#8f5902;font-style:italic"># run the unit tests with:&lt;/span>
+pip install . &lt;span style="color:#ce5c00;font-weight:bold">&amp;amp;&amp;amp;&lt;/span> pytest unit_testing/unit_test.py -s
 &lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Push to master</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/push_to_master/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing_package/push_to_master/</guid><description>
 &lt;p>To date the workflow has been to unit test anything and everything that goes
 into the develop branch and then periodically push to master less frequently
