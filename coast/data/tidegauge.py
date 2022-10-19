@@ -1057,19 +1057,22 @@ class Tidegauge(Timeseries):
         Y = []
         C = []
         for tg in tidegauge_list:
-            X.append(tg.dataset.longitude)
-            Y.append(tg.dataset.latitude)
+            X.append(tg.dataset.longitude.values)
+            Y.append(tg.dataset.latitude.values)
             if color_var_str is not None:
                 C.append(tg.dataset[color_var_str].values)
 
+        X = np.hstack(X)
+        Y = np.hstack(Y)
+        C = np.hstack(C)
         title = ""
         if color_var_str is None:
             fig, ax = plot_util.geo_scatter(X, Y, title=title)
         else:
             fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
 
-        ax.set_xlim((min(X) - 10, max(X) + 10))
-        ax.set_ylim((min(Y) - 10, max(Y) + 10))
+        ax.set_xlim((np.min(X) - 10, np.max(X) + 10))
+        ax.set_ylim((np.min(Y) - 10, np.max(Y) + 10))
         return fig, ax
 
     ##############################################################################
