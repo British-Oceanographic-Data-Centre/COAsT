@@ -971,7 +971,7 @@ class Tidegauge(Timeseries):
     ###                ~            Plotting             ~                     ###
     ##############################################################################
 
-    def plot_timeseries(self, id, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
+    def plot_timeseries(self, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
@@ -992,9 +992,10 @@ class Tidegauge(Timeseries):
             var_list = [var_list]
 
         for var_str in var_list:
-            dim_str = self.dataset[var_str].dims[0]
-            x = np.array(self.dataset[dim_str])
-            y = np.array(self.dataset[var_str])
+            #dim_str = self.dataset[var_str].dims[0]  # commented out: could pull wrong dimensio
+            #x = np.array(self.dataset[dim_str])  # return indices, not coordinate values
+            x = np.array(self.dataset['time'])
+            y = np.array(self.dataset[var_str].squeeze())
 
             # Use only values between stated dates
             start_index = 0
@@ -1019,7 +1020,15 @@ class Tidegauge(Timeseries):
         plt.legend(var_list)
         # Title and axes
         plt.xlabel("Date")
-        plt.title("Site: " + self.dataset.site_name)
+
+        try: self.dataset.id_name
+        except AttributeError:
+            try: self.dataset.site_name
+            except AttributeError: title_str = ""
+            else: title_str = f"Site: {self.dataset.site_name}"
+        else: title_str = f"Site: {self.dataset.id_name}"
+
+        plt.title(title_str)
 
         return fig, ax
 
