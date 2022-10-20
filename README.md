@@ -1,7 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/COAsT.svg)](https://pypi.org/project/COAsT/#history)
 [![Anaconda-Server Badge](https://anaconda.org/bodc/coast/badges/latest_release_date.svg)](https://anaconda.org/bodc/coast)
 [![Anaconda-Server Badge](https://anaconda.org/bodc/coast/badges/installer/conda.svg)](https://conda.anaconda.org/bodc)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7105121.svg)](https://zenodo.org/record/7105121)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7231923.svg)](https://zenodo.org/record/7231923)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ```
 __________________________________________________________________________________________
