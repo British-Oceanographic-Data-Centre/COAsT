@@ -1073,11 +1073,11 @@ class Tidegauge(Timeseries):
 
         X = np.hstack(X)
         Y = np.hstack(Y)
-        C = np.hstack(C)
         title = ""
         if color_var_str is None:
             fig, ax = plot_util.geo_scatter(X, Y, title=title)
         else:
+            C = np.hstack(C)
             fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
 
         ax.set_xlim((np.min(X) - 10, np.max(X) + 10))
