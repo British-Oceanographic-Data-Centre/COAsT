@@ -992,9 +992,9 @@ class Tidegauge(Timeseries):
             var_list = [var_list]
 
         for var_str in var_list:
-            #dim_str = self.dataset[var_str].dims[0]  # commented out: could pull wrong dimensio
-            #x = np.array(self.dataset[dim_str])  # return indices, not coordinate values
-            x = np.array(self.dataset['time'])
+            # dim_str = self.dataset[var_str].dims[0]  # commented out: could pull wrong dimensio
+            # x = np.array(self.dataset[dim_str])  # return indices, not coordinate values
+            x = np.array(self.dataset["time"])
             y = np.array(self.dataset[var_str].squeeze())
 
             # Use only values between stated dates
@@ -1021,12 +1021,17 @@ class Tidegauge(Timeseries):
         # Title and axes
         plt.xlabel("Date")
 
-        try: self.dataset.id_name
+        try:
+            self.dataset.id_name
         except AttributeError:
-            try: self.dataset.site_name
-            except AttributeError: title_str = ""
-            else: title_str = f"Site: {self.dataset.site_name}"
-        else: title_str = f"Site: {self.dataset.id_name}"
+            try:
+                self.dataset.site_name
+            except AttributeError:
+                title_str = ""
+            else:
+                title_str = f"Site: {self.dataset.site_name}"
+        else:
+            title_str = f"Site: {self.dataset.id_name}"
 
         plt.title(title_str)
 
