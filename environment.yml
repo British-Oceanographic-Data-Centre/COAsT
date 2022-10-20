@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python==3.8.10
   - pip>=22.2.2
-  - cartopy>=0.20.2
+  - cartopy>=0.21.0
   - gsw>=3.4.0
   - pip:
     - numpy==1.22.3
