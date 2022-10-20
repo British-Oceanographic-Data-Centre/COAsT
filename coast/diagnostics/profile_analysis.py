@@ -385,9 +385,15 @@ class ProfileAnalysis(Indexed):
                 # Get arrays to interpolate
                 interpx = profile.depth.values
                 interpy = profile[vv].values
+                if interpx.shape != interpy.shape:
+                    continue
 
                 # Remove NaNs
                 xnans = np.isnan(interpx)
+                try:
+                    ynans = np.isnan(interpy)
+                except:
+                    debug(f"Issue with vv: {vv}")
                 ynans = np.isnan(interpy)
                 xynans = np.logical_or(xnans, ynans)
                 interpx = interpx[~xynans]

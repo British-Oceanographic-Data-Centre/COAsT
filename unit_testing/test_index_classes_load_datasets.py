@@ -6,10 +6,16 @@ Test loading various types of INDEXED datasets with and without configuration
         pytest -s tests/test_index_classes_load_datasets.py
 
 This file was in directory tests/ and executed under Git Actions. However, it
-calls external data that are too large for accessible hosting. Nevertheless,
-the structure proposed here "one file per type" could lend itself well to a
-restructure unit_testing work flow. So I move it there as a potential template
-for when the unit testing is restructured.
+calls external data that are too large for accessible hosting.
+
+Nevertheless, it includes tests for undeveloped objects in the indexed class:
+* EGO Gliders
+* ARGO floats
+* OceanParcels data
+
+There is also some elegance in having all the indexed class load methods together.
+As opposed to having one file per object, with all its methods too. Better filenaming
+could help point out the parent object.
 """
 from coast import Altimetry, Profile, Glider, Argos, Oceanparcels, Tidegauge
 import datetime
@@ -19,7 +25,7 @@ fn_altimetry = "./example_files/COAsT_example_altimetry_data.nc"
 fn_altimetry_config = "config/example_altimetry.json"
 
 # En4 profile data (NetCDF)
-fn_profile = "./example_files/EN.4.2.1.f.profiles.l09.201501.nc"
+fn_profile = "./example_files/coast_example_en4_201008.nc"
 fn_profile_config = "config/example_en4_profiles.json"
 
 # EGO glider (NetCDF). More examples see https://www.bodc.ac.uk/data/bodc_database/gliders/
@@ -63,7 +69,8 @@ def test_load_profile_no_config():
 
 
 def test_load_profile_config():
-    profile = Profile(file_path=fn_profile, config=fn_profile_config)
+    profile = Profile(config=fn_profile_config)
+    profile.read_en4(fn_profile)
     assert profile is not None
     # assert that we have the coordinate and data variable names as specified in the json config file
     assert list(profile.dataset.coords) == ["latitude", "longitude", "time"]
