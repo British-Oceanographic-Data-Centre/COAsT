@@ -136,11 +136,11 @@ delayed(myFunction)(myDataArray, other_args_for_myFunction), shape=myDataArray.s
 &lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="plotting">Plotting&lt;/h3>
 &lt;p>And the EOFs and temporal projections can be quick plotted:&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">EOF&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">col&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;mode&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">col_wrap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;longitude&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">y&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;latitude&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;xarray.plot.facetgrid.FacetGrid at 0x7f7aac54aee0&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;xarray.plot.facetgrid.FacetGrid at 0x7f2d49041820&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/eof_tutorial_files/eof_tutorial_12_1.png" alt="png">&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">eof_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temporal_proj&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">sel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">mode&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">3&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">col&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;mode&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">col_wrap&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">x&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;time&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;xarray.plot.facetgrid.FacetGrid at 0x7f7a63b2ad30&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;xarray.plot.facetgrid.FacetGrid at 0x7f2d44a6a790&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/eof_tutorial_files/eof_tutorial_13_1.png" alt="png">&lt;/p>
 &lt;h3 id="complex-eofs">Complex EOFs&lt;/h3>
@@ -241,13 +241,13 @@ b) allows the dataset to be easily seperated into chunks so that processing can 
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Check out the new data&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#temperature # uncomment to print data object summary&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,:,:]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.collections.QuadMesh at 0x7f506c448940&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.collections.QuadMesh at 0x7fb418310ee0&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/seasonal_decomp_example_files/seasonal_decomp_example_7_1.png" alt="png">&lt;/p>
 &lt;p>Check out time series at 2 different grid points&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">[:,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">50&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">50&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">[:,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>[&amp;lt;matplotlib.lines.Line2D at 0x7f506c28c8e0&amp;gt;]
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>[&amp;lt;matplotlib.lines.Line2D at 0x7fb41815a490&amp;gt;]
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/seasonal_decomp_example_files/seasonal_decomp_example_9_1.png" alt="png">&lt;/p>
 &lt;p>Create a &lt;code>coast.Process_data&lt;/code> object, and call the &lt;code>seasonal_decomposition&lt;/code> function, passing in the required arguments. The first two arguments are:&lt;/p>
@@ -573,7 +573,7 @@ Dimensions without coordinates: z_dim, y_dim, x_dim
 Data variables:
 trend (t_dim, z_dim, y_dim, x_dim) float64 nan nan nan &amp;hellip; nan nan nan
 seasonal (t_dim, z_dim, y_dim, x_dim) float64 nan nan nan &amp;hellip; nan nan nan
-residual (t_dim, z_dim, y_dim, x_dim) float64 nan nan nan &amp;hellip; nan nan nan&lt;/pre>&lt;div class='xr-wrap' style='display:none'>&lt;div class='xr-header'>&lt;div class='xr-obj-type'>xarray.Dataset&lt;/div>&lt;/div>&lt;ul class='xr-sections'>&lt;li class='xr-section-item'>&lt;input id='section-ce002a46-9f4f-4e14-876f-dda94f6d68bb' class='xr-section-summary-in' type='checkbox' disabled >&lt;label for='section-ce002a46-9f4f-4e14-876f-dda94f6d68bb' class='xr-section-summary' title='Expand/collapse section'>Dimensions:&lt;/label>&lt;div class='xr-section-inline-details'>&lt;ul class='xr-dim-list'>&lt;li>&lt;span class='xr-has-index'>t_dim&lt;/span>: 48&lt;/li>&lt;li>&lt;span>z_dim&lt;/span>: 2&lt;/li>&lt;li>&lt;span>y_dim&lt;/span>: 375&lt;/li>&lt;li>&lt;span>x_dim&lt;/span>: 297&lt;/li>&lt;/ul>&lt;/div>&lt;div class='xr-section-details'>&lt;/div>&lt;/li>&lt;li class='xr-section-item'>&lt;input id='section-fa41cc0f-45b1-4dcf-872d-5d1e2f39498b' class='xr-section-summary-in' type='checkbox' checked>&lt;label for='section-fa41cc0f-45b1-4dcf-872d-5d1e2f39498b' class='xr-section-summary' >Coordinates: &lt;span>(4)&lt;/span>&lt;/label>&lt;div class='xr-section-inline-details'>&lt;/div>&lt;div class='xr-section-details'>&lt;ul class='xr-var-list'>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span class='xr-has-index'>t_dim&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(t_dim)&lt;/div>&lt;div class='xr-var-dtype'>datetime64[ns]&lt;/div>&lt;div class='xr-var-preview xr-preview'>2010-01-01 &amp;hellip; 2013-12-01&lt;/div>&lt;input id='attrs-c7f27925-763c-4ed4-9395-a02e399320d5' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-c7f27925-763c-4ed4-9395-a02e399320d5' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-d003211a-7e94-4a1f-a3b6-ebbfb8db1d91' class='xr-var-data-in' type='checkbox'>&lt;label for='data-d003211a-7e94-4a1f-a3b6-ebbfb8db1d91' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array(['2010-01-01T00:00:00.000000000', '2010-02-01T00:00:00.000000000',
+residual (t_dim, z_dim, y_dim, x_dim) float64 nan nan nan &amp;hellip; nan nan nan&lt;/pre>&lt;div class='xr-wrap' style='display:none'>&lt;div class='xr-header'>&lt;div class='xr-obj-type'>xarray.Dataset&lt;/div>&lt;/div>&lt;ul class='xr-sections'>&lt;li class='xr-section-item'>&lt;input id='section-72244310-032f-48e4-b86c-833a66ac8c21' class='xr-section-summary-in' type='checkbox' disabled >&lt;label for='section-72244310-032f-48e4-b86c-833a66ac8c21' class='xr-section-summary' title='Expand/collapse section'>Dimensions:&lt;/label>&lt;div class='xr-section-inline-details'>&lt;ul class='xr-dim-list'>&lt;li>&lt;span class='xr-has-index'>t_dim&lt;/span>: 48&lt;/li>&lt;li>&lt;span>z_dim&lt;/span>: 2&lt;/li>&lt;li>&lt;span>y_dim&lt;/span>: 375&lt;/li>&lt;li>&lt;span>x_dim&lt;/span>: 297&lt;/li>&lt;/ul>&lt;/div>&lt;div class='xr-section-details'>&lt;/div>&lt;/li>&lt;li class='xr-section-item'>&lt;input id='section-a8f7756f-6b28-475b-ae65-6e729c83fd22' class='xr-section-summary-in' type='checkbox' checked>&lt;label for='section-a8f7756f-6b28-475b-ae65-6e729c83fd22' class='xr-section-summary' >Coordinates: &lt;span>(4)&lt;/span>&lt;/label>&lt;div class='xr-section-inline-details'>&lt;/div>&lt;div class='xr-section-details'>&lt;ul class='xr-var-list'>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span class='xr-has-index'>t_dim&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(t_dim)&lt;/div>&lt;div class='xr-var-dtype'>datetime64[ns]&lt;/div>&lt;div class='xr-var-preview xr-preview'>2010-01-01 &amp;hellip; 2013-12-01&lt;/div>&lt;input id='attrs-99b4be37-6dfd-4b20-b3cd-dc5b0feab076' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-99b4be37-6dfd-4b20-b3cd-dc5b0feab076' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-cda654d6-7eb9-4042-860f-beb73a27bd23' class='xr-var-data-in' type='checkbox'>&lt;label for='data-cda654d6-7eb9-4042-860f-beb73a27bd23' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array(['2010-01-01T00:00:00.000000000', '2010-02-01T00:00:00.000000000',
 '2010-03-01T00:00:00.000000000', '2010-04-01T00:00:00.000000000',
 '2010-05-01T00:00:00.000000000', '2010-06-01T00:00:00.000000000',
 '2010-07-01T00:00:00.000000000', '2010-08-01T00:00:00.000000000',
@@ -597,7 +597,7 @@ residual (t_dim, z_dim, y_dim, x_dim) float64 nan nan nan &amp;hellip; nan nan n
 '2013-07-01T00:00:00.000000000', '2013-08-01T00:00:00.000000000',
 '2013-09-01T00:00:00.000000000', '2013-10-01T00:00:00.000000000',
 '2013-11-01T00:00:00.000000000', '2013-12-01T00:00:00.000000000'],
-dtype='datetime64[ns]')&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>depth_0&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(z_dim, y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>0.5 0.5 0.5 0.5 &amp;hellip; 1.5 1.5 1.5 1.5&lt;/div>&lt;input id='attrs-6c49ebd3-2a19-4a61-90e6-f74d23fc2481' class='xr-var-attrs-in' type='checkbox' >&lt;label for='attrs-6c49ebd3-2a19-4a61-90e6-f74d23fc2481' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-95422c3a-6322-45b7-bb19-dfb810bcc23a' class='xr-var-data-in' type='checkbox'>&lt;label for='data-95422c3a-6322-45b7-bb19-dfb810bcc23a' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;dt>&lt;span>units :&lt;/span>&lt;/dt>&lt;dd>m&lt;/dd>&lt;dt>&lt;span>standard_name :&lt;/span>&lt;/dt>&lt;dd>Depth at time zero on the t-grid&lt;/dd>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[[0.5 , 0.5 , 0.5 , &amp;hellip;, 0.5 ,
+dtype='datetime64[ns]')&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>depth_0&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(z_dim, y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>0.5 0.5 0.5 0.5 &amp;hellip; 1.5 1.5 1.5 1.5&lt;/div>&lt;input id='attrs-0e2ea2d3-7508-4696-b15e-dec40e7d3b09' class='xr-var-attrs-in' type='checkbox' >&lt;label for='attrs-0e2ea2d3-7508-4696-b15e-dec40e7d3b09' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-1b829f45-fb06-477c-80ec-03ece107f178' class='xr-var-data-in' type='checkbox'>&lt;label for='data-1b829f45-fb06-477c-80ec-03ece107f178' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;dt>&lt;span>units :&lt;/span>&lt;/dt>&lt;dd>m&lt;/dd>&lt;dt>&lt;span>standard_name :&lt;/span>&lt;/dt>&lt;dd>Depth at time zero on the t-grid&lt;/dd>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[[0.5 , 0.5 , 0.5 , &amp;hellip;, 0.5 ,
 0.5 , 0.5 ],
 [0.5 , 0.4975586 , 0.4975586 , &amp;hellip;, 0.10009766,
 0.10009766, 0.5 ],
@@ -622,7 +622,7 @@ dtype='datetime64[ns]')&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;
 [1.5 , 0.30029297, 0.30029297, &amp;hellip;, 0.30029297,
 0.30029297, 1.5 ],
 [1.5 , 1.5 , 1.5 , &amp;hellip;, 1.5 ,
-1.5 , 1.5 ]]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>longitude&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>-19.89 -19.78 -19.67 &amp;hellip; 12.89 13.0&lt;/div>&lt;input id='attrs-f9256943-df07-412d-9c17-cea09da0aa4c' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-f9256943-df07-412d-9c17-cea09da0aa4c' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-88c79c02-13dd-42cd-ab24-ed6c287683d0' class='xr-var-data-in' type='checkbox'>&lt;label for='data-88c79c02-13dd-42cd-ab24-ed6c287683d0' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[-19.888672, -19.777344, -19.666992, &amp;hellip;, 12.777344, 12.888672,
+1.5 , 1.5 ]]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>longitude&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>-19.89 -19.78 -19.67 &amp;hellip; 12.89 13.0&lt;/div>&lt;input id='attrs-93f935f2-94bb-4319-88fa-a398446b3d6d' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-93f935f2-94bb-4319-88fa-a398446b3d6d' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-cac0f336-dc98-40ff-80e6-dcdc9a7533c4' class='xr-var-data-in' type='checkbox'>&lt;label for='data-cac0f336-dc98-40ff-80e6-dcdc9a7533c4' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[-19.888672, -19.777344, -19.666992, &amp;hellip;, 12.777344, 12.888672,
 13. ],
 [-19.888672, -19.777344, -19.666992, &amp;hellip;, 12.777344, 12.888672,
 13. ],
@@ -634,7 +634,7 @@ dtype='datetime64[ns]')&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;
 [-19.888672, -19.777344, -19.666992, &amp;hellip;, 12.777344, 12.888672,
 13. ],
 [-19.888672, -19.777344, -19.666992, &amp;hellip;, 12.777344, 12.888672,
-13. ]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>latitude&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>40.07 40.07 40.07 &amp;hellip; 65.0 65.0&lt;/div>&lt;input id='attrs-1a4c9842-78dd-4eeb-b34c-901968af034e' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-1a4c9842-78dd-4eeb-b34c-901968af034e' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-cbf4dcab-1372-4983-aae5-3b9050412e7f' class='xr-var-data-in' type='checkbox'>&lt;label for='data-cbf4dcab-1372-4983-aae5-3b9050412e7f' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[40.066406, 40.066406, 40.066406, &amp;hellip;, 40.066406, 40.066406,
+13. ]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>latitude&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float32&lt;/div>&lt;div class='xr-var-preview xr-preview'>40.07 40.07 40.07 &amp;hellip; 65.0 65.0&lt;/div>&lt;input id='attrs-50a91d69-a96e-4331-b57d-c28789426a35' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-50a91d69-a96e-4331-b57d-c28789426a35' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-0027ee52-8abf-469d-880a-e02fdb05186e' class='xr-var-data-in' type='checkbox'>&lt;label for='data-0027ee52-8abf-469d-880a-e02fdb05186e' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[40.066406, 40.066406, 40.066406, &amp;hellip;, 40.066406, 40.066406,
 40.066406],
 [40.13379 , 40.13379 , 40.13379 , &amp;hellip;, 40.13379 , 40.13379 ,
 40.13379 ],
@@ -646,11 +646,11 @@ dtype='datetime64[ns]')&lt;/pre>&lt;/div>&lt;/li>&lt;li class='xr-var-item'>&lt;
 [64.93457 , 64.93457 , 64.93457 , &amp;hellip;, 64.93457 , 64.93457 ,
 64.93457 ],
 [65.00098 , 65.00098 , 65.00098 , &amp;hellip;, 65.00098 , 65.00098 ,
-65.00098 ]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;/ul>&lt;/div>&lt;/li>&lt;li class='xr-section-item'>&lt;input id='section-a1fda497-7e31-414f-a43e-302aa4cb4133' class='xr-section-summary-in' type='checkbox' checked>&lt;label for='section-a1fda497-7e31-414f-a43e-302aa4cb4133' class='xr-section-summary' >Data variables: &lt;span>(3)&lt;/span>&lt;/label>&lt;div class='xr-section-inline-details'>&lt;/div>&lt;div class='xr-section-details'>&lt;ul class='xr-var-list'>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>trend&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(t_dim, z_dim, y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float64&lt;/div>&lt;div class='xr-var-preview xr-preview'>nan nan nan nan &amp;hellip; nan nan nan nan&lt;/div>&lt;input id='attrs-2d1eda99-4ae8-49f4-b159-99a9db6e48ef' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-2d1eda99-4ae8-49f4-b159-99a9db6e48ef' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-2e02ef44-c3c5-4917-a20e-24e80e2f9810' class='xr-var-data-in' type='checkbox'>&lt;label for='data-2e02ef44-c3c5-4917-a20e-24e80e2f9810' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[[[ nan, nan, nan, &amp;hellip;, nan,
+65.00098 ]], dtype=float32)&lt;/pre>&lt;/div>&lt;/li>&lt;/ul>&lt;/div>&lt;/li>&lt;li class='xr-section-item'>&lt;input id='section-197934c5-1716-44d8-ba20-ad8530829f77' class='xr-section-summary-in' type='checkbox' checked>&lt;label for='section-197934c5-1716-44d8-ba20-ad8530829f77' class='xr-section-summary' >Data variables: &lt;span>(3)&lt;/span>&lt;/label>&lt;div class='xr-section-inline-details'>&lt;/div>&lt;div class='xr-section-details'>&lt;ul class='xr-var-list'>&lt;li class='xr-var-item'>&lt;div class='xr-var-name'>&lt;span>trend&lt;/span>&lt;/div>&lt;div class='xr-var-dims'>(t_dim, z_dim, y_dim, x_dim)&lt;/div>&lt;div class='xr-var-dtype'>float64&lt;/div>&lt;div class='xr-var-preview xr-preview'>nan nan nan nan &amp;hellip; nan nan nan nan&lt;/div>&lt;input id='attrs-11e17313-4a9e-4c00-8048-b2b84a854a1d' class='xr-var-attrs-in' type='checkbox' disabled>&lt;label for='attrs-11e17313-4a9e-4c00-8048-b2b84a854a1d' title='Show/Hide attributes'>&lt;svg class='icon xr-icon-file-text2'>&lt;use xlink:href='#icon-file-text2'>&lt;/use>&lt;/svg>&lt;/label>&lt;input id='data-095c9c0c-0693-4aa9-9d6a-200dff794b7f' class='xr-var-data-in' type='checkbox'>&lt;label for='data-095c9c0c-0693-4aa9-9d6a-200dff794b7f' title='Show/Hide data repr'>&lt;svg class='icon xr-icon-database'>&lt;use xlink:href='#icon-database'>&lt;/use>&lt;/svg>&lt;/label>&lt;div class='xr-var-attrs'>&lt;dl class='xr-attrs'>&lt;/dl>&lt;/div>&lt;div class='xr-var-data'>&lt;pre>array([[[[ nan, nan, nan, &amp;hellip;, nan,
 nan, nan],
-[ nan, 15.32984915, 15.32659394, &amp;hellip;, nan,
+[ nan, 15.37396157, 15.37070637, &amp;hellip;, nan,
 nan, nan],
-[ nan, 15.31878144, 15.48658743, &amp;hellip;, nan,
+[ nan, 15.36289387, 15.53069986, &amp;hellip;, nan,
 nan, nan],
 &amp;hellip;,
 [ nan, nan, nan, &amp;hellip;, nan,
@@ -661,9 +661,9 @@ nan, nan],
 nan, nan]],&lt;/p>
 &lt;pre>&lt;code>[[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, 15.32887259, 15.32578014, ..., nan,
+[ nan, 15.37298501, 15.36989256, ..., nan,
 nan, nan],
-[ nan, 15.31764212, 15.49049368, ..., nan,
+[ nan, 15.36175454, 15.53460611, ..., nan,
 nan, nan],
 &lt;/code>&lt;/pre>
 &lt;/li>
@@ -677,9 +677,9 @@ nan, nan],
 nan, nan]],&lt;/p>
 &lt;pre>&lt;code> [[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, 17.44304166, 17.43994921, ..., nan,
+[ nan, 17.86313266, 17.86004022, ..., nan,
 nan, nan],
-[ nan, 17.43181119, 17.60466275, ..., nan,
+[ nan, 17.8519022 , 18.02475376, ..., nan,
 nan, nan],
 ...,
 [ nan, nan, nan, ..., nan,
@@ -687,11 +687,11 @@ nan, nan],
 [ nan, nan, nan, ..., nan,
 nan, nan],
 [ nan, nan, nan, ..., nan,
-nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-var-item'&amp;gt;&amp;lt;div class='xr-var-name'&amp;gt;&amp;lt;span&amp;gt;seasonal&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dims'&amp;gt;(t_dim, z_dim, y_dim, x_dim)&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dtype'&amp;gt;float64&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-preview xr-preview'&amp;gt;nan nan nan nan ... nan nan nan nan&amp;lt;/div&amp;gt;&amp;lt;input id='attrs-f8f444d0-0360-486f-9684-5b743155864b' class='xr-var-attrs-in' type='checkbox' disabled&amp;gt;&amp;lt;label for='attrs-f8f444d0-0360-486f-9684-5b743155864b' title='Show/Hide attributes'&amp;gt;&amp;lt;svg class='icon xr-icon-file-text2'&amp;gt;&amp;lt;use xlink:href='#icon-file-text2'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;input id='data-0900c28f-dcde-421b-bdb7-c54d2ca509dd' class='xr-var-data-in' type='checkbox'&amp;gt;&amp;lt;label for='data-0900c28f-dcde-421b-bdb7-c54d2ca509dd' title='Show/Hide data repr'&amp;gt;&amp;lt;svg class='icon xr-icon-database'&amp;gt;&amp;lt;use xlink:href='#icon-database'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-var-attrs'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-data'&amp;gt;&amp;lt;pre&amp;gt;array([[[[ nan, nan, nan, ..., nan,
+nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-var-item'&amp;gt;&amp;lt;div class='xr-var-name'&amp;gt;&amp;lt;span&amp;gt;seasonal&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dims'&amp;gt;(t_dim, z_dim, y_dim, x_dim)&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dtype'&amp;gt;float64&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-preview xr-preview'&amp;gt;nan nan nan nan ... nan nan nan nan&amp;lt;/div&amp;gt;&amp;lt;input id='attrs-cdc36788-1d2c-4fa7-8ad3-74a39b0dcfef' class='xr-var-attrs-in' type='checkbox' disabled&amp;gt;&amp;lt;label for='attrs-cdc36788-1d2c-4fa7-8ad3-74a39b0dcfef' title='Show/Hide attributes'&amp;gt;&amp;lt;svg class='icon xr-icon-file-text2'&amp;gt;&amp;lt;use xlink:href='#icon-file-text2'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;input id='data-d17265a9-8ad4-4109-b38c-21ec19ee725b' class='xr-var-data-in' type='checkbox'&amp;gt;&amp;lt;label for='data-d17265a9-8ad4-4109-b38c-21ec19ee725b' title='Show/Hide data repr'&amp;gt;&amp;lt;svg class='icon xr-icon-database'&amp;gt;&amp;lt;use xlink:href='#icon-database'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-var-attrs'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-data'&amp;gt;&amp;lt;pre&amp;gt;array([[[[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, 0.07512087, -0.00853798, ..., nan,
+[ nan, 0.00736926, -0.0762896 , ..., nan,
 nan, nan],
-[ nan, 0.10083702, 0.33049197, ..., nan,
+[ nan, 0.0330854 , 0.26274035, ..., nan,
 nan, nan],
 ...,
 [ nan, nan, nan, ..., nan,
@@ -702,9 +702,9 @@ nan, nan],
 nan, nan]],
 [[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, 0.06437869, -0.01944293, ..., nan,
+[ nan, -0.00337293, -0.08719455, ..., nan,
 nan, nan],
-[ nan, 0.09025759, 0.32658572, ..., nan,
+[ nan, 0.02250598, 0.2588341 , ..., nan,
 nan, nan],
 &lt;/code>&lt;/pre>
 &lt;p>&amp;hellip;
@@ -716,9 +716,9 @@ nan, nan],
 nan, nan]],&lt;/p>
 &lt;pre>&lt;code> [[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, -0.33511949, -0.31835517, ..., nan,
+[ nan, -0.37316681, -0.35640249, ..., nan,
 nan, nan],
-[ nan, -0.3453734 , -0.69400621, ..., nan,
+[ nan, -0.38342071, -0.73205353, ..., nan,
 nan, nan],
 ...,
 [ nan, nan, nan, ..., nan,
@@ -726,11 +726,11 @@ nan, nan],
 [ nan, nan, nan, ..., nan,
 nan, nan],
 [ nan, nan, nan, ..., nan,
-nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-var-item'&amp;gt;&amp;lt;div class='xr-var-name'&amp;gt;&amp;lt;span&amp;gt;residual&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dims'&amp;gt;(t_dim, z_dim, y_dim, x_dim)&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dtype'&amp;gt;float64&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-preview xr-preview'&amp;gt;nan nan nan nan ... nan nan nan nan&amp;lt;/div&amp;gt;&amp;lt;input id='attrs-a8e40b59-2876-4e70-b5fe-8c8f284cd446' class='xr-var-attrs-in' type='checkbox' disabled&amp;gt;&amp;lt;label for='attrs-a8e40b59-2876-4e70-b5fe-8c8f284cd446' title='Show/Hide attributes'&amp;gt;&amp;lt;svg class='icon xr-icon-file-text2'&amp;gt;&amp;lt;use xlink:href='#icon-file-text2'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;input id='data-53f52dc3-9b89-4362-8a64-43bff3284e3f' class='xr-var-data-in' type='checkbox'&amp;gt;&amp;lt;label for='data-53f52dc3-9b89-4362-8a64-43bff3284e3f' title='Show/Hide data repr'&amp;gt;&amp;lt;svg class='icon xr-icon-database'&amp;gt;&amp;lt;use xlink:href='#icon-database'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-var-attrs'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-data'&amp;gt;&amp;lt;pre&amp;gt;array([[[[ nan, nan, nan, ..., nan,
+nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-var-item'&amp;gt;&amp;lt;div class='xr-var-name'&amp;gt;&amp;lt;span&amp;gt;residual&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dims'&amp;gt;(t_dim, z_dim, y_dim, x_dim)&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-dtype'&amp;gt;float64&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-preview xr-preview'&amp;gt;nan nan nan nan ... nan nan nan nan&amp;lt;/div&amp;gt;&amp;lt;input id='attrs-d0e7dc2d-44cc-4820-ab4c-01b6e344dfe9' class='xr-var-attrs-in' type='checkbox' disabled&amp;gt;&amp;lt;label for='attrs-d0e7dc2d-44cc-4820-ab4c-01b6e344dfe9' title='Show/Hide attributes'&amp;gt;&amp;lt;svg class='icon xr-icon-file-text2'&amp;gt;&amp;lt;use xlink:href='#icon-file-text2'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;input id='data-90d4b0b0-0095-40a9-b933-df8316610550' class='xr-var-data-in' type='checkbox'&amp;gt;&amp;lt;label for='data-90d4b0b0-0095-40a9-b933-df8316610550' title='Show/Hide data repr'&amp;gt;&amp;lt;svg class='icon xr-icon-database'&amp;gt;&amp;lt;use xlink:href='#icon-database'&amp;gt;&amp;lt;/use&amp;gt;&amp;lt;/svg&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-var-attrs'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-var-data'&amp;gt;&amp;lt;pre&amp;gt;array([[[[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, -0.00601061, -0.00601061, ..., nan,
+[ nan, 0.08352806, 0.08352806, ..., nan,
 nan, nan],
-[ nan, -0.00601061, -0.00601061, ..., nan,
+[ nan, 0.08352806, 0.08352806, ..., nan,
 nan, nan],
 ...,
 [ nan, nan, nan, ..., nan,
@@ -741,9 +741,9 @@ nan, nan],
 nan, nan]],
 [[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, -0.00601061, -0.00601061, ..., nan,
+[ nan, 0.08352806, 0.08352806, ..., nan,
 nan, nan],
-[ nan, -0.00601061, -0.00601061, ..., nan,
+[ nan, 0.08352806, 0.08352806, ..., nan,
 nan, nan],
 &lt;/code>&lt;/pre>
 &lt;p>&amp;hellip;
@@ -755,9 +755,9 @@ nan, nan],
 nan, nan]],&lt;/p>
 &lt;pre>&lt;code> [[ nan, nan, nan, ..., nan,
 nan, nan],
-[ nan, 0.13542462, 0.13542462, ..., nan,
+[ nan, -0.24759374, -0.24759374, ..., nan,
 nan, nan],
-[ nan, 0.13542462, 0.13542462, ..., nan,
+[ nan, -0.24759374, -0.24759374, ..., nan,
 nan, nan],
 ...,
 [ nan, nan, nan, ..., nan,
@@ -765,7 +765,7 @@ nan, nan],
 [ nan, nan, nan, ..., nan,
 nan, nan],
 [ nan, nan, nan, ..., nan,
-nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-section-item'&amp;gt;&amp;lt;input id='section-08df3af8-fec2-41ed-baa0-5e7a69cfa3e0' class='xr-section-summary-in' type='checkbox' disabled &amp;gt;&amp;lt;label for='section-08df3af8-fec2-41ed-baa0-5e7a69cfa3e0' class='xr-section-summary' title='Expand/collapse section'&amp;gt;Attributes: &amp;lt;span&amp;gt;(0)&amp;lt;/span&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-section-inline-details'&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-section-details'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/div&amp;gt;
+nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;li class='xr-section-item'&amp;gt;&amp;lt;input id='section-ea8c2603-bc1b-4533-9b0c-0f131c799681' class='xr-section-summary-in' type='checkbox' disabled &amp;gt;&amp;lt;label for='section-ea8c2603-bc1b-4533-9b0c-0f131c799681' class='xr-section-summary' title='Expand/collapse section'&amp;gt;Attributes: &amp;lt;span&amp;gt;(0)&amp;lt;/span&amp;gt;&amp;lt;/label&amp;gt;&amp;lt;div class='xr-section-inline-details'&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;div class='xr-section-details'&amp;gt;&amp;lt;dl class='xr-attrs'&amp;gt;&amp;lt;/dl&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/div&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>Plot the decomposed time series&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">component&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">DataArray&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;trend&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;seasonal&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;residual&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000">dims&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;component&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">name&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;component&amp;#34;&lt;/span> &lt;span style="color:#000;font-weight:bold">)&lt;/span>
@@ -774,9 +774,9 @@ nan, nan]]]])&amp;lt;/pre&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;/li&amp;gt;&amp;lt;
 &lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">temp_decomp&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">name&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;temperature&amp;#34;&lt;/span>
 &lt;span style="color:#000">temp_decomp&lt;/span>&lt;span style="color:#000;font-weight:bold">[:,:,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">200&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">hue&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;component&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>[&amp;lt;matplotlib.lines.Line2D at 0x7f506c139280&amp;gt;,
-&amp;lt;matplotlib.lines.Line2D at 0x7f506c139160&amp;gt;,
-&amp;lt;matplotlib.lines.Line2D at 0x7f506c139130&amp;gt;]
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>[&amp;lt;matplotlib.lines.Line2D at 0x7fb41800ef70&amp;gt;,
+&amp;lt;matplotlib.lines.Line2D at 0x7fb41800efd0&amp;gt;,
+&amp;lt;matplotlib.lines.Line2D at 0x7fb41800ea90&amp;gt;]
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/seasonal_decomp_example_files/seasonal_decomp_example_17_1.png" alt="png">&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">

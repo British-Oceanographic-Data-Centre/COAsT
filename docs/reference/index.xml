@@ -1,4 +1,4 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Reference</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</link><description>Recent content in Reference on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/altimetry/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/altimetry/</guid><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Reference</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</link><description>Recent content in Reference on COAsT</description><generator>Hugo -- gohugo.io</generator><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Altimetry</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/altimetry/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/altimetry/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#altimetry">Altimetry()&lt;/a>&lt;br />
 &lt;a href="#altimetryread_cmems">Altimetry.read_cmems()&lt;/a>&lt;br />
@@ -270,7 +270,7 @@ square error, correlation and covariance. If create_new_object is True&lt;br />
 then this method returns a new ALTIMETRY object containing statistics,&lt;br />
 otherwise variables are saved to the dateset inside this object.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Argos</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/argos/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/argos/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Argos</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/argos/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/argos/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#argos">Argos()&lt;/a>&lt;br />
 &lt;a href="#argosread_data">Argos.read_data()&lt;/a>&lt;br />&lt;/p>
@@ -294,7 +294,7 @@ xarray dataset to have dimension as time and coordinates as time, latitude and l
 &lt;b>Args:&lt;/b>&lt;br />
                 file_path (str) : path of data file&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/climatology/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/climatology/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Climatology</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/climatology/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/climatology/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#climatology">Climatology()&lt;/a>&lt;br />
 &lt;a href="#climatologymake_climatology">Climatology.make_climatology()&lt;/a>&lt;br />
@@ -368,7 +368,7 @@ Calculate multiyear means for all Data variables in a dataset between a given st
                 ds_mean (xr.Dataset): A new dataset containing mean averages for each data variable across all years and&lt;br />
                 date periods. Indexed by the multi-index &amp;lsquo;year_period&amp;rsquo; (i.e. (2000, &amp;lsquo;Dec-Feb&amp;rsquo;)).&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Coast</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/coast/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/coast/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Coast</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/coast/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/coast/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#setup_dask_client">setup_dask_client()&lt;/a>&lt;br />
 &lt;a href="#coast">Coast()&lt;/a>&lt;br />
@@ -737,7 +737,7 @@ Plot cartopy.&lt;br />
 &lt;p>&lt;br />
 Plot movie.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Config_parser</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_parser/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_parser/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Config_parser</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_parser/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_parser/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#configparser">ConfigParser()&lt;/a>&lt;br />
 &lt;a href="#configparser_parse_gridded">ConfigParser._parse_gridded()&lt;/a>&lt;br />
@@ -792,7 +792,7 @@ Static method to convert dataset and domain configs into objects.&lt;br />
                 json_content (dict): Config file json.&lt;br />
                 data_file_type (str): key of datafile type (dataset or domain).&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Config_structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_structure/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_structure/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Config_structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_structure/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/config_structure/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#configtypes">ConfigTypes()&lt;/a>&lt;br />
 &lt;a href="#configkeys">ConfigKeys()&lt;/a>&lt;br />
@@ -852,7 +852,7 @@ domain (Domain): Domain object representing 'domain' config.
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Dataclass for holding indexed-config specific attributes. Extends Config.
 Args:
 type (ConfigTypes): Type of config. Set to ConfigTypes.INDEXED.
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Contour</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/contour/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/contour/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Contour</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/contour/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/contour/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#contour">Contour()&lt;/a>&lt;br />
 &lt;a href="#contourget_contours">Contour.get_contours()&lt;/a>&lt;br />
@@ -1259,7 +1259,7 @@ from the u and v grid datasets and put them into the self.data_along_flow datase
 This method will pull latitude and longitude data at specific points along the&lt;br />
 contour from the u and v grid datasets and put them into the self.data_along_flow dataset&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Copernicus</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/copernicus/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/copernicus/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Copernicus</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/copernicus/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/copernicus/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#copernicusbase">CopernicusBase()&lt;/a>&lt;br />
 &lt;a href="#copernicusbaseget_url">CopernicusBase.get_url()&lt;/a>&lt;br />
@@ -1319,7 +1319,7 @@ Instantiate a Product related to a specific product ID.&lt;br />
 &lt;b>Returns:&lt;/b>&lt;br />
                 The instantiated Product accessor.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Crps_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/crps_util/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/crps_util/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Crps_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/crps_util/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/crps_util/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#crps_empirical">crps_empirical()&lt;/a>&lt;br />
 &lt;a href="#crps_empiricalcalc">crps_empirical.calc()&lt;/a>&lt;br />
@@ -1436,7 +1436,7 @@ dimensions x_dim, y_dim and t_dim and coordinates longitude, latitude, time.&lt;
                                 Array containing the number of model points used for each CRPS value,&lt;br />
                                 Array of bools indicating where a model neighbourhood contained land.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Docsy_tools</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/docsy_tools/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/docsy_tools/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Docsy_tools</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/docsy_tools/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/docsy_tools/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#docsytools">DocsyTools()&lt;/a>&lt;br />
 &lt;a href="#docsytoolswrite_class_to_markdown">DocsyTools.write_class_to_markdown()&lt;/a>&lt;br />
@@ -1478,7 +1478,7 @@ Method get a list of methods inside a provided COAsT class, with some other opti
 &lt;b>Returns:&lt;/b>&lt;br />
                 List[str]: List of strings denoting method names.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Eof</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/eof/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/eof/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Eof</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/eof/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/eof/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#compute_eofs">compute_eofs()&lt;/a>&lt;br />
 &lt;a href="#compute_hilbert_eofs">compute_hilbert_eofs()&lt;/a>&lt;br />
@@ -1583,7 +1583,7 @@ projections : (array) the projection of the EOFs&lt;br />
 variance_explained : (array) variance explained by each mode&lt;br />
 mode_count : (int) number of modes computed&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Experiments_file_handling</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/experiments_file_handling/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/experiments_file_handling/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Experiments_file_handling</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/experiments_file_handling/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/experiments_file_handling/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#experiments">experiments()&lt;/a>&lt;br />
 &lt;a href="#nemo_filename_maker">nemo_filename_maker()&lt;/a>&lt;br />&lt;/p>
@@ -1626,7 +1626,7 @@ Creates a list of NEMO file names from a set of standard templates.&lt;br />
 &lt;br />
 Returns: a list of possible nemo file names&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: General_utils</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/general_utils/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/general_utils/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: General_utils</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/general_utils/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/general_utils/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#determine_season">determine_season()&lt;/a>&lt;br />
 &lt;a href="#subset_indices_by_distance_balltree">subset_indices_by_distance_balltree()&lt;/a>&lt;br />
@@ -1814,7 +1814,7 @@ datetime type object.&lt;br />
 &lt;p>&lt;br />
 Return the day of the week (3 letter str)&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Glider</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/glider/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/glider/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Glider</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/glider/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/glider/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#glider">Glider()&lt;/a>&lt;br />
 &lt;a href="#gliderload_single">Glider.load_single()&lt;/a>&lt;br />&lt;/p>
@@ -1833,7 +1833,7 @@ Loads a single file into object&amp;rsquo;s dataset variable.&lt;br />
                 file_path (str): path to data file&lt;br />
                 chunks (dict): chunks&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Gridded</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/gridded/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/gridded/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Gridded</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/gridded/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/gridded/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#gridded">Gridded()&lt;/a>&lt;br />
 &lt;a href="#gridded_setup_grid_obj">Gridded._setup_grid_obj()&lt;/a>&lt;br />
@@ -2325,7 +2325,7 @@ Return new Gridded object, indexed between dates date0 and date1&lt;br />
 Calculates a 3D mask to a specified level Zmax. 1 for sea; 0 for below sea bed&lt;br />
 and linearly ramped for last level&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Index</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Index</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#setup_dask_client">setup_dask_client()&lt;/a>&lt;br />
 &lt;a href="#indexed">Indexed()&lt;/a>&lt;br />
@@ -2358,7 +2358,7 @@ Applies json configuration and mappings&lt;br />
 &lt;p>&lt;br />
 Insert a dataset straight into this object instance&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Lagrangian</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/lagrangian/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/lagrangian/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Lagrangian</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/lagrangian/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/lagrangian/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#lagrangian">Lagrangian()&lt;/a>&lt;br />&lt;/p>
 &lt;p>Lagrangian class&lt;/p>
@@ -2366,7 +2366,7 @@ Insert a dataset straight into this object instance&lt;br />
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">class&lt;/span> &lt;span style="color:#000">Lagrangian&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">Indexed&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Parent class for subclasses OCEANPARCELS ...
 Common methods ....
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Logging_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/logging_util/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/logging_util/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Logging_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/logging_util/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/logging_util/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#get_logger">get_logger()&lt;/a>&lt;br />
 &lt;a href="#create_handler">create_handler()&lt;/a>&lt;br />
@@ -2467,7 +2467,7 @@ None&lt;br />
 &lt;p>&lt;br />
 None&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Mask_maker</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/mask_maker/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/mask_maker/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Mask_maker</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/mask_maker/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/mask_maker/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#maskmaker">MaskMaker()&lt;/a>&lt;br />
 &lt;a href="#maskmakermake_mask_dataset">MaskMaker.make_mask_dataset()&lt;/a>&lt;br />
@@ -2613,7 +2613,7 @@ None&lt;br />
 &lt;p>&lt;br />
 None&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Oceanparcels</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/oceanparcels/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/oceanparcels/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Oceanparcels</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/oceanparcels/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/oceanparcels/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#oceanparcels">Oceanparcels()&lt;/a>&lt;br />
 &lt;a href="#oceanparcelsload_single">Oceanparcels.load_single()&lt;/a>&lt;br />&lt;/p>
@@ -2631,7 +2631,7 @@ Loads a single file into object&amp;rsquo;s dataset variable.&lt;br />
 &lt;b>Args:&lt;/b>&lt;br />
                 file_path (str): path to data file&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Opendap</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/opendap/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/opendap/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Opendap</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/opendap/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/opendap/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#opendapinfo">OpendapInfo()&lt;/a>&lt;br />
 &lt;a href="#opendapinfoget_store">OpendapInfo.get_store()&lt;/a>&lt;br />
@@ -2682,7 +2682,7 @@ Instantiate OpendapInfo with a session authenticated against CAS.&lt;br />
 &lt;b>Returns:&lt;/b>&lt;br />
                 The instantiated OPeNDAP accessor.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Plot_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Plot_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/plot_util/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#r2_lin">r2_lin()&lt;/a>&lt;br />
 &lt;a href="#scatter_with_fit">scatter_with_fit()&lt;/a>&lt;br />
@@ -2841,7 +2841,7 @@ are outliers in the data causing difficulties in distinguishing most of&lt;br />
 the data. Outputs vmin and vmax which can be passed to plotting routine&lt;br />
 or plt.clim().&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Profile</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Profile</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#profile">Profile()&lt;/a>&lt;br />
 &lt;a href="#profileread_en4">Profile.read_en4()&lt;/a>&lt;br />
@@ -3083,7 +3083,7 @@ standard depth as regrided by NOAA.&lt;br />
 &lt;p>&lt;br />
 Return new Gridded object, indexed between dates date0 and date1&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Profile_analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile_analysis/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile_analysis/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Profile_analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile_analysis/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/profile_analysis/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#profileanalysis">ProfileAnalysis()&lt;/a>&lt;br />
 &lt;a href="#profileanalysisdepth_means">ProfileAnalysis.depth_means()&lt;/a>&lt;br />
@@ -3281,11 +3281,11 @@ var_modifier (str)                : Suffix to add to all averaged
 OUTPUTS&lt;br />
 COAsT Gridded object containing averaged data.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Seasons</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/seasons/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/seasons/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Seasons</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/seasons/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/seasons/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>Module with attributes defining month ranges for the four seasons.&lt;/p>
 &lt;p>Used for convenience with Climatology.multiyear_averages().
-Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.&lt;/p></description></item><item><title>Docs: Stats_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/stats_util/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/stats_util/</guid><description>
+Note: Summer is defined as JJAS, as opposed to the meteorological seasons of JJA.&lt;/p></description></item><item><title>Docs: Stats_util</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/stats_util/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/stats_util/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#quadratic_spline_roots">quadratic_spline_roots()&lt;/a>&lt;br />
 &lt;a href="#find_maxima">find_maxima()&lt;/a>&lt;br />
@@ -3364,7 +3364,7 @@ Returns&lt;br />
 &amp;mdash;&amp;mdash;-&lt;br />
                 Filtered array of same rank as elevation.&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Tidegauge</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#tidegauge">Tidegauge()&lt;/a>&lt;br />
 &lt;a href="#tidegaugeread_gesla_v3">Tidegauge.read_gesla_v3()&lt;/a>&lt;br />
@@ -3714,7 +3714,7 @@ xarray.Dataset containing times, sealevel and quality control flags&lt;br />
 &lt;/blockquote>
 &lt;h5 id="tidegaugeplot_timeseries">Tidegauge.plot_timeseries()&lt;/h5>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">
-&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">Tidegauge&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot_timeseries&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#3465a4">self&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#204a87">id&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">var_list&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">unknown&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">date_start&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">date_end&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">plot_line&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
+&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">Tidegauge&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot_timeseries&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#3465a4">self&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">var_list&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">unknown&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">date_start&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">date_end&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">None&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">plot_line&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#3465a4">False&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
 &lt;p>&lt;br />
 Quick plot of time series stored within object&amp;rsquo;s dataset&lt;br />
@@ -3789,7 +3789,7 @@ latbounds &amp;ndash; Array of form [min_latitude, max_latitude]&lt;br />
 &lt;br />
 return: A new profile object containing subsetted data&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Tidegauge_analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge_analysis/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge_analysis/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Tidegauge_analysis</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge_analysis/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/tidegauge_analysis/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#tidegaugeanalysis">TidegaugeAnalysis()&lt;/a>&lt;br />
 &lt;a href="#tidegaugeanalysismatch_missing_values">TidegaugeAnalysis.match_missing_values()&lt;/a>&lt;br />
@@ -4046,7 +4046,7 @@ Returns&lt;br />
 &amp;mdash;&amp;mdash;-&lt;br />
 New Tidegauge() object containing resampled data&lt;br />
 &lt;br />&lt;/p>
-&lt;/blockquote></description></item><item><title>Docs: Timeseries</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/timeseries/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/timeseries/</guid><description>
+&lt;/blockquote></description></item><item><title>Docs: Timeseries</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/timeseries/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/timeseries/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#timeseries">Timeseries()&lt;/a>&lt;br />&lt;/p>
 &lt;p>Timeseries Class&lt;/p>
@@ -4054,7 +4054,7 @@ New Tidegauge() object containing resampled data&lt;br />
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">class&lt;/span> &lt;span style="color:#000">Timeseries&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">Indexed&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Parent class for Tidegauge and other timeseries type datasets
 Common methods ...
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Track</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/track/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/track/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Track</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/track/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/track/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#track">Track()&lt;/a>&lt;br />&lt;/p>
 &lt;p>Track class&lt;/p>
@@ -4062,7 +4062,7 @@ Common methods ...
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#204a87;font-weight:bold">class&lt;/span> &lt;span style="color:#000">Track&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">Indexed&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Parent class for subclasses Altimetry
 Common methods ....
-&lt;/code>&lt;/pre></description></item><item><title>Docs: Xesmf_convert</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/xesmf_convert/</link><pubDate>Thu, 22 Sep 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/xesmf_convert/</guid><description>
+&lt;/code>&lt;/pre></description></item><item><title>Docs: Xesmf_convert</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/xesmf_convert/</link><pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/reference/xesmf_convert/</guid><description>
 &lt;h3 id="objects">Objects&lt;/h3>
 &lt;p>&lt;a href="#xesmf_convert">xesmf_convert()&lt;/a>&lt;br />
 &lt;a href="#xesmf_convert_get_xesmf_datasets">xesmf_convert._get_xesmf_datasets()&lt;/a>&lt;br />
