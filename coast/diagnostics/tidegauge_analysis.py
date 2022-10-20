@@ -257,8 +257,8 @@ class TidegaugeAnalysis:
                     # NTR: Threshold Frequency (Peaks)
                     ds_thresh["peak_count_" + vv][pp, nn] = np.sum(pk_values >= threshn)
 
-                    # NTR: Threshold integral (Time over threshold)
-                    ds_thresh["time_over_threshold_" + vv][pp, nn] = np.sum(data_pp >= threshn)
+                    # NTR: Threshold integral (Timestamps over threshold)
+                    ds_thresh["time_over_threshold_" + vv][pp, nn] = np.sum(data_pp >= threshn)  # sum of booleans
 
                     # NTR: Number of daily maxima over threshold
                     ds_thresh["dailymax_count_" + vv][pp, nn] = np.sum(ds_daily_max.values >= threshn)

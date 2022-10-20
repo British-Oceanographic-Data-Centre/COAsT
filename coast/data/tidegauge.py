@@ -971,7 +971,7 @@ class Tidegauge(Timeseries):
     ###                ~            Plotting             ~                     ###
     ##############################################################################
 
-    def plot_timeseries(self, id, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
+    def plot_timeseries(self, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
@@ -992,9 +992,10 @@ class Tidegauge(Timeseries):
             var_list = [var_list]
 
         for var_str in var_list:
-            dim_str = self.dataset[var_str].dims[0]
-            x = np.array(self.dataset[dim_str])
-            y = np.array(self.dataset[var_str])
+            # dim_str = self.dataset[var_str].dims[0]  # commented out: could pull wrong dimensio
+            # x = np.array(self.dataset[dim_str])  # return indices, not coordinate values
+            x = np.array(self.dataset["time"])
+            y = np.array(self.dataset[var_str].squeeze())
 
             # Use only values between stated dates
             start_index = 0
@@ -1019,7 +1020,20 @@ class Tidegauge(Timeseries):
         plt.legend(var_list)
         # Title and axes
         plt.xlabel("Date")
-        plt.title("Site: " + self.dataset.site_name)
+
+        try:
+            self.dataset.id_name
+        except AttributeError:
+            try:
+                self.dataset.site_name
+            except AttributeError:
+                title_str = ""
+            else:
+                title_str = f"Site: {self.dataset.site_name}"
+        else:
+            title_str = f"Site: {self.dataset.id_name}"
+
+        plt.title(title_str)
 
         return fig, ax
 
@@ -1057,19 +1071,22 @@ class Tidegauge(Timeseries):
         Y = []
         C = []
         for tg in tidegauge_list:
-            X.append(tg.dataset.longitude)
-            Y.append(tg.dataset.latitude)
+            X.append(tg.dataset.longitude.values)
+            Y.append(tg.dataset.latitude.values)
             if color_var_str is not None:
                 C.append(tg.dataset[color_var_str].values)
 
+        X = np.hstack(X)
+        Y = np.hstack(Y)
         title = ""
         if color_var_str is None:
             fig, ax = plot_util.geo_scatter(X, Y, title=title)
         else:
+            C = np.hstack(C)
             fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
 
-        ax.set_xlim((min(X) - 10, max(X) + 10))
-        ax.set_ylim((min(Y) - 10, max(Y) + 10))
+        ax.set_xlim((np.min(X) - 10, np.max(X) + 10))
+        ax.set_ylim((np.min(Y) - 10, np.max(Y) + 10))
         return fig, ax
 
     ##############################################################################
