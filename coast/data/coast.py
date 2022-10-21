@@ -96,11 +96,8 @@ class Coast:
             chunks (Dict): Chunks to use in Dask [default None].
         """
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
-        with xr.open_mfdataset(directory_to_files, 
-            chunks=chunks, 
-            parallel=True, 
-            combine="by_coords") as files:
-                self.dataset = files
+        with xr.open_mfdataset(directory_to_files, chunks=chunks, parallel=True, combine="by_coords") as files:
+            self.dataset = files
 
     def load_dataset(self, dataset: xr.Dataset):
         """Loads a dataset.
