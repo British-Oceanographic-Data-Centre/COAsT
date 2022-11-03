@@ -23,11 +23,11 @@ class TidegaugeAnalysis:
         Will match any missing values between two tidegauge_multiple datasets.
         Where missing values (defined by fill_value) are found in either dataset
         they are also placed in the corresponding location in the other dataset.
-        Returns two new tidegaugeMultiple objects containing the new
-        ssh data. Datasets must contain ssh variables and only ssh will be
-        masked.
+        Returns two new tidegauge objects containing only the new
+        masked data arrays.
         """
 
+        # Ensuring arrays are dimensionally aligned
         if data_array2.dims[0] == "t_dim":
             data_array2 = data_array2.transpose()
         if data_array1.dims[0] == "t_dim":
