@@ -56,8 +56,7 @@ class test_maskmaker_methods(unittest.TestCase):
         # Draw and fill a square
         vertices_lon = [-5, -5, 5, 5]
         vertices_lat = [40, 60, 60, 40]
-        filled = mm.make_region(cls, sci.dataset.longitude, sci.dataset.latitude,
-                       vertices_lon, vertices_lat)
+        filled = mm.make_region(cls, sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
 
         # TEST: Check some data
         check1 = filled[50, 50] == 0 and filled[50, 150] == 1
