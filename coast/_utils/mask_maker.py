@@ -172,3 +172,21 @@ class MaskMaker:
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
+
+    @classmethod
+    def make_region(cls, longitude, latitude, vertices_lon:list, vertices_lat:list):
+        """
+        Construct mask on supplied longitude, latitude grid with input lists of lon and lat polygon vertices
+        :param longitude: np.array of longitudes on target grid
+        :param latitude: np.array of latitudes on target grid
+        :param vertices_lon: list of vertices for bounding polygon
+        :param vertices_lat: list of vertices for bounding polygon
+        :return: mask: np.array(boolean) on target grid. Ones are bound by polygon vertices
+        """
+        if type(longitude == xr.DataArray):
+            longitude = longitude.values
+        if type(latitude == xr.DataArray):
+            latitude = longitude.values
+
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
+        return mask

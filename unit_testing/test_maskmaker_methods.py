@@ -49,3 +49,17 @@ class test_maskmaker_methods(unittest.TestCase):
 
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
+
+    def test_make_region(self):
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
+        mm = coast.MaskMaker()
+        # Draw and fill a square
+        vertices_lon = [-5, -5, 5, 5]
+        vertices_lat = [40, 60, 60, 40]
+        filled = mm.make_region(cls, sci.dataset.longitude, sci.dataset.latitude,
+                       vertices_lon, vertices_lat)
+
+        # TEST: Check some data
+        check1 = filled[50, 50] == 0 and filled[50, 150] == 1
+
+        self.assertTrue(check1, "check1")
