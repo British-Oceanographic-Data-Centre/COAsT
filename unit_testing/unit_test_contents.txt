@@ -86,6 +86,7 @@
 16. test_maskmaker_methods
       a. fill_polygon_by_index
       b. fill_polygon_by_lonlat
+      c. make_region
 
 17. test_climatology
       a. monthly_and_seasonal_climatology
