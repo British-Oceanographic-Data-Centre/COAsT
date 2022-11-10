@@ -18,6 +18,7 @@
       c. copy_coast_object
       d. day_of_week
       e. getitem
+      f. nan_helper
 
 3. test_gridded_harmonics
       a. combine_and_convert_harmonics
