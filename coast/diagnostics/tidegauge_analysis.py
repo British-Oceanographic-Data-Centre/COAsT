@@ -181,7 +181,7 @@ class TidegaugeAnalysis:
         ntr = data_array_ssh - data_array_tide
         n_port = data_array_ssh.sizes["id_dim"]
 
-        if ntr.dims[0] == 't_dim' and ntr.dims[1] == 'id_dim':
+        if ntr.dims[0] == "t_dim" and ntr.dims[1] == "id_dim":
             ntr = ntr.transpose()
 
         # NTR: Apply filter if wanted
