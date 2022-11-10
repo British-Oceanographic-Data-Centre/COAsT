@@ -7,6 +7,7 @@ import coast
 from coast._utils import general_utils
 import unittest
 import numpy as np
+import xarray as xr
 import pytz
 import datetime
 import unit_test_files as files
