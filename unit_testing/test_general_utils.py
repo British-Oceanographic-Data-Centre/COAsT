@@ -51,11 +51,11 @@ class test_general_utils(unittest.TestCase):
         # numpy array
         nans, x = general_utils.nan_helper(y)
         y[nans] = np.interp(x(nans), x(~nans), y[~nans])
-        check1 = y == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0])
+        check1 = all(y == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0]))
         # xarray
         nans, x = general_utils.nan_helper(y_xr)
         y_xr[nans] = np.interp(x(nans), x(~nans), y_xr[~nans])
-        check2 = y_xr.values == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0])
+        check2 = all(y_xr.values == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0]))
 
         self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
