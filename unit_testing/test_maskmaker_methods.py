@@ -50,15 +50,20 @@ class test_maskmaker_methods(unittest.TestCase):
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
 
-    def test_make_region(self):
+    def test_make_region_from_vertices(self):
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         mm = coast.MaskMaker()
         # Draw and fill a square
         vertices_lon = [-5, -5, 5, 5]
         vertices_lat = [40, 60, 60, 40]
-        filled = mm.make_region_from_vertices(cls, sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+        # input lat/lon as xr.DataArray
+        filled1 = mm.make_region_from_vertices(sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+        # input lat/lon as np.ndarray
+        filled2 = mm.make_region_from_vertices(sci.dataset.longitude.values, sci.dataset.latitude.values, vertices_lon, vertices_lat)
 
         # TEST: Check some data
-        check1 = filled[50, 50] == 0 and filled[50, 150] == 1
+        check1 = filled1[50, 50] == 0 and filled1[50, 150] == 1
+        check2 = filled2[50, 50] == 0 and filled2[50, 150] == 1
 
         self.assertTrue(check1, "check1")
+        self.assertTrue(check2, "check2")
