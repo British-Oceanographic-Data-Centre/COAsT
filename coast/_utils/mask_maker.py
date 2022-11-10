@@ -174,7 +174,7 @@ class MaskMaker:
         return mask
 
     @classmethod
-    def make_region(cls, longitude, latitude, vertices_lon: list, vertices_lat: list):
+    def make_region_from_vertices(cls, longitude, latitude, vertices_lon: list, vertices_lat: list):
         """
         Construct mask on supplied longitude, latitude grid with input lists of lon and lat polygon vertices
         :param longitude: np.array of longitudes on target grid
