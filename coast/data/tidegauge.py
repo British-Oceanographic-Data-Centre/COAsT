@@ -1138,7 +1138,7 @@ class Tidegauge(Timeseries):
         # Interpolate model onto obs times
         if "t_dim" in gridded.dims:
             print("Interpolating in time...", flush=True)
-            extracted = extracted.rename({"time": "t_dim"})  # make variable name match dimension name for interpolation
+            extracted = extracted.rename_vars({"time": "t_dim"})  # make variable name match dimension name for interpolation
             extracted = extracted.interp(t_dim=ds.time.values, method=time_interp)
             extracted = extracted.rename_vars({"t_dim": "time"})  # restore variable name
 
