@@ -349,6 +349,7 @@ def day_of_week(date: np.datetime64 = None):
     elif val == 6:
         return "Wed"
 
+
 def nan_helper(y):
     """Helper to handle indices and logical indices of NaNs.
 
