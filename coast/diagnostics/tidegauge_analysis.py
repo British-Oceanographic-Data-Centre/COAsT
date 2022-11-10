@@ -173,7 +173,7 @@ class TidegaugeAnalysis:
         Calculate non tidal residuals by subtracting values in data_array_tide
         from data_array_ssh. You may optionally apply a filter to the non
         tidal residual data by setting apply_filter = True. This uses the
-        scipy.signal.savgol_filter function, which you ay pass window_length
+        scipy.signal.savgol_filter function, which you may pass window_length
         and poly_order.
         """
 
@@ -181,11 +181,20 @@ class TidegaugeAnalysis:
         ntr = data_array_ssh - data_array_tide
         n_port = data_array_ssh.sizes["id_dim"]
 
+        if ntr.dims[0] == 't_dim' and ntr.dims[1] == 'id_dim':
+            ntr = ntr.transpose()
+
         # NTR: Apply filter if wanted
         if apply_filter:
             for pp in range(n_port):
-                ntr[pp, :] = signal.savgol_filter(ntr[pp, :], 25, 3)
-
+                y = ntr[pp, :]
+                try:
+                    # interpolate over nans
+                    nans, x = general_utils.nan_helper(y)  # location interior nans
+                    y[nans] = np.interp(x(nans), x(~nans), y[~nans])  # interpolate
+                    ntr[pp, :] = signal.savgol_filter(y, window_length, polyorder)
+                except:
+                    ntr[pp, :] = np.nan
         # Create output Tidegauge object and return
         ds_coords = data_array_ssh.coords.to_dataset()
         ds_coords["ntr"] = ntr
