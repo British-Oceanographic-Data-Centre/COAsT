@@ -59,7 +59,9 @@ class test_maskmaker_methods(unittest.TestCase):
         # input lat/lon as xr.DataArray
         filled1 = mm.make_region_from_vertices(sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
         # input lat/lon as np.ndarray
-        filled2 = mm.make_region_from_vertices(sci.dataset.longitude.values, sci.dataset.latitude.values, vertices_lon, vertices_lat)
+        filled2 = mm.make_region_from_vertices(
+            sci.dataset.longitude.values, sci.dataset.latitude.values, vertices_lon, vertices_lat
+        )
 
         # TEST: Check some data
         check1 = filled1[50, 50] == 0 and filled1[50, 150] == 1
