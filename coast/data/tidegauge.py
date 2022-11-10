@@ -1143,7 +1143,7 @@ class Tidegauge(Timeseries):
             extracted = extracted.rename_vars({"t_dim": "time"})  # restore variable name
 
         # Put interp_dist into dataset
-        extracted["interp_dist"] = interp_dist
+        extracted["interp_dist"] = (("id_dim"), interp_dist)
 
         tg_out = Tidegauge()
         tg_out.dataset = extracted
