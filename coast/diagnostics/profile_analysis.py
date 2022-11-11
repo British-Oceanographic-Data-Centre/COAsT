@@ -44,7 +44,7 @@ class ProfileAnalysis(Indexed):
 
         # Extract/remove time vars from input dataset (but save them)
         time_vars = dataset[time_var_list]
-        dataset = dataset.drop(time_var_list)
+        dataset = dataset.drop_vars(time_var_list)
 
         # Get 2D indices of depth bounds, then indices of all points in the layer
         layer_ind0 = dataset.depth >= depth_bounds[0]
@@ -112,7 +112,7 @@ class ProfileAnalysis(Indexed):
 
         # Remove the time variables and save them for merge back later
         time_vars = dataset[time_var_list]
-        dataset = dataset.drop(time_var_list)
+        dataset = dataset.drop_vars(time_var_list)
 
         # A quick check to make sure the last threshold is infinite
         if depth_thresholds[-1] != np.inf:
@@ -385,9 +385,15 @@ class ProfileAnalysis(Indexed):
                 # Get arrays to interpolate
                 interpx = profile.depth.values
                 interpy = profile[vv].values
+                if interpx.shape != interpy.shape:
+                    continue
 
                 # Remove NaNs
                 xnans = np.isnan(interpx)
+                try:
+                    ynans = np.isnan(interpy)
+                except:
+                    debug(f"Issue with vv: {vv}")
                 ynans = np.isnan(interpy)
                 xynans = np.logical_or(xnans, ynans)
                 interpx = interpx[~xynans]

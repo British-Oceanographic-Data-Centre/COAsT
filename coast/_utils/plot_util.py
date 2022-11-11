@@ -135,7 +135,7 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
     if n_r * n_c > 1:
         ax = ax.flatten()
         for rr in range(n_r * n_c):
-            coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="50m")
+            coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="110m")
             ax[rr].add_feature(coast, edgecolor=coast_color, linewidth=coast_width)
             # ax.coastlines(facecolor=[0.8,0.8,0.8])
             gl = ax[rr].gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
@@ -156,7 +156,7 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
 
         ax = ax.reshape((n_r, n_c))
     else:
-        coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="50m")
+        coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="110m")
         ax.add_feature(coast, edgecolor=coast_color, linewidth=coast_width)
         # ax.coastlines(facecolor=[0.8,0.8,0.8])
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
@@ -204,7 +204,7 @@ def create_geo_axes(lonbounds, latbounds):
     fig.clf()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-    coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="50m")
+    coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="110m")
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")

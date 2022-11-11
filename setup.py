@@ -6,13 +6,13 @@ from types import SimpleNamespace
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "3.0.4",
+        "version": "3.1.2",
         "description": "This is the Coast Ocean Assessment Tool",
         "url": "https://www.bodc.ac.uk",
         "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
         "author": "British Oceanographic Data Centre (BODC)",
         "author_email": "bodcsoft@bodc.ac.uk",
-        "license": "Put something here",
+        "license": "MIT License",
         "license_family": "OTHER",
         "setup_requires": ["wheel"],
         "classifiers": [
@@ -33,10 +33,10 @@ PACKAGE = SimpleNamespace(
             "dask>=2022.3.0",
             "dask[complete]>=2022.3.0",
             "xarray>=2022.3.0",
-            "matplotlib>=3.5.1",
+            "matplotlib>=3.5.3",
             "netCDF4>=1.5.8",
             "scipy>=1.8.0",
-            "gsw>=3.4.0",
+            "gsw==3.4.0",
             "utide>=0.3.0",
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",

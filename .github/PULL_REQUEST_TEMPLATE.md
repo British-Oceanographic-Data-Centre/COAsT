@@ -6,8 +6,8 @@ Please check if your PR fulfills the following requirements:
 - [ ] Tests for the changes have been added (for bug fixes / features)
 - [ ] Docs have been reviewed and added / updated if needed (for bug fixes / features)
     - Some docs updates need to be made in the `COAsT-site` repo, in a separate PR. See [contributing to documentation ](https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing-docs/) for details.
-- [ ] Build (`./build.sh`) was run locally and no errors reported
-- [ ] Lint (`pylint .`) has passed locally and any fixes were made for failures
+- [ ] Build (`./build.sh`) was run locally and no errors reported. NB not sure about this requirement: GitActions test this
+- [ ] Lint (`pylint .`) has passed locally and any fixes were made for failures. NB not sure about this requirement: GitActions test this with `black`
 
 
 ## Pull request type
@@ -42,7 +42,7 @@ Issue URL: #
 ### Checklist
 - [ ] Code compiles correctly
 - [ ] Created tests which fail without the change (if possible)
-- [ ] All tests passing
+- [ ] All tests passing (`pip install . && pytest unit_testing/unit_test.py -s`)
 - [ ] Extended the README / documentation, if necessary
 - [ ] Added myself / the copyright holder to the AUTHORS file
 
