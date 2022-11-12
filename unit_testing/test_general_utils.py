@@ -61,3 +61,14 @@ class test_general_utils(unittest.TestCase):
 
         self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
+
+    def test_fill_holes_1d(self):
+        input = np.array([np.nan, np.nan, 2., np.nan, 4,5,6], dtype='float64')
+        input_xr = xr.DataArray(input)
+        target = np.array([2., 2., 2., 3., 4., 5., 6.])
+
+        check1 = all(fill_holes_1d(input) == target)
+        check2 = all(fill_holes_1d(input_xr).values == target)
+
+        self.assertTrue(check1, msg="check1")
+        self.assertTrue(check2, msg="check2")
