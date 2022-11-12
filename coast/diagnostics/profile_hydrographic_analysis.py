@@ -9,6 +9,7 @@ from ..data.profile import Profile
 from ..data.index import Indexed
 from dask.diagnostics import ProgressBar
 from .._utils.logging_util import get_slug, debug, info, warn, warning
+from .._utils import general_utils
 
 
 #
@@ -361,34 +362,10 @@ class ProfileHydrography(Indexed):
     # Functions for stratification metrics
     @staticmethod
     def fillholes(Y):
-        YY = np.ones(np.shape(Y))
-        YY[:] = Y
-        I = np.nonzero(np.isfinite(YY))
-        N = len(YY)
-
-        if np.size(I) > 0:
-            if not np.isfinite(YY[0]):
-                YY[0 : np.min(I) + 1] = YY[np.min(I)]
-
-            if ~np.isfinite(YY[N - 1]):
-                YY[np.max(I) : N] = YY[np.max(I)]
-            I = np.array(np.nonzero(~np.isfinite(YY)))
-            YY[I] = 0.5 * (YY[I - 1] + YY[I + 1])
-            YYp = YY[0]
-            ip = 0
-            for i in range(N):
-                if np.isfinite(YY[i]):
-                    YYp = YY[i]
-                    ip = i
-                else:
-                    j = i
-                    while ~np.isfinite(YY[j]):
-                        j = j + 1
-                    Jp = np.arange(ip + 1, j - 1 + 1)
-
-                    pT = np.arange(1.0, (j - ip - 1.0) + 1.0) / (j - ip)
-                    YY[Jp] = YYp + (YY[j] - YYp) * pT
-        return YY
+        """
+        extrapolate and linearly interpolate 1d vectors
+        """
+        return general_utils.fill_holes_1d(Y)
 
     ###########################################
     def chunks(lst, n):

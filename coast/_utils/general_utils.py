@@ -368,3 +368,20 @@ def nan_helper(y):
         return np.isnan(y), lambda z: z.nonzero()[0]
     else:
         return np.isnan(y).values, lambda z: z.nonzero()[0]
+
+def fill_holes_1d(y):
+    """
+    extrapolate and linearly interpolate over nans in 1d vectors
+    Input:
+        - y, 1d numpy array, or xr.DataArray, with possible NaNs
+    Output:
+        - 1d array with nans filled in
+    Examples:
+        pp = xr.DataArray(np.array([np.nan, np.nan, 2., np.nan, 4,5,6], dtype='float64'))
+        fill_holes_new(pp).values
+        Returns:
+            array([2., 2., 2., 3., 4., 5., 6.])
+    """
+    nans, x = general_utils.nan_helper(y)  # location interior nans
+    y[nans] = np.interp(x(nans), x(~nans), y[~nans])  # interpolate and extrapolate
+    return y
