@@ -348,3 +348,23 @@ def day_of_week(date: np.datetime64 = None):
         return "Tue"
     elif val == 6:
         return "Wed"
+
+
+def nan_helper(y):
+    """Helper to handle indices and logical indices of NaNs.
+
+    Input:
+        - y, 1d numpy array, or xr.DataArray, with possible NaNs
+    Output:
+        - nans, logical indices of NaNs
+        - index, a function, with signature indices= index(logical_indices),
+          to convert logical indices of NaNs to 'equivalent' indices
+    Example:
+        >>> # linear interpolation of NaNs
+        >>> nans, x= nan_helper(y)
+        >>> y[nans]= np.interp(x(nans), x(~nans), y[~nans])
+    """
+    if isinstance(y, np.ndarray):
+        return np.isnan(y), lambda z: z.nonzero()[0]
+    else:
+        return np.isnan(y).values, lambda z: z.nonzero()[0]

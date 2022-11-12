@@ -7,6 +7,7 @@ import coast
 from coast._utils import general_utils
 import unittest
 import numpy as np
+import xarray as xr
 import pytz
 import datetime
 import unit_test_files as files
@@ -43,3 +44,18 @@ class test_general_utils(unittest.TestCase):
             "2020-10-11T11:00:00"
         )
         self.assertTrue(check1, msg="check1")
+
+    def test_nan_helper(self):
+        y = np.array([np.NaN, 1, 1, np.NaN, np.NaN, 7, 2, np.NaN, 0])
+        y_xr = xr.DataArray(y)
+        # numpy array
+        nans, x = general_utils.nan_helper(y)
+        y[nans] = np.interp(x(nans), x(~nans), y[~nans])
+        check1 = all(y == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0]))
+        # xarray
+        nans, x = general_utils.nan_helper(y_xr)
+        y_xr[nans] = np.interp(x(nans), x(~nans), y_xr[~nans])
+        check2 = all(y_xr.values == np.array([1.0, 1.0, 1.0, 3.0, 5.0, 7.0, 2.0, 1.0, 0.0]))
+
+        self.assertTrue(check1, msg="check1")
+        self.assertTrue(check2, msg="check2")
