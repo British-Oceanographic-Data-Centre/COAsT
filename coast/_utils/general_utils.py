@@ -369,6 +369,7 @@ def nan_helper(y):
     else:
         return np.isnan(y).values, lambda z: z.nonzero()[0]
 
+
 def fill_holes_1d(y):
     """
     extrapolate and linearly interpolate over nans in 1d vectors
