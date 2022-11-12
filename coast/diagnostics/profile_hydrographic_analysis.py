@@ -275,7 +275,7 @@ class ProfileHydrography(Indexed):
 
                         if np.size(I) == 0:
                             good_profile[ip] = 0
-                        elif ~(np.any((np.isfinite(S[I]))) and np.any((np.isfinite(S[I])))):
+                        elif ~(np.any((np.isfinite(S[I]))) and np.any((np.isfinite(T[I])))):
                             good_profile[ip] = 0
                     ###
 
