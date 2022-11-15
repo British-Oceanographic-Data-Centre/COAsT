@@ -11,12 +11,24 @@ class MaskMaker:
         return
 
     @staticmethod
-    def make_mask_dataset(longitude, latitude, mask_list):
+    def make_mask_dataset(longitude, latitude, mask_list, mask_names:list=None):
+        """
+        create xr.Dataset for mask with latitude and longitude coordinates. If mask_names are given
+        create a dim_mask coordinate of names
+
+        """
         if type(mask_list) is not list:
             mask_list = [mask_list]
         gridded_mask = xr.Dataset()
         gridded_mask["longitude"] = (["y_dim", "x_dim"], longitude)
         gridded_mask["latitude"] = (["y_dim", "x_dim"], latitude)
+
+        if mask_names is not None:
+            gridded_mask['region_names'] = (["dim_mask"], mask_names)
+        else:
+            gridded_mask['region_names'] = (["dim_mask"], range(len(mask_list)))
+
+        gridded_mask = gridded_mask.set_coords(['longitude', 'latitude', 'region_names'])
         n_masks = len(mask_list)
         nr, nc = mask_list[0].shape
         all_masks = np.zeros((n_masks, nr, nc))
@@ -191,3 +203,28 @@ class MaskMaker:
 
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         return mask
+
+    @classmethod
+    def quick_plot(cls, mask:xr.Dataset):
+        """
+        Plot a map of masks in the MaskMaker object
+        Add labels if available
+        """
+        import matplotlib.pyplot as plt
+
+        n_mask = mask.dims['dim_mask']
+        offset = 10  # nonzero offset to make scaled-boolean-masks [0, >offset]
+        for j in range(0, n_mask, 1):
+            tt = (j + offset) * mask['mask'].isel(dim_mask=j).squeeze()
+            ff = tt.where(tt > 0).plot(x='longitude',
+                                       y='latitude',
+                                       levels=range(offset, n_mask + offset + 1, 1),
+                                       add_colorbar=False)
+
+        cbar = plt.colorbar(ff)
+        cbar.ax.get_yaxis().set_ticks([])
+        for j in range(0, n_mask, 1):
+            cbar.ax.text(1 + 0.5, offset + (j + .5), mask['region_names'].isel(dim_mask=j).values, ha='left',
+                         va='center', color='red')
+        cbar.ax.get_yaxis().labelpad = 15
+        plt.title(None)
