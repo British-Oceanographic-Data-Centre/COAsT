@@ -117,7 +117,7 @@ class MaskMaker:
     @classmethod
     def region_def_nws_outer_shelf(cls, longitude, latitude, bath):
         """
-        Regional definition for the Outher Shelf (Northwest European Shelf)
+        Regional definition for the Outer Shelf (Northwest European Shelf)
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         """
@@ -208,7 +208,7 @@ class MaskMaker:
     def quick_plot(cls, mask:xr.Dataset):
         """
         Plot a map of masks in the MaskMaker object
-        Add labels if available
+        Add labels
         """
         import matplotlib.pyplot as plt
 
