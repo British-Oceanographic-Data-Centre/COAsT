@@ -6,6 +6,35 @@ from . import general_utils
 
 
 class MaskMaker:
+    """
+    MaskMasker is a class of methods to assist with making regional masks within COAsT.
+    Presently these masks are external to MaskMaker.
+    It constructs a gridded boolean numpy array for each region, which are stacked over a dim_mask dimension and
+    stored as an xarray object.
+
+    A typical workflow might be:
+
+        # Define vertices
+        vertices_lon = [-5, -5, 5, 5]
+        vertices_lat = [40, 60, 60, 40]
+
+        # input lat/lon as xr.DataArray or numpy arrays. Return gridded boolean mask np.array on target grid
+        filled = mm.make_region_from_vertices(
+            sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+
+        # make xr.Dataset of masks from gridded mask array or list of mask arrays
+        gridded_mask = mm.make_mask_dataset(sci.dataset.longitude.values,
+                                         sci.dataset.latitude.values,
+                                         filled)
+        # quick plot
+        mm.quick_plot(gridded_mask)
+
+
+    TO DO:
+    * Sort out region naming to be consistently applied and associated with the masks E.g. defined regions, or user defined masks
+    * Create final mask as a xr.DataArray, not a xr.Dataset
+    * Make own ipynb tutorial - could include LME workflow
+    """
     def __init__(self):
 
         return
@@ -88,7 +117,7 @@ class MaskMaker:
 
         Returns
         -------
-        Filled 2D array
+        Filled 2D np.array
         """
         array_to_fill = np.array(array_to_fill)
         ind_2d = general_utils.nearest_indices_2d(longitude, latitude, vertices_lon, vertices_lat)
