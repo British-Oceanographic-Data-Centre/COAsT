@@ -58,8 +58,7 @@ class test_maskmaker_methods(unittest.TestCase):
         vertices_lon = [-5, -5, 5, 5]
         vertices_lat = [40, 60, 60, 40]
         # input lat/lon as xr.DataArray
-        filled1 = mm.make_region_from_vertices(
-            sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+        filled1 = mm.make_region_from_vertices(sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
         # input lat/lon as np.ndarray
         filled2 = mm.make_region_from_vertices(
             sci.dataset.longitude.values, sci.dataset.latitude.values, vertices_lon, vertices_lat
@@ -81,9 +80,7 @@ class test_maskmaker_methods(unittest.TestCase):
         # input lat/lon as xr.DataArray
         filled = mm.make_region_from_vertices(sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
 
-        mask_list = mm.make_mask_dataset(sci.dataset.longitude.values,
-                                         sci.dataset.latitude.values,
-                                         filled)
+        mask_list = mm.make_mask_dataset(sci.dataset.longitude.values, sci.dataset.latitude.values, filled)
 
         check = np.isclose(mask_list.mask.values.sum(), 27300)
         self.assertTrue(check, "check")
