@@ -2,11 +2,13 @@
 from .index import Indexed
 import numpy as np
 import xarray as xr
+import gsw
 from .._utils import general_utils, plot_util
 import matplotlib.pyplot as plt
 import glob
 import datetime
-from .._utils.logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning, error
+
 from typing import Union
 from pathlib import Path
 import pandas as pd
@@ -685,3 +687,40 @@ class Profile(Indexed):
         t_ind = pd.to_datetime(dataset.time.values) < date1
         dataset = dataset.isel(id_dim=t_ind)
         return Profile(dataset=dataset)
+
+    def calculate_vertical_spacing(self):
+        """
+        Profile data is given at depths, z, however for some calculations a thickness measure, dz, is required
+        Define the upper thickness: dz[0] = 0.5*(z[0] + z[1]) and thereafter the centred difference:
+        dz[k] = 0.5*(z[k-1] - z[k+1])
+
+        Notionally, dz is the separation between w-points, when w-points are estimated from depths
+        at t-points.
+        """
+
+        if hasattr(self.dataset, 'dz'):  # Requires spacing variable. Test to see if variable exists
+            pass
+        else:
+            # Compute dz on w-pts
+            depth_t = self.dataset.depth
+            self.dataset['dz'] = xr.where(depth_t == depth_t.min(dim="z_dim"),
+                                          0.5 * (depth_t + depth_t.shift(z_dim=-1)),
+                                          0.5 * (depth_t.shift(z_dim=-1) - depth_t.shift(z_dim=+1)) # .fillna(0.)
+                                         )
+
+        attributes = {"units": "m", "standard name": "centre difference thickness"}
+        if hasattr(self.dataset.dz, 'coords'): # xarray object. Just add title and units
+            self.dataset.dz.attrs = attributes
+
+        else:  # not an xarray object
+            coords = {
+                "time": (("id_dim"), self.dataset.time.values),
+                "latitude": (("id_dim"), self.dataset.latitude.values),
+                "longitude": (("id_dim"), self.dataset.longitude.values),
+            }
+            dims = ["z_dim", "id_dim"]
+
+            dz = np.squeeze(dz)
+            self.dataset['dz'] = xr.DataArray(dz, coords=coords, dims=dims, attrs=attributes)
+
+
