@@ -158,3 +158,19 @@ class test_profile_methods(unittest.TestCase):
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
             self.assertTrue(check3, "check3")
+
+    def test_calculate_vertical_mask(self):
+
+        profile = coast.Profile()
+
+        arr = np.array([[1, 2, 3, np.nan], [15, 20, 25, 30], [4, 5, 15, np.nan]])
+        depth = xr.DataArray(arr, dims=["i_dim", "z_dim"])
+
+        mask, kmax = profile.calculate_vertical_mask(depth, 21)
+        mask = mask.fillna(-999)
+
+        check1 = (kmax == np.array([2,1,2])).all()
+        check2 = (mask.values == np.array([[1., 1., 1., -999], [1., 0.8, 0., 0.], [1., 1., 1., -999]])).all()
+
+        self.assertTrue(check1, "check1")
+        self.assertTrue(check2, "check2")
