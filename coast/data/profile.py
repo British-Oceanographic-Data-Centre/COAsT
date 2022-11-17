@@ -698,3 +698,176 @@ class Profile(Indexed):
             self.dataset['dz'] = xr.DataArray(dz, coords=coords, dims=dims, attrs=attributes)
 
 
+    def construct_density(
+        self, eos="EOS10", rhobar=False, Zd_mask:xr.DataArray=None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+    ):
+
+        """
+            Constructs the in-situ density using the salinity, temperature and
+            depth fields. Adds a density attribute to the profile dataset
+
+            Requirements: The supplied Profile dataset must contain the
+            Practical Salinity and the Potential Temperature variables. The depth
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservative Temperature.
+
+            Note that currently density can only be constructed using the EOS10
+            equation of state.
+
+        Parameters
+        ----------
+        eos : equation of state, optional
+            DESCRIPTION. The default is 'EOS10'.
+
+        rhobar : Calculate density with depth mean T and S
+            DESCRIPTION. The default is 'False'.
+        Zd_mask : (xr.DataArray) Provide a (id_dim, z_dim) mask for rhobar calculation
+            Calculate using calculate_vertical_mask
+            DESCRIPTION. The default is empty.
+
+        CT_AS  : Conservative Temperature and Absolute Salinity already provided
+            DESCRIPTION. The default is 'False'.
+        pot_dens :Calculation at zero pressure
+            DESCRIPTION. The default is 'False'.
+        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to
+                        remain depth varying. So Tbar=Flase gives temperature component, Sbar=False gives Salinity component
+            DESCRIPTION. The default is 'True'.
+
+        Returns
+        -------
+        None.
+        adds attribute profile.dataset.density
+
+        """
+        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
+        try:
+            if eos != "EOS10":
+                raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
+
+            try:
+                shape_ds = (
+                    self.dataset.z_dim.size,
+                    self.dataset.id_dim.size,
+                )
+                sal = self.dataset.practical_salinity.to_masked_array()
+                temp = self.dataset.potential_temperature.to_masked_array()
+
+                if np.shape(sal) != shape_ds:
+                    sal = sal.T
+                    temp = temp.T
+            except AttributeError:
+                error(f"We have a problem with {self.dataset.dims}")
+
+            density = np.ma.zeros(shape_ds)
+
+            print(f"shape sal:{np.shape(sal)}")
+            print(f"shape rho:{np.shape(density)}")
+
+            s_levels = self.dataset.depth.to_masked_array()
+            if np.shape(s_levels) != shape_ds:
+                s_levels = s_levels.T
+
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
+            # Absolute Pressure
+            if pot_dens:
+                pressure_absolute = 0.0  # calculate potential density
+            else:
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
+            if not rhobar:  # calculate full depth
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+                sal_absolute = np.ma.masked_less(sal_absolute, 0)
+                # Conservative Temperature
+                if not CT_AS:  # conservative temp not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+                # In-situ density
+                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                new_var_name = "density"
+            else:  # calculate density with depth integrated T S
+
+                if hasattr(self.dataset, 'dz'):  # Requires spacing variable. Test to see if variable exists
+                    pass
+                else:  # Create it
+                    self.calculate_vertical_spacing()
+
+                # prepare coordinate variables
+                if Zd_mask is None:
+                    DZ = self.dataset.dz
+                else:
+                    DZ = (self.dataset.dz * Zd_mask)
+                DP = DZ.sum(dim="z_dim").to_masked_array()
+                DZ = DZ.to_masked_array()
+                if np.shape(DZ) != shape_ds:
+                    DZ = DZ.T
+                # DP=np.repeat(DP[np.newaxis,:,:],shape_ds[1],axis=0)
+
+                #DZ = np.repeat(DZ[np.newaxis, :, :, :], shape_ds[0], axis=0)
+                #DP = np.repeat(DP[np.newaxis, :, :], shape_ds[0], axis=0)
+
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+
+                # Conservative Temperature
+                if not CT_AS:  # Conservative temperature not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+
+                if pot_dens and (Sbar and Tbar):  # usual case pot_dens and depth averaged everything
+                    sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=0) / DP
+                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=0) / DP
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                    density = np.repeat(density[np.newaxis, :], shape_ds[0], axis=0)
+
+                else:  # Either insitu density or one of Tbar or Sbar False
+                    if Sbar:
+                        sal_absolute = np.repeat(
+                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=0) / DP)[np.newaxis, :],
+                            shape_ds[0],
+                            axis=0,
+                        )
+                    if Tbar:
+                        temp_conservative = np.repeat(
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=0) / DP)[np.newaxis, :],
+                            shape_ds[0],
+                            axis=0,
+                        )
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+
+                if Tbar and Sbar:
+                    new_var_name = "density_bar"
+
+                else:
+                    if not Tbar:
+                        new_var_name = "density_T"
+                    else:
+                        new_var_name = "density_S"
+
+            # rho and rhobar
+            coords = {
+                "time": (("id_dim"), self.dataset.time.values),
+                "latitude": (("id_dim"), self.dataset.latitude.values),
+                "longitude": (("id_dim"), self.dataset.longitude.values),
+            }
+            dims = ["z_dim", "id_dim"]
+
+            if pot_dens:
+                attributes = {"units": "kg / m^3", "standard name": "Potential density "}
+            else:
+                attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
+
+            density = np.squeeze(density)
+            self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
+
+        except AttributeError as err:
+            error(err)
+
