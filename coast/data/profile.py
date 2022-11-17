@@ -871,3 +871,71 @@ class Profile(Indexed):
         except AttributeError as err:
             error(err)
 
+    def calculate_vertical_mask(self, depth:xr.DataArray, Zmax=200):
+        """
+        Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
+        and linearly ramped for last level
+
+        Inputs:
+            depth (id_dim, z_dim) postitive values - passing as a variable facilitates testing
+            Zmax float - max depth (m(
+        Returns
+        Zd_mask (id_dim, z_dim)  xr.DataArray, float mask.
+        #kmax (id_dim) deepest index above Zmax
+        """
+
+        ## Contruct a mask array that is:
+        # zeros below Zmax
+        # ones above Zmax, except the closest shallower depth which has a value [0,1] that is the weighted distance to Zmax
+
+        ## prepare depth profiles
+        depth_t = depth
+        # remove deep nans
+        # depth_t = depth_t.fillna(1E6)
+        # depth_t = depth_t.interpolate_na(dim="z_dim", method="nearest", fill_value="extrapolate")
+        # print(depth_t)
+
+        ## construct a mask to identify location of and separation from Zmax
+
+        # mask_arr = np.zeros((depth_t.shape))*np.nan
+        # print(np.shape(mask_arr))
+        # mask_arr[depth_t <= Zmax] = 1
+        # mask_arr[depth_t > Zmax] = 0
+        # mask = xr.DataArray( mask_arr, dims=["id_dim", "z_dim"])
+        mask = depth * np.nan
+
+        mask = xr.where(depth_t <= Zmax, 1, mask)
+        mask = xr.where(depth_t > Zmax, 0, mask)
+
+        # print(mask)
+        # print('\n')
+
+        max_shallower_depth = (depth_t * mask).max(dim="z_dim")
+        min_deeper_depth = (depth_t.roll(z_dim=-1) * mask).max(dim="z_dim")
+        # NB if max_shallower_depth was already deepest value in profile, then this produces the same value
+        # I.e.
+        # max_shallower_depth <= Zmax
+        # min_deeper_depth > Zmax or min_deeper_depth = max_shallower_depth
+
+        # print(f"max_shallower_depth:{max_shallower_depth}")
+        # print(f"min_deeper_depth:{min_deeper_depth}")
+        # print('\n')
+
+        # Compute fraction, the relative closeness of Zmax to max_shallower_depth from 1 to 0 (as Zmax -> min_deeper_depth)
+        fraction = xr.where(min_deeper_depth != max_shallower_depth,
+                            (min_deeper_depth - Zmax) / (min_deeper_depth - max_shallower_depth),
+                            1)
+
+        max_shallower_depth_2d = max_shallower_depth.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
+        fraction_2d = fraction.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
+
+        # locate the depth index for the deepest level above Zmax
+        kmax = xr.where(depth == max_shallower_depth, 1, 0).argmax(dim="z_dim")
+        #print(kmax)
+
+        # replace mask values with fraction_2d at depth above Zmax)
+        mask = xr.where(depth_t == max_shallower_depth_2d, fraction_2d, mask)
+
+        return mask, kmax
+
+
