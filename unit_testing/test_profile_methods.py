@@ -6,6 +6,7 @@
 import coast
 import unittest
 import numpy as np
+import xarray as xr
 import matplotlib.pyplot as plt
 
 plt.switch_backend("agg")
@@ -37,6 +38,13 @@ class test_profile_methods(unittest.TestCase):
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
             self.assertTrue(check3, "check3")
+
+        with self.subTest("Compute vertical spacing"):
+            profile.calculate_vertical_spacing()
+            check1 = np.allclose(profile.dataset.dz.sum(dim="z_dim").isel(id_dim=[5,10,15]).values,
+                                np.array([1949.1846, 1972.8088, 21.5]))
+            self.assertTrue(check1, "check1")
+
 
     def test_compare_processed_profile_with_model(self):
         profile = coast.Profile(config=files.fn_profile_config)
