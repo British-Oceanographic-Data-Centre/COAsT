@@ -264,9 +264,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # Z=gridded_t.dataset.variables['depth_0'].values
         # DZ=gridded_t.dataset.variables['e3_0'].values*Zd_mask
 
-        #_, dz_4d = xr.broadcast(profile.dataset.salinity, profile.dataset.e3_0.squeeze() * Zd_mask)
-        #height = profile.dataset.depth * Zd_mask  # water depth or Zmax ,
-        #height = dz_4d.sum(dim="z_dim", skipna=True)  # water depth or Zmax ,
+        # _, dz_4d = xr.broadcast(profile.dataset.salinity, profile.dataset.e3_0.squeeze() * Zd_mask)
+        # height = profile.dataset.depth * Zd_mask  # water depth or Zmax ,
+        # height = dz_4d.sum(dim="z_dim", skipna=True)  # water depth or Zmax ,
         #         H=xr.broadcast(gridded_t.dataset.salinity,H)[0]
         #         nt=gridded_t.dataset.dims['t_dim']
 
@@ -274,7 +274,6 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # Floats are in the range (0,1] and represent the fractional proximity to Zmax.
         # Used for scaling layer thickness, which would then sum to Zmax.
         Zd_mask, kmax = profile.calculate_vertical_mask(profile.dataset.depth, Zmax)
-
 
         # Height is depth_t above Zmax. Height is Zmax for the last level above Zmax.
         height = np.floor(Zd_mask) * depth_t + (np.ceil(Zd_mask) - np.floor(Zd_mask)) * Zmax
@@ -286,8 +285,6 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         rho = profile.dataset.variables["density"].values  # density
         rho[np.isnan(rho)] = 0
         rhobar = profile.dataset.variables["density_bar"]  # density with depth-mean T and S
-
-
 
         PEA = (height * (rho - rhobar) * dz).sum(dim="z_dim", skipna=True) * gravity / height
         #%%

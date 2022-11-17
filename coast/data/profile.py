@@ -698,18 +698,19 @@ class Profile(Indexed):
         at t-points.
         """
 
-        if hasattr(self.dataset, 'dz'):  # Requires spacing variable. Test to see if variable exists
+        if hasattr(self.dataset, "dz"):  # Requires spacing variable. Test to see if variable exists
             pass
         else:
             # Compute dz on w-pts
             depth_t = self.dataset.depth
-            self.dataset['dz'] = xr.where(depth_t == depth_t.min(dim="z_dim"),
-                                          0.5 * (depth_t + depth_t.shift(z_dim=-1)),
-                                          0.5 * (depth_t.shift(z_dim=-1) - depth_t.shift(z_dim=+1)) # .fillna(0.)
-                                         )
+            self.dataset["dz"] = xr.where(
+                depth_t == depth_t.min(dim="z_dim"),
+                0.5 * (depth_t + depth_t.shift(z_dim=-1)),
+                0.5 * (depth_t.shift(z_dim=-1) - depth_t.shift(z_dim=+1)),  # .fillna(0.)
+            )
 
         attributes = {"units": "m", "standard name": "centre difference thickness"}
-        if hasattr(self.dataset.dz, 'coords'): # xarray object. Just add title and units
+        if hasattr(self.dataset.dz, "coords"):  # xarray object. Just add title and units
             self.dataset.dz.attrs = attributes
 
         else:  # not an xarray object
@@ -721,11 +722,10 @@ class Profile(Indexed):
             dims = ["z_dim", "id_dim"]
 
             dz = np.squeeze(dz)
-            self.dataset['dz'] = xr.DataArray(dz, coords=coords, dims=dims, attrs=attributes)
-
+            self.dataset["dz"] = xr.DataArray(dz, coords=coords, dims=dims, attrs=attributes)
 
     def construct_density(
-        self, eos="EOS10", rhobar=False, Zd_mask:xr.DataArray=None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+        self, eos="EOS10", rhobar=False, Zd_mask: xr.DataArray = None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
     ):
 
         """
@@ -817,7 +817,7 @@ class Profile(Indexed):
                 new_var_name = "density"
             else:  # calculate density with depth integrated T S
 
-                if hasattr(self.dataset, 'dz'):  # Requires spacing variable. Test to see if variable exists
+                if hasattr(self.dataset, "dz"):  # Requires spacing variable. Test to see if variable exists
                     pass
                 else:  # Create it
                     self.calculate_vertical_spacing()
@@ -826,15 +826,15 @@ class Profile(Indexed):
                 if Zd_mask is None:
                     DZ = self.dataset.dz
                 else:
-                    DZ = (self.dataset.dz * Zd_mask)
+                    DZ = self.dataset.dz * Zd_mask
                 DP = DZ.sum(dim="z_dim").to_masked_array()
                 DZ = DZ.to_masked_array()
                 if np.shape(DZ) != shape_ds:
                     DZ = DZ.T
                 # DP=np.repeat(DP[np.newaxis,:,:],shape_ds[1],axis=0)
 
-                #DZ = np.repeat(DZ[np.newaxis, :, :, :], shape_ds[0], axis=0)
-                #DP = np.repeat(DP[np.newaxis, :, :], shape_ds[0], axis=0)
+                # DZ = np.repeat(DZ[np.newaxis, :, :, :], shape_ds[0], axis=0)
+                # DP = np.repeat(DP[np.newaxis, :, :], shape_ds[0], axis=0)
 
                 # Absolute Salinity
                 if not CT_AS:  # abs salinity not provided
@@ -897,7 +897,7 @@ class Profile(Indexed):
         except AttributeError as err:
             error(err)
 
-    def calculate_vertical_mask(self, depth:xr.DataArray, Zmax=200):
+    def calculate_vertical_mask(self, depth: xr.DataArray, Zmax=200):
         """
         Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level
@@ -948,20 +948,20 @@ class Profile(Indexed):
         # print('\n')
 
         # Compute fraction, the relative closeness of Zmax to max_shallower_depth from 1 to 0 (as Zmax -> min_deeper_depth)
-        fraction = xr.where(min_deeper_depth != max_shallower_depth,
-                            (min_deeper_depth - Zmax) / (min_deeper_depth - max_shallower_depth),
-                            1)
+        fraction = xr.where(
+            min_deeper_depth != max_shallower_depth,
+            (min_deeper_depth - Zmax) / (min_deeper_depth - max_shallower_depth),
+            1,
+        )
 
         max_shallower_depth_2d = max_shallower_depth.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
         fraction_2d = fraction.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
 
         # locate the depth index for the deepest level above Zmax
         kmax = xr.where(depth == max_shallower_depth, 1, 0).argmax(dim="z_dim")
-        #print(kmax)
+        # print(kmax)
 
         # replace mask values with fraction_2d at depth above Zmax)
         mask = xr.where(depth_t == max_shallower_depth_2d, fraction_2d, mask)
 
         return mask, kmax
-
-
