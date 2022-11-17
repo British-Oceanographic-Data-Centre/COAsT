@@ -73,8 +73,9 @@
       c. calculate_pressure_along_contour
 
 13. test_profile_methods
-      a. compare_processed_profile_with_model
-      b. load_process_and_compare_profile_data
+      a. calculate_vertical_mask
+      b. compare_processed_profile_with_model
+      c. load_process_and_compare_profile_data
 
 14. test_plot_utilities
       a. determine_clim_by_stdev
