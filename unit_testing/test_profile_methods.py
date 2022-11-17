@@ -40,10 +40,11 @@ class test_profile_methods(unittest.TestCase):
 
         with self.subTest("Compute vertical spacing"):
             profile.calculate_vertical_spacing()
-            check1 = np.allclose(profile.dataset.dz.sum(dim="z_dim").isel(id_dim=[5,10,15]).values,
-                                np.array([1949.1846, 1972.8088, 21.5]))
+            check1 = np.allclose(
+                profile.dataset.dz.sum(dim="z_dim").isel(id_dim=[5, 10, 15]).values,
+                np.array([1949.1846, 1972.8088, 21.5]),
+            )
             self.assertTrue(check1, "check1")
-
 
     def test_compare_processed_profile_with_model(self):
 
@@ -152,8 +153,8 @@ class test_profile_methods(unittest.TestCase):
         mask, kmax = profile.calculate_vertical_mask(depth, 21)
         mask = mask.fillna(-999)
 
-        check1 = (kmax == np.array([2,1,2])).all()
-        check2 = (mask.values == np.array([[1., 1., 1., -999], [1., 0.8, 0., 0.], [1., 1., 1., -999]])).all()
+        check1 = (kmax == np.array([2, 1, 2])).all()
+        check2 = (mask.values == np.array([[1.0, 1.0, 1.0, -999], [1.0, 0.8, 0.0, 0.0], [1.0, 1.0, 1.0, -999]])).all()
 
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
