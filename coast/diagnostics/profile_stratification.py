@@ -49,7 +49,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         "density_bar" DataArrays, respectively. If they are not supplied they will be calculated.
         "density_bar" is calculated using depth averages of temperature and salinity.
 
-        Writes self.dataset.PEA
+        Writes self.dataset.pea
         """
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
         gravity = 9.81
@@ -130,7 +130,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             fig,ax = geo_scatter(
             self.dataset.longitude,
             self.dataset.latitude,
-            self.dataset[var],
+            var,
             title=title_str,
             )
 
