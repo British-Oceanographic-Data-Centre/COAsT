@@ -9,6 +9,7 @@ from .diagnostics.climatology import Climatology
 from ._utils import logging_util, general_utils, plot_util, crps_util, seasons
 from .diagnostics.gridded_monthly_hydrographic_climatology import GriddedMonthlyHydrographicClimatology
 from .diagnostics.profile_hydrographic_analysis import ProfileHydrography
+from .diagnostics.profile_stratification import ProfileStratification
 from .data.index import Indexed
 from .data.profile import Profile
 from .diagnostics.profile_analysis import ProfileAnalysis
