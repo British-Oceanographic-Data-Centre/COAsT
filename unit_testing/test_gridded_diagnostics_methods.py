@@ -178,7 +178,7 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
         nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer, files.fn_nemo_dom, config=files.fn_config_t_grid)
 
         # Compute a vertical max to exclude depths below 200m
-        Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(200.)
+        Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(200.0)
 
         # Initiate a stratification diagnostics object
         strat = coast.GriddedStratification(nemo_t)
@@ -190,7 +190,7 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
         self.assertTrue(check1, msg="check1")
 
         with self.subTest("Test quick_plot()"):
-            fig, ax = strat.quick_plot('PEA')
+            fig, ax = strat.quick_plot("PEA")
             fig.tight_layout()
             fig.savefig(files.dn_fig + "gridded_pea.png")
             plt.close("all")
