@@ -185,8 +185,8 @@ class test_profile_methods(unittest.TestCase):
 
     def test_calculate_vertical_mask(self):
         # load example profile data
-        profile = coast.Profile(config=fn_profile_config)
-        profile.read_en4(fn_profile)
+        profile = coast.Profile(config=files.fn_profile_config)
+        profile.read_en4(files.fn_profile)
         profile.dataset = profile.dataset.isel(id_dim=slice(0, 3)).isel(z_dim=slice(0, 4))
 
         # Reassign values to depth, within a full profile object, to make it transparent
