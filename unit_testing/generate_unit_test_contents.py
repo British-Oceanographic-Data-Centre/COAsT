@@ -59,7 +59,7 @@ tests_to_do = [
     test_contour_f_methods,
     test_contour_t_methods,
     test_profile_methods,
-    test_profile_stratification_methods
+    test_profile_stratification_methods,
     test_plot_utilities,
     test_stats_utilities,
     test_maskmaker_methods,
