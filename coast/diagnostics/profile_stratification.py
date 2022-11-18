@@ -120,18 +120,13 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         ax = None
         for var in var_lst:
 
-            title_str = (
-                var.attrs["standard_name"]
-                + " ("
-                + var.attrs["units"]
-                + ")"
-            )
+            title_str = var.attrs["standard_name"] + " (" + var.attrs["units"] + ")"
 
-            fig,ax = geo_scatter(
-            self.dataset.longitude,
-            self.dataset.latitude,
-            var,
-            title=title_str,
+            fig, ax = geo_scatter(
+                self.dataset.longitude,
+                self.dataset.latitude,
+                var,
+                title=title_str,
             )
 
         return fig, ax
