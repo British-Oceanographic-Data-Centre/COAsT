@@ -897,25 +897,26 @@ class Profile(Indexed):
         except AttributeError as err:
             error(err)
 
-    def calculate_vertical_mask(self, depth: xr.DataArray, Zmax=200):
+    def calculate_vertical_mask(self, Zmax = 200):
         """
         Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level
 
         Inputs:
-            depth (id_dim, z_dim) postitive values - passing as a variable facilitates testing
-            Zmax float - max depth (m(
+            Zmax float - max depth (m)
         Returns
         Zd_mask (id_dim, z_dim)  xr.DataArray, float mask.
-        #kmax (id_dim) deepest index above Zmax
+        kmax (id_dim) deepest index above Zmax
         """
+
+        depth_t = self.dataset.depth
 
         ## Contruct a mask array that is:
         # zeros below Zmax
         # ones above Zmax, except the closest shallower depth which has a value [0,1] that is the weighted distance to Zmax
 
         ## prepare depth profiles
-        depth_t = depth
+
         # remove deep nans
         # depth_t = depth_t.fillna(1E6)
         # depth_t = depth_t.interpolate_na(dim="z_dim", method="nearest", fill_value="extrapolate")
@@ -928,7 +929,7 @@ class Profile(Indexed):
         # mask_arr[depth_t <= Zmax] = 1
         # mask_arr[depth_t > Zmax] = 0
         # mask = xr.DataArray( mask_arr, dims=["id_dim", "z_dim"])
-        mask = depth * np.nan
+        mask = depth_t * np.nan
 
         mask = xr.where(depth_t <= Zmax, 1, mask)
         mask = xr.where(depth_t > Zmax, 0, mask)
@@ -958,7 +959,7 @@ class Profile(Indexed):
         fraction_2d = fraction.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
 
         # locate the depth index for the deepest level above Zmax
-        kmax = xr.where(depth == max_shallower_depth, 1, 0).argmax(dim="z_dim")
+        kmax = xr.where(depth_t == max_shallower_depth, 1, 0).argmax(dim="z_dim")
         # print(kmax)
 
         # replace mask values with fraction_2d at depth above Zmax)

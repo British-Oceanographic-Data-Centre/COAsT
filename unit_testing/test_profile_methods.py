@@ -161,13 +161,17 @@ class test_profile_methods(unittest.TestCase):
             self.assertTrue(check3, "check3")
 
     def test_calculate_vertical_mask(self):
+        # load example profile data
+        profile = coast.Profile(config=fn_profile_config)
+        profile.read_en4(fn_profile)
+        profile.dataset = profile.dataset.isel(id_dim=slice(0, 3)).isel(z_dim=slice(0, 4))
 
-        profile = coast.Profile()
-
+        # Reassign values to depth, within a full profile object, to make it transparent
         arr = np.array([[1, 2, 3, np.nan], [15, 20, 25, 30], [4, 5, 15, np.nan]])
-        depth = xr.DataArray(arr, dims=["i_dim", "z_dim"])
+        depth = xr.DataArray(arr, dims=["id_dim", "z_dim"])
+        profile.dataset['depth'] = depth
 
-        mask, kmax = profile.calculate_vertical_mask(depth, 21)
+        mask, kmax = profile.calculate_vertical_mask( 21)
         mask = mask.fillna(-999)
 
         check1 = (kmax == np.array([2, 1, 2])).all()
