@@ -47,6 +47,34 @@ class test_profile_methods(unittest.TestCase):
             )
             self.assertTrue(check1, "check1")
 
+    def test_compute_density(self):
+        profile = coast.Profile(config=files.fn_profile_config)
+        profile.read_en4(files.fn_profile)
+        profile.dataset = profile.dataset.isel(id_dim=np.arange(0, profile.dataset.dims["id_dim"], 10)).load()
+
+        profile.construct_density()
+
+        check1 = np.allclose(profile.dataset.density.sum(dim=["id_dim", "z_dim"]).item(),
+                            4248551.199925806,
+                            )
+        # Density depth mean T and S limited to 200m
+        Zmax = 200  # m
+        Zd_mask, kmax = profile.calculate_vertical_mask(Zmax)
+        profile.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Zd_mask=Zd_mask)
+        check2 = np.allclose(
+            profile.dataset.density_bar.mean(dim=["id_dim", "z_dim"]).item(), 1023.211151279021
+        )
+        # Temperature component of density (ie from depth mean Sal). full depth
+        profile.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Tbar=False)
+        check3 = np.allclose(
+            profile.dataset.density_T.mean(dim=["id_dim", "z_dim"]).item(), 1026.749192955557
+        )
+        self.assertTrue(check1, msg="check1")
+        self.assertTrue(check2, msg="check2")
+        self.assertTrue(check3, msg="check3")
+
+
+
     def test_compare_processed_profile_with_model(self):
         profile = coast.Profile(config=files.fn_profile_config)
         profile.read_en4(files.fn_profile)
