@@ -383,6 +383,6 @@ def fill_holes_1d(y):
         Returns:
             array([2., 2., 2., 3., 4., 5., 6.])
     """
-    nans, x = general_utils.nan_helper(y)  # location interior nans
+    nans, x = nan_helper(y)  # location interior nans
     y[nans] = np.interp(x(nans), x(~nans), y[~nans])  # interpolate and extrapolate
     return y
