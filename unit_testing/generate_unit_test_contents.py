@@ -22,7 +22,8 @@ from test_gridded_initialisation import test_gridded_initialisation
 from test_gridded_harmonics import test_gridded_harmonics
 from test_general_utils import test_general_utils
 from test_xesmf_convert import test_xesmf_convert
-from test_diagnostic_methods import test_diagnostic_methods
+from test_gridded_diagnostics_methods import test_gridded_diagnostics_methods
+from test_profile_stratification_methods import test_profile_stratification_methods
 from test_transect_methods import test_transect_methods
 from test_object_manipulation import test_object_manipulation
 from test_altimetry_methods import test_altimetry_methods
@@ -49,7 +50,7 @@ tests_to_do = [
     test_general_utils,
     test_gridded_harmonics,
     test_xesmf_convert,
-    test_diagnostic_methods,
+    test_gridded_diagnostics_methods,
     test_transect_methods,
     test_object_manipulation,
     test_altimetry_methods,
@@ -58,6 +59,7 @@ tests_to_do = [
     test_contour_f_methods,
     test_contour_t_methods,
     test_profile_methods,
+    test_profile_stratification_methods
     test_plot_utilities,
     test_stats_utilities,
     test_maskmaker_methods,
