@@ -23,11 +23,11 @@ class test_profile_stratification_methods(unittest.TestCase):
         Zmax = 200 # metres
         pa.calc_pea(profile, Zmax)
 
-        check1 = np.isclose(pa.dataset.pea.mean(dim="id_dim").item(), 153.0590043361475)
+        check1 = np.isclose(pa.dataset.pea.mean(dim="id_dim").item(), 17.139333147742676)
         self.assertTrue(check1, "check1")
 
         with self.subTest("Test quick_plot()"):
-            fig, ax = pa.quick_plot('PEA')
+            fig, ax = pa.quick_plot('pea')
             fig.tight_layout()
             fig.savefig(files.dn_fig + "profile_pea.png")
             plt.close("all")
