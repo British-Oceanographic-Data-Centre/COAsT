@@ -871,7 +871,7 @@ class Profile(Indexed):
         except AttributeError as err:
             error(err)
 
-    def calculate_vertical_mask(self, Zmax = 200):
+    def calculate_vertical_mask(self, Zmax=200):
         """
         Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level

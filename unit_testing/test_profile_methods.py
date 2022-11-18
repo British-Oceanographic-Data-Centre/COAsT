@@ -53,26 +53,21 @@ class test_profile_methods(unittest.TestCase):
 
         profile.construct_density()
 
-        check1 = np.allclose(profile.dataset.density.sum(dim=["id_dim", "z_dim"]).item(),
-                            4248551.199925806,
-                            )
+        check1 = np.allclose(
+            profile.dataset.density.sum(dim=["id_dim", "z_dim"]).item(),
+            4248551.199925806,
+        )
         # Density depth mean T and S limited to 200m
         Zmax = 200  # m
         Zd_mask, kmax = profile.calculate_vertical_mask(Zmax)
         profile.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Zd_mask=Zd_mask)
-        check2 = np.allclose(
-            profile.dataset.density_bar.mean(dim=["id_dim", "z_dim"]).item(), 1023.211151279021
-        )
+        check2 = np.allclose(profile.dataset.density_bar.mean(dim=["id_dim", "z_dim"]).item(), 1023.211151279021)
         # Temperature component of density (ie from depth mean Sal). full depth
         profile.construct_density(rhobar=True, pot_dens=True, CT_AS=True, Tbar=False)
-        check3 = np.allclose(
-            profile.dataset.density_T.mean(dim=["id_dim", "z_dim"]).item(), 1026.749192955557
-        )
+        check3 = np.allclose(profile.dataset.density_T.mean(dim=["id_dim", "z_dim"]).item(), 1026.749192955557)
         self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
         self.assertTrue(check3, msg="check3")
-
-
 
     def test_compare_processed_profile_with_model(self):
 
@@ -180,9 +175,9 @@ class test_profile_methods(unittest.TestCase):
         # Reassign values to depth, within a full profile object, to make it transparent
         arr = np.array([[1, 2, 3, np.nan], [15, 20, 25, 30], [4, 5, 15, np.nan]])
         depth = xr.DataArray(arr, dims=["id_dim", "z_dim"])
-        profile.dataset['depth'] = depth
+        profile.dataset["depth"] = depth
 
-        mask, kmax = profile.calculate_vertical_mask( 21)
+        mask, kmax = profile.calculate_vertical_mask(21)
         mask = mask.fillna(-999)
 
         check1 = (kmax == np.array([2, 1, 2])).all()
