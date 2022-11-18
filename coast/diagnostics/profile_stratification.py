@@ -12,23 +12,12 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
     Object for handling and storing necessary information, methods and outputs
     for calculation of stratification diagnostics.
 
-
-    UPDATE THE FOLLOWING
+    Related to GriddedStratification class
 
     Parameters
     ----------
-        gridded_t : xr.Dataset
-            Gridded object on t-points.
-        gridded_w : xr.Dataset, optional
-            Gridded object on w-points.
-
-    Example basic usage:
-    -------------------
-        # Create Internal tide diagnostics object
-        strat_obj = GriddedStratification(gridded_t, gridded_w) # For Gridded objects on t and w-pts
-        strat_obj.construct_pycnocline_vars( gridded_t, gridded_w )
-        # Make maps of pycnocline thickness and depth
-        strat_obj.quick_plot()
+        profile : xr.Dataset
+            Profile object on assumed on t-points.
     """
 
     def __init__(self, profile: xr.Dataset):
