@@ -67,8 +67,8 @@ class test_general_utils(unittest.TestCase):
         input_xr = xr.DataArray(input)
         target = np.array([2.0, 2.0, 2.0, 3.0, 4.0, 5.0, 6.0])
 
-        check1 = all(fill_holes_1d(input) == target)
-        check2 = all(fill_holes_1d(input_xr).values == target)
+        check1 = all(general_utils.fill_holes_1d(input) == target)
+        check2 = all(general_utils.fill_holes_1d(input_xr).values == target)
 
         self.assertTrue(check1, msg="check1")
         self.assertTrue(check2, msg="check2")
