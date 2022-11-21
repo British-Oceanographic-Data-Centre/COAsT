@@ -682,21 +682,8 @@ class Profile(Indexed):
                 0.5 * (depth_t + depth_t.shift(z_dim=-1)),
                 0.5 * (depth_t.shift(z_dim=-1) - depth_t.shift(z_dim=+1)),  # .fillna(0.)
             )
-
         attributes = {"units": "m", "standard name": "centre difference thickness"}
-        if hasattr(self.dataset.dz, "coords"):  # xarray object. Just add title and units
-            self.dataset.dz.attrs = attributes
-
-        else:  # not an xarray object
-            coords = {
-                "time": (("id_dim"), self.dataset.time.values),
-                "latitude": (("id_dim"), self.dataset.latitude.values),
-                "longitude": (("id_dim"), self.dataset.longitude.values),
-            }
-            dims = ["z_dim", "id_dim"]
-
-            dz = np.squeeze(dz)
-            self.dataset["dz"] = xr.DataArray(dz, coords=coords, dims=dims, attrs=attributes)
+        self.dataset.dz.attrs = attributes
 
     def construct_density(
         self, eos="EOS10", rhobar=False, Zd_mask: xr.DataArray = None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
