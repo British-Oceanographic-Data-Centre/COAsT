@@ -6,6 +6,7 @@
 import unittest
 import coast
 import numpy as np
+import matplotlib.pyplot as plt
 import unit_test_files as files
 
 
@@ -69,3 +70,22 @@ class test_maskmaker_methods(unittest.TestCase):
 
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
+
+    def test_make_mask_dataset_and_quick_plot(self):
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
+        mm = coast.MaskMaker()
+        # Draw and fill a square
+        vertices_lon = [-5, -5, 5, 5]
+        vertices_lat = [40, 60, 60, 40]
+        # input lat/lon as xr.DataArray
+        filled = mm.make_region_from_vertices(sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+
+        mask_list = mm.make_mask_dataset(sci.dataset.longitude.values, sci.dataset.latitude.values, filled)
+
+        check = np.isclose(mask_list.mask.values.sum(), 27300)
+        self.assertTrue(check, "check")
+
+        with self.subTest("MaskMaker quick plot"):
+            mm.quick_plot(mask_list)
+            plt.savefig(files.dn_fig + "maskmaker_quick_plot.png")
+            plt.close("all")
