@@ -2,7 +2,6 @@ from setuptools import setup
 from sys import argv
 from types import SimpleNamespace
 
-
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
