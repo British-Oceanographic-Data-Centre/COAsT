@@ -210,9 +210,10 @@ class ProfileAnalysis(Indexed):
         dataset = profile.dataset
         # Get the number of masks provided
         n_masks = mask_indices.dims["dim_mask"]
+        mask_names = []
 
-        # Loop over maskal arrays. Assign mean to mask and seasonal means
-        debug(f"Calculating maskal averages..")
+        # Loop over masked arrays. Assign mean to mask and seasonal means
+        debug(f"Calculating masked averages..")
 
         # Loop over masks and index the data
         for mm in range(0, n_masks):
@@ -222,6 +223,8 @@ class ProfileAnalysis(Indexed):
                 if mm == 0:
                     ds_average = xr.Dataset()
                 continue
+            else:
+                mask_names.append(mask_indices['region_names'][mm].values)
 
             # Get actual profile data for this mask
             mask_data = dataset.isel(id_dim=mask_ind)
@@ -246,7 +249,12 @@ class ProfileAnalysis(Indexed):
             else:
                 ds_average = xr.concat((ds_average, ds_average_tmp), dim="dim_mask")
 
-        return ds_average
+        if mask_names != []:
+            ds_average["region_names"] = (["dim_mask"], mask_names)
+        else:
+            ds_average["region_names"] = (["dim_mask"], range(ds_average.dims["dim_mask"]))
+
+        return ds_average.set_coords(['region_names'])
 
     @classmethod
     def difference(cls, profile1, profile2, absolute_diff=True, square_diff=True):

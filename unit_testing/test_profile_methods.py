@@ -116,8 +116,11 @@ class test_profile_methods(unittest.TestCase):
             # Do average differences for each region
             mask_means = pa.mask_means(difference, mask_indices)
 
-            check1 = np.isclose(mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
+            check1 = mask_indices.dims["dim_mask"] == mask_means.dims["dim_mask"]  # since profiles are in mask regions
+            check2 = np.isclose(mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
+
             self.assertTrue(check1, "check1")
+            self.assertTrue(check2, "check2")
 
         with self.subTest("Surface/Bottom averaging"):
             surface = 5
