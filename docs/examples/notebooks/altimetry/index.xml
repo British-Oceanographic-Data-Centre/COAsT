@@ -21,7 +21,7 @@
 &lt;span style="color:#8f5902;font-style:italic"># altimetry = coast.Altimetry(fn_altimetry)&lt;/span>
 &lt;span style="color:#000">altimetry&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Altimetry&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_altimetry&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_altimetry_config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>././config/example_altimetry.json
-Altimetry object at 0x55d413422fc0 initialised
+Altimetry object at 0x5622939c8fc0 initialised
 &lt;/code>&lt;/pre>
 &lt;h3 id="subsetting">Subsetting&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Before going any further, lets just cut out the bit of the altimetry that&lt;/span>
@@ -31,7 +31,7 @@ Altimetry object at 0x55d413422fc0 initialised
 &lt;span style="color:#000">ind&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices_lonlat_box&lt;/span>&lt;span style="color:#000;font-weight:bold">([&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">-&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">],&lt;/span> &lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">45&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">60&lt;/span>&lt;span style="color:#000;font-weight:bold">])&lt;/span>
 &lt;span style="color:#000">ind&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">ind&lt;/span>&lt;span style="color:#000;font-weight:bold">[::&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">4&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
 &lt;span style="color:#000">altimetry&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">isel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">t_dim&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">ind&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Subsetting Altimetry object at 0x55d413422fc0 indices in [-10, 10], [45, 60]
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Subsetting Altimetry object at 0x5622939c8fc0 indices in [-10, 10], [45, 60]
 &lt;/code>&lt;/pre>
 &lt;h3 id="model-interpolation">Model interpolation&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Before comparing our observations to the model, we will interpolate a model&lt;/span>
@@ -41,7 +41,7 @@ Altimetry object at 0x55d413422fc0 initialised
 &lt;span style="color:#8f5902;font-style:italic"># Doing this has created a new interpolated variable called interp_ssh and&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># saved it back into our Altimetry object. Take a look at altimetry.dataset&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># to see for yourself.&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Interpolating Gridded object at 0x55d413422fc0 &amp;quot;ssh&amp;quot; with time_interp &amp;quot;nearest&amp;quot;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Interpolating Gridded object at 0x5622939c8fc0 &amp;quot;ssh&amp;quot; with time_interp &amp;quot;nearest&amp;quot;
 &lt;/code>&lt;/pre>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic">#altimetry.dataset # uncomment to print data object summary&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="interpolated-vs-observed">Interpolated vs observed&lt;/h3>
@@ -50,7 +50,7 @@ Altimetry object at 0x55d413422fc0 initialised
 &lt;span style="color:#8f5902;font-style:italic"># which calculates some simple metrics including differences, RMSE and&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># correlations. NOTE: This may not be a wise choice of variables.&lt;/span>
 &lt;span style="color:#000">stats&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">altimetry&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">basic_stats&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;ocean_tide_standard_name&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;interp_ssh&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x55d413422fc0 initialised
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x5622939c8fc0 initialised
 /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py:352: FutureWarning: The default value of numeric_only in DataFrame.corr is deprecated. In a future version, it will default to False. Select only valid columns or specify the value of numeric_only to silence this warning.
 corr = pdvar.corr(method=method)
 /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/altimetry.py:366: FutureWarning: The default value of numeric_only in DataFrame.cov is deprecated. In a future version, it will default to False. Select only valid columns or specify the value of numeric_only to silence this warning.
@@ -70,7 +70,7 @@ cov = pdvar.cov()
 &lt;span style="color:#8f5902;font-style:italic"># to basic_stats, `create_new_object` keyword arg can be set to `false` to save output to&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic"># the original altimetry object.&lt;/span>
 &lt;span style="color:#8f5902;font-style:italic">#crps.dataset # uncomment to print data object summary&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x55d413422fc0 initialised
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>Altimetry object at 0x5622939c8fc0 initialised
 &lt;/code>&lt;/pre>
 &lt;h3 id="plotting-data">Plotting data&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># Altimetry has a ready built quick_plot() routine for taking a look at any&lt;/span>
