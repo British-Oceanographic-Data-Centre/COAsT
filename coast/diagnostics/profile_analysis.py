@@ -224,7 +224,7 @@ class ProfileAnalysis(Indexed):
                     ds_average = xr.Dataset()
                 continue
             else:
-                mask_names.append(mask_indices['region_names'][mm].values)
+                mask_names.append(mask_indices["region_names"][mm].values)
 
             # Get actual profile data for this mask
             mask_data = dataset.isel(id_dim=mask_ind)
@@ -254,7 +254,7 @@ class ProfileAnalysis(Indexed):
         else:
             ds_average["region_names"] = (["dim_mask"], range(ds_average.dims["dim_mask"]))
 
-        return ds_average.set_coords(['region_names'])
+        return ds_average.set_coords(["region_names"])
 
     @classmethod
     def difference(cls, profile1, profile2, absolute_diff=True, square_diff=True):
