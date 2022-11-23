@@ -6,17 +6,58 @@ from . import general_utils
 
 
 class MaskMaker:
+    """
+    MaskMasker is a class of methods to assist with making regional masks within COAsT.
+    Presently these masks are external to MaskMaker.
+    It constructs a gridded boolean numpy array for each region, which are stacked over a dim_mask dimension and
+    stored as an xarray object.
+
+    A typical workflow might be:
+
+        # Define vertices
+        vertices_lon = [-5, -5, 5, 5]
+        vertices_lat = [40, 60, 60, 40]
+
+        # input lat/lon as xr.DataArray or numpy arrays. Return gridded boolean mask np.array on target grid
+        filled = mm.make_region_from_vertices(
+            sci.dataset.longitude, sci.dataset.latitude, vertices_lon, vertices_lat)
+
+        # make xr.Dataset of masks from gridded mask array or list of mask arrays
+        gridded_mask = mm.make_mask_dataset(sci.dataset.longitude.values,
+                                         sci.dataset.latitude.values,
+                                         filled)
+        # quick plot
+        mm.quick_plot(gridded_mask)
+
+
+    TO DO:
+    * Sort out region naming to be consistently applied and associated with the masks E.g. defined regions, or user defined masks
+    * Create final mask as a xr.DataArray, not a xr.Dataset
+    """
+
     def __init__(self):
 
         return
 
     @staticmethod
-    def make_mask_dataset(longitude, latitude, mask_list):
+    def make_mask_dataset(longitude, latitude, mask_list, mask_names: list = None):
+        """
+        create xr.Dataset for mask with latitude and longitude coordinates. If mask_names are given
+        create a dim_mask coordinate of names
+
+        """
         if type(mask_list) is not list:
             mask_list = [mask_list]
         gridded_mask = xr.Dataset()
         gridded_mask["longitude"] = (["y_dim", "x_dim"], longitude)
         gridded_mask["latitude"] = (["y_dim", "x_dim"], latitude)
+
+        if mask_names is not None:
+            gridded_mask["region_names"] = (["dim_mask"], mask_names)
+        else:
+            gridded_mask["region_names"] = (["dim_mask"], range(len(mask_list)))
+
+        gridded_mask = gridded_mask.set_coords(["longitude", "latitude", "region_names"])
         n_masks = len(mask_list)
         nr, nc = mask_list[0].shape
         all_masks = np.zeros((n_masks, nr, nc))
@@ -76,7 +117,7 @@ class MaskMaker:
 
         Returns
         -------
-        Filled 2D array
+        Filled 2D np.array
         """
         array_to_fill = np.array(array_to_fill)
         ind_2d = general_utils.nearest_indices_2d(longitude, latitude, vertices_lon, vertices_lat)
@@ -105,12 +146,12 @@ class MaskMaker:
     @classmethod
     def region_def_nws_outer_shelf(cls, longitude, latitude, bath):
         """
-        Regional definition for the Outher Shelf (Northwest European Shelf)
+        Regional definition for the Outer Shelf (Northwest European Shelf)
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         """
-        vertices_lon = [-4, -9.5, -1, 3.171, 3.171, -3.76, -3.76, -12, -12, -12, -4]
-        vertices_lat = [50.5, 52.71, 60.5, 60.45, 63.3, 63.3, 60.45, 60.45, 55.28, 48, 48]
+        vertices_lon = [-4.1, -9.5, -1, 3.171, 3.171, -3.76, -3.76, -12, -12, -12, -4]
+        vertices_lat = [50.7, 52.71, 60.5, 60.45, 63.3, 63.3, 60.45, 60.45, 55.28, 48, 48]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
@@ -135,8 +176,8 @@ class MaskMaker:
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         """
-        vertices_lon = [7.57, 7.57, -0.67, -2, -3.99, -3.99, -3.5, 12, 14]
-        vertices_lat = [56, 54.08, 54.08, 50.7, 50.7, 48.8, 48, 48, 56]
+        vertices_lon = [-3.99, -3.99, -3.5, 12, 9]
+        vertices_lat = [51, 48.8, 48, 48, 51]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
@@ -172,3 +213,52 @@ class MaskMaker:
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
+
+    @classmethod
+    def make_region_from_vertices(cls, longitude, latitude, vertices_lon: list, vertices_lat: list):
+        """
+        Construct mask on supplied longitude, latitude grid with input lists of lon and lat polygon vertices
+        :param longitude: np.array/xr.DataArray of longitudes on target grid
+        :param latitude: np.array/xr.DataArray of latitudes on target grid
+        :param vertices_lon: list of vertices for bounding polygon
+        :param vertices_lat: list of vertices for bounding polygon
+        :return: mask: np.array(boolean) on target grid. Ones are bound by polygon vertices
+        """
+        try:
+            longitude = longitude.values
+            latitude = longitude.values
+        except AttributeError:
+            pass
+
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
+        return mask
+
+    @classmethod
+    def quick_plot(cls, mask: xr.Dataset):
+        """
+        Plot a map of masks in the MaskMaker object
+        Add labels
+        """
+        import matplotlib.pyplot as plt
+
+        n_mask = mask.dims["dim_mask"]
+        offset = 10  # nonzero offset to make scaled-boolean-masks [0, >offset]
+        for j in range(0, n_mask, 1):
+            tt = (j + offset) * mask["mask"].isel(dim_mask=j).squeeze()
+            ff = tt.where(tt > 0).plot(
+                x="longitude", y="latitude", levels=range(offset, n_mask + offset + 1, 1), add_colorbar=False
+            )
+
+        cbar = plt.colorbar(ff)
+        cbar.ax.get_yaxis().set_ticks([])
+        for j in range(0, n_mask, 1):
+            cbar.ax.text(
+                1 + 0.5,
+                offset + (j + 0.5),
+                mask["region_names"].isel(dim_mask=j).values,
+                ha="left",
+                va="center",
+                color="red",
+            )
+        cbar.ax.get_yaxis().labelpad = 15
+        plt.title(None)
