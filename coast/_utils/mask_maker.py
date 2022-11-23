@@ -33,7 +33,6 @@ class MaskMaker:
     TO DO:
     * Sort out region naming to be consistently applied and associated with the masks E.g. defined regions, or user defined masks
     * Create final mask as a xr.DataArray, not a xr.Dataset
-    * Make own ipynb tutorial - could include LME workflow
     """
 
     def __init__(self):
