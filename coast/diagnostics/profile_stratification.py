@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 import copy
+import coast
 from .._utils.plot_util import geo_scatter
 from .._utils.logging_util import get_slug, debug
 
@@ -30,6 +31,56 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
+    def clean_data (profile: xr.Dataset):
+        """
+        Cleaning data for stratification metric calculations
+        Stage 1:...
+        
+        stage 2...
+        
+        Stage 3. Fill gaps in data and extrapolate so there are T and S values where ever there is a depth value
+        
+        """
+        print('Cleaning the data')       
+        #fill holes in data
+        #jth is slow, there may bea more 'vector' way of doing it
+        n_prf = profile.dataset.id_dim.shape[0]
+
+        tmp_clean = profile.dataset.potential_temperature.values[:,:]
+        sal_clean = profile.dataset.practical_salinity.values[:,:]        
+        
+
+        any_tmp=np.sum(~ np.isnan(tmp_clean),axis=1) != 0
+       
+        any_sal=np.sum(~ np.isnan(sal_clean),axis=1) != 0
+        
+        for i_prf in range(n_prf):
+            tmp=profile.dataset.potential_temperature.values[i_prf,:]
+            sal=profile.dataset.practical_salinity.values[i_prf,:]
+            z=profile.dataset.depth.values[i_prf,:]
+            if any_tmp[i_prf]:
+                tmp=coast.general_utils.fill_holes_1d(tmp)
+                tmp[np.isnan(z)] = np.nan
+                tmp_clean[i_prf,:]=tmp                 
+            if any_sal[i_prf]:
+                sal = coast.general_utils.fill_holes_1d(sal)
+                sal[np.isnan(z)] = np.nan
+                sal_clean[i_prf,:]=sal                             
+
+
+        coords = {
+            "time": ("id_dim", profile.dataset.time.values),
+            "latitude": (("id_dim"), profile.dataset.latitude.values),
+            "longitude": (("id_dim"), profile.dataset.longitude.values),
+        }
+        dims = ["id_dim","z_dim"]
+        profile.dataset["potential_temperature"] = xr.DataArray(tmp_clean, coords=coords, dims=dims)
+        profile.dataset["practical_salinity"] = xr.DataArray(sal_clean, coords=coords, dims=dims)
+                     
+        print('All nice and clean')
+
+        return profile
+
     def calc_pea(self, profile: xr.Dataset, Zmax):
         """
         Calculates Potential Energy Anomaly
@@ -41,7 +92,10 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Writes self.dataset.pea
         """
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
+#%%
         gravity = 9.81
+#Clean data This is quit slow and over writes potneital temperature and practical salinity valirables
+        profile = ProfileStratification.clean_data (profile)
 
         # Define grid spacing, dz. Required for depth integral
         profile.calculate_vertical_spacing()
@@ -56,7 +110,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Zd_mask, kmax = profile.calculate_vertical_mask(Zmax)
 
         # Height is depth_t above Zmax. Except height is Zmax for the last level above Zmax.
-        height = np.floor(Zd_mask) * depth_t + (np.ceil(Zd_mask) - np.floor(Zd_mask)) * Zmax
+        height = np.floor(Zd_mask) * depth_t + (np.ceil(Zd_mask) - np.floor(Zd_mask)) * Zmax #jth why not just use depth here?
 
         if not "density" in profile.dataset:
             profile.construct_density(CT_AS=True, pot_dens=True)
@@ -65,8 +119,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         rho = profile.dataset.variables["density"].fillna(0)  # density
         rhobar = profile.dataset.variables["density_bar"]  # density with depth-mean T and S
 
-        pot_energy_anom = (height * (rho - rhobar) * dz).sum(dim="z_dim", skipna=True) * gravity / Zmax
-
+        pot_energy_anom = (height * (rho - rhobar) * dz).sum(dim="z_dim", skipna=True) * gravity / (height.sum(dim="z_dim", skipna=True))
+#%%
         coords = {
             "time": ("id_dim", profile.dataset.time.values),
             "latitude": (("id_dim"), profile.dataset.latitude.values),

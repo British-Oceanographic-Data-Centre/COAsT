@@ -753,14 +753,18 @@ class Profile(Indexed):
 
         """
         debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
+
         try:
+            
             if eos != "EOS10":
                 raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
 
             try:
                 shape_ds = (
-                    self.dataset.z_dim.size,
                     self.dataset.id_dim.size,
+                    self.dataset.z_dim.size,
+#jth                    self.dataset.z_dim.size,
+#                    self.dataset.id_dim.size,
                 )
                 sal = self.dataset.practical_salinity.to_masked_array()
                 temp = self.dataset.potential_temperature.to_masked_array()
@@ -836,23 +840,23 @@ class Profile(Indexed):
                     temp_conservative = np.ma.masked_invalid(temp)
 
                 if pot_dens and (Sbar and Tbar):  # usual case pot_dens and depth averaged everything
-                    sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=0) / DP
-                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=0) / DP
+                    sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
+                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
                     density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
-                    density = np.repeat(density[np.newaxis, :], shape_ds[0], axis=0)
+                    density = np.repeat(density[:,np.newaxis], shape_ds[1], axis=1)
 
                 else:  # Either insitu density or one of Tbar or Sbar False
                     if Sbar:
                         sal_absolute = np.repeat(
-                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=0) / DP)[np.newaxis, :],
-                            shape_ds[0],
-                            axis=0,
+                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:,np.newaxis],
+                            shape_ds[1],
+                            axis=1,
                         )
                     if Tbar:
                         temp_conservative = np.repeat(
-                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=0) / DP)[np.newaxis, :],
-                            shape_ds[0],
-                            axis=0,
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:,np.newaxis],
+                            shape_ds[1],
+                            axis=1,
                         )
                     density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
 
@@ -871,7 +875,9 @@ class Profile(Indexed):
                 "latitude": (("id_dim"), self.dataset.latitude.values),
                 "longitude": (("id_dim"), self.dataset.longitude.values),
             }
-            dims = ["z_dim", "id_dim"]
+#            dims = ["z_dim", "id_dim"]
+            dims = ["id_dim", "z_dim"]
+
 
             if pot_dens:
                 attributes = {"units": "kg / m^3", "standard name": "Potential density "}
@@ -885,6 +891,7 @@ class Profile(Indexed):
             error(err)
 
     def calculate_vertical_mask(self, Zmax=200):
+
         """
         Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level
@@ -897,6 +904,12 @@ class Profile(Indexed):
         """
 
         depth_t = self.dataset.depth
+        ##construct a W array, zero at surface 1/2 way between T-points
+            
+        depth_w=xr.zeros_like(depth_t)
+        I = np.arange(depth_w.shape[1] - 1)
+        depth_w[:,0]=0.0
+        depth_w[:, I + 1] = 0.5 * (depth_t[:, I] + depth_t[:, I + 1])
 
         ## Contruct a mask array that is:
         # zeros below Zmax
@@ -916,16 +929,16 @@ class Profile(Indexed):
         # mask_arr[depth_t <= Zmax] = 1
         # mask_arr[depth_t > Zmax] = 0
         # mask = xr.DataArray( mask_arr, dims=["id_dim", "z_dim"])
-        mask = depth_t * np.nan
+        mask = depth_w * np.nan
 
-        mask = xr.where(depth_t <= Zmax, 1, mask)
-        mask = xr.where(depth_t > Zmax, 0, mask)
+        mask = xr.where(depth_w <= Zmax, 1, mask)
+        mask = xr.where(depth_w > Zmax, 0, mask)
 
         # print(mask)
         # print('\n')
 
-        max_shallower_depth = (depth_t * mask).max(dim="z_dim")
-        min_deeper_depth = (depth_t.roll(z_dim=-1) * mask).max(dim="z_dim")
+        max_shallower_depth = (depth_w * mask).max(dim="z_dim")
+        min_deeper_depth = (depth_w.roll(z_dim=-1) * mask).max(dim="z_dim")
         # NB if max_shallower_depth was already deepest value in profile, then this produces the same value
         # I.e.
         # max_shallower_depth <= Zmax
@@ -938,18 +951,18 @@ class Profile(Indexed):
         # Compute fraction, the relative closeness of Zmax to max_shallower_depth from 1 to 0 (as Zmax -> min_deeper_depth)
         fraction = xr.where(
             min_deeper_depth != max_shallower_depth,
-            (min_deeper_depth - Zmax) / (min_deeper_depth - max_shallower_depth),
+            (Zmax - max_shallower_depth) / (min_deeper_depth - max_shallower_depth),
             1,
         )
 
-        max_shallower_depth_2d = max_shallower_depth.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
+        max_shallower_depth_2d = max_shallower_depth.expand_dims(dim={"z_dim": depth_w.sizes["z_dim"]})
         fraction_2d = fraction.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
 
         # locate the depth index for the deepest level above Zmax
-        kmax = xr.where(depth_t == max_shallower_depth, 1, 0).argmax(dim="z_dim")
+        kmax = xr.where(depth_w == max_shallower_depth, 1, 0).argmax(dim="z_dim")
         # print(kmax)
 
         # replace mask values with fraction_2d at depth above Zmax)
-        mask = xr.where(depth_t == max_shallower_depth_2d, fraction_2d, mask)
+        mask = xr.where(depth_w == max_shallower_depth_2d, fraction_2d, mask)
 
         return mask, kmax
