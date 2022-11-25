@@ -755,7 +755,7 @@ class Profile(Indexed):
         debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
 
         try:
-            
+
             if eos != "EOS10":
                 raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
 
@@ -763,8 +763,8 @@ class Profile(Indexed):
                 shape_ds = (
                     self.dataset.id_dim.size,
                     self.dataset.z_dim.size,
-#jth                    self.dataset.z_dim.size,
-#                    self.dataset.id_dim.size,
+                    # jth                    self.dataset.z_dim.size,
+                    #                    self.dataset.id_dim.size,
                 )
                 sal = self.dataset.practical_salinity.to_masked_array()
                 temp = self.dataset.potential_temperature.to_masked_array()
@@ -843,18 +843,18 @@ class Profile(Indexed):
                     sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
                     temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
                     density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
-                    density = np.repeat(density[:,np.newaxis], shape_ds[1], axis=1)
+                    density = np.repeat(density[:, np.newaxis], shape_ds[1], axis=1)
 
                 else:  # Either insitu density or one of Tbar or Sbar False
                     if Sbar:
                         sal_absolute = np.repeat(
-                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:,np.newaxis],
+                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:, np.newaxis],
                             shape_ds[1],
                             axis=1,
                         )
                     if Tbar:
                         temp_conservative = np.repeat(
-                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:,np.newaxis],
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis],
                             shape_ds[1],
                             axis=1,
                         )
@@ -875,9 +875,8 @@ class Profile(Indexed):
                 "latitude": (("id_dim"), self.dataset.latitude.values),
                 "longitude": (("id_dim"), self.dataset.longitude.values),
             }
-#            dims = ["z_dim", "id_dim"]
+            #            dims = ["z_dim", "id_dim"]
             dims = ["id_dim", "z_dim"]
-
 
             if pot_dens:
                 attributes = {"units": "kg / m^3", "standard name": "Potential density "}
@@ -905,10 +904,10 @@ class Profile(Indexed):
 
         depth_t = self.dataset.depth
         ##construct a W array, zero at surface 1/2 way between T-points
-            
-        depth_w=xr.zeros_like(depth_t)
+
+        depth_w = xr.zeros_like(depth_t)
         I = np.arange(depth_w.shape[1] - 1)
-        depth_w[:,0]=0.0
+        depth_w[:, 0] = 0.0
         depth_w[:, I + 1] = 0.5 * (depth_t[:, I] + depth_t[:, I + 1])
 
         ## Contruct a mask array that is:
