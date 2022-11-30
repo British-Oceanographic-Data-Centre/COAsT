@@ -235,7 +235,7 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     return array
 
 
-def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
+def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None, number_of_neighbors = 1):
     """
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
@@ -294,7 +294,7 @@ def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
 
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(mod_loc, leaf_size=5, metric="haversine")
-    _, ind_1d = tree.query(new_loc, k=1)
+    _, ind_1d = tree.query(new_loc, k=number_of_neighbors)
 
     if mask is None:
         # Get 2D indices from 1D index output from BallTree
