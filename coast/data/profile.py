@@ -479,12 +479,13 @@ class Profile(Indexed):
             gridded.subset(ydim=range(limits[0], limits[1] + 0), xdim=range(limits[2], limits[3] + 1))
         # keep the grid or subset on the hydrographic profiles object
         gridded.dataset["limits"] = limits
+
         prf = self.dataset
         grd = gridded.dataset
         grd['landmask']=grd.bottom_level == 0
         lon_prf = prf["longitude"]
         lat_prf = prf["latitude"]
-        lon_grd = grd["latitude"]
+        lon_grd = grd["longitude"]
         lat_grd = grd["latitude"]
         # SPATIAL indices - 4 nearest neighbour
         ind_x, ind_y = general_utils.nearest_indices_2d(
@@ -493,52 +494,60 @@ class Profile(Indexed):
             mask = grd.landmask,
             number_of_neighbors = 4
         )
+        ind_x=ind_x.values
+        ind_y=ind_y.values
 
         #Exclude out of bound points
-        I_exc =np.concatenate((
+        i_exc =np.concatenate((
            np.where(lon_prf < lon_grd.values.ravel().min())[0],
            np.where(lon_prf > lon_grd.values.ravel().max())[0],
            np.where(lat_prf < lat_grd.values.ravel().min())[0],
            np.where(lat_prf > lat_grd.values.ravel().max())[0],
         ))
-        ind_x[I_exc] = np.nan
-        ind_y[I_exc] = np.nan
-        prf["ind_x_min"] = limits[0]  # reference back to original grid
-        prf["ind_y_min"] = limits[2]
+        ind_x[i_exc,:] = -1
+        ind_y[i_exc,:] = -1
+        prf["ind_x_min"] = limits[2]  # reference back to original grid
+        prf["ind_y_min"] = limits[0]
 
-        ind_x_min = limits[0]
-        ind_y_min = limits[2]
+        ind_x_min = limits[2]
+        ind_y_min = limits[0]
 
 
         # Sort 4 NN by distance on grid
 
-        ip = np.where(np.logical_or(ind_x[:, 0] != 0, ind_y[:, 0] != 0))[0]
+        ip = np.where(np.logical_or(ind_x[:, 0] >=0  ,
+                                    ind_y[:, 0] >=0 ))[0]
+
         lon_prf4 = np.repeat(lon_prf.values[ip, np.newaxis], 4, axis=1).ravel()
         lat_prf4 = np.repeat(lat_prf.values[ip, np.newaxis], 4, axis=1).ravel()
         r = np.ones(ind_x.shape) * np.nan
-
+#distance between nearest neighbors and grid
         rr = general_utils.calculate_haversine_distance(
             lon_prf4, lat_prf4,
-            lon_grd[ind_y.values.ravel(),ind_x.values.ravel()],
-            lat_grd[ind_y.values.ravel(),ind_x.values.ravel()]
+            lon_grd.values[ind_y[ip,:].ravel(),ind_x[ip,:].ravel()],
+            lat_grd.values[ind_y[ip,:].ravel(),ind_x[ip,:].ravel()]
         )
 
         r[ip, :] = np.reshape(rr, (ip.size, 4))
-        # sort by distance
+        # sort by distance and re-order the indices with closest first
         ii = np.argsort(r, axis=1)
         rmin_prf = np.take_along_axis(r, ii, axis=1)
-        ind_x.values = np.take_along_axis(ind_x.values, ii, axis=1)
-        ind_y.values = np.take_along_axis(ind_y.values, ii, axis=1)
+        ind_x = np.take_along_axis(ind_x, ii, axis=1)
+        ind_y = np.take_along_axis(ind_y, ii, axis=1)
 
-        ii = np.nonzero(np.logical_or(np.min(r, axis=1) > rmax, np.isnan(lon_prf)))
-        ind_x.values = ind_x.values + i_min
-        ind_y.values = ind_y.values+ j_min
-        ind_x.values[ii, :] = 0  # should the be nan?
-        ind_y.values[ii, :] = 0
-
-        self.profile.dataset["ind_x"] = xr.DataArray(ind_x, dims=["id_dim", "4"])
-        self.profile.dataset["ind_y"] = xr.DataArray(ind_y, dims=["id_dim", "4"])
-        self.profile.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
+        ii = np.nonzero(np.min(r, axis=1) > rmax)
+        #Reference to original grid
+        ind_x = ind_x + ind_x_min
+        ind_y = ind_y + ind_y_min
+        #mask bad values with -1
+        ind_x[ii, :] = -1
+        ind_y[ii, :] = -1
+        ind_x[i_exc, :] = -1
+        ind_y[i_exc, :] = -1
+        #Add to profile object
+        self.dataset["ind_x"] = xr.DataArray(ind_x, dims=["id_dim", "NNs"])
+        self.dataset["ind_y"] = xr.DataArray(ind_y, dims=["id_dim", "NNs"])
+        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
 
 
 

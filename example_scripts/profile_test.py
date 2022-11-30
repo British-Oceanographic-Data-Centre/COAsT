@@ -19,7 +19,7 @@ profile = processed_profile
 pa = coast.ProfileStratification(profile)
 
 Zmax = 200  # metres
-pa.calc_pea(profile, Zmax)
+#pa.calc_pea(profile, Zmax)
 
 fn_grd_dom = 'example_files/coast_example_nemo_domain.nc'
 fn_grd_cfg = 'config/example_nemo_grid_t.json'
