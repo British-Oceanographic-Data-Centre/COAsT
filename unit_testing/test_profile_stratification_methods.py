@@ -22,7 +22,7 @@ class test_profile_stratification_methods(unittest.TestCase):
         Zmax = 200  # metres
         pa.calc_pea(profile, Zmax)
 
-        check1 = np.isclose(pa.dataset.pea.mean(dim="id_dim").item(), 17.139333147742676)
+        check1 = np.isclose(pa.dataset.pea.mean(dim="id_dim").item(), 5.8750878507)
         self.assertTrue(check1, "check1")
 
         with self.subTest("Test quick_plot()"):
