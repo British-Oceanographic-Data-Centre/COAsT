@@ -511,17 +511,21 @@ class Profile(Indexed):
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
 
-    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=7000.0) -> None:
+    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=7.0) -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
         Args:
             gridded (Gridded): Gridded object.
             limits (List): [jmin,jmax,imin,imax] - Subset to this region.
-            rmax (int): 7000 m - maxmimum search distance (metres).
+            rmax (int): 7 km - maxmimum search distance (metres).
 
-        ### NEED TO DESCRIBE THE OUTPUT. WHAT DO i_prf, j_prf, rmin_prf REPRESENT?
+            Adds to the profile object:
+            ind_x, ind_y (int array ) (id_dim,4)
+                        Index of the 4 closest grid cells to each profile, in distance order.
+                        Profiles outside the gridded region are set to -9999
+            rmin_prf  float array  (id_dim,4)
+                        Distance (km) of the losest grid cells to each profile, in distance order
 
-        ### THIS LOOKS LIKE SOMETHING THE profile.obs_operator WOULD DO
         """
 
         if sum(limits) != 0:
@@ -552,8 +556,8 @@ class Profile(Indexed):
                 np.where(lat_prf > lat_grd.values.ravel().max())[0],
             )
         )
-        ind_x[i_exc, :] = -1
-        ind_y[i_exc, :] = -1
+        ind_x[i_exc, :] = -9999
+        ind_y[i_exc, :] = -9999
         prf["ind_x_min"] = limits[2]  # reference back to original grid
         prf["ind_y_min"] = limits[0]
 
@@ -562,20 +566,20 @@ class Profile(Indexed):
 
         # Sort 4 NN by distance on grid
 
-        ip = np.where(np.logical_or(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]
+        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0] #good points
 
-        lon_prf4 = np.repeat(lon_prf.values[ip, np.newaxis], 4, axis=1).ravel()
-        lat_prf4 = np.repeat(lat_prf.values[ip, np.newaxis], 4, axis=1).ravel()
+        lon_prf4 = np.repeat(lon_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
+        lat_prf4 = np.repeat(lat_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
         r = np.ones(ind_x.shape) * np.nan
         # distance between nearest neighbors and grid
         rr = general_utils.calculate_haversine_distance(
             lon_prf4,
             lat_prf4,
-            lon_grd.values[ind_y[ip, :].ravel(), ind_x[ip, :].ravel()],
-            lat_grd.values[ind_y[ip, :].ravel(), ind_x[ip, :].ravel()],
+            lon_grd.values[ind_y[ind_good, :].ravel(), ind_x[ind_good, :].ravel()],
+            lat_grd.values[ind_y[ind_good, :].ravel(), ind_x[ind_good, :].ravel()],
         )
 
-        r[ip, :] = np.reshape(rr, (ip.size, 4))
+        r[ind_good, :] = np.reshape(rr, (ind_good.size, 4))
         # sort by distance and re-order the indices with closest first
         ii = np.argsort(r, axis=1)
         rmin_prf = np.take_along_axis(r, ii, axis=1)
@@ -586,15 +590,50 @@ class Profile(Indexed):
         # Reference to original grid
         ind_x = ind_x + ind_x_min
         ind_y = ind_y + ind_y_min
-        # mask bad values with -1
-        ind_x[ii, :] = -1
-        ind_y[ii, :] = -1
-        ind_x[i_exc, :] = -1
-        ind_y[i_exc, :] = -1
+        # mask bad values with -9999
+        ind_x[ii, :] = -9999
+        ind_y[ii, :] = -9999
+        ind_x[i_exc, :] = -9999
+        ind_y[i_exc, :] = -9999
+        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]
+
         # Add to profile object
         self.dataset["ind_x"] = xr.DataArray(ind_x, dims=["id_dim", "NNs"])
         self.dataset["ind_y"] = xr.DataArray(ind_y, dims=["id_dim", "NNs"])
-        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
+        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "NNs"])
+        self.dataset["ind_good"] = xr.DataArray(ind_good, dims=["Ngood"])
+
+    def gridded_to_profile_2d(self, gridded, variable) -> None:
+        """
+        Evaluated a gridded data variable on each profile. Here just 2D, but could be extended to 3 or 4D
+
+        Args:
+            gridded (Gridded): Gridded object
+            variable string : Name of variable in gridded object to interpolate
+
+            Output variable is distance weighted mean and is added to profile object with
+            same name as in the  gridded object
+
+
+        """
+        #ensure there are indices in profile
+        if not 'ind_x' in profile.dataset:
+            self.match_to_grid(gridded)
+        #
+        prf = self.dataset
+        grd = gridded.dataset
+        grd["landmask"] = grd.bottom_level == 0
+        nprof = self.dataset.id_dim.shape[0]
+        var=np.ma.masked_where(grd["landmask"],grd[variable])
+        ig=prf.ind_good
+        #Distance weighted mean
+        v = var[prf.ind_y[ig, :], prf.ind_x[ig, :]] / prf.rmin_prf[ig, :]
+        norm = 1.0 / prf.rmin_prf[ig, :]
+        norm = np.ma.masked_where(v.mask,norm)
+        var_int=np.nansum(v,axis=1)/np.nansum(norm,axis=1)
+        var_prf=np.ones(nprof)*np.nan
+        var_prf[ig]=var_int
+        self.dataset[variable]=xr.DataArray(var_prf, dims=["id_dim"])
 
     """================Reshape to 2D================"""
 
