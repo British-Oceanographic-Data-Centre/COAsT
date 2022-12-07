@@ -169,17 +169,13 @@ class test_profile_methods(unittest.TestCase):
             self.assertTrue(check2, "check2")
             self.assertTrue(check3, "check3")
         with self.subTest("Gridded match_to_grid & profile_to_gridded"):
-            nemo_t = coast.Gridded(
-                fn_domain=files.fn_nemo_dom,
-                config=files.fn_config_t_grid
-            )
+            nemo_t = coast.Gridded(fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid)
             processed.match_to_grid(nemo_t)
-            processed.gridded_to_profile_2d(nemo_t, 'bathymetry')
+            processed.gridded_to_profile_2d(nemo_t, "bathymetry")
 
-            check1 = np.isclose(processed.dataset.bathymetry[4],29.06689187)
+            check1 = np.isclose(processed.dataset.bathymetry[4], 29.06689187)
 
             self.assertTrue(check1, "check1")
-
 
     def test_calculate_vertical_mask(self):
         # load example profile data
@@ -200,4 +196,3 @@ class test_profile_methods(unittest.TestCase):
 
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
-

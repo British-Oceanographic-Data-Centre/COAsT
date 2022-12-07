@@ -566,7 +566,7 @@ class Profile(Indexed):
 
         # Sort 4 NN by distance on grid
 
-        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0] #good points
+        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]  # good points
 
         lon_prf4 = np.repeat(lon_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
         lat_prf4 = np.repeat(lat_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
@@ -616,24 +616,24 @@ class Profile(Indexed):
 
 
         """
-        #ensure there are indices in profile
-        if not 'ind_x' in self.dataset:
+        # ensure there are indices in profile
+        if not "ind_x" in self.dataset:
             self.match_to_grid(gridded)
         #
         prf = self.dataset
         grd = gridded.dataset
         grd["landmask"] = grd.bottom_level == 0
         nprof = self.dataset.id_dim.shape[0]
-        var=np.ma.masked_where(grd["landmask"],grd[variable])
-        ig=prf.ind_good
-        #Distance weighted mean
+        var = np.ma.masked_where(grd["landmask"], grd[variable])
+        ig = prf.ind_good
+        # Distance weighted mean
         v = var[prf.ind_y[ig, :], prf.ind_x[ig, :]] / prf.rmin_prf[ig, :]
         norm = 1.0 / prf.rmin_prf[ig, :]
-        norm = np.ma.masked_where(v.mask,norm)
-        var_int=np.nansum(v,axis=1)/np.nansum(norm,axis=1)
-        var_prf=np.ones(nprof)*np.nan
-        var_prf[ig]=var_int
-        self.dataset[variable]=xr.DataArray(var_prf, dims=["id_dim"])
+        norm = np.ma.masked_where(v.mask, norm)
+        var_int = np.nansum(v, axis=1) / np.nansum(norm, axis=1)
+        var_prf = np.ones(nprof) * np.nan
+        var_prf[ig] = var_int
+        self.dataset[variable] = xr.DataArray(var_prf, dims=["id_dim"])
 
     """================Reshape to 2D================"""
 
@@ -885,13 +885,13 @@ class Profile(Indexed):
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
             if not pot_dens or not CT_AS:
-                lat2d = np.repeat(lat[:,np.newaxis],shape_ds[1],axis=1)
-                lon2d = np.repeat(lon[:,np.newaxis],shape_ds[1],axis=1)
+                lat2d = np.repeat(lat[:, np.newaxis], shape_ds[1], axis=1)
+                lon2d = np.repeat(lon[:, np.newaxis], shape_ds[1], axis=1)
             # Absolute Pressure
             if pot_dens:
                 pressure_absolute = 0.0  # calculate potential density
             else:
-                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels,lat2d))  # depth must be negative
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat2d))  # depth must be negative
             if not rhobar:  # calculate full depth
                 # Absolute Salinity
                 if not CT_AS:  # abs salinity not provided
