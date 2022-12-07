@@ -43,7 +43,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         """
         print("Cleaning the data")
         # find profiles good for SST and NBT
-        dz_max=25.0
+        dz_max = 25.0
         n_prf = profile.dataset.id_dim.shape[0]
         n_depth = profile.dataset.z_dim.shape[0]
         tmp_clean = profile.dataset.potential_temperature.values[:, :]
@@ -54,25 +54,23 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         # Find good SST and SSS depths
         if "bathymetry" in profile.dataset:
-            D_prf=profile.dataset.bathymetry.values
+            D_prf = profile.dataset.bathymetry.values
             profile.gridded_to_profile_2d(nemo, "bathymetry")
             z = profile.dataset.depth
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
-            test_tmp=np.logical_and(test_surface,
-                                ~np.isnan(tmp_clean))
-            test_sal=np.logical_and(test_surface,
-                                ~np.isnan(sal_clean))
-            good_sst=np.zeros(n_prf)*np.nan
-            good_sss=np.zeros(n_prf)*np.nan
-            I_tmp=np.nonzero(np.any(test_tmp.values,axis=1))[0]
-            I_sal=np.nonzero(np.any(test_sal.values,axis=1))[0]
-        #
+            test_tmp = np.logical_and(test_surface, ~np.isnan(tmp_clean))
+            test_sal = np.logical_and(test_surface, ~np.isnan(sal_clean))
+            good_sst = np.zeros(n_prf) * np.nan
+            good_sss = np.zeros(n_prf) * np.nan
+            I_tmp = np.nonzero(np.any(test_tmp.values, axis=1))[0]
+            I_sal = np.nonzero(np.any(test_sal.values, axis=1))[0]
+            #
             for ip in I_tmp:
-                good_sst[ip]=np.min(np.nonzero(test_tmp.values[ip,:]))
+                good_sst[ip] = np.min(np.nonzero(test_tmp.values[ip, :]))
             for ip in I_sal:
-                good_sss[ip]=np.min(np.nonzero(test_sal.values[ip,:]))
+                good_sss[ip] = np.min(np.nonzero(test_sal.values[ip, :]))
             I = np.where(np.isfinite(good_sss))[0]
-            SSS=sal_clean[I, good_sss[I].astype(int)]
+            SSS = sal_clean[I, good_sss[I].astype(int)]
         # fill holes in data
         # jth is slow, there may bea more 'vector' way of doing it
 
