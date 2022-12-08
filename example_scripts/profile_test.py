@@ -27,4 +27,4 @@ profile.match_to_grid(nemo)
 profile.gridded_to_profile_2d(nemo, "bathymetry")
 
 Zmax = 200  # metres
-# pa.calc_pea(profile, Zmax)
+pa.calc_pea(profile, nemo, Zmax)
