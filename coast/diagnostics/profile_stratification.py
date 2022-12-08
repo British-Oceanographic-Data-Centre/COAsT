@@ -72,23 +72,21 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             I_tmp = np.where(np.isfinite(good_sst))[0]
             I_sal = np.where(np.isfinite(good_sss))[0]
 
-
-        #
+            #
             # find good profiles
             DD = np.minimum(Zmax, np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
-            good_profile = np.array(np.ones(n_prf),dtype=bool)
+            good_profile = np.array(np.ones(n_prf), dtype=bool)
             quart = [0, 0.25, 0.5, 0.75, 1]
             for iq in range(4):
-                test = ~np.any(np.logical_and(z >= DD*quart[iq] ,z <= DD*quart[iq+1]),axis=1)
-                good_profile[test]=0
+                test = ~np.any(np.logical_and(z >= DD * quart[iq], z <= DD * quart[iq + 1]), axis=1)
+                good_profile[test] = 0
 
             ###
-        SST = np.zeros(n_prf)*np.nan
+        SST = np.zeros(n_prf) * np.nan
         SSS = np.zeros(n_prf) * np.nan
 
         SSS[I_sal] = sal_clean[I_sal, good_sss[I_sal].astype(int)]
         SST[I_tmp] = tmp_clean[I_tmp, good_sst[I_tmp].astype(int)]
-
 
         # fill holes in data
         # jth This is slow, there may be a more 'vector' way of doing it
