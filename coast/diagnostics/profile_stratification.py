@@ -31,7 +31,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(profile: xr.Dataset):
+    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax):
         """
         Cleaning data for stratification metric calculations
         Stage 1:...
@@ -55,7 +55,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # Find good SST and SSS depths
         if "bathymetry" in profile.dataset:
             D_prf = profile.dataset.bathymetry.values
-            profile.gridded_to_profile_2d(nemo, "bathymetry")
+            profile.gridded_to_profile_2d(gridded, "bathymetry")
             z = profile.dataset.depth
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
             test_tmp = np.logical_and(test_surface, ~np.isnan(tmp_clean))
@@ -69,10 +69,29 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
                 good_sst[ip] = np.min(np.nonzero(test_tmp.values[ip, :]))
             for ip in I_sal:
                 good_sss[ip] = np.min(np.nonzero(test_sal.values[ip, :]))
-            I = np.where(np.isfinite(good_sss))[0]
-            SSS = sal_clean[I, good_sss[I].astype(int)]
+            I_tmp = np.where(np.isfinite(good_sst))[0]
+            I_sal = np.where(np.isfinite(good_sss))[0]
+
+
+        #
+            # find good profiles
+            DD = np.minimum(Zmax, np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
+            good_profile = np.array(np.ones(n_prf),dtype=bool)
+            quart = [0, 0.25, 0.5, 0.75, 1]
+            for iq in range(4):
+                test = ~np.any(np.logical_and(z >= DD*quart[iq] ,z <= DD*quart[iq+1]),axis=1)
+                good_profile[test]=0
+
+            ###
+        SST = np.zeros(n_prf)*np.nan
+        SSS = np.zeros(n_prf) * np.nan
+
+        SSS[I_sal] = sal_clean[I_sal, good_sss[I_sal].astype(int)]
+        SST[I_tmp] = tmp_clean[I_tmp, good_sst[I_tmp].astype(int)]
+
+
         # fill holes in data
-        # jth is slow, there may bea more 'vector' way of doing it
+        # jth This is slow, there may be a more 'vector' way of doing it
 
         for i_prf in range(n_prf):
             tmp = profile.dataset.potential_temperature.values[i_prf, :]
@@ -95,12 +114,14 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         dims = ["id_dim", "z_dim"]
         profile.dataset["potential_temperature"] = xr.DataArray(tmp_clean, coords=coords, dims=dims)
         profile.dataset["practical_salinity"] = xr.DataArray(sal_clean, coords=coords, dims=dims)
-
+        profile.dataset["sea_surface_temperature"] = xr.DataArray(SST, coords=coords, dims=["id_dim"])
+        profile.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
+        profile.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
         print("All nice and clean")
 
         return profile
 
-    def calc_pea(self, profile: xr.Dataset, Zmax):
+    def calc_pea(self, profile: xr.Dataset, gridded, Zmax):
         """
         Calculates Potential Energy Anomaly
 
@@ -113,8 +134,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
         #%%
         gravity = 9.81
-        # Clean data This is quit slow and over writes potneital temperature and practical salinity valirables
-        profile = ProfileStratification.clean_data(profile)
+        # Clean data This is quit slow and over writes potential temperature and practical salinity variables
+        profile = ProfileStratification.clean_data(profile, gridded, Zmax)
 
         # Define grid spacing, dz. Required for depth integral
         profile.calculate_vertical_spacing()
@@ -134,9 +155,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         )  # jth why not just use depth here?
 
         if not "density" in profile.dataset:
-            profile.construct_density(CT_AS=True, pot_dens=True)
+            profile.construct_density(CT_AS=False, pot_dens=True)
         if not "density_bar" in profile.dataset:
-            profile.construct_density(CT_AS=True, rhobar=True, Zd_mask=Zd_mask, pot_dens=True)
+            profile.construct_density(CT_AS=False, rhobar=True, Zd_mask=Zd_mask, pot_dens=True)
         rho = profile.dataset.variables["density"].fillna(0)  # density
         rhobar = profile.dataset.variables["density_bar"]  # density with depth-mean T and S
 
@@ -145,7 +166,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             * gravity
             / (height.sum(dim="z_dim", skipna=True))
         )
-        #%%
+        # mask bad profiles
+        pot_energy_anom = np.ma.masked_where(~profile.dataset.good_profile.values, pot_energy_anom.values)
         coords = {
             "time": ("id_dim", profile.dataset.time.values),
             "latitude": (("id_dim"), profile.dataset.latitude.values),

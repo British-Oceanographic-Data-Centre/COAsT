@@ -911,17 +911,17 @@ class Profile(Indexed):
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
             if not pot_dens or not CT_AS:
-                lat2d = np.repeat(lat[:, np.newaxis], shape_ds[1], axis=1)
-                lon2d = np.repeat(lon[:, np.newaxis], shape_ds[1], axis=1)
+                lat = np.repeat(lat[:, np.newaxis], shape_ds[1], axis=1)
+                lon = np.repeat(lon[:, np.newaxis], shape_ds[1], axis=1)
             # Absolute Pressure
             if pot_dens:
                 pressure_absolute = 0.0  # calculate potential density
             else:
-                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat2d))  # depth must be negative
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
             if not rhobar:  # calculate full depth
                 # Absolute Salinity
                 if not CT_AS:  # abs salinity not provided
-                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon2d, lat2d))
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
                 else:  # abs salinity provided
                     sal_absolute = np.ma.masked_invalid(sal)
                 sal_absolute = np.ma.masked_less(sal_absolute, 0)
