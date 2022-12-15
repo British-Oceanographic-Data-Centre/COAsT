@@ -148,9 +148,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Zd_mask, kmax = profile.calculate_vertical_mask(Zmax)
 
         # Height is depth_t above Zmax. Except height is Zmax for the last level above Zmax.
-        height = (
-            np.floor(Zd_mask) * depth_t + (np.ceil(Zd_mask) - np.floor(Zd_mask)) * Zmax
-        )  # jth why not just use depth here?
+        #height = (
+        #    np.floor(Zd_mask) * depth_t + (np.ceil(Zd_mask) - np.floor(Zd_mask)) * Zmax
+        #)  # jth why not just use depth here?
 
         if not "density" in profile.dataset:
             profile.construct_density(CT_AS=False, pot_dens=True)
@@ -159,11 +159,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         rho = profile.dataset.variables["density"].fillna(0)  # density
         rhobar = profile.dataset.variables["density_bar"]  # density with depth-mean T and S
 
+
         pot_energy_anom = (
-            (height * (rho - rhobar) * dz).sum(dim="z_dim", skipna=True)
+            (depth_t * (rho - rhobar) * dz * Zd_mask).sum(dim="z_dim", skipna=True)
             * gravity
-            / (height.sum(dim="z_dim", skipna=True))
-        )
+            / (dz * Zd_mask).sum(dim="z_dim", skipna=True))
         # mask bad profiles
         pot_energy_anom = np.ma.masked_where(~profile.dataset.good_profile.values, pot_energy_anom.values)
         coords = {
