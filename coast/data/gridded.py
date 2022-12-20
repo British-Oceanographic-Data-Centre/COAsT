@@ -69,10 +69,14 @@ class Gridded(Coast):  # TODO Complete this docstring
         self.set_grid_vars()
         self.set_dimension_mapping()
         self.set_variable_mapping()
-
+        lims=kwargs.get('lims',[])
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
-
+#jth subset
+            if len(lims) == 4:
+               self.dataset = self.dataset.isel(y=range(lims[2],lims[3]),x=range(lims[0],lims[1]))
+#
+   
         self.set_dimension_names(self.config.dataset.dimension_map)
         self.set_variable_names(self.config.dataset.variable_map)
 
@@ -82,7 +86,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         else:
             self.filename_domain = self.fn_domain  # store domain fileanme
             dataset_domain = self.load_domain(self.fn_domain, chunks)
-
+#jth subset
+            if len(lims) == 4:
+                dataset_domain=dataset_domain.isel(y_dim=range(lims[2],lims[3]),x_dim=range(lims[0],lims[1]))
+#
             # Define extra domain attributes using kwargs dictionary
             # This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
@@ -189,7 +196,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         smaller = self.dataset[var].sel(z=points_z, x=points_x, y=points_y, method="nearest", tolerance=tolerance)
         return smaller
 
-    def set_timezero_depths(self, dataset_domain, calculate_bathymetry=False):
+    def set_timezero_depths(self, dataset_domain, **kwargs):
         """
         Calculates the depths at time zero (from the domain_cfg input file)
         for the appropriate grid.
@@ -204,6 +211,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         # keyword to allow calcution of bathymetry from scale factors
 
         # All bathymetry should now be mapped to bathy_metry
+        calculate_bathymetry = kwargs.get('calculate_bathymetry',False)
         try:
             if calculate_bathymetry:  # calculate bathymetry from scale factors
                 bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)
