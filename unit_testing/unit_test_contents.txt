@@ -27,9 +27,10 @@
       a. basic_conversion_to_xesmf
 
 5. test_diagnostic_methods
-      a. compute_vertical_spatial_derivative
-      b. construct_density
-      c. construct_pycnocline_depth_and_thickness
+      a. circulation
+      b. compute_vertical_spatial_derivative
+      c. construct_density
+      d. construct_pycnocline_depth_and_thickness
 
 6. test_transect_methods
       a. calculate_transport_velocity_and_depth
