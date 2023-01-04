@@ -73,18 +73,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
             # jth subset
-            if len(lims) == 4: # if lims are provided take a subset
-                
-                if lims[0]<lims[1]: # usual case
-                    self.dataset = self.dataset.isel(y=range(lims[2], lims[3]),
-                                                     x=range(lims[0], lims[1]))
-                else: #equatorial wrap around
-                    nx=self.dataset.dims['x']
-                    ds1=self.dataset.isel(y=range(lims[2], lims[3]),
-                                          x=range(lims[0], nx))
-                    ds2=self.dataset.isel(y=range(lims[2], lims[3]),
-                                          x=range(0, lims[1]))                                
-                    self.dataset = xr.concat([ds1,ds2],dim = 'x')                
+            if len(lims) == 4:  # if lims are provided take a subset
+
+                if lims[0] < lims[1]:  # usual case
+                    self.dataset = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], lims[1]))
+                else:  # equatorial wrap around
+                    nx = self.dataset.dims["x"]
+                    ds1 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], nx))
+                    ds2 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(0, lims[1]))
+                    self.dataset = xr.concat([ds1, ds2], dim="x")
         #
 
         self.set_dimension_names(self.config.dataset.dimension_map)
@@ -97,17 +94,14 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.filename_domain = self.fn_domain  # store domain fileanme
             dataset_domain = self.load_domain(self.fn_domain, chunks)
             # jth subset
-            if len(lims) == 4: # if lims are provided take a subset
-                if lims[0]<lims[1]: # usual case           
-                    dataset_domain = dataset_domain.isel(y_dim=range(lims[2], lims[3]),
-                                                         x_dim=range(lims[0], lims[1]))
-                else: #equatorial wrap around
-                    nx = dataset_domain.dims['x_dim']
-                    ds1 = dataset_domain.isel(y_dim=range(lims[2], lims[3]),
-                                              x_dim=range(lims[0], nx))
-                    ds2 = dataset_domain.isel(y_dim=range(lims[2], lims[3]),
-                                              x_dim=range(0, lims[1]))
-                    dataset_domain = xr.concat([ds1,ds2],dim = 'x_dim')   
+            if len(lims) == 4:  # if lims are provided take a subset
+                if lims[0] < lims[1]:  # usual case
+                    dataset_domain = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
+                else:  # equatorial wrap around
+                    nx = dataset_domain.dims["x_dim"]
+                    ds1 = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
+                    ds2 = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(0, lims[1]))
+                    dataset_domain = xr.concat([ds1, ds2], dim="x_dim")
             #
             # Define extra domain attributes using kwargs dictionary
             # This is a bit of a placeholder. Some domain/nemo files will have missing variables
