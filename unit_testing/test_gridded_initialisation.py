@@ -150,3 +150,23 @@ class test_gridded_initialisation(unittest.TestCase):
         reference = np.array([8.337016e08, 8.333972e08, 8.344886e08, 8.330722e08, 8.265948e08])
         check1 = np.allclose(cksum, reference)
         self.assertTrue(check1, msg="check1")
+
+    def test_gridded_subset(self):
+           
+           lims = [150, 250, 100, 350]
+           nemo_t_subset = coast.CurrentsonT(fn_data=files.fn_nemo_grid_t_dat,
+                                      fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims)     
+           
+           nemo_t = coast.CurrentsonT(fn_data=files.fn_nemo_grid_t_dat,
+                                      fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid)
+
+           T1 = nemo_t.dataset.temperature[0,0,105,155].values
+           T2 = nemo_t_subset.dataset.temperature[0,0,5,5].values
+           check1 = np.isclose(T1,T2)
+           
+           self.assertTrue(check1, msg="check1") 
+
+          
+           
+           
+           
