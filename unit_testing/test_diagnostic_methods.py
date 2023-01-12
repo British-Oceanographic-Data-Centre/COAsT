@@ -146,7 +146,8 @@ class test_diagnostic_methods(unittest.TestCase):
 
         U1 = 0.5 * (nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values)
         U2 = nemo_t.dataset.ut_velocity[0, 0, 150, 60].values
-
+        print(f"U:{nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+        print(f"T:{nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
         V1 = 0.5 * (nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values)
         V2 = nemo_t.dataset.vt_velocity[0, 0, 150, 60].values
         SP2 = nemo_t.dataset.speed_t[0, 0, 150, 60].values
