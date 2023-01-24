@@ -494,7 +494,9 @@ class Profile(Indexed):
         else:
             reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
             reject_sal_reasons = [2, 3, 21, 22, 23, 24, 25, 26, 27, 28, 29]
-            debug(f"Assume QC flags following 4.2.2: https://www.metoffice.gov.uk/hadobs/en4/en4-2-2-profile-file-format.html")
+            debug(
+                f"Assume QC flags following 4.2.2: https://www.metoffice.gov.uk/hadobs/en4/en4-2-2-profile-file-format.html"
+            )
 
         qc_integers_tem = []
         qc_integers_sal = []
