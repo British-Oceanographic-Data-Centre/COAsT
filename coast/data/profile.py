@@ -197,7 +197,7 @@ class Profile(Indexed):
 
     """======================= Model Comparison ======================="""
 
-    def process_en4(self, sort_time=True):
+    def process_en4(self, sort_time=True, remove_flagged_neighbours=False):
         """
         VERSION 1.4 (05/07/2021)
 
@@ -224,6 +224,12 @@ class Profile(Indexed):
          fn_out (str)      : Full path to a desired output file. If unspecified
                              then nothing is written.
 
+        remove_flagged_neighbours: EN offers a profile flag that indicates there are
+                other profiles within 0.2 deg of latitude and longitude and 1 hour that
+                appear to be of higher quality. In previous versions of the dataset these
+                profiles would have not been stored in the data files. Setting this flag
+                as True removes these profiles.
+
         EXAMPLE USEAGE:
          profile = coast.PROFILE()
          profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
@@ -243,12 +249,15 @@ class Profile(Indexed):
         # Each bit of this string is a different QC flag. Which flag is which can
         # be found on the EN4 website:
         # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(32)[::-1] for pp in range(ds.sizes["id_dim"])]
+        qc_str = [np.binary_repr(ds.qc_flags_profiles.astype(int).values[pp]).zfill(32)[::-1] for pp in range(ds.sizes["id_dim"])]
 
         # Determine indices of the profiles that we want to keep
         reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
         reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
         reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
+        if remove_flagged_neighbours:
+            reject_close_flagged_prof = np.array([int(qq[2]) for qq in qc_str], dtype=bool)
+            reject_both_prof = np.logical_or(reject_both_prof, reject_close_flagged_prof)
         ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
         ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
         debug("     >>> QC: Completely rejecting {0} / {1} id_dims".format(np.sum(reject_both_prof), ds.dims["id_dim"]))
