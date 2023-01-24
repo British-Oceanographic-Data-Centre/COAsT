@@ -249,7 +249,10 @@ class Profile(Indexed):
         # Each bit of this string is a different QC flag. Which flag is which can
         # be found on the EN4 website:
         # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.astype(int).values[pp]).zfill(32)[::-1] for pp in range(ds.sizes["id_dim"])]
+        qc_str = [
+            np.binary_repr(ds.qc_flags_profiles.astype(int).values[pp]).zfill(32)[::-1]
+            for pp in range(ds.sizes["id_dim"])
+        ]
 
         # Determine indices of the profiles that we want to keep
         reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
