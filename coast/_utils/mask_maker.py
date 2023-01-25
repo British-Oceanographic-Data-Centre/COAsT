@@ -130,15 +130,23 @@ class MaskMaker:
         return array_to_fill
 
     @classmethod
-    def region_def_nws_north_sea(cls, longitude, latitude, bath):
+    def region_def_nws_north_north_sea(cls, longitude, latitude, bath):
         """
-        Regional definition for the North Sea (Northwest European Shelf)
+        Regional definition for the northern North Sea (Northwest European Shelf)
         Longitude, latitude and bath should be 2D arrays corresponding to model
         coordinates and bathymetry. Bath should be positive with depth.
         """
         vertices_lon = [-5.34, -0.7, 7.5, 7.5, 9, 9, 6.3, 6.3, 5, 5, 4.126, 4.126, -1.071]
         vertices_lat = [56.93, 54.09, 54.09, 56, 56, 57.859, 57.859, 58.121, 58.121, 58.59, 58.59, 60.5, 60.5]
 
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
+        mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
+        return mask
+
+    @classmethod
+    def region_def_nws_south_north_sea(cls, longitude, latitude, bath):
+        vertices_lon = [-0.67, -0.67, 9, 9, 7.57, 7.57]
+        vertices_lat = [54.08, 51, 51, 56, 56, 54.08]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
         return mask
@@ -183,15 +191,7 @@ class MaskMaker:
         return mask
 
     @classmethod
-    def region_def_south_north_sea(cls, longitude, latitude, bath):
-        vertices_lon = [-0.67, -0.67, 9, 9, 7.57, 7.57]
-        vertices_lat = [54.08, 51, 51, 56, 56, 54.08]
-        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
-        mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
-        return mask
-
-    @classmethod
-    def region_def_off_shelf(cls, longitude, latitude, bath):
+    def region_def_nws_off_shelf(cls, longitude, latitude, bath):
         vertices_lon = [10, 10, -5, -10, 0, 0, -20, -20]
         vertices_lat = [65, 60, 59, 52.5, 47.5, 45, 40, 63]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
@@ -199,7 +199,7 @@ class MaskMaker:
         return mask
 
     @classmethod
-    def region_def_irish_sea(cls, longitude, latitude, bath):
+    def region_def_nws_irish_sea(cls, longitude, latitude, bath):
         vertices_lon = [-5, -7.6, -7.5, -4.1, 0, -2.6]
         vertices_lat = [56.4, 55, 52, 50.7, 51.5, 55.3]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
@@ -207,11 +207,24 @@ class MaskMaker:
         return mask
 
     @classmethod
-    def region_def_kattegat(cls, longitude, latitude, bath):
+    def region_def_nws_kattegat(cls, longitude, latitude, bath):
         vertices_lon = [9, 9, 13, 13]
         vertices_lat = [60, 52.5, 52.5, 60]
         mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
         mask = mask * (bath < 200) * (bath > 0) * (~np.isnan(bath))
+        return mask
+
+    def region_def_nws_fsc(cls, longitude, latitude, bath):
+        """
+        Regional definition for Faroe Shetland Channel (Northwest European Shelf)
+        Longitude, latitude and bath should be 2D arrays corresponding to model
+        coordinates and bathymetry. Bath should be positive with depth.
+        """
+        vertices_lon = [-7.13, -9.72, -6.37, -0.45, -4.53]
+        vertices_lat = [62.17, 60.6, 59.07, 61.945, 62.51]
+
+        mask = cls.fill_polygon_by_lonlat(np.zeros(longitude.shape), longitude, latitude, vertices_lon, vertices_lat)
+        mask = mask * (bath > 200) * (bath > 0) * (~np.isnan(bath))
         return mask
 
     @classmethod
