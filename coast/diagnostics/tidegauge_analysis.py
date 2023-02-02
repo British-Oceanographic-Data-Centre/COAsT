@@ -162,6 +162,7 @@ class TidegaugeAnalysis:
         # Create output dataset and return it in new Tidegauge object.
         ds_out = xr.Dataset(data_array.coords)
         ds_out[output_name] = (["id_dim", "t_dim"], reconstructed)
+        ds_out = ds_out.assign_coords(time=("t_dim", time.data))
 
         return Tidegauge(dataset=ds_out)
 
