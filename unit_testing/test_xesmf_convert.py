@@ -4,15 +4,14 @@ import numpy as np
 import os.path as path
 import unit_test_files as files
 
+
 # Single unit test. Can contain multiple test methods and subTests.
 class test_xesmf_convert(unittest.TestCase):
-
     # Test for conversion from gridded to xesmf.
     # Here I've used one test and then subtests for each smaller test.
     # This could also be split into multiple methods but the file would need
     # to be loaded multiple times. Using subtests allows a sequential testing.
     def test_basic_conversion_to_xesmf(self):
-
         # Read data files
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
 

@@ -156,7 +156,6 @@ class Profile(Indexed):
     """======================= Plotting ======================="""
 
     def plot_profile(self, var: str, profile_indices=None):
-
         fig = plt.figure(figsize=(7, 10))
 
         if profile_indices is None:
@@ -175,7 +174,6 @@ class Profile(Indexed):
         return fig, ax
 
     def plot_map(self, var_str=None):
-
         profiles = self.dataset
 
         if var_str is None:
@@ -186,7 +184,6 @@ class Profile(Indexed):
         return fig, ax
 
     def plot_ts_diagram(self, profile_index, var_t="potential_temperature", var_s="practical_salinity"):
-
         profile = self.dataset.isel(id_dim=profile_index)
         temperature = profile[var_t].values
         salinity = profile[var_s].values

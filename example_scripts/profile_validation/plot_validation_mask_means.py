@@ -15,7 +15,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import numpy as np
 
-#%% File settings
+# %% File settings
 run_name = "test"
 
 # List of analysis output files. Profiles from each will be plotted
@@ -25,7 +25,7 @@ fn_list = ["/Users/dbyrne/transfer/mask_means_daily_test.nc", "/Users/dbyrne/tra
 # Filename for the output
 fn_out = "/Users/dbyrne/transfer/regional_means_{0}.png".format(run_name)
 
-#%% General Plot Settings
+# %% General Plot Settings
 region_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8]  # Region indices (in analysis) to plot
 region_names = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]  # Region names, will be used for titles in plot
 var_name = "profile_average_abs_diff_temperature"  # Variable name in analysis file to plot
@@ -64,7 +64,7 @@ title_fontsize = 13  # Fontsize of title
 title_fontweight = "bold"  # Fontweight to use for title
 
 
-#%% SCRIPT: READ AND PLOT DATA
+# %% SCRIPT: READ AND PLOT DATA
 
 # Read all datasets into list
 ds_list = [xr.open_dataset(dd) for dd in fn_list]
@@ -78,7 +78,6 @@ a_flat = a.flatten()
 
 # Loop over regions
 for ii in range(n_ax):
-
     if ii >= n_reg:
         a_flat[ii].axis("off")
         continue

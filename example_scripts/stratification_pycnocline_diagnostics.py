@@ -8,7 +8,7 @@ for pycnocline depth and thickness, suitable for a nearly two-layer fluid.
 
 """
 
-#%%
+# %%
 import coast
 import numpy as np
 import os
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors  # colormap fiddling
 
 #################################################
-#%%  Loading  data
+# %%  Loading  data
 #################################################
 
 #  Loading AMM60 data if it is available
@@ -71,7 +71,7 @@ except:
 print("* Loaded ", config, " data")
 
 #################################################
-#%% subset of data and domain ##
+# %% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
 print("* Extract North Sea subdomain")
@@ -80,7 +80,7 @@ sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest 
 ind_sci = sci_w.subset_indices(start=[51, -4], end=[62, 15])
 sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
 
-#%% Apply masks to temperature and salinity
+# %% Apply masks to temperature and salinity
 if config == "AMM60":
     sci_nwes_t.dataset["temperature_m"] = sci_nwes_t.dataset.temperature.where(
         sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset["t_dim"].sizes) > 0
@@ -95,32 +95,32 @@ else:
     sci_nwes_t.dataset["salinity_m"] = sci_nwes_t.dataset.salinity
 
 
-#%% Construct in-situ density and stratification
+# %% Construct in-situ density and stratification
 print("* Construct in-situ density and stratification")
 sci_nwes_t.construct_density(eos="EOS10")
 
-#%% Construct stratification. t-pts --> w-pts
+# %% Construct stratification. t-pts --> w-pts
 print("* Construct stratification. t-pts --> w-pts")
 sci_nwes_w = sci_nwes_t.differentiate(
     "density", dim="z_dim", out_var_str="rho_dz", out_obj=sci_nwes_w
 )  # --> sci_nwes_w.rho_dz
 
 #################################################
-#%% Create internal tide diagnostics object
+# %% Create internal tide diagnostics object
 print("* Create stratification diagnostics object")
 strat = coast.GriddedStratification(sci_nwes_t, sci_nwes_w)
 
-#%%  Construct pycnocline variables: depth and thickness
+# %%  Construct pycnocline variables: depth and thickness
 print("* Compute density and rho_dz if they didn" "t exist")
 print("* Compute 1st and 2nd moments of stratification as pycnocline vars")
 strat.construct_pycnocline_vars(sci_nwes_t, sci_nwes_w)
 
-#%%  Plot pycnocline variables: depth and thickness
+# %%  Plot pycnocline variables: depth and thickness
 print("* Sample quick plot")
 strat.quick_plot()
 
 
-#%% Make transects
+# %% Make transects
 print("* Construct transects to inspect stratification. This is an abuse of the transect code...")
 # Example usage: tran = coast.Transect( (54,-15), (56,-12), nemo_f, nemo_t, nemo_u, nemo_v )
 tran_it = coast.TransectT(strat, (51, 2.5), (61, 2.5))
@@ -143,7 +143,7 @@ zt_sec = tran_it.data.strat_2nd_mom.mean(dim="t_dim", skipna=False)
 zt_m_sec = tran_it.data.strat_2nd_mom_masked.mean(dim="t_dim", skipna=False)
 
 
-#%% Plot sections
+# %% Plot sections
 #################
 print("* Plot sections with pycnocline depth and thickness overlayed")
 plt.pcolormesh(lat_sec, dep_sec, rho_sec)
@@ -174,7 +174,7 @@ plt.legend()
 plt.show()
 
 
-#%% Plot profile of density and stratification with strat_1st_mom in deep water
+# %% Plot profile of density and stratification with strat_1st_mom in deep water
 #############################################################################
 print("* Plot profile of density and stratification with strat_1st_mom in deep water")
 print(
@@ -213,7 +213,7 @@ plt.legend()
 plt.show()
 
 
-#%% Map pretty plots of North Sea pycnocline depth
+# %% Map pretty plots of North Sea pycnocline depth
 print("* Map pretty plots of North Sea pycnocline depth")
 print(" - we expect a RunTimeError here")
 
