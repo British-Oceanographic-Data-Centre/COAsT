@@ -238,12 +238,11 @@ class ProfileAnalysis(Indexed):
                 ds_mean_prof = ds_mean_prof.rename({vv: "profile_mean_" + vv})
                 ds_mean_all = ds_mean_all.rename({vv: "all_mean_" + vv})
 
-
             # Get two std. One preserving depths and the other collapsing across all data in a region
-            try: # At time of writing skipna=True not working for np.datetime64 or np.timedelta64 values. So remove them
+            try:  # At time of writing skipna=True not working for np.datetime64 or np.timedelta64 values. So remove them
                 ds_std_prof = mask_data.std(dim="id_dim", skipna=True).compute()
                 ds_std_all = mask_data.std(skipna=True).compute()
-            except: # remove np.datetime64 and np.timedelta64 variables
+            except:  # remove np.datetime64 and np.timedelta64 variables
                 ds_tmp = mask_data
                 var_list = list(ds_tmp.keys())
                 for vv in var_list:

@@ -118,10 +118,14 @@ class test_profile_methods(unittest.TestCase):
             mask_stats_model = pa.mask_stats(model_interpolated, mask_indices)
 
             check1 = mask_indices.dims["dim_mask"] == mask_means.dims["dim_mask"]  # since profiles are in mask regions
-            check2 = np.isclose(      mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
+            check2 = np.isclose(mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
 
-            check3 = mask_indices.dims["dim_mask"] == mask_stats_model.dims["dim_mask"]  # since profiles are in mask regions
-            check4 = np.isclose(mask_stats_model.all_mean_diff_temperature.values[0], -0.8169331445866469)  # includes mean and std
+            check3 = (
+                mask_indices.dims["dim_mask"] == mask_stats_model.dims["dim_mask"]
+            )  # since profiles are in mask regions
+            check4 = np.isclose(
+                mask_stats_model.all_mean_diff_temperature.values[0], -0.8169331445866469
+            )  # includes mean and std
             check5 = np.isclose(mask_stats_model.all_std_temperature.values[0], 0.8448488052959595)
 
             self.assertTrue(check1, "check1")
