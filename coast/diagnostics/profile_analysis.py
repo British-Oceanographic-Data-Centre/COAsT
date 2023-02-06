@@ -228,14 +228,9 @@ class ProfileAnalysis(Indexed):
 
             # Get actual profile data for this mask
             mask_data = dataset.isel(id_dim=mask_ind)
-            # Get two averages. One preserving depths and the other averaging
-            # across all data in a region
+            # Get two averages. One preserving depths and the other averaging across all data in a region
             ds_mean_prof = mask_data.mean(dim="id_dim", skipna=True).compute()
             ds_mean_all = mask_data.mean(skipna=True).compute()
-            # Get two std. One preserving depths and the other collapsing
-            # across all data in a region
-            ds_std_prof = mask_data.std(dim="id_dim", skipna=True).compute()
-            ds_std_all = mask_data.std(skipna=True).compute()
 
             # Loop over variables and save to output dataset.
             var_list = list(ds_mean_prof.keys())
@@ -243,6 +238,21 @@ class ProfileAnalysis(Indexed):
                 ds_mean_prof = ds_mean_prof.rename({vv: "profile_mean_" + vv})
                 ds_mean_all = ds_mean_all.rename({vv: "all_mean_" + vv})
 
+
+            # Get two std. One preserving depths and the other collapsing across all data in a region
+            try: # At time of writing skipna=True not working for np.datetime64 or np.timedelta64 values. So remove them
+                ds_std_prof = mask_data.std(dim="id_dim", skipna=True).compute()
+                ds_std_all = mask_data.std(skipna=True).compute()
+            except: # remove np.datetime64 and np.timedelta64 variables
+                ds_tmp = mask_data
+                var_list = list(ds_tmp.keys())
+                for vv in var_list:
+                    if (type(ds_tmp[vv].values[0]) == np.datetime64) or (type(ds_tmp[vv].values[0]) == np.timedelta64):
+                        ds_tmp = ds_tmp.drop_vars(vv)
+                ds_std_prof = ds_tmp.std(dim="id_dim", skipna=True).compute()
+                ds_std_all = ds_tmp.std(skipna=True).compute()
+
+            # Loop over variables and save to output dataset.
             var_list = list(ds_std_prof.keys())
             for vv in var_list:
                 ds_std_prof = ds_std_prof.rename({vv: "profile_std_" + vv})
