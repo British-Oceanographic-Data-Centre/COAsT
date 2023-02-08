@@ -44,7 +44,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
                 print(itt)
                 gridded_t2 = gridded_t.subset_as_copy(t_dim=itt)
                 print("copied", im)
-                PEA = GriddedStratification(gridded_t2, gridded_t2)
+                PEA = GriddedStratification(gridded_t2)
                 PEA.calc_pea(gridded_t2, Zd_mask)
                 PEA_monthy_clim[im, :, :] = PEA_monthy_clim[im, :, :] + PEA.dataset["PEA"].values
         PEA_monthy_clim = PEA_monthy_clim / nyear
