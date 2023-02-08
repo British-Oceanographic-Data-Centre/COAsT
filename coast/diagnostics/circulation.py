@@ -24,7 +24,6 @@ class CurrentsonT(Gridded):
         self.dataset = gridded.dataset
 
     def currents_on_T(self, gridded_u, gridded_v):
-
         """
         Adds co-located velocity components and speed to CurrentsonT object
         Parameters
@@ -59,7 +58,7 @@ class CurrentsonT(Gridded):
         self.dataset["speed_t"] = xr.DataArray(speed, dims=dims)
 
     def plot_surface_circulation(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
-        #%%
+        # %%
         from matplotlib import cm
         from matplotlib.colors import LinearSegmentedColormap
 

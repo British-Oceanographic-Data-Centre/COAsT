@@ -152,7 +152,6 @@ class test_gridded_initialisation(unittest.TestCase):
         self.assertTrue(check1, msg="check1")
 
     def test_gridded_subset(self):
-
         lims = [150, 250, 100, 350]
         nemo_t_subset = coast.CurrentsonT(
             fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims

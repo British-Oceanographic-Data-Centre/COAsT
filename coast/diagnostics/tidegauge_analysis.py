@@ -99,7 +99,6 @@ class TidegaugeAnalysis:
 
         # Loop over ports
         for pp in range(0, n_port):
-
             # Temporary in-loop datasets
             ds_port = ds.isel(id_dim=pp).load()
             number_of_nan = np.sum(np.isnan(ds_port.values))
@@ -149,7 +148,6 @@ class TidegaugeAnalysis:
 
         # Loop over ports
         for pp in np.arange(n_port):
-
             # Reconstruct full tidal signal using utide
             pp_solution = utide_solution_list[pp]
             if len(pp_solution) == 0:
@@ -236,7 +234,6 @@ class TidegaugeAnalysis:
 
         # Loop over vars in the input dataset
         for vv in var_list:
-
             empty_thresh = np.zeros((n_port, n_thresholds)) * np.nan
             ds_thresh["peak_count_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
             ds_thresh["time_over_threshold_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
@@ -244,7 +241,6 @@ class TidegaugeAnalysis:
             ds_thresh["monthlymax_count_" + vv] = (["id_dim", "threshold"], np.array(empty_thresh))
 
             for pp in range(n_port):
-
                 # Identify NTR peaks for threshold analysis
                 data_pp = ds[vv].isel(id_dim=pp)
                 if np.sum(np.isnan(data_pp.values)) == ds.sizes["t_dim"]:
@@ -255,7 +251,6 @@ class TidegaugeAnalysis:
 
                 # Threshold Analysis
                 for nn in range(0, n_thresholds):
-
                     # Calculate daily and monthly maxima for threshold analysis
                     ds_daily = data_pp.groupby("time.day")
                     ds_daily_max = ds_daily.max(skipna=True)
@@ -451,7 +446,6 @@ class TidegaugeAnalysis:
 
         # Loop over location indices
         for ii in range(n_id):
-
             obs_ii = obs_var.isel(id_dim=ii)
 
             # Calculate CRPS

@@ -132,7 +132,7 @@ class test_diagnostic_methods(unittest.TestCase):
             plt.close("all")
 
     def test_circulation(self):
-        #%%
+        # %%
         lims = [150, 250, 100, 350]
         nemo_t = coast.CurrentsonT(fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims)
         nemo_u = coast.Gridded(

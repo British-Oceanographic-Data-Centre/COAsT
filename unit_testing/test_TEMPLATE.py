@@ -18,6 +18,7 @@ import os.path as path
 # IMPORT THIS TO HAVE ACCESS TO EXAMPLE FILE PATHS:
 import unit_test_files as files
 
+
 # Define a testing class. Absolutely fine to have one or multiple per file.
 # Each class must inherit unittest.TestCase
 class test_TEMPLATE(unittest.TestCase):

@@ -234,7 +234,6 @@ class Altimetry(Track):
         time_interp: str = "linear",
         create_new_object=True,
     ):
-
         """
         Comparison of observed variable to modelled using the Continuous
         Ranked Probability Score. This is done using this ALTIMETRY object.
