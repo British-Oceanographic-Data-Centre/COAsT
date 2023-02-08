@@ -158,7 +158,6 @@ class Profile(Indexed):
     """======================= Plotting ======================="""
 
     def plot_profile(self, var: str, profile_indices=None):
-
         fig = plt.figure(figsize=(7, 10))
 
         if profile_indices is None:
@@ -177,7 +176,6 @@ class Profile(Indexed):
         return fig, ax
 
     def plot_map(self, var_str=None):
-
         profiles = self.dataset
 
         if var_str is None:
@@ -188,7 +186,6 @@ class Profile(Indexed):
         return fig, ax
 
     def plot_ts_diagram(self, profile_index, var_t="potential_temperature", var_s="practical_salinity"):
-
         profile = self.dataset.isel(id_dim=profile_index)
         temperature = profile[var_t].values
         salinity = profile[var_s].values
@@ -812,7 +809,6 @@ class Profile(Indexed):
     def construct_density(
         self, eos="EOS10", rhobar=False, Zd_mask: xr.DataArray = None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
     ):
-
         """
             Constructs the in-situ density using the salinity, temperature and
             depth fields. Adds a density attribute to the profile dataset
@@ -853,7 +849,6 @@ class Profile(Indexed):
         debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
 
         try:
-
             if eos != "EOS10":
                 raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
 
@@ -908,7 +903,6 @@ class Profile(Indexed):
                 density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
                 new_var_name = "density"
             else:  # calculate density with depth integrated T S
-
                 if hasattr(self.dataset, "dz"):  # Requires spacing variable. Test to see if variable exists
                     pass
                 else:  # Create it
@@ -991,7 +985,6 @@ class Profile(Indexed):
             error(err)
 
     def calculate_vertical_mask(self, Zmax=200):
-
         """
         Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
         and linearly ramped for last level

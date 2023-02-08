@@ -36,7 +36,6 @@ class MaskMaker:
     """
 
     def __init__(self):
-
         return
 
     @staticmethod

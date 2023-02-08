@@ -11,7 +11,6 @@ import unit_test_files as files
 
 class test_gridded_harmonics(unittest.TestCase):
     def test_combine_and_convert_harmonics(self):
-
         harmonics = coast.Gridded(files.fn_nemo_harmonics, files.fn_nemo_harmonics_dom, config=files.fn_config_t_grid)
 
         with self.subTest("test_combine_harmonics"):
@@ -26,7 +25,6 @@ class test_gridded_harmonics(unittest.TestCase):
             self.assertTrue(check2, msg="check2")
 
         with self.subTest("test_convert_harmonics"):
-
             harmonics_combined.harmonics_convert(direction="cart2polar")
             harmonics_combined.harmonics_convert(direction="polar2cart", x_var="x_test", y_var="y_test")
 

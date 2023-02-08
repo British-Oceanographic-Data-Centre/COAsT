@@ -76,7 +76,6 @@ test_count = 1
 
 # Open output file
 with open(fn_contents, "w") as file:
-
     # Write title things
     file.write("     UNIT TEST CONTENTS FILE TEST    \n")
     file.write("\n")

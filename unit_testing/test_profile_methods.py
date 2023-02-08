@@ -14,7 +14,6 @@ import datetime
 
 class test_profile_methods(unittest.TestCase):
     def test_load_process_and_compare_profile_data(self):
-
         with self.subTest("Load profile data from EN4"):
             profile = coast.Profile(config=files.fn_profile_config)
             profile.read_en4(files.fn_profile)
@@ -70,7 +69,6 @@ class test_profile_methods(unittest.TestCase):
         self.assertTrue(check3, msg="check3")
 
     def test_compare_processed_profile_with_model(self):
-
         profile = coast.Profile(config=files.fn_profile_config)
         profile.read_en4(files.fn_profile)
         profile.dataset = profile.dataset.isel(id_dim=np.arange(0, profile.dataset.dims["id_dim"], 10)).load()

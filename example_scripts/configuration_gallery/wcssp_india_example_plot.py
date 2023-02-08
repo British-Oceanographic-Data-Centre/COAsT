@@ -7,12 +7,12 @@ WCSSP India configuration
 Simple plot of sea surface temperature
 """
 
-#%%
+# %%
 import coast
 import matplotlib.pyplot as plt
 
 #################################################
-#%%  Loading  data
+# %%  Loading  data
 #################################################
 
 dir_nam = "/projectsa/COAsT/NEMO_example_data/MO_INDIA/"
@@ -22,7 +22,7 @@ config_t = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json"
 
 sci_t = coast.Gridded(dir_nam + fil_nam, dir_nam + dom_nam, config=config_t)
 
-#%% Plot
+# %% Plot
 fig = plt.figure()
 
 plt.pcolormesh(sci_t.dataset.longitude, sci_t.dataset.latitude, sci_t.dataset.temperature.isel(t_dim=0).isel(z_dim=0))

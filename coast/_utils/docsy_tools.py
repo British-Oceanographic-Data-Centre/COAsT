@@ -12,7 +12,6 @@ class DocsyTools:  # TODO All abstract methods should be implemented
     def write_class_to_markdown(
         cls, class_to_write, fn_out, method_to_omit=[], omit_private_methods=True, omit_parent_methods=True
     ):
-
         methods_to_write = cls._get_list_of_methods(class_to_write)
 
         for method in methods_to_write:

@@ -132,7 +132,6 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
             plt.close("all")
 
     def test_calc_pea(self):
-
         nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer, files.fn_nemo_dom, config=files.fn_config_t_grid)
 
         # Compute a vertical max to exclude depths below 200m

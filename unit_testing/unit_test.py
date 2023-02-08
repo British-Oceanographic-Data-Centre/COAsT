@@ -110,7 +110,6 @@ if generate_unit_test_contents:
 
     # Open output file
     with open(fn_contents, "w") as file:
-
         # Write title things
         file.write("     UNIT TEST CONTENTS FILE TEST    \n")
         file.write("\n")

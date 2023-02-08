@@ -13,7 +13,6 @@ import datetime
 
 class test_contour_f_methods(unittest.TestCase):
     def test_extract_isobath_contour_between_two_points(self):
-
         with self.subTest("Extract contour"):
             nemo_f = coast.Gridded(
                 fn_domain=files.fn_nemo_dom, config=files.fn_config_f_grid, calculate_bathymetry=False

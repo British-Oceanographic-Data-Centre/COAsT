@@ -130,7 +130,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Writes self.dataset.pea
         """
         # may be duplicated in other branches. Uses the integral of T&S rather than integral of rho approach
-        #%%
+        # %%
         gravity = 9.81
         # Clean data This is quit slow and over writes potential temperature and practical salinity variables
         profile = ProfileStratification.clean_data(profile, gridded, Zmax)
@@ -207,7 +207,6 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         fig = None
         ax = None
         for var in var_lst:
-
             title_str = var.attrs["standard_name"] + " (" + var.attrs["units"] + ")"
 
             fig, ax = geo_scatter(
