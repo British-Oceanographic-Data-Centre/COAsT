@@ -74,7 +74,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.load(self.fn_data, chunks, multiple)
             # jth subset
             if len(lims) == 4:  # if lims are provided take a subset
-
+              try:  #two options of dimensios x,y or x_dim,y_dim
                 if lims[0] < lims[1]:  # usual case
                     self.dataset = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], lims[1]))
                 else:  # equatorial wrap around
@@ -82,6 +82,18 @@ class Gridded(Coast):  # TODO Complete this docstring
                     ds1 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], nx))
                     ds2 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(0, lims[1]))
                     self.dataset = xr.concat([ds1, ds2], dim="x")
+              except:
+                if lims[0] < lims[1]:  # usual case
+                    self.dataset = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
+                else:  # equatorial wrap around
+                    nx = self.dataset.dims["x_dim"]
+                    ds1 = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
+                    ds2 = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(0, lims[1]))
+                    self.dataset = xr.concat([ds1, ds2], dim="x_dim")
+
+
+
+
         #
 
         self.set_dimension_names(self.config.dataset.dimension_map)
