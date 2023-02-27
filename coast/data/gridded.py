@@ -510,7 +510,6 @@ class Gridded(Coast):  # TODO Complete this docstring
     def construct_density(
         self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
     ):
-
         """
             Constructs the in-situ density using the salinity, temperture and
             depth_0 fields and adds a density attribute to the t-grid dataset

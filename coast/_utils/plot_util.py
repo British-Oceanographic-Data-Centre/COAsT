@@ -222,7 +222,6 @@ def create_geo_axes(lonbounds, latbounds):
 
 
 def ts_diagram(temperature, salinity, depth):
-
     fig = plt.figure(figsize=(10, 7))
     ax = plt.scatter(salinity, temperature, c=depth)
     cbar = plt.colorbar()

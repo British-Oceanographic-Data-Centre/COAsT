@@ -188,7 +188,6 @@ def crps_sonf_fixed(
     else:
         # Subset model data in time and space: model -> obs
         for ii in neighbourhood_indices:
-
             mod_subset_time = mod_subset.interp(
                 time=obs_time[ii], method=time_interp, kwargs={"fill_value": "extrapolate"}
             )
