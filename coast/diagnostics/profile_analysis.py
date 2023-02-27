@@ -279,6 +279,7 @@ class ProfileAnalysis(Indexed):
         """
         Averages all data inside a given profile dataset across a regional mask
         or for multiples regional masks.
+        THIS IS SUPERSEDED BY mask_stats() WHICH DOES MEANS AND STD. KEPT FOR LEGACY REASONS.
 
         Parameters
         ----------
