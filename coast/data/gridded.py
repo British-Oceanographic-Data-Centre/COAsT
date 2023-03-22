@@ -108,7 +108,7 @@ class Gridded(Coast):  # TODO Complete this docstring
             dataset_domain = self.load_domain(self.fn_domain, chunks)
             # jth subset
             if len(lims) == 4:  # if lims are provided take a subset
-                if "x" in self.dataset.dims:
+                if "x" in dataset_domain.dims:
                     if lims[0] < lims[1]:  # usual case
                         dataset_domain = dataset_domain.isel(y=range(lims[2], lims[3]), x_=range(lims[0], lims[1]))
                     else:  # longitude wrap around
@@ -116,7 +116,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                         ds1 = dataset_domain.isel(y=range(lims[2], lims[3]), x=range(lims[0], nx))
                         ds2 = dataset_domain.isel(y=range(lims[2], lims[3]), x=range(0, lims[1]))
                         dataset_domain = xr.concat([ds1, ds2], dim="x_dim")
-                elif "x_dim" in self.dataset.dims:
+                elif "x_dim" in dataset_domain.dims:
                     if lims[0] < lims[1]:  # usual case
                         dataset_domain = dataset_domain.isel(
                             y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1])
