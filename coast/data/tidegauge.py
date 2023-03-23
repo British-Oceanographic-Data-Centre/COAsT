@@ -1111,12 +1111,13 @@ class Tidegauge(Timeseries):
         if "landmask" not in gridded:
             mask = None
         else:
-            mask = gridded['landmask']
+            mask = gridded["landmask"]
 
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=mask)
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=mask
+        )
 
         # Extract spatial time series
         print("Calculating time indices.", flush=True)
