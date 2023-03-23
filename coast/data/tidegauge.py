@@ -1109,13 +1109,14 @@ class Tidegauge(Timeseries):
 
         # Determine if landmask is present
         if "landmask" not in gridded:
-            gridded.landmask = None
+            mask = None
+        else:
+            mask = gridded['landmask']
 
         # Determine spatial indices
         print("Calculating spatial indices.", flush=True)
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=gridded.landmask
-        )
+            gridded.longitude, gridded.latitude, ds.longitude, ds.latitude, mask=mask)
 
         # Extract spatial time series
         print("Calculating time indices.", flush=True)
