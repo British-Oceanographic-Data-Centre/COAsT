@@ -64,12 +64,12 @@ class CurrentsOnT(Gridded):
         try:
             self.dataset["ut_velocity"] = ds_u.ut_velocity.drop('depthu')
         except:
-            self.dataset["ut_velocity"] = ds_u.vt_velocity 
+            self.dataset["ut_velocity"] = ds_u.vt_velocity
             debug('Did not find depthu variable to drop - to avoid conflicts in z_dim dimension')
 
         # V velocity on T-points
-        ds_v = self.dataset.copy(deep=True) 
-        
+        ds_v = self.dataset.copy(deep=True)
+
         ds_v["vt_velocity"] = 0.5*(gridded_v.dataset.v_velocity.shift(y_dim=1) + gridded_v.dataset.v_velocity)
         # replace wrapped (1st) latitude coord with zero
         _, _lat = xr.broadcast(gridded_v.dataset.v_velocity, gridded_v.dataset.latitude)
@@ -79,9 +79,9 @@ class CurrentsOnT(Gridded):
         ds_v.coords['longitude'] = self.dataset.longitude
         ds_v.coords['depth_0'] = self.dataset.depth_0
         try:
-            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop('depthv')  
+            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop('depthv')
         except:
-            self.dataset["vt_velocity"] = ds_v.vt_velocity 
+            self.dataset["vt_velocity"] = ds_v.vt_velocity
             debug('Did not find depthv variable to drop - to avoid conflicts in z_dim dimension')
 
         # Speed on T-points
