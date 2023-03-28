@@ -11,7 +11,7 @@ import xarray as xr
 import matplotlib.pylab as plt
 
 
-class CurrentsonT(Gridded):
+class CurrentsOnT(Gridded):
     """
     Methods for currents co-located on T-points
 
@@ -23,7 +23,7 @@ class CurrentsonT(Gridded):
         gridded = Gridded(fn_domain=fn_domain, config=config, **kwargs)
         self.dataset = gridded.dataset
 
-    def currents_on_T(self, gridded_u, gridded_v):
+    def currents_on_t(self, gridded_u, gridded_v):
         """
         Adds co-located velocity components and speed to CurrentsonT object
         Parameters
@@ -100,7 +100,12 @@ class CurrentsonT(Gridded):
         #self.dataset["vt_velocity"] = xr.DataArray(VT, dims=dims)
         #self.dataset["speed_t"] = xr.DataArray(speed, dims=dims)
 
-    def plot_surface_circulation(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
+    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
+        """
+        plot surface circulation
+        direction: unit vector
+        magnitude: shaded
+        """
         # %%
         from matplotlib import cm
         from matplotlib.colors import LinearSegmentedColormap
@@ -128,6 +133,7 @@ class CurrentsonT(Gridded):
         cmap1 = LinearSegmentedColormap.from_list("cmap1", colors1, cmap0.N - n_c * 2)
 
         cmap1.set_bad([0.75, 0.75, 0.75])
+
         fig = plt.figure()
         fig.clear()
         plt.pcolormesh(p, cmap=cmap1)
@@ -140,3 +146,4 @@ class CurrentsonT(Gridded):
         # plt.quiver(x,y,u,v,color=[0.1,0.1,0.1],headwidth=4,scale=50)
         plt.quiver(x, y, u, v, color=[0.1, 0.1, 0.1], headwidth=headwidth, scale=scale)  # ,**kwargs)
         plt.title("Surface Currents " + name)
+        return fig

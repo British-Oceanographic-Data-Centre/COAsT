@@ -63,8 +63,11 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         Args:
             chunks: This is a setting for xarray as to whether dask (parrell processing) should be on and how it works
-            multiple: falg to tell if we are loading one or more files
+            multiple: flag to tell if we are loading one or more files
             **kwargs: pass direct to loaded xarray dataset
+                lims = [x_dim index 1, x_dim_index 2, y_dim index 1, y_dim_index 2] - subset region defined from
+                                                                            lower left to upper right corners
+                calculate_bathymetry [boolean]: default-False
         """
         self.set_grid_vars()
         self.set_dimension_mapping()
