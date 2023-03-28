@@ -146,11 +146,15 @@ class test_diagnostic_methods(unittest.TestCase):
             nemo_t.currents_on_t(nemo_u, nemo_v)
             nemo_t.subset(z_dim=[0], t_dim=[0])
 
-            u1 = 0.5 * (nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values)
+            u1 = 0.5 * (
+                nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values
+            )
             u2 = nemo_t.dataset.ut_velocity[0, 0, 150, 60].values
-            #print(f"u vel on u-pts: {nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
-            #print(f"u vel on t-pts: {nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
-            v1 = 0.5 * (nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values)
+            # print(f"u vel on u-pts: {nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            # print(f"u vel on t-pts: {nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            v1 = 0.5 * (
+                nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values
+            )
             v2 = nemo_t.dataset.vt_velocity[0, 0, 150, 60].values
             speed = nemo_t.dataset.speed_t[0, 0, 150, 60].values
 

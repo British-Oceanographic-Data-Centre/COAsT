@@ -731,7 +731,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                     lat=self.dataset.latitude[-1, -1], lon=self.dataset.longitude[-1, -1], dataset_domain=dataset_domain
                 )
                 debug(f"trim_domain_size(): USED dataset.longitude")
-            except: # if called before variables are re-mapped. Not very pretty...
+            except:  # if called before variables are re-mapped. Not very pretty...
                 [j0, i0] = self.find_j_i_domain(
                     lat=self.dataset.nav_lat[0, 0], lon=self.dataset.nav_lon[0, 0], dataset_domain=dataset_domain
                 )
@@ -739,7 +739,6 @@ class Gridded(Coast):  # TODO Complete this docstring
                     lat=self.dataset.nav_lat[-1, -1], lon=self.dataset.nav_lon[-1, -1], dataset_domain=dataset_domain
                 )
                 debug(f"trim_domain_size(): USED dataset.nav_lon")
-
 
             dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1), x_dim=slice(i0, i1 + 1))
             return dataset_subdomain

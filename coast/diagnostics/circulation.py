@@ -53,40 +53,45 @@ class CurrentsOnT(Gridded):
         """
         ds_u = self.dataset.copy(deep=True)
         # U velocity on T-points
-        ds_u["ut_velocity"] = 0.5*(gridded_u.dataset.u_velocity.shift(x_dim=1) + gridded_u.dataset.u_velocity)
+        ds_u["ut_velocity"] = 0.5 * (gridded_u.dataset.u_velocity.shift(x_dim=1) + gridded_u.dataset.u_velocity)
         # replace wrapped (1st) longitude coord with zero
         _, _lon = xr.broadcast(gridded_u.dataset.u_velocity, gridded_u.dataset.longitude)
-        ds_u["ut_velocity"] = ds_u["ut_velocity"].where(_lon != _lon.isel(x_dim=0), 0) # keep values except where lon(x_dim=0)
+        ds_u["ut_velocity"] = ds_u["ut_velocity"].where(
+            _lon != _lon.isel(x_dim=0), 0
+        )  # keep values except where lon(x_dim=0)
         del _, _lon
-        ds_u.coords['latitude'] = self.dataset.latitude
-        ds_u.coords['longitude'] = self.dataset.longitude
-        ds_u.coords['depth_0'] = self.dataset.depth_0
+        ds_u.coords["latitude"] = self.dataset.latitude
+        ds_u.coords["longitude"] = self.dataset.longitude
+        ds_u.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop('depthu')
+            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
         except:
             self.dataset["ut_velocity"] = ds_u.vt_velocity
-            debug('Did not find depthu variable to drop - to avoid conflicts in z_dim dimension')
+            debug("Did not find depthu variable to drop - to avoid conflicts in z_dim dimension")
 
         # V velocity on T-points
         ds_v = self.dataset.copy(deep=True)
 
-        ds_v["vt_velocity"] = 0.5*(gridded_v.dataset.v_velocity.shift(y_dim=1) + gridded_v.dataset.v_velocity)
+        ds_v["vt_velocity"] = 0.5 * (gridded_v.dataset.v_velocity.shift(y_dim=1) + gridded_v.dataset.v_velocity)
         # replace wrapped (1st) latitude coord with zero
         _, _lat = xr.broadcast(gridded_v.dataset.v_velocity, gridded_v.dataset.latitude)
-        ds_v["vt_velocity"] = ds_v["vt_velocity"].where(_lat != _lat.isel(y_dim=0), 0) # keep values except where lat(y_dim=0)
+        ds_v["vt_velocity"] = ds_v["vt_velocity"].where(
+            _lat != _lat.isel(y_dim=0), 0
+        )  # keep values except where lat(y_dim=0)
         del _, _lat
-        ds_v.coords['latitude']  = self.dataset.latitude
-        ds_v.coords['longitude'] = self.dataset.longitude
-        ds_v.coords['depth_0'] = self.dataset.depth_0
+        ds_v.coords["latitude"] = self.dataset.latitude
+        ds_v.coords["longitude"] = self.dataset.longitude
+        ds_v.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop('depthv')
+            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop("depthv")
         except:
             self.dataset["vt_velocity"] = ds_v.vt_velocity
-            debug('Did not find depthv variable to drop - to avoid conflicts in z_dim dimension')
+            debug("Did not find depthv variable to drop - to avoid conflicts in z_dim dimension")
 
         # Speed on T-points
-        self.dataset["speed_t"] = np.sqrt( np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"]))
-
+        self.dataset["speed_t"] = np.sqrt(
+            np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"])
+        )
 
     def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
         """
