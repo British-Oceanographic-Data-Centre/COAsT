@@ -164,7 +164,7 @@ class ProfileAnalysis(Indexed):
         Returns
         -------
         Dataset describing which profiles are in which mask/region.
-        Ready for input to Profile.mask_means()
+        Ready for input to Profile.mask_means() or Profile.mask_stats()
         """
         dataset = profile.dataset
         # If landmask not present, set to None for nearest_indices (no masking)
@@ -189,10 +189,97 @@ class ProfileAnalysis(Indexed):
         return region_indices.rename({"dim_0": "id_dim"})
 
     @classmethod
+    def mask_stats(cls, profile, mask_indices):
+        """
+        Mean and Standard deviation of all data inside a given profile dataset across a regional mask
+        or for multiples regional masks.
+
+        Parameters
+        ----------
+        dataset : xarray.Dataset
+            The profile dataset to average.
+        mask_indices : xarray.Dataset
+            Describes which profiles are in which region. Returned from
+            profile_analysis.determine_mask_indices().
+
+        Returns
+        -------
+        xarray.Dataset containing mean and std data.
+
+        """
+        dataset = profile.dataset
+        # Get the number of masks provided
+        n_masks = mask_indices.dims["dim_mask"]
+        mask_names = []
+
+        # Loop over masked arrays. Assign mean and std to mask and seasonal means
+        debug(f"Calculating masked mean and std..")
+
+        # Loop over masks and index the data
+        for mm in range(0, n_masks):
+            mask = mask_indices.isel(dim_mask=mm).mask.values
+            mask_ind = np.where(mask.astype(bool))[0]
+            if len(mask_ind) < 1:
+                if mm == 0:
+                    ds_stats = xr.Dataset()
+                continue
+            else:
+                mask_names.append(mask_indices["region_names"][mm].values)
+
+            # Get actual profile data for this mask
+            mask_data = dataset.isel(id_dim=mask_ind)
+            # Get two averages. One preserving depths and the other averaging across all data in a region
+            ds_mean_prof = mask_data.mean(dim="id_dim", skipna=True).compute()
+            ds_mean_all = mask_data.mean(skipna=True).compute()
+
+            # Loop over variables and save to output dataset.
+            var_list = list(ds_mean_prof.keys())
+            for vv in var_list:
+                ds_mean_prof = ds_mean_prof.rename({vv: "profile_mean_" + vv})
+                ds_mean_all = ds_mean_all.rename({vv: "all_mean_" + vv})
+
+            # Get two std. One preserving depths and the other collapsing across all data in a region
+            try:  # At time of writing skipna=True not working for np.datetime64 or np.timedelta64 values. So remove them
+                ds_std_prof = mask_data.std(dim="id_dim", skipna=True).compute()
+                ds_std_all = mask_data.std(skipna=True).compute()
+            except:  # remove np.datetime64 and np.timedelta64 variables
+                ds_tmp = mask_data
+                var_list = list(ds_tmp.keys())
+                for vv in var_list:
+                    if (type(ds_tmp[vv].values[0]) == np.datetime64) or (type(ds_tmp[vv].values[0]) == np.timedelta64):
+                        ds_tmp = ds_tmp.drop_vars(vv)
+                ds_std_prof = ds_tmp.std(dim="id_dim", skipna=True).compute()
+                ds_std_all = ds_tmp.std(skipna=True).compute()
+
+            # Loop over variables and save to output dataset.
+            var_list = list(ds_std_prof.keys())
+            for vv in var_list:
+                ds_std_prof = ds_std_prof.rename({vv: "profile_std_" + vv})
+                ds_std_all = ds_std_all.rename({vv: "all_std_" + vv})
+
+            # Merge profile means and all means into one dataset for output
+            ds_stats_tmp = xr.merge((ds_mean_prof, ds_mean_all, ds_std_prof, ds_std_all))
+
+            # If only one mask then just return the merged dataset
+            # else concatenate onto existing dataset.
+            if mm == 0:
+                ds_stats = ds_stats_tmp
+            else:
+                ds_stats = xr.concat((ds_stats, ds_stats_tmp), dim="dim_mask")
+
+        if mask_names != []:
+            ds_stats["region_names"] = (["dim_mask"], mask_names)
+        else:
+            ds_stats["region_names"] = (["dim_mask"], range(ds_stats.dims["dim_mask"]))
+
+        return ds_stats.set_coords(["region_names"])
+
+    @classmethod
     def mask_means(cls, profile, mask_indices):
         """
         Averages all data inside a given profile dataset across a regional mask
         or for multiples regional masks.
+        THIS IS SUPERSEDED BY mask_stats() WHICH DOES MEANS AND STD. KEPT FOR LEGACY REASONS.
 
         Parameters
         ----------
