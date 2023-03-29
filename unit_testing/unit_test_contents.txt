@@ -11,6 +11,7 @@
       h. gridded_load_of_data_only
       i. gridded_load_subregion_with_domain
       j. gridded_load_variables_correctly_renamed
+      k. gridded_subset
 
 2. test_general_utils
       a. bst_to_gmt
@@ -27,9 +28,10 @@
       a. basic_conversion_to_xesmf
 
 5. test_diagnostic_methods
-      a. compute_vertical_spatial_derivative
-      b. construct_density
-      c. construct_pycnocline_depth_and_thickness
+      a. circulation
+      b. compute_vertical_spatial_derivative
+      c. construct_density
+      d. construct_pycnocline_depth_and_thickness
 
 6. test_transect_methods
       a. calculate_transport_velocity_and_depth

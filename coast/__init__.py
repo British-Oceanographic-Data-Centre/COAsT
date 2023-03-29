@@ -28,6 +28,7 @@ from .data.opendap import OpendapInfo
 from .data.copernicus import Copernicus, Product
 from ._utils.experiments_file_handling import experiments
 from ._utils.experiments_file_handling import nemo_filename_maker
+from .diagnostics.circulation import CurrentsOnT
 
 # Set default for logging level when coast is imported
 import logging
