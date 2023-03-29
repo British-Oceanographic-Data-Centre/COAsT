@@ -9,7 +9,7 @@ from ..data.gridded import Gridded
 import numpy as np
 import xarray as xr
 import matplotlib.pylab as plt
-
+from .._utils.logging_util import debug
 
 class CurrentsOnT(Gridded):
     """
@@ -66,7 +66,7 @@ class CurrentsOnT(Gridded):
         try:
             self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
         except:
-            self.dataset["ut_velocity"] = ds_u.vt_velocity
+            self.dataset["ut_velocity"] = ds_u.ut_velocity
             debug("Did not find depthu variable to drop - to avoid conflicts in z_dim dimension")
 
         # V velocity on T-points
@@ -93,7 +93,7 @@ class CurrentsOnT(Gridded):
             np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"])
         )
 
-    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
+    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50,time_value=None, **kwargs):
         """
         plot surface circulation
         direction: unit vector
@@ -105,10 +105,15 @@ class CurrentsOnT(Gridded):
 
         nx = self.dataset.x_dim.size
         ny = self.dataset.y_dim.size
-        SP = np.squeeze(self.dataset.speed_t)
-        US = np.squeeze(self.dataset.ut_velocity / SP)
-        VS = np.squeeze(self.dataset.vt_velocity / SP)
 
+        if time_value == None:
+            SP = np.squeeze(self.dataset.speed_t)
+            US = np.squeeze(self.dataset.ut_velocity / SP)
+            VS = np.squeeze(self.dataset.vt_velocity / SP)
+        else:
+            SP = np.squeeze(self.dataset.speed_t[time_value,:,:])
+            US = np.squeeze(self.dataset.ut_velocity[time_value,:,:] / SP)
+            VS = np.squeeze(self.dataset.vt_velocity[time_value,:,:] / SP) 
         mask = self.dataset.bottom_level != 0
         p = np.ma.masked_where(mask == 0, SP)
         u = np.ma.masked_where(mask[0::Np, 0::Np] == 0, US[0::Np, 0::Np])
