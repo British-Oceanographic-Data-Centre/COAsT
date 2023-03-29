@@ -100,7 +100,7 @@ class test_profile_methods(unittest.TestCase):
             lon = nemo_t.dataset.longitude.values
             lat = nemo_t.dataset.latitude.values
 
-            mm_north_sea = mm.region_def_nws_north_sea(lon, lat, bath)
+            mm_north_sea = mm.region_def_nws_north_north_sea(lon, lat, bath)
             mm_whole_domain = np.ones(lon.shape)
             mask_list = [mm_north_sea, mm_whole_domain]
             mask_names = ["North Sea", "Whole Domain"]
@@ -114,11 +114,25 @@ class test_profile_methods(unittest.TestCase):
             # Do average differences for each region
             mask_means = pa.mask_means(difference, mask_indices)
 
+            # Do mean and std for each region
+            mask_stats_model = pa.mask_stats(model_interpolated, mask_indices)
+
             check1 = mask_indices.dims["dim_mask"] == mask_means.dims["dim_mask"]  # since profiles are in mask regions
             check2 = np.isclose(mask_means.all_mean_diff_temperature.values[0], -0.8169331445866469)
 
+            check3 = (
+                mask_indices.dims["dim_mask"] == mask_stats_model.dims["dim_mask"]
+            )  # since profiles are in mask regions
+            check4 = np.isclose(
+                mask_stats_model.all_mean_temperature.values[0], 7.995568407463857
+            )  # includes mean and std
+            check5 = np.isclose(mask_stats_model.all_std_temperature.values[0], 0.8448488052959595)
+
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
+            self.assertTrue(check3, "check3")
+            self.assertTrue(check4, "check4")
+            self.assertTrue(check5, "check5")
 
         with self.subTest("Surface/Bottom averaging"):
             surface = 5

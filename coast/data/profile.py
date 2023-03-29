@@ -111,7 +111,7 @@ class Profile(Indexed):
 
             # Reorder files to read
             file_to_read = np.array(file_to_read)
-            dates = [ff[-9:-3] for ff in file_to_read]
+            dates = [ff[-9:-3] for ff in file_to_read]  # Assumes monthly filename structure: EN*yyyymm.nc
             dates = [datetime.datetime(int(dd[0:4]), int(dd[4:6]), 1) for dd in dates]
             sort_ind = np.argsort(dates)
             file_to_read = file_to_read[sort_ind]
@@ -194,7 +194,7 @@ class Profile(Indexed):
 
     """======================= Model Comparison ======================="""
 
-    def process_en4(self, sort_time=True):
+    def process_en4(self, sort_time=True, remove_flagged_neighbours=False):
         """
         VERSION 1.4 (05/07/2021)
 
@@ -221,6 +221,12 @@ class Profile(Indexed):
          fn_out (str)      : Full path to a desired output file. If unspecified
                              then nothing is written.
 
+        remove_flagged_neighbours: EN offers a profile flag that indicates there are
+                other profiles within 0.2 deg of latitude and longitude and 1 hour that
+                appear to be of higher quality. In previous versions of the dataset these
+                profiles would have not been stored in the data files. Setting this flag
+                as True removes these profiles.
+
         EXAMPLE USEAGE:
          profile = coast.PROFILE()
          profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
@@ -240,12 +246,18 @@ class Profile(Indexed):
         # Each bit of this string is a different QC flag. Which flag is which can
         # be found on the EN4 website:
         # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.sizes["id_dim"])]
+        qc_str = [
+            np.binary_repr(ds.qc_flags_profiles.astype(int).values[pp]).zfill(32)[::-1]
+            for pp in range(ds.sizes["id_dim"])
+        ]
 
         # Determine indices of the profiles that we want to keep
         reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
         reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
         reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
+        if remove_flagged_neighbours:
+            reject_close_flagged_prof = np.array([int(qq[2]) for qq in qc_str], dtype=bool)
+            reject_both_prof = np.logical_or(reject_both_prof, reject_close_flagged_prof)
         ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
         ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
         debug("     >>> QC: Completely rejecting {0} / {1} id_dims".format(np.sum(reject_both_prof), ds.dims["id_dim"]))
@@ -254,19 +266,25 @@ class Profile(Indexed):
         ds = ds.isel(id_dim=~reject_both_prof)
         reject_tem_prof = reject_tem_prof[~reject_both_prof]
         reject_sal_prof = reject_sal_prof[~reject_both_prof]
-
-        # Get new QC flags array
-        qc_lev = ds.qc_flags_levels.values
-
         debug(f" QC: Additional profiles converted to NaNs: ")
         debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
         debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
 
+        debug(f"MASKING rejected profiles, replacing with NaNs...")
+        reject_tem_prof_arr = ds.reject_tem_prof.broadcast_like(ds.potential_temperature).values
+        reject_sal_prof_arr = ds.reject_sal_prof.broadcast_like(ds.practical_salinity).values
+        ds["temperature"] = xr.where(~reject_tem_prof_arr, ds["temperature"], np.nan)
+        ds["potential_temperature"] = xr.where(~reject_tem_prof_arr, ds["potential_temperature"], np.nan)
+        ds["practical_salinity"] = xr.where(~reject_sal_prof_arr, ds["practical_salinity"], np.nan)
+
+        # Get new QC flags array
+        qc_lev = ds.qc_flags_levels.values
         #
         reject_tem_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
         reject_sal_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
 
-        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
+        # Get lists of QC integers that marks levels for masking
+        int_tem, int_sal, int_both = self.calculate_en4_qc_flags_levels()
         for ii in range(len(int_tem)):
             reject_tem_lev[qc_lev == int_tem[ii]] = 1
         for ii in range(len(int_sal)):
@@ -280,8 +298,8 @@ class Profile(Indexed):
 
         debug(f"MASKING rejected datapoints, replacing with NaNs...")
         ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
+        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["potential_temperature"], np.nan)
+        ds["practical_salinity"] = xr.where(~reject_sal_lev, ds["practical_salinity"], np.nan)
 
         if sort_time:
             debug(f"Sorting Time Dimension...")
@@ -292,69 +310,6 @@ class Profile(Indexed):
         return_prof = Profile()
         return_prof.dataset = ds
         return return_prof
-
-    @classmethod
-    def calculate_all_en4_qc_flags(cls):
-        """
-        Brute force method for identifying all rejected points according to
-        EN4 binary integers. It can be slow to convert large numbers of integers
-        to a sequence of bits and is actually quicker to just generate every
-        combination of possible QC integers. That's what this routine does.
-        Used in PROFILE.preprocess_en4().
-
-        INPUTS
-         NO INPUTS
-
-        OUTPUTS
-         qc_integers_tem  : Array of integers signifying the rejection of ONLY
-                            temperature datapoints
-         qc_integers_sal  : Array of integers signifying the rejection of ONLY
-                            salinity datapoints
-         qc_integers_both : Array of integers signifying the rejection of BOTH
-                            temperature and salinity datapoints.
-        """
-
-        reject_tem_ind = 0
-        reject_sal_ind = 1
-        reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
-
-        qc_integers_tem = []
-        qc_integers_sal = []
-        qc_integers_both = []
-        n_tem_reasons = len(reject_tem_reasons)
-        n_sal_reasons = len(reject_sal_reasons)
-        bin_len = 30
-
-        # IF reject_tem = 1, reject_sal = 0
-        for ii in range(n_tem_reasons):
-            bin_tmp = np.zeros(bin_len, dtype=int)
-            bin_tmp[reject_tem_ind] = 1
-            bin_tmp[reject_tem_reasons[ii]] = 1
-            qc_integers_tem.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        # IF reject_tem = 0, reject_sal = 1
-        for ii in range(n_sal_reasons):
-            bin_tmp = np.zeros(bin_len, dtype=int)
-            bin_tmp[reject_sal_ind] = 1
-            bin_tmp[reject_sal_reasons[ii]] = 1
-            qc_integers_sal.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        # IF reject_tem = 1, reject_sal = 1
-        for tt in range(n_tem_reasons):
-            for ss in range(n_sal_reasons):
-                bin_tmp = np.zeros(bin_len, dtype=int)
-                bin_tmp[reject_tem_ind] = 1
-                bin_tmp[reject_sal_ind] = 1
-                bin_tmp[reject_tem_reasons[tt]] = 1
-                bin_tmp[reject_sal_reasons[ss]] = 1
-                qc_integers_both.append(int("".join(str(jj) for jj in bin_tmp)[::-1], 2))
-
-        qc_integers_tem = list(set(qc_integers_tem))
-        qc_integers_sal = list(set(qc_integers_sal))
-        qc_integers_both = list(set(qc_integers_both))
-
-        return qc_integers_tem, qc_integers_sal, qc_integers_both
 
     def obs_operator(self, gridded, mask_bottom_level=True):
         """
@@ -506,110 +461,13 @@ class Profile(Indexed):
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
 
-    def process_en4(self, sort_time=True):
-        """
-        VERSION 1.4 (05/07/2021)
-
-        PREPROCESSES EN4 data ready for comparison with model data.
-        This routine will cut out a desired geographical box of EN4 data and
-        then apply quality control according to the available flags in the
-        netCDF files. Quality control happens in two steps:
-            1. Where a whole data profile is flagged, it is completely removed
-               from the dataset
-            2. Where a single datapoint is rejected in either temperature or
-               salinity, it is set to NaN.
-        This routine attempts to use xarray/dask chunking magic to keep
-        memory useage low however some memory is still needed for loading
-        flags etc. May be slow if using large EN4 datasets.
-
-        Routine will return a processed profile object dataset and can write
-        the new dataset to file if fn_out is defined. If saving to the
-        PROFILE object, be aware that DASK computations will not have happened
-        and will need to be done using .load(), .compute() or similar before
-        accessing the values. IF using multiple EN4 files or large dataset,
-        make sure you have chunked the data over N_PROF dimension.
-
-        INPUTS
-         fn_out (str)      : Full path to a desired output file. If unspecified
-                             then nothing is written.
-
-        EXAMPLE USEAGE:
-         profile = coast.PROFILE()
-         profile.read_EN4(fn_en4, chunks={'N_PROF':10000})
-         fn_out = '~/output_file.nc'
-         new_profile = profile.preprocess_en4(fn_out = fn_out,
-                                              lonbounds = [-10, 10],
-                                              latbounds = [45, 65])
-        """
-
-        ds = self.dataset
-
-        # REJECT profiles that are QC flagged.
-        debug(f" Applying QUALITY CONTROL to EN4 data...")
-        ds.qc_flags_profiles.load()
-
-        # This line reads converts the QC integer to a binary string.
-        # Each bit of this string is a different QC flag. Which flag is which can
-        # be found on the EN4 website:
-        # https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
-        qc_str = [np.binary_repr(ds.qc_flags_profiles.values[pp]).zfill(30)[::-1] for pp in range(ds.dims["id_dim"])]
-
-        # Determine indices of kept profiles
-        reject_tem_prof = np.array([int(qq[0]) for qq in qc_str], dtype=bool)
-        reject_sal_prof = np.array([int(qq[1]) for qq in qc_str], dtype=bool)
-        reject_both_prof = np.logical_and(reject_tem_prof, reject_sal_prof)
-        ds["reject_tem_prof"] = (["id_dim"], reject_tem_prof)
-        ds["reject_sal_prof"] = (["id_dim"], reject_sal_prof)
-        debug(
-            "     >>> QC: Completely rejecting {0} / {1} profiles".format(np.sum(reject_both_prof), ds.dims["id_dim"])
-        )
-
-        ds = ds.isel(id_dim=~reject_both_prof)
-        reject_tem_prof = reject_tem_prof[~reject_both_prof]
-        reject_sal_prof = reject_sal_prof[~reject_both_prof]
-        qc_lev = ds.qc_flags_levels.values
-
-        debug(f" QC: Additional profiles converted to NaNs: ")
-        debug(f"     >>> {0} temperature profiles ".format(np.sum(reject_tem_prof)))
-        debug(f"     >>> {0} salinity profiles ".format(np.sum(reject_sal_prof)))
-
-        reject_tem_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
-        reject_sal_lev = np.zeros((ds.dims["id_dim"], ds.dims["z_dim"]), dtype=bool)
-
-        int_tem, int_sal, int_both = self.calculate_all_en4_qc_flags()
-        for ii in range(len(int_tem)):
-            reject_tem_lev[qc_lev == int_tem[ii]] = 1
-        for ii in range(len(int_sal)):
-            reject_sal_lev[qc_lev == int_sal[ii]] = 1
-        for ii in range(len(int_both)):
-            reject_tem_lev[qc_lev == int_both[ii]] = 1
-            reject_sal_lev[qc_lev == int_both[ii]] = 1
-
-        ds["reject_tem_datapoint"] = (["id_dim", "z_dim"], reject_tem_lev)
-        ds["reject_sal_datapoint"] = (["id_dim", "z_dim"], reject_sal_lev)
-
-        debug(f"MASKING rejected datapoints, replacing with NaNs...")
-        ds["temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["potential_temperature"] = xr.where(~reject_tem_lev, ds["temperature"], np.nan)
-        ds["practical_salinity"] = xr.where(~reject_tem_lev, ds["practical_salinity"], np.nan)
-
-        if sort_time:
-            debug(f"Sorting Time Dimension...")
-            ds = ds.sortby("time")
-
-        debug(f"Finished processing data. Returning new Profile object.")
-
-        return_prof = Profile()
-        return_prof.dataset = ds
-        return return_prof
-
-    def calculate_all_en4_qc_flags(self):
+    def calculate_en4_qc_flags_levels(self):
         """
         Brute force method for identifying all rejected points according to
         EN4 binary integers. It can be slow to convert large numbers of integers
         to a sequence of bits and is actually quicker to just generate every
         combination of possible QC integers. That's what this routine does.
-        Used in PROFILE.preprocess_en4().
+        Used in Profile.process_en4().
 
         INPUTS
          NO INPUTS
@@ -625,15 +483,27 @@ class Profile(Indexed):
 
         reject_tem_ind = 0
         reject_sal_ind = 1
-        reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+        if "4.2.0" in self.dataset.history:
+            # from https://www.metoffice.gov.uk/hadobs/en4/en4-0-2-profile-file-format.html
+            reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            reject_sal_reasons = [2, 3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+        elif "4.2.2" in self.dataset.history:
+            # from https://www.metoffice.gov.uk/hadobs/en4/en4-2-2-profile-file-format.html
+            reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            reject_sal_reasons = [2, 3, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+        else:
+            reject_tem_reasons = [2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            reject_sal_reasons = [2, 3, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+            debug(
+                f"Assume QC flags following 4.2.2: https://www.metoffice.gov.uk/hadobs/en4/en4-2-2-profile-file-format.html"
+            )
 
         qc_integers_tem = []
         qc_integers_sal = []
         qc_integers_both = []
         n_tem_reasons = len(reject_tem_reasons)
         n_sal_reasons = len(reject_sal_reasons)
-        bin_len = 30
+        bin_len = 32
 
         # IF reject_tem = 1, reject_sal = 0
         for ii in range(n_tem_reasons):

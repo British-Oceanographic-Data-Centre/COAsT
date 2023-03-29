@@ -134,29 +134,39 @@ class test_diagnostic_methods(unittest.TestCase):
     def test_circulation(self):
         # %%
         lims = [150, 250, 100, 350]
-        nemo_t = coast.CurrentsonT(fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims)
         nemo_u = coast.Gridded(
             fn_data=files.fn_nemo_grid_u_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_u_grid, lims=lims
         )
         nemo_v = coast.Gridded(
             fn_data=files.fn_nemo_grid_v_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_v_grid, lims=lims
         )
-        nemo_t.currents_on_T(nemo_u, nemo_v)
-        nemo_t.subset(z_dim=[0], t_dim=[0])
 
-        U1 = 0.5 * (nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values)
-        U2 = nemo_t.dataset.ut_velocity[0, 0, 150, 60].values
+        with self.subTest("Map velocities to t-points"):
+            nemo_t = coast.CurrentsOnT(fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims)
+            nemo_t.currents_on_t(nemo_u, nemo_v)
+            nemo_t.subset(z_dim=[0], t_dim=[0])
 
-        V1 = 0.5 * (nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values)
-        V2 = nemo_t.dataset.vt_velocity[0, 0, 150, 60].values
-        SP2 = nemo_t.dataset.speed_t[0, 0, 150, 60].values
+            u1 = 0.5 * (
+                nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values
+            )
+            u2 = nemo_t.dataset.ut_velocity[0, 0, 150, 60].values
+            # print(f"u vel on u-pts: {nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            # print(f"u vel on t-pts: {nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            v1 = 0.5 * (
+                nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values
+            )
+            v2 = nemo_t.dataset.vt_velocity[0, 0, 150, 60].values
+            speed = nemo_t.dataset.speed_t[0, 0, 150, 60].values
 
-        check1 = np.isclose(U1, U2)
-        check2 = np.isclose(V1, V2)
-        check3 = np.isclose(SP2, 0.04988122)
-        self.assertTrue(check1, msg="check 1")
-        self.assertTrue(check2, msg="check 2")
-        self.assertTrue(check3, msg="check 3")
+            check1 = np.isclose(u1, u2)
+            check2 = np.isclose(v1, v2)
+            check3 = np.isclose(speed, 0.04988122)
+            self.assertTrue(check1, msg="check 1")
+            self.assertTrue(check2, msg="check 2")
+            self.assertTrue(check3, msg="check 3")
 
-        nemo_t.plot_surface_circulation("Test")
-        plt.close("all")
+        with self.subTest("Plot circulation on t-points"):
+            fig = nemo_t.quick_plot("Test")
+            fig.tight_layout()
+            fig.savefig(files.dn_fig + "surface_circulation.png")
+            plt.close("all")

@@ -338,5 +338,5 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
             plt.ylabel("latitude")
             plt.clim([0, 50])
             plt.colorbar()
-            plt.show()
+            # plt.show()
         return fig, ax

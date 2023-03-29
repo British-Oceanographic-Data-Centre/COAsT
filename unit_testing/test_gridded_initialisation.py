@@ -153,13 +153,10 @@ class test_gridded_initialisation(unittest.TestCase):
 
     def test_gridded_subset(self):
         lims = [150, 250, 100, 350]
-        nemo_t_subset = coast.CurrentsonT(
-            fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims
+        nemo_t_subset = coast.Gridded(
+            fn_data=files.fn_nemo_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims
         )
-
-        nemo_t = coast.CurrentsonT(
-            fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
-        )
+        nemo_t = coast.Gridded(fn_data=files.fn_nemo_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid)
 
         T1 = nemo_t.dataset.temperature[0, 0, 105, 155].values
         T2 = nemo_t_subset.dataset.temperature[0, 0, 5, 5].values

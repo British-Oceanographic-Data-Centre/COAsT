@@ -11,11 +11,11 @@ import xarray as xr
 import matplotlib.pylab as plt
 
 
-class CurrentsonT(Gridded):
+class CurrentsOnT(Gridded):
     """
     Methods for currents co-located on T-points
 
-    use like coast.Gridded () with a domain_cfg file name to create gridded object
+    Use like coast.Gridded() with a domain_cfg file name to create gridded object
 
     """
 
@@ -23,9 +23,22 @@ class CurrentsonT(Gridded):
         gridded = Gridded(fn_domain=fn_domain, config=config, **kwargs)
         self.dataset = gridded.dataset
 
-    def currents_on_T(self, gridded_u, gridded_v):
+    def currents_on_t(self, gridded_u, gridded_v):
         """
-        Adds co-located velocity components and speed to CurrentsonT object
+        Adds co-located velocity components and speed to CurrentsOnT object
+
+        Avoids use of indices in the hope that it will be more parallelisable. However in index space the mappings
+        take this form:
+        u_on_t_points[:, :, :, 1:] = 0.5 * (
+            gridded_u.dataset.u_velocity.values[:, :, :, 1:] + gridded_u.dataset.u_velocity.values[:, :, :, :-1]
+            )
+
+        v_on_t_points[:, :, 1:, :] = 0.5 * (
+            gridded_v.dataset.v_velocity.values[:, :, 1:, :] + gridded_v.dataset.v_velocity.values[:, :, :-1, :]
+            )
+
+        For arrays of shape and order: (z_dim, t_dim, y_dim, x_dim)
+
         Parameters
         ----------
         gridded_u : TYPE
@@ -38,26 +51,54 @@ class CurrentsonT(Gridded):
         None.
 
         """
+        ds_u = self.dataset.copy(deep=True)
+        # U velocity on T-points
+        ds_u["ut_velocity"] = 0.5 * (gridded_u.dataset.u_velocity.shift(x_dim=1) + gridded_u.dataset.u_velocity)
+        # replace wrapped (1st) longitude coord with zero
+        _, _lon = xr.broadcast(gridded_u.dataset.u_velocity, gridded_u.dataset.longitude)
+        ds_u["ut_velocity"] = ds_u["ut_velocity"].where(
+            _lon != _lon.isel(x_dim=0), 0
+        )  # keep values except where lon(x_dim=0)
+        del _, _lon
+        ds_u.coords["latitude"] = self.dataset.latitude
+        ds_u.coords["longitude"] = self.dataset.longitude
+        ds_u.coords["depth_0"] = self.dataset.depth_0
+        try:
+            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
+        except:
+            self.dataset["ut_velocity"] = ds_u.vt_velocity
+            debug("Did not find depthu variable to drop - to avoid conflicts in z_dim dimension")
 
-        # U velocity on T points
-        UT = np.zeros(gridded_u.dataset.u_velocity.shape)
-        UT[:, :, :, 1:] = 0.5 * (
-            gridded_u.dataset.u_velocity.values[:, :, :, 1:] + gridded_u.dataset.u_velocity.values[:, :, :, :-1]
+        # V velocity on T-points
+        ds_v = self.dataset.copy(deep=True)
+
+        ds_v["vt_velocity"] = 0.5 * (gridded_v.dataset.v_velocity.shift(y_dim=1) + gridded_v.dataset.v_velocity)
+        # replace wrapped (1st) latitude coord with zero
+        _, _lat = xr.broadcast(gridded_v.dataset.v_velocity, gridded_v.dataset.latitude)
+        ds_v["vt_velocity"] = ds_v["vt_velocity"].where(
+            _lat != _lat.isel(y_dim=0), 0
+        )  # keep values except where lat(y_dim=0)
+        del _, _lat
+        ds_v.coords["latitude"] = self.dataset.latitude
+        ds_v.coords["longitude"] = self.dataset.longitude
+        ds_v.coords["depth_0"] = self.dataset.depth_0
+        try:
+            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop("depthv")
+        except:
+            self.dataset["vt_velocity"] = ds_v.vt_velocity
+            debug("Did not find depthv variable to drop - to avoid conflicts in z_dim dimension")
+
+        # Speed on T-points
+        self.dataset["speed_t"] = np.sqrt(
+            np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"])
         )
-        # V velocity on T points
-        VT = np.zeros(gridded_v.dataset.v_velocity.shape)
-        VT[:, :, 1:, :] = 0.5 * (
-            gridded_v.dataset.v_velocity.values[:, :, 1:, :] + gridded_v.dataset.v_velocity.values[:, :, :-1, :]
-        )
 
-        speed = np.sqrt(UT * UT + VT * VT)
-
-        dims = gridded_u.dataset.u_velocity.dims
-        self.dataset["ut_velocity"] = xr.DataArray(UT, dims=dims)
-        self.dataset["vt_velocity"] = xr.DataArray(VT, dims=dims)
-        self.dataset["speed_t"] = xr.DataArray(speed, dims=dims)
-
-    def plot_surface_circulation(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
+    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, **kwargs):
+        """
+        plot surface circulation
+        direction: unit vector
+        magnitude: shaded
+        """
         # %%
         from matplotlib import cm
         from matplotlib.colors import LinearSegmentedColormap
@@ -85,6 +126,7 @@ class CurrentsonT(Gridded):
         cmap1 = LinearSegmentedColormap.from_list("cmap1", colors1, cmap0.N - n_c * 2)
 
         cmap1.set_bad([0.75, 0.75, 0.75])
+
         fig = plt.figure()
         fig.clear()
         plt.pcolormesh(p, cmap=cmap1)
@@ -97,3 +139,4 @@ class CurrentsonT(Gridded):
         # plt.quiver(x,y,u,v,color=[0.1,0.1,0.1],headwidth=4,scale=50)
         plt.quiver(x, y, u, v, color=[0.1, 0.1, 0.1], headwidth=headwidth, scale=scale)  # ,**kwargs)
         plt.title("Surface Currents " + name)
+        return fig

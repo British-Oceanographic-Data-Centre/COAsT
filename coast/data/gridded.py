@@ -63,8 +63,11 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         Args:
             chunks: This is a setting for xarray as to whether dask (parrell processing) should be on and how it works
-            multiple: falg to tell if we are loading one or more files
+            multiple: flag to tell if we are loading one or more files
             **kwargs: pass direct to loaded xarray dataset
+                lims = [x_dim index 1, x_dim_index 2, y_dim index 1, y_dim_index 2] - subset region defined from
+                                                                            lower left to upper right corners
+                calculate_bathymetry [boolean]: default-False
         """
         self.set_grid_vars()
         self.set_dimension_mapping()
@@ -72,33 +75,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         lims = kwargs.get("lims", [])
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
-            # jth subset
 
-            if len(lims) == 4:  # if lims are provided take a subset
-                # two options of dimensions x,y or x_dim,y_dim
-                if "x" in self.dataset.dims:
-                    if lims[0] < lims[1]:  # usual case
-                        self.dataset = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], lims[1]))
-                    else:  # longitude wrap around
-                        nx = self.dataset.dims["x"]
-                        ds1 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(lims[0], nx))
-                        ds2 = self.dataset.isel(y=range(lims[2], lims[3]), x=range(0, lims[1]))
-                        self.dataset = xr.concat([ds1, ds2], dim="x")
-                        self.dataset
-                elif "x_dim" in self.dataset.dims:
-                    if lims[0] < lims[1]:  # usual case
-                        self.dataset = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
-                    else:  # longitude  wrap around
-                        nx = self.dataset.dims["x_dim"]
-                        ds1 = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
-                        ds2 = self.dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(0, lims[1]))
-                        self.dataset = xr.concat([ds1, ds2], dim="x_dim")
-                else:
-                    print("limits not used as only work with datasets having dimension x or x_dim")
-        #
-
-        self.set_dimension_names(self.config.dataset.dimension_map)
-        self.set_variable_names(self.config.dataset.variable_map)
+            self.set_dimension_names(self.config.dataset.dimension_map)
+            self.set_variable_names(self.config.dataset.variable_map)
+            self.dataset = self.spatial_subset(self.dataset, lims)  # Trim data size if indices specified
 
         if self.fn_domain is None:
             self.filename_domain = ""  # empty store for domain fileanme
@@ -106,37 +86,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         else:
             self.filename_domain = self.fn_domain  # store domain fileanme
             dataset_domain = self.load_domain(self.fn_domain, chunks)
-            # jth subset
-            if len(lims) == 4:  # if lims are provided take a subset
-                if "x" in dataset_domain.dims:
-                    if lims[0] < lims[1]:  # usual case
-                        dataset_domain = dataset_domain.isel(y=range(lims[2], lims[3]), x_=range(lims[0], lims[1]))
-                    else:  # longitude wrap around
-                        nx = dataset_domain.dims["x_dim"]
-                        ds1 = dataset_domain.isel(y=range(lims[2], lims[3]), x=range(lims[0], nx))
-                        ds2 = dataset_domain.isel(y=range(lims[2], lims[3]), x=range(0, lims[1]))
-                        dataset_domain = xr.concat([ds1, ds2], dim="x_dim")
-                elif "x_dim" in dataset_domain.dims:
-                    if lims[0] < lims[1]:  # usual case
-                        dataset_domain = dataset_domain.isel(
-                            y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1])
-                        )
-                    else:  # longitude wrap around
-                        nx = dataset_domain.dims["x_dim"]
-                        ds1 = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
-                        ds2 = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(0, lims[1]))
-                        dataset_domain = xr.concat([ds1, ds2], dim="x_dim")
-                else:
-                    print("limits not used as only work with datasets having dimension x or x_dim")
 
-            #
             # Define extra domain attributes using kwargs dictionary
             # This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
                 dataset_domain[key] = value
 
+            dataset_domain = self.spatial_subset(dataset_domain, lims)  # Trim domain size if indices specified
             if self.fn_data is not None:
-                dataset_domain = self.trim_domain_size(dataset_domain)
+                dataset_domain = self.trim_domain_size(dataset_domain)  # Trim domain size if self.data is smaller
             self.set_timezero_depths(
                 dataset_domain, **kwargs
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
@@ -722,6 +680,27 @@ class Gridded(Coast):  # TODO Complete this docstring
         except AttributeError as err:
             error(err)
 
+    def spatial_subset(self, dataset, lims):
+        """
+        Specify indices to subset the data. Subset region defined as a 2D box from lower left to upper right corners
+        lims = [x_dim index_1, x_dim_index_2, y_dim index_1, y_dim_index_2] -
+        Modifies self.dataset
+        """
+        if len(lims) == 4:  # if lims are provided take a subset
+            debug(f"Trimming by indices: {lims}")
+            # subsetting will wrap longitude across dateline if 1st longitude is larger than 2nd.
+            if "x_dim" in dataset.dims:
+                if lims[0] < lims[1]:  # usual case
+                    dataset = dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
+                else:  # longitude  wrap around
+                    nx = dataset.dims["x_dim"]
+                    ds1 = dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
+                    ds2 = dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(0, lims[1]))
+                    dataset = xr.concat([ds1, ds2], dim="x_dim")
+            else:
+                print("limits not used as only work with datasets having dimension x_dim")
+        return dataset
+
     def trim_domain_size(self, dataset_domain):
         """
         Trim the domain variables if the dataset object is a spatial subset
@@ -744,12 +723,22 @@ class Gridded(Coast):  # TODO Complete this docstring
             )
 
             # Find the corners of the cut out domain.
-            [j0, i0] = self.find_j_i_domain(
-                lat=self.dataset.nav_lat[0, 0], lon=self.dataset.nav_lon[0, 0], dataset_domain=dataset_domain
-            )
-            [j1, i1] = self.find_j_i_domain(
-                lat=self.dataset.nav_lat[-1, -1], lon=self.dataset.nav_lon[-1, -1], dataset_domain=dataset_domain
-            )
+            try:
+                [j0, i0] = self.find_j_i_domain(
+                    lat=self.dataset.latitude[0, 0], lon=self.dataset.longitude[0, 0], dataset_domain=dataset_domain
+                )
+                [j1, i1] = self.find_j_i_domain(
+                    lat=self.dataset.latitude[-1, -1], lon=self.dataset.longitude[-1, -1], dataset_domain=dataset_domain
+                )
+                debug(f"trim_domain_size(): USED dataset.longitude")
+            except:  # if called before variables are re-mapped. Not very pretty...
+                [j0, i0] = self.find_j_i_domain(
+                    lat=self.dataset.nav_lat[0, 0], lon=self.dataset.nav_lon[0, 0], dataset_domain=dataset_domain
+                )
+                [j1, i1] = self.find_j_i_domain(
+                    lat=self.dataset.nav_lat[-1, -1], lon=self.dataset.nav_lon[-1, -1], dataset_domain=dataset_domain
+                )
+                debug(f"trim_domain_size(): USED dataset.nav_lon")
 
             dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1), x_dim=slice(i0, i1 + 1))
             return dataset_subdomain
