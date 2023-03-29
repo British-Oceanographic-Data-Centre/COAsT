@@ -11,6 +11,7 @@ import xarray as xr
 import matplotlib.pylab as plt
 from .._utils.logging_util import debug
 
+
 class CurrentsOnT(Gridded):
     """
     Methods for currents co-located on T-points
@@ -93,7 +94,7 @@ class CurrentsOnT(Gridded):
             np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"])
         )
 
-    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50,time_value=None, **kwargs):
+    def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, time_value=None, **kwargs):
         """
         plot surface circulation
         direction: unit vector
@@ -111,9 +112,9 @@ class CurrentsOnT(Gridded):
             US = np.squeeze(self.dataset.ut_velocity / SP)
             VS = np.squeeze(self.dataset.vt_velocity / SP)
         else:
-            SP = np.squeeze(self.dataset.speed_t[time_value,:,:])
-            US = np.squeeze(self.dataset.ut_velocity[time_value,:,:] / SP)
-            VS = np.squeeze(self.dataset.vt_velocity[time_value,:,:] / SP) 
+            SP = np.squeeze(self.dataset.speed_t[time_value, :, :])
+            US = np.squeeze(self.dataset.ut_velocity[time_value, :, :] / SP)
+            VS = np.squeeze(self.dataset.vt_velocity[time_value, :, :] / SP)
         mask = self.dataset.bottom_level != 0
         p = np.ma.masked_where(mask == 0, SP)
         u = np.ma.masked_where(mask[0::Np, 0::Np] == 0, US[0::Np, 0::Np])
