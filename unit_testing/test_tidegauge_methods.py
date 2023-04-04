@@ -51,7 +51,6 @@ class test_tidegauge_analysis(unittest.TestCase):
         self.assertTrue(np.array_equal(tg1.dataset.ssh[0, :].values, demeaned), "check1")
 
     def test_harmonic_analysis_utide(self):
-
         tganalysis = coast.TidegaugeAnalysis()
         date0 = datetime.datetime(2007, 1, 10)
         date1 = datetime.datetime(2007, 1, 12)
@@ -134,7 +133,6 @@ class test_tidegauge_methods(unittest.TestCase):
         self.assertTrue(check2, "check2")
 
     def test_read_gesla_and_compare_to_model(self):
-
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         sci.dataset["landmask"] = sci.dataset.bottom_level == 0
         tganalysis = coast.TidegaugeAnalysis()
@@ -210,7 +208,6 @@ class test_tidegauge_methods(unittest.TestCase):
         self.assertTrue(check2, "check2")
 
     def test_tidegauge_resample_and_apply_doodsonx0(self):
-
         with self.subTest("Resample to 1H"):
             tganalysis = coast.TidegaugeAnalysis()
             date0 = datetime.datetime(2007, 1, 10)
@@ -235,7 +232,6 @@ class test_tidegauge_methods(unittest.TestCase):
             self.assertTrue(check2, "check2")
 
     def test_load_multiple_tidegauge(self):
-
         with self.subTest("Load multiple gauge"):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
@@ -286,7 +282,6 @@ class test_tidegauge_methods(unittest.TestCase):
         self.assertTrue(check5, "check5")
 
     def test_tidegauge_finding_extrema(self):
-
         with self.subTest("Find extrema"):
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 20)
@@ -321,7 +316,6 @@ class test_tidegauge_methods(unittest.TestCase):
             plt.close("all")
 
     def test_tidegauge_cubic_spline_extrema(self):
-
         with self.subTest("Fit cubic spline"):
             date_start = np.datetime64("2020-10-12 23:59")
             date_end = np.datetime64("2020-10-14 00:01")

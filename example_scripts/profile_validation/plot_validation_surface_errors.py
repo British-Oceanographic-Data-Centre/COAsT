@@ -18,7 +18,7 @@ sys.path.append("/Users/dbyrne/code/COAsT")
 import coast
 import pandas as pd
 
-#%% File settings
+# %% File settings
 run_name = "test"
 
 # List of analysis output files. Profiles from each will be plotted
@@ -31,7 +31,7 @@ fn_list = [
 # Filename for the output
 fn_out = "/Users/dbyrne/transfer/surface_errors_{0}.png".format(run_name)
 
-#%% General Plot Settings
+# %% General Plot Settings
 var_name = "diff_temperature"  # Variable name in analysis file to plot
 save_plot = False
 
@@ -64,7 +64,7 @@ select_season = True  # Only plot data from specified season
 season_str = "DJF"  # DJF, MAM, JJA or SON
 
 
-#%% Read and plotdata
+# %% Read and plotdata
 
 # Read all datasets into list
 ds_list = [xr.open_dataset(dd)[var_name] for dd in fn_list]

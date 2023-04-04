@@ -113,7 +113,6 @@ class test_object_manipulation(unittest.TestCase):
         self.assertTrue(check1, "check1")
 
     def test_interpolation_to_altimetry(self):
-
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
 
         with self.subTest("Find nearest xy indices"):

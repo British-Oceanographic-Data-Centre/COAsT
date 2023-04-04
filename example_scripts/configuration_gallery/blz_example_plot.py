@@ -5,12 +5,12 @@ Make simple Belize SSH plot.
 
 """
 
-#%%
+# %%
 import coast
 import matplotlib.pyplot as plt
 
 #################################################
-#%%  Loading  data
+# %%  Loading  data
 #################################################
 
 
@@ -34,6 +34,6 @@ sci_v = coast.Gridded(dir_nam + fil_nam.replace("grid_T", "grid_V"), dom_nam, co
 sci_w = coast.Gridded(fn_domain=dom_nam, config=config_w)
 
 
-#%% Plot
+# %% Plot
 plt.pcolormesh(sci_t.dataset.ssh.isel(t_dim=0))
 plt.show()

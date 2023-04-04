@@ -36,7 +36,7 @@ sci_w.dataset.chunk({"x_dim": 10, "y_dim": 10})  # Can reset after loading confi
 print("* Loaded ", config, " data")
 
 #################################################
-#%% subset of data and domain ##
+# %% subset of data and domain ##
 #################################################
 # Pick out a North Sea subdomain
 print("* Extract North Sea subdomain")
@@ -45,7 +45,7 @@ sci_nwes_t = sci_t.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest 
 ind_sci = sci_w.subset_indices(start=[51, -4], end=[62, 15])
 sci_nwes_w = sci_w.isel(y_dim=ind_sci[0], x_dim=ind_sci[1])  # nwes = northwest europe shelf
 
-#%% Apply masks to temperature and salinity
+# %% Apply masks to temperature and salinity
 if config == "AMM15":
     sci_nwes_t.dataset["temperature_m"] = sci_nwes_t.dataset.temperature.where(
         sci_nwes_t.dataset.mask.expand_dims(dim=sci_nwes_t.dataset["t_dim"].sizes) > 0
@@ -60,7 +60,7 @@ else:
     sci_nwes_t.dataset["salinity_m"] = sci_nwes_t.dataset.salinity
 
 
-#%% Plots
+# %% Plots
 fig = plt.figure()
 
 plt.pcolormesh(sci_t.dataset.longitude, sci_t.dataset.latitude, sci_t.dataset.temperature.isel(z_dim=0).squeeze())

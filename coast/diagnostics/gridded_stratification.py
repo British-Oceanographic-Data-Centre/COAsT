@@ -277,7 +277,7 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
         #          z_axis=1
 
         PEA = (z_4d * (rho - rhobar) * dz_4d).sum(dim="z_dim", skipna=True) * gravity / height
-        #%%
+        # %%
         #         return PEA
         coords = {
             "time": ("t_dim", gridded_t.dataset.time.values),
@@ -338,5 +338,5 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
             plt.ylabel("latitude")
             plt.clim([0, 50])
             plt.colorbar()
-            plt.show()
+            # plt.show()
         return fig, ax
