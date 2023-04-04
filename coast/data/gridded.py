@@ -73,6 +73,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         self.set_dimension_mapping()
         self.set_variable_mapping()
         lims = kwargs.get("lims", [])
+        no_depths  =  kwargs.get("no_depth",False)
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
 
@@ -95,8 +96,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             dataset_domain = self.spatial_subset(dataset_domain, lims)  # Trim domain size if indices specified
             if self.fn_data is not None:
                 dataset_domain = self.trim_domain_size(dataset_domain)  # Trim domain size if self.data is smaller
-            self.set_timezero_depths(
-                dataset_domain, **kwargs
+            if not no_depths:    
+                self.set_timezero_depths(
+                    dataset_domain, **kwargs
             )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
