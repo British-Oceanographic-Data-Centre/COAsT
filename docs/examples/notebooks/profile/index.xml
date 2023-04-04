@@ -96,7 +96,7 @@ quality control flags to the data (replacing with NaNs):&lt;/p>
 warnings.warn(f'Downloading: {url}', DownloadWarning)
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_12_1.png" alt="png">&lt;/p>
-&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxesSubplot: &amp;gt;)
+&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxes: &amp;gt;)
 &lt;/code>&lt;/pre>
 &lt;h3 id="direct-model-comparison-using-obs_operator-method">Direct Model comparison using obs_operator() method&lt;/h3>
 &lt;p>There are a number of routines available for interpolating in the horizontal,
@@ -171,7 +171,7 @@ profile.&lt;/p>
 &lt;/code>&lt;/pre>&lt;p>to see what it returns&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># E.g. plot the differences on ind_dim vs z_dim axes&lt;/span>
 &lt;span style="color:#000">differences&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">diff_temperature&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.collections.QuadMesh at 0x7fac09fea370&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.collections.QuadMesh at 0x7fd608509100&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_33_1.png" alt="png">&lt;/p>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#8f5902;font-style:italic"># or a bit prettier on labelled axes&lt;/span>
@@ -184,7 +184,7 @@ profile.&lt;/p>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">gca&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">invert_yaxis&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ylabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;depth&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">colorbar&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">label&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature diff (obs-model)&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fac08b22be0&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fd6084637c0&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_34_1.png" alt="png">&lt;/p>
 &lt;h3 id="layer-averaging">Layer Averaging&lt;/h3>
@@ -202,7 +202,7 @@ between the interpolated observations and model points&lt;/p>
 &lt;span style="color:#8f5902;font-style:italic"># Plot (observation - model) upper 10m averaged temperatures&lt;/span>
 &lt;span style="color:#000">surface_errors&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot_map&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">var_str&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;diff_temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_38_0.png" alt="png">&lt;/p>
-&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxesSubplot: &amp;gt;)
+&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxes: &amp;gt;)
 &lt;/code>&lt;/pre>
 &lt;p>This can be done for any arbitrary depth layer defined by two depths.&lt;/p>
 &lt;p>However, in some cases it may be that one of the depth levels is not defined by a constant,
@@ -221,7 +221,7 @@ that will be expected by the method. Grab it from the model dataset.&lt;/p>
 &lt;span style="color:#8f5902;font-style:italic"># Plot (observation - model) upper 10m averaged temperatures&lt;/span>
 &lt;span style="color:#000">bottom_errors&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">plot_map&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">var_str&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;diff_temperature&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_44_0.png" alt="png">&lt;/p>
-&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxesSubplot: &amp;gt;)
+&lt;pre>&lt;code>(&amp;lt;Figure size 640x480 with 2 Axes&amp;gt;, &amp;lt;GeoAxes: &amp;gt;)
 &lt;/code>&lt;/pre>
 &lt;p>&lt;strong>NOTE1&lt;/strong>: The bathymetry variable does not actually need to contain bathymetric depths, it can also be used to calculate means above any non-constant surface. For example, it could be mixed layer depth.&lt;/p>
 &lt;p>&lt;strong>NOTE2&lt;/strong>: This can be done for any Profile object. So, you could use this workflow to also average a Profile derived from the &lt;code>difference()&lt;/code> routine.&lt;/p>
@@ -275,7 +275,7 @@ containing averaged data for each region:&lt;/p>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">gca&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">invert_yaxis&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">xlabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">);&lt;/span> &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ylabel&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;depth&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">legend&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.legend.Legend at 0x7fac08835e50&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.legend.Legend at 0x7fd6080e2a30&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_56_1.png" alt="png">&lt;/p>
 &lt;h3 id="gridding-profile-data">Gridding Profile Data&lt;/h3>
@@ -293,7 +293,7 @@ done using &lt;code>ProfileAnalysis.average_into_grid_boxes()&lt;/code>.&lt;/p>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">pcolormesh&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">lon&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">lat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">title&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;gridded mean temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">colorbar&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fac085e8700&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fd600ecd8e0&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_59_1.png" alt="png">&lt;/p>
 &lt;p>Alternatively, we can calculate averages for each season:&lt;/p>
@@ -312,7 +312,7 @@ You may want to use this when using or extending the analysis. E.g. use it with 
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">scatter&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">lon&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">lat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">c&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">temperature&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">s&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">N&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">title&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;DJF gridded mean temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">plt&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">colorbar&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fac09fe1c70&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>&amp;lt;matplotlib.colorbar.Colorbar at 0x7fd600dc0160&amp;gt;
 &lt;/code>&lt;/pre>
 &lt;p>&lt;img src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/0._profile_introduction_files/0._profile_introduction_63_1.png" alt="png">&lt;/p></description></item><item><title>Docs: 1. analysis preprocess en4</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/1._analysis_preprocess_en4/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/1._analysis_preprocess_en4/</guid><description>
 &lt;p>Script for processing raw EN4 data prior to analysis.
@@ -354,22 +354,26 @@ See docstring of &lt;code>Profile.process_en4()&lt;/code> for more specifics on 
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>/Users/jeff/gitHub/COAsT/config/example_en4_profiles.json
 ---------------------------------------------------------------------------
 FileNotFoundError Traceback (most recent call last)
-/tmp/ipykernel_3793/3838477898.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[4], line 1
 ----&amp;gt; 1 profile = coast.Profile(config=fn_cfg_prof)
 2 profile.read_en4(fn_prof, multiple=multiple)
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/profile.py in __init__(self, dataset, config)
+File /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/profile.py:64, in Profile.__init__(self, dataset, config)
 62 debug(f&amp;quot;Creating a new {get_slug(self)}&amp;quot;)
 63 self.config = config
 ---&amp;gt; 64 super().__init__(self.config)
-65
 66 # If dataset is provided, put inside this object
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/index.py in __init__(self, config)
+67 if dataset is not None:
+File /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/index.py:34, in Indexed.__init__(self, config)
 32 if config:
 33 print(config)
 ---&amp;gt; 34 self.json_config = ConfigParser(config)
 35 self.chunks = self.json_config.config.chunks
 36 self.dim_mapping = self.json_config.config.dataset.dimension_map
-/usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/config_parser.py in __init__(self, json_path)
+File /usr/share/miniconda/envs/coast/lib/python3.8/site-packages/coast/data/config_parser.py:18, in ConfigParser.__init__(self, json_path)
+12 def __init__(self, json_path: Union[Path, str]):
+13 &amp;quot;&amp;quot;&amp;quot;Config parser constructor.
+14
+15 Args:
 16 json_path (Union[Path, str]): path to json config file.
 17 &amp;quot;&amp;quot;&amp;quot;
 ---&amp;gt; 18 with open(json_path, &amp;quot;r&amp;quot;) as j:
@@ -380,7 +384,7 @@ FileNotFoundError: [Errno 2] No such file or directory: '/Users/jeff/gitHub/COAs
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/2681786031.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[5], line 1
 ----&amp;gt; 1 profile.dataset
 NameError: name 'profile' is not defined
 &lt;/code>&lt;/pre>
@@ -388,14 +392,14 @@ NameError: name 'profile' is not defined
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">profile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">subset_indices_lonlat_box&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">longitude_bounds&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">latitude_bounds&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/2450699116.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[6], line 1
 ----&amp;gt; 1 profile = profile.subset_indices_lonlat_box(longitude_bounds, latitude_bounds)
 NameError: name 'profile' is not defined
 &lt;/code>&lt;/pre>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">quick_plot&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/1711720463.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[7], line 1
 ----&amp;gt; 1 profile.quick_plot()
 NameError: name 'profile' is not defined
 &lt;/code>&lt;/pre>
@@ -403,7 +407,7 @@ NameError: name 'profile' is not defined
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">profile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">time_slice&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">date0&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">datetime&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2010&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">),&lt;/span> &lt;span style="color:#000">date1&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">datetime&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">2010&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">20&lt;/span>&lt;span style="color:#000;font-weight:bold">))&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/567752478.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[8], line 1
 ----&amp;gt; 1 profile = profile.time_slice(date0=datetime(2010, 1, 1), date1=datetime(2010, 1, 20))
 NameError: name 'profile' is not defined
 &lt;/code>&lt;/pre>
@@ -411,7 +415,7 @@ NameError: name 'profile' is not defined
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">processed_profile&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">process_en4&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/2338363098.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[9], line 1
 ----&amp;gt; 1 processed_profile = profile.process_en4()
 NameError: name 'profile' is not defined
 &lt;/code>&lt;/pre>
@@ -421,7 +425,7 @@ NameError: name 'profile' is not defined
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">processed_profile&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
 NameError Traceback (most recent call last)
-/tmp/ipykernel_3793/1086284925.py in &amp;lt;cell line: 1&amp;gt;()
+Cell In[10], line 1
 ----&amp;gt; 1 processed_profile.dataset.to_netcdf(fn_out)
 NameError: name 'processed_profile' is not defined
 &lt;/code>&lt;/pre>
@@ -839,11 +843,32 @@ fn_cfg_prof = path.join('./config', &amp;quot;example_en4_profiles.json&amp;quot
 &lt;span style="color:#000;font-weight:bold">]&lt;/span>
 &lt;span style="color:#000">mask_list&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">mm&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">make_mask_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">lon&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">lat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">regional_masks&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
 &lt;span style="color:#000">mask_indices&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">profile_analysis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">determine_mask_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">mask_list&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="do-mask-averaging">Do mask averaging&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
+AttributeError Traceback (most recent call last)
+Cell In[7], line 8
+6 bath = nemo.dataset.bathymetry.values
+7 regional_masks.append(np.ones(lon.shape))
+----&amp;gt; 8 regional_masks.append(mm.region_def_nws_north_sea(lon, lat, bath))
+9 regional_masks.append(mm.region_def_nws_outer_shelf(lon, lat, bath))
+10 regional_masks.append(mm.region_def_nws_english_channel(lon, lat, bath))
+AttributeError: 'MaskMaker' object has no attribute 'region_def_nws_north_sea'
+&lt;/code>&lt;/pre>
+&lt;h3 id="do-mask-averaging">Do mask averaging&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">mask_means&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">profile_analysis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">mask_means&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">profile&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">mask_indices&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="save-mask-dataset-to-file">Save mask dataset to file&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
+NameError Traceback (most recent call last)
+Cell In[8], line 1
+----&amp;gt; 1 mask_means = profile_analysis.mask_means(profile, mask_indices)
+NameError: name 'mask_indices' is not defined
+&lt;/code>&lt;/pre>
+&lt;h3 id="save-mask-dataset-to-file">Save mask dataset to file&lt;/h3>
 &lt;div class="highlight">&lt;pre style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-python" data-lang="python">&lt;span style="color:#000">mask_means&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">to_netcdf&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_out&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: 5. analysis average into grid boxes</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/5._analysis_average_into_grid_boxes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/5._analysis_average_into_grid_boxes/</guid><description>
+&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>---------------------------------------------------------------------------
+NameError Traceback (most recent call last)
+Cell In[9], line 1
+----&amp;gt; 1 mask_means.to_netcdf(fn_out)
+NameError: name 'mask_means' is not defined
+&lt;/code>&lt;/pre></description></item><item><title>Docs: 5. analysis average into grid boxes</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/5._analysis_average_into_grid_boxes/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/examples/notebooks/profile/5._analysis_average_into_grid_boxes/</guid><description>
 &lt;p>Script for showing use of &lt;code>Profile.average_into_grid_boxes()&lt;/code>. This routines
 takes all data in a Profile obejct and averages it into lat/lon grid boxes.&lt;/p>
 &lt;p>This script can be used for comparing observed and modelled climatologies.
