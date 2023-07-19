@@ -7,6 +7,10 @@ import coast
 from .._utils.plot_util import geo_scatter
 from .._utils.logging_util import get_slug, debug
 
+####
+
+
+####
 
 class ProfileStratification(Profile):  # TODO All abstract methods should be implemented
     """
@@ -31,7 +35,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax):
+    def clean_data(self,profile: xr.Dataset, gridded: xr.Dataset, Zmax):
         """
         Cleaning data for stratification metric calculations
         Stage 1:...
@@ -41,9 +45,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Stage 3. Fill gaps in data and extrapolate so there are T and S values where ever there is a depth value
 
         """
+#%%
         print("Cleaning the data")
         # find profiles good for SST and NBT
         dz_max = 25.0
+        
         n_prf = profile.dataset.id_dim.shape[0]
         n_depth = profile.dataset.z_dim.shape[0]
         tmp_clean = profile.dataset.potential_temperature.values[:, :]
@@ -53,9 +59,12 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         any_sal = np.sum(~np.isnan(sal_clean), axis=1) != 0
 
         # Find good SST and SSS depths
-        if "bathymetry" in profile.dataset:
-            D_prf = profile.dataset.bathymetry.values
+        def first_nonzero(arr, axis=0, invalid_val=np.nan):
+            mask = arr!=0
+            return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
+        if "bathymetry" in gridded.dataset:
             profile.gridded_to_profile_2d(gridded, "bathymetry")
+            D_prf = profile.dataset.bathymetry.values
             z = profile.dataset.depth
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
             test_tmp = np.logical_and(test_surface, ~np.isnan(tmp_clean))
@@ -65,10 +74,15 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             I_tmp = np.nonzero(np.any(test_tmp.values, axis=1))[0]
             I_sal = np.nonzero(np.any(test_sal.values, axis=1))[0]
             #
-            for ip in I_tmp:
-                good_sst[ip] = np.min(np.nonzero(test_tmp.values[ip, :]))
-            for ip in I_sal:
-                good_sss[ip] = np.min(np.nonzero(test_sal.values[ip, :]))
+            #for ip in I_tmp:
+            #    good_sst[ip] = np.min(np.nonzero(test_tmp.values[ip, :]))
+            #for ip in I_sal:
+            #    good_sss[ip] = np.min(np.nonzero(test_sal.values[ip, :]))
+
+            good_sst=first_nonzero(test_tmp.values,axis=1)  
+            good_sss=first_nonzero(test_sal.values,axis=1)  
+                
+                
             I_tmp = np.where(np.isfinite(good_sst))[0]
             I_sal = np.where(np.isfinite(good_sss))[0]
 
@@ -90,17 +104,20 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         # fill holes in data
         # jth This is slow, there may be a more 'vector' way of doing it
-
+#%%
         for i_prf in range(n_prf):
+            
             tmp = profile.dataset.potential_temperature.values[i_prf, :]
             sal = profile.dataset.practical_salinity.values[i_prf, :]
             z = profile.dataset.depth.values[i_prf, :]
             if any_tmp[i_prf]:
                 tmp = coast.general_utils.fill_holes_1d(tmp)
+
                 tmp[np.isnan(z)] = np.nan
                 tmp_clean[i_prf, :] = tmp
             if any_sal[i_prf]:
                 sal = coast.general_utils.fill_holes_1d(sal)
+            
                 sal[np.isnan(z)] = np.nan
                 sal_clean[i_prf, :] = sal
 
@@ -112,11 +129,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         dims = ["id_dim", "z_dim"]
         profile.dataset["potential_temperature"] = xr.DataArray(tmp_clean, coords=coords, dims=dims)
         profile.dataset["practical_salinity"] = xr.DataArray(sal_clean, coords=coords, dims=dims)
-        profile.dataset["sea_surface_temperature"] = xr.DataArray(SST, coords=coords, dims=["id_dim"])
-        profile.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
-        profile.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
+        self.dataset["sea_surface_temperature"] = xr.DataArray(SST, coords=coords, dims=["id_dim"])
+        self.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
+        self.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
         print("All nice and clean")
-
+#%%
         return profile
 
     def calc_pea(self, profile: xr.Dataset, gridded, Zmax):
@@ -133,7 +150,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         gravity = 9.81
         # Clean data This is quit slow and over writes potential temperature and practical salinity variables
-        profile = ProfileStratification.clean_data(profile, gridded, Zmax)
+        #profile = ProfileStratification.clean_data(profile, gridded, Zmax)
 
         # Define grid spacing, dz. Required for depth integral
         profile.calculate_vertical_spacing()
@@ -217,3 +234,4 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             )
 
         return fig, ax
+    ##############################################################################
