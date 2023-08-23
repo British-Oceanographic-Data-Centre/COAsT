@@ -835,13 +835,18 @@ class Tidegauge(Timeseries):
         except:
             raise Exception("Problem reading BODC file: " + fn_bodc)
         # Attributes
-        dataset["longitude"] = header_dict["longitude"]
-        dataset["latitude"] = header_dict["latitude"]
+        dataset["longitude"] = ("id_dim", [header_dict["longitude"]])
+        dataset["latitude"] = ("id_dim", [header_dict["latitude"]])
+        dataset["id_name"] = ("id_dim", [header_dict["site_name"]])
+        dataset = dataset.set_coords(["longitude", "latitude", "id_name"])
+
         del header_dict["longitude"]
         del header_dict["latitude"]
+        del header_dict["site_name"]
 
         dataset.attrs = header_dict
         self.dataset = dataset
+        self.apply_config_mappings()
 
     @staticmethod
     def _read_bodc_header(fn_bodc):
