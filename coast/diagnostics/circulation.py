@@ -20,8 +20,8 @@ class CurrentsOnT(Gridded):
 
     """
 
-    def __init(self, fn_domain=None, config=None, **kwargs):
-        gridded = Gridded(fn_domain=fn_domain, config=config, **kwargs)
+    def __init(self, fn_data=None,fn_domain=None, config=None, **kwargs):
+        gridded = Gridded(fn_data=fn_data,fn_domain=fn_domain, config=config, **kwargs)
         self.dataset = gridded.dataset
 
     def currents_on_t(self, gridded_u, gridded_v):
@@ -91,7 +91,7 @@ class CurrentsOnT(Gridded):
 
         # Speed on T-points
         self.dataset["speed_t"] = np.sqrt(
-            np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"])
+            np.square(self.dataset["ut_velocity"]) + np.square(self.dataset["vt_velocity"]).squeeze()
         )
 
     def quick_plot(self, name, Vmax=0.16, Np=3, headwidth=4, scale=50, time_value=None, **kwargs):

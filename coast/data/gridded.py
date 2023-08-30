@@ -219,7 +219,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 bathymetry = dataset_domain.bathy_metry.squeeze()
 
         except AttributeError as err:
-            bathymetry = xr.zeros_like(dataset_domain.e1.squeeze())
+            bathymetry = xr.zeros_like(dataset_domain.longitude.squeeze())
             (
                 warnings.warn(
                     f"The model domain loaded, '{self.filename_domain}', does not contain the "
