@@ -16,6 +16,7 @@ fn_contents = "./unit_testing/unit_test_contents.txt"
 from test_gridded_initialisation import test_gridded_initialisation
 from test_gridded_harmonics import test_gridded_harmonics
 from test_general_utils import test_general_utils
+from test_crps_util import test_crps_util
 from test_xesmf_convert import test_xesmf_convert
 from test_diagnostic_methods import test_diagnostic_methods
 from test_transect_methods import test_transect_methods
@@ -39,6 +40,7 @@ tests_to_do = [
     # test_TEMPLATE,
     test_gridded_initialisation,
     test_general_utils,
+    test_crps_util,
     test_xesmf_convert,
     test_gridded_harmonics,
     test_diagnostic_methods,
