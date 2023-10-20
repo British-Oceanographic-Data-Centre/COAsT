@@ -35,7 +35,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(self,profile: xr.Dataset, gridded: xr.Dataset, Zmax):
+    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax):
         """
         Cleaning data for stratification metric calculations
         Stage 1:...
@@ -96,6 +96,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
                 good_profile[test] = 0
 
             ###
+        else:
+            print('error no bathy provided, cant clean the data')
+            return profile
         SST = np.zeros(n_prf) * np.nan
         SSS = np.zeros(n_prf) * np.nan
 
@@ -129,14 +132,14 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         dims = ["id_dim", "z_dim"]
         profile.dataset["potential_temperature"] = xr.DataArray(tmp_clean, coords=coords, dims=dims)
         profile.dataset["practical_salinity"] = xr.DataArray(sal_clean, coords=coords, dims=dims)
-        self.dataset["sea_surface_temperature"] = xr.DataArray(SST, coords=coords, dims=["id_dim"])
-        self.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
-        self.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
+        profile.dataset["sea_surface_temperature"] = xr.DataArray(SST, coords=coords, dims=["id_dim"])
+        profile.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
+        profile.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
         print("All nice and clean")
 #%%
         return profile
 
-    def calc_pea(self, profile: xr.Dataset, gridded, Zmax):
+    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax):
         """
         Calculates Potential Energy Anomaly
 
@@ -150,7 +153,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         gravity = 9.81
         # Clean data This is quit slow and over writes potential temperature and practical salinity variables
-        #profile = ProfileStratification.clean_data(profile, gridded, Zmax)
+        profile = ProfileStratification.clean_data(profile, gridded, Zmax)
 
         # Define grid spacing, dz. Required for depth integral
         profile.calculate_vertical_spacing()
