@@ -24,6 +24,9 @@ It's aim is to deliver a flexible, community-ready framework for assessing kilom
 
 Documentation can be found [here](https://british-oceanographic-data-centre.github.io/COAsT/docs/).
 
+![PyPI version](https://badge.fury.io/py/COAsT.svg)
+![Anaconda version](https://anaconda.org/bodc/coast/badges/version.svg)
+
 ## Notes on Object Structure and Loading (for contributors):
 
 COAsT is an object-orientated package, meaning that data is stored within Python object
