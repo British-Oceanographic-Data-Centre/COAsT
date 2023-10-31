@@ -341,3 +341,29 @@ def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
     vmin = color_data_mean - n_std_dev * color_data_std
     vmax = color_data_mean + n_std_dev * color_data_std
     return vmin, vmax
+
+
+def polar_velocity(u_velocity, v_velocity, latitude):
+    """ Adjust u and v to work-around a bug in cartopy for quiver plotting 
+    specifically when using a sterographic projection. The bug means that 
+    the the u component (x direction) of quivers will not be correctly 
+    proportioned relative to the v component (y direction). This function
+    proportions the u and v components correctly for plotting.
+
+    Args:
+        u_velocity (array): eastward velocity vectors
+        v_velocity (array): northward velocity vectors
+        latitude (array): latitude of the points in the same format as the u 
+        and v velocities.
+
+    Returns:
+        array: u_velocity and u_velocity that have been "corrected" to enable 
+        plotting in cartopy.
+    """
+    u_src_crs = u_velocity / np.cos(latitude / 180 * np.pi)
+    v_src_crs = v_velocity * 1
+    magnitude = (u_velocity**2 + v_velocity**2) ** 0.5
+    magn_src_crs = (u_src_crs**2 + v_src_crs**2) ** 0.5
+    u_new = u_src_crs * (magnitude / magn_src_crs)
+    v_new = v_src_crs * (magnitude / magn_src_crs)
+    return u_new, v_new
