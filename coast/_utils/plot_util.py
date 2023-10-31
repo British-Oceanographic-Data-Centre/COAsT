@@ -344,9 +344,9 @@ def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
     return vmin, vmax
 
 
-def polar_velocity(u_velocity, v_velocity, latitude):
+def velocity_polar(u_velocity, v_velocity, latitude):
     """ Adjust u and v to work-around a bug in cartopy for quiver plotting 
-    specifically when using a sterographic projection. The bug means that 
+    specifically when using a stereographic projection. The bug means that 
     the the u component (x direction) of quivers will not be correctly 
     proportioned relative to the v component (y direction). This function
     proportions the u and v components correctly for plotting.
@@ -386,23 +386,25 @@ def make_projection(x_origin, y_origin):
     return aeqd
 
 
-def rotate_velocity(u_velocity, v_velocity, angle, to_north=True):
+def velocity_rotate(u_velocity, v_velocity, angle, to_north=True):
     """A function to change the direction of velocity components by a 
     given angle
 
     Args:
-        u_velocity (array): i-direction velocities along grid lines
-        v_velocity (array): j-direction velocities along grid lines
-        angle (array): angle of the grid relative to north in degrees
-        to_north (bool, optional): _description_. Defaults to True.
+        u_velocity (array): x-direction velocities along grid lines
+        v_velocity (array): y-direction velocities along grid lines
+        angle (array): angle of the grid in degrees
+        to_north (bool, optional): If True rotate with angle clockwise 
+        from 12 o'clock. If False rotate with angle anticlockwise from 
+        3 o'clock. Defaults to True.
 
     Returns:
         array, array: u and v velocities that have been rotated by 
         the given angle 
     """
         # use compass directions
-    speed = (u ** 2 + v ** 2) ** 0.5
-    direction = np.arctan2(u, v) * (180 / np.pi)
+    speed = (u_velocity ** 2 + v_velocity ** 2) ** 0.5
+    direction = np.arctan2(u_velocity, v_velocity) * (180 / np.pi)
     
     # subtract the orientation angle of transect from compass North 
     # then u is across channel
@@ -411,11 +413,82 @@ def rotate_velocity(u_velocity, v_velocity, angle, to_north=True):
     else:
         new_direction = direction - angle
     
-    eastward_velocity = speed * np.sin(new_direction * (np.pi / 180))
-    northward_velocity = speed * np.cos(new_direction * (np.pi / 180))
+    u_rotate = speed * np.sin(new_direction * (np.pi / 180))
+    v_rotate = speed * np.cos(new_direction * (np.pi / 180))
 
-    return eastward_velocity, northward_velocity
+    return u_rotate, v_rotate
 
 
-NEMO grid u and v velocities that have been aligned 
-        in the north and east direction
+def grid_angle(lon, lat):
+    """Get angle using a metre grid transform.
+
+    Args:
+        lon (array): longitude of the grid
+        lat (array): latitude of the grid
+
+    Returns:
+        array: the angle in degrees of the j grid lines relative to geographic 
+        North (i.e. clockwise from 12)
+    """
+    crs_wgs84 = pyproj.crs.CRS('epsg:4326')
+    angle = np.zeros(lon.shape)
+
+    for j in range(lon.shape[0] - 1):
+        for i in range(lon.shape[1] - 1):
+            crs_aeqd = make_projection(lon[j, i], lat[j, i])
+            to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd)
+            x_grid, y_grid = to_metre.transform(lat[j:j + 2, i:i + 2], 
+                                                lon[j:j + 2, i:i + 2])
+            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), 
+                (y_grid[1, 0] - y_grid[0, 0])) * (180 / np.pi) # relative to North
+    
+    # differentiate to get the angle so copy last row one further
+    angle[:, -1] = angle[:, -2]
+    angle[-1, :] = angle[-2, :]
+    return angle
+
+
+def velocity_on_t(u_velocity, v_velocity):
+    """Co-locate u and v onto the NEMO t-grid. Function from PyNEMO.
+
+    Args:
+        u_velocity (array): x-direction velocities along grid lines
+        v_velocity (array): y-direction velocities along grid lines
+
+    Returns:
+        array, array: u and v velocity components co-located on the t-grid.
+    """
+    u_on_t_points = u_velocity * 1
+    v_on_t_points = v_velocity * 1
+    u_on_t_points[:, 1:] = 0.5 * (
+        u_velocity[:, 1:] + u_velocity[:, :-1])
+    v_on_t_points[1:, :] = 0.5 * (
+        v_velocity[1:, :] + v_velocity[:-1, :])
+    return u_on_t_points, v_on_t_points
+
+
+def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
+    """Makes all the adjustments to the NEMO grid velocities to make them plot 
+    with intuitive direction as quivers or streamlines in maps.
+
+    Args:
+        lon (array): longitude of the grid
+        lat (array): latitude of the grid
+        u_velocity (array): i-direction velocities along grid lines
+        v_velocity (array): j-direction velocities along grid lines
+        polar_stereo (bool, optional): If True, makes an additional adjustment to the 
+        velocity for plotting them on a stereographic projection in CartoPy. 
+        Defaults to False.
+
+    Returns:
+        array, array: NEMO grid u and v velocities that have been aligned 
+        in the north and east directions for plotting on the t-grid
+    """
+
+    u_on_t, v_on_t = velocity_on_t(u_velocity, v_velocity)
+    angle_to_north = grid_angle(lon, lat)
+    u_new, v_new = velocity_rotate(u_on_t, v_on_t, angle_to_north)
+    if polar_stereo:
+        u_new, v_new = velocity_polar(u_new, v_new, lat)
+
+    return u_new, v_new
