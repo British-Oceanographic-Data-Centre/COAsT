@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from warnings import warn
 from .logging_util import warn
 import numpy as np
+import pyproj
 
 
 def r2_lin(x, y, fit):
@@ -357,7 +358,7 @@ def polar_velocity(u_velocity, v_velocity, latitude):
         and v velocities.
 
     Returns:
-        array: u_velocity and u_velocity that have been "corrected" to enable 
+        array, array: u_velocity and v_velocity that have been "corrected" to enable 
         plotting in cartopy.
     """
     u_src_crs = u_velocity / np.cos(latitude / 180 * np.pi)
@@ -367,3 +368,54 @@ def polar_velocity(u_velocity, v_velocity, latitude):
     u_new = u_src_crs * (magnitude / magn_src_crs)
     v_new = v_src_crs * (magnitude / magn_src_crs)
     return u_new, v_new
+
+
+def make_projection(x_origin, y_origin):
+    """Define projection centred on a given longitude, latitude point (WGS84) in meters.
+
+    Args:
+        x_origin (float): longitude of the centre point of the projection
+        y_origin (float): latitude of the centre point of the projection
+
+    Returns:
+        CRS Object: A CRS for the bespoke projection defined here.
+    """
+    aeqd = pyproj.crs.CRS.from_proj4("+proj=aeqd +lon_0={:}".format(x_origin) 
+                                     + " +lat_0={:}".format(y_origin) 
+                                     + " +ellps=WGS84")
+    return aeqd
+
+
+def rotate_velocity(u_velocity, v_velocity, angle, to_north=True):
+    """A function to change the direction of velocity components by a 
+    given angle
+
+    Args:
+        u_velocity (array): i-direction velocities along grid lines
+        v_velocity (array): j-direction velocities along grid lines
+        angle (array): angle of the grid relative to north in degrees
+        to_north (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        array, array: u and v velocities that have been rotated by 
+        the given angle 
+    """
+        # use compass directions
+    speed = (u ** 2 + v ** 2) ** 0.5
+    direction = np.arctan2(u, v) * (180 / np.pi)
+    
+    # subtract the orientation angle of transect from compass North 
+    # then u is across channel
+    if to_north:
+        new_direction = direction + angle
+    else:
+        new_direction = direction - angle
+    
+    eastward_velocity = speed * np.sin(new_direction * (np.pi / 180))
+    northward_velocity = speed * np.cos(new_direction * (np.pi / 180))
+
+    return eastward_velocity, northward_velocity
+
+
+NEMO grid u and v velocities that have been aligned 
+        in the north and east direction
