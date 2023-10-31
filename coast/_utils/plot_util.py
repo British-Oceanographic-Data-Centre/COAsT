@@ -436,7 +436,7 @@ def grid_angle(lon, lat):
     for j in range(lon.shape[0] - 1):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
-            to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd)
+            to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
             # not sure if this should be lat, lon or lon, lat
             (x_grid, y_grid) = to_metre.transform(lon[j:j + 2, i:i + 2], 
                                                 lat[j:j + 2, i:i + 2])
