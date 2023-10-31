@@ -36,3 +36,4 @@ docstring2md.log
 example_scripts/notebook_tutorials/markdown/*
 
 markdown/
+.python-version
