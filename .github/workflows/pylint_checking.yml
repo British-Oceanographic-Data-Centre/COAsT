@@ -29,8 +29,7 @@ jobs:
           if [ "$(echo "$NEW_SCORE > $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
             echo "NEW_SCORE is greater than THREESHOLD_SCORE"
             echo "Updating THREESHOLD_SCORE"
-            echo THREESHOLD_SCORE=$NEW_SCORE
-            echo "$THREESHOLD_SCORE" > .pylint-score
+            echo "$NEW_SCORE" > .pylint-score
             git config --global user.name "PylintBot"
             git config --global author.name "PylintBot"
             git config --global user.email "bodcsoft@bodc.ac.uk"
