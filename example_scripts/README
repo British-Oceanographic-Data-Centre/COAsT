@@ -1,14 +1,14 @@
 example_scripts
 +++++++++++++++
 
-notebooks/
+notebook_tutorials/
 ----------
 This folder contains python notebook tutorials that are rendered in the documentation pages, though the use of Git Actions.
 Any external data required by these notebooks can be downloaded in the example_files zip bundle.
 
 
 
-In addition to notebooks/, the python scripts are user contributions of useful applications, which haven't gone through
+In addition to notebook_tutorials/, the python scripts are user contributions of useful applications, which haven't gone through
  the rigours of being converted into tutorial material. Some of these are in folders.
 
 
