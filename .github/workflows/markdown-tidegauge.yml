@@ -1,10 +1,5 @@
 name: notebook_to_md (tidegauge)
-
-on:
-  # External webhook trigger
-  repository_dispatch:
-   types: [push-notebook]
-
+on: pull_request
 jobs:
   commit-notebooks:
     runs-on: ubuntu-latest
