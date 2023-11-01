@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from warnings import warn
 from .logging_util import warn
 import numpy as np
-import pyproj
+from pyproj
 
 
 def r2_lin(x, y, fit):
@@ -350,6 +350,8 @@ def velocity_polar(u_velocity, v_velocity, latitude):
     the the u component (x direction) of quivers will not be correctly 
     proportioned relative to the v component (y direction). This function
     proportions the u and v components correctly for plotting.
+    NOTE: only use this for cartopy maps with NorthPolarStereo or SouthPolarStereo
+    projection
 
     Args:
         u_velocity (array): eastward velocity vectors
@@ -437,12 +439,11 @@ def grid_angle(lon, lat):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            # not sure if this should be lat, lon or lon, lat
             x_grid, y_grid = to_metre.transform(lon[j:j + 2, i:i + 2], 
                                                 lat[j:j + 2, i:i + 2])
             angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), 
                 (y_grid[1, 0] - y_grid[0, 0])) * (180 / np.pi) # relative to North
-    
+            
     # differentiate to get the angle so copy last row one further
     angle[:, -1] = angle[:, -2]
     angle[-1, :] = angle[-2, :]
@@ -478,8 +479,8 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
         u_velocity (array): i-direction velocities along grid lines
         v_velocity (array): j-direction velocities along grid lines
         polar_stereo (bool, optional): If True, makes an additional adjustment to the 
-        velocity for plotting them on a stereographic projection in CartoPy. 
-        Defaults to False.
+        velocity for plotting them on a stereographic (NorthPolarStereo or 
+        SouthPolarStereo) projection in CartoPy. Defaults to False.
 
     Returns:
         array, array: NEMO grid u and v velocities that have been aligned 
