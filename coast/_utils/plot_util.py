@@ -393,7 +393,7 @@ def velocity_rotate(u_velocity, v_velocity, angle, to_north=True):
     Args:
         u_velocity (array): x-direction velocities along grid lines
         v_velocity (array): y-direction velocities along grid lines
-        angle (array): angle of the grid in degrees
+        angle (array): angle of the rotation in degrees
         to_north (bool, optional): If True rotate with angle clockwise 
         from 12 o'clock. If False rotate with angle anticlockwise from 
         3 o'clock. Defaults to True.
@@ -438,7 +438,7 @@ def grid_angle(lon, lat):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
             # not sure if this should be lat, lon or lon, lat
-            (x_grid, y_grid) = to_metre.transform(lon[j:j + 2, i:i + 2], 
+            x_grid, y_grid = to_metre.transform(lon[j:j + 2, i:i + 2], 
                                                 lat[j:j + 2, i:i + 2])
             angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), 
                 (y_grid[1, 0] - y_grid[0, 0])) * (180 / np.pi) # relative to North
