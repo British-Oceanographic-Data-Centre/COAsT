@@ -26,7 +26,7 @@ jobs:
         with:
           activate-environment: coast
           environment-file: external/environment.yml
-          python-version: 3.9.13
+          python-version: 3.8.10
       - name: prep exec notebooks
         run: |
           conda info
