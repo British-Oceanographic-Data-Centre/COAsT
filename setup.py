@@ -20,6 +20,8 @@ PACKAGE = SimpleNamespace(
             "Topic :: Scientific/Engineering :: Hydrology",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
         ],
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
@@ -46,7 +48,7 @@ PACKAGE = SimpleNamespace(
             # "xesmf>=0.3.0",  # Optional. Not part of main package
             # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],
-        "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
+        "python_requires": ">=3.8,<3.11",
         "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],
         "include_package_data": True,
         "github": "British-Oceanographic-Data-Centre",
