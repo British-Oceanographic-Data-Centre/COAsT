@@ -38,7 +38,7 @@ jobs:
             echo "$NEW_SCORE" > .pylint-score
             git commit -am "Update pylint threeshold score"
             git push --set-upstream origin $GITHUB_HEAD_REF
-          elif [ "$(echo "$NEW_SCORE = $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
+          elif [ "$(echo "$NEW_SCORE == $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
             echo "NEW_SCORE is equal to THREESHOLD_SCORE"
           else
             exit 1
