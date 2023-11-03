@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from warnings import warn
 from .logging_util import warn
 import numpy as np
-from pyproj
+import pyproj
 
 
 def r2_lin(x, y, fit):
@@ -422,7 +422,8 @@ def velocity_rotate(u_velocity, v_velocity, angle, to_north=True):
 
 
 def grid_angle(lon, lat):
-    """Get angle using a metre grid transform.
+    """Get angle using a metre grid transform. The angle may be off a bit if 
+    the grid cells do not have right angled corners.
 
     Args:
         lon (array): longitude of the grid
@@ -444,9 +445,18 @@ def grid_angle(lon, lat):
             angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), 
                 (y_grid[1, 0] - y_grid[0, 0])) * (180 / np.pi) # relative to North
             
-    # differentiate to get the angle so copy last row one further
+    # differentiate to get the angle so copy last row one further and average
     angle[:, -1] = angle[:, -2]
     angle[-1, :] = angle[-2, :]
+
+    # average angles in centre of array using cartesian coordinates
+    xa = np.sin(angle * (np.pi / 180))
+    ya = np.cos(angle * (np.pi / 180))
+    xa[:, 1:-1] = (xa[:, :-2] + xa[:, 1:-1]) / 2
+    ya[:, 1:-1] = (ya[:, :-2] + ya[:, 1:-1]) / 2
+    xa[1:-1, :] = (xa[:-2, :] + xa[1:-1, :]) / 2
+    ya[1:-1, :] = (ya[:-2, :] + ya[1:-1, :]) / 2
+    angle = np.arctan2(xa, ya) * (180 / np.pi)
     return angle
 
 
@@ -460,8 +470,8 @@ def velocity_on_t(u_velocity, v_velocity):
     Returns:
         array, array: u and v velocity components co-located on the t-grid.
     """
-    u_on_t_points = u_velocity * 1
-    v_on_t_points = v_velocity * 1
+    u_on_t_points = (u_velocity * 1).astype(float)
+    v_on_t_points = (v_velocity * 1).astype(float)
     u_on_t_points[:, 1:] = 0.5 * (
         u_velocity[:, 1:] + u_velocity[:, :-1])
     v_on_t_points[1:, :] = 0.5 * (
