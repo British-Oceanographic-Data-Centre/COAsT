@@ -35,7 +35,7 @@ jobs:
             git config --global user.email "bodcsoft@bodc.ac.uk"
             git config --global author.email "bodcsoft@bodc.ac.uk"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-            git checkout $GITHUB_HEAD_REF
+            git checkout -b $GITHUB_HEAD_REF
             git pull
             git commit -am "Update pylint threeshold score"
             git push
