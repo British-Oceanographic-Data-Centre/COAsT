@@ -1,4 +1,3 @@
----
 name: Pylint
 on: pull_request
 jobs:
@@ -27,18 +26,18 @@ jobs:
           THREESHOLD_SCORE=$OLD_SCORE;
           echo THREESHOLD_SCORE=$THREESHOLD_SCORE
           if [ "$(echo "$NEW_SCORE >= $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
-            echo "NEW_SCORE is greater than THREESHOLD_SCORE"
-            echo "Updating THREESHOLD_SCORE"
-            echo "$NEW_SCORE" > .pylint-score
             git config --global user.name "PylintBot"
             git config --global author.name "PylintBot"
             git config --global user.email "bodcsoft@bodc.ac.uk"
             git config --global author.email "bodcsoft@bodc.ac.uk"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-            git checkout $GITHUB_HEAD_REF
-            git pull
+            git checkout -b $GITHUB_HEAD_REF
+            git pull --rebase origin $GITHUB_HEAD_REF
+            echo "NEW_SCORE is greater than THREESHOLD_SCORE"
+            echo "Updating THREESHOLD_SCORE"
+            echo "$NEW_SCORE" > .pylint-score
             git commit -am "Update pylint threeshold score"
-            git push
+            git push --set-upstream origin feature/pylint-correction
           else
             exit 1
           fi
