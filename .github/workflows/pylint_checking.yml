@@ -1,4 +1,3 @@
----
 name: Pylint
 on: pull_request
 jobs:
@@ -36,7 +35,7 @@ jobs:
             git config --global author.email "bodcsoft@bodc.ac.uk"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
             git checkout $GITHUB_HEAD_REF
-            git pull
+            git pull origin $GITHUB_HEAD_REF
             git commit -am "Update pylint threeshold score"
             git push
           else
