@@ -132,6 +132,49 @@ class test_tidegauge_methods(unittest.TestCase):
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")
 
+    def test_read_bodc_and_compare_to_model(self):
+        sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
+        sci.dataset["landmask"] = sci.dataset.bottom_level == 0
+        tganalysis = coast.TidegaugeAnalysis()
+
+        with self.subTest("Read BODC file"):
+            date0 = datetime.datetime(2020, 10, 10)
+            date1 = datetime.datetime(2020, 10, 12)
+            liv = coast.Tidegauge()
+            liv.read_bodc(files.fn_tidegauge_bodc, date_start=date0, date_end=date1)
+            print(liv.dataset.id_name.values[0])
+            # TEST: Check attribute dictionary and length of sea_level.
+            check1 = len(liv.dataset.ssh.isel(id_dim=0)) == 193
+            check2 = liv.dataset.id_name.values[0] == "liverpool,_gladstone_dock"
+            self.assertTrue(check1, "check1")
+            self.assertTrue(check2, "check2")
+
+        with self.subTest("Plot Single BODC"):
+            f, a = liv.plot_on_map()
+            f.savefig(files.dn_fig + "tidegauge_bodc_map.png")
+            plt.close("all")
+
+        with self.subTest("Obs operator"):
+            liv_interp = liv.obs_operator(sci, time_interp="linear")
+
+            # TEST: Check that the resulting interp_sossheig variable is of the same
+            # length as sea_level and that it is populated.
+            interp_len = liv_interp.dataset.ssh.shape[0]
+            orig_len = liv.dataset.ssh.shape[0]
+            check1 = interp_len == orig_len
+            check2 = False in np.isnan(liv_interp.dataset.ssh)
+            self.assertTrue(check1, "check1")
+            self.assertTrue(check2, "check2")
+
+        with self.subTest("Tidegauge BODC CRPS"):
+            crps = tganalysis.crps(liv.dataset.ssh, sci.dataset.ssh)
+
+            # TEST: Check length of crps and that it contains values
+            check1 = crps.dataset.crps.shape[0] == liv.dataset.ssh.shape[0]
+            check2 = False in np.isnan(crps.dataset.crps)
+            self.assertTrue(check1, "check1")
+            self.assertTrue(check2, "check2")
+
     def test_read_gesla_and_compare_to_model(self):
         sci = coast.Gridded(files.fn_nemo_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         sci.dataset["landmask"] = sci.dataset.bottom_level == 0
@@ -151,7 +194,7 @@ class test_tidegauge_methods(unittest.TestCase):
 
         with self.subTest("Plot Single GESLA"):
             f, a = lowestoft.plot_on_map()
-            f.savefig(files.dn_fig + "tidegauge_map.png")
+            f.savefig(files.dn_fig + "tidegauge_gesla_map.png")
             plt.close("all")
 
         with self.subTest("Obs operator"):
@@ -166,7 +209,7 @@ class test_tidegauge_methods(unittest.TestCase):
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
-        with self.subTest("Tidegauge CRPS"):
+        with self.subTest("Tidegauge GESLA CRPS"):
             crps = tganalysis.crps(lowestoft.dataset.ssh, sci.dataset.ssh)
 
             # TEST: Check length of crps and that it contains values
@@ -325,7 +368,7 @@ class test_tidegauge_methods(unittest.TestCase):
             # it assumes it is a GESLA  type object
             tg = coast.Tidegauge()
             # specify the data read as a High Low Water dataset
-            tg.read_bodc(files.fn_tidegauge2, date_start, date_end)
+            tg.read_bodc(files.fn_tidegauge_bodc, date_start, date_end)
 
             # Use cubic spline fitting method
             extrema_cubc = tganalysis.find_high_and_low_water(tg.dataset.ssh, method="cubic")
