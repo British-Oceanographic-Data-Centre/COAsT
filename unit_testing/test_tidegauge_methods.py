@@ -142,7 +142,6 @@ class test_tidegauge_methods(unittest.TestCase):
             date1 = datetime.datetime(2020, 10, 12)
             liv = coast.Tidegauge()
             liv.read_bodc(files.fn_tidegauge_bodc, date_start=date0, date_end=date1)
-            print(liv.dataset.id_name.values[0])
             # TEST: Check attribute dictionary and length of sea_level.
             check1 = len(liv.dataset.ssh.isel(id_dim=0)) == 193
             check2 = liv.dataset.id_name.values[0] == "liverpool,_gladstone_dock"
