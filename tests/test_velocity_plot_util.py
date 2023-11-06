@@ -89,7 +89,8 @@ def test_velocity_grid_to_geo():
         0.96501427, 0.96331685, 0.96161685]))
     assert np.isclose(u_new, u_result1).all() & np.isclose(v_new, v_result1).all()
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=True)
+    u_new, v_new = plot_util.velocity_grid_to_geo(
+        lon, lat, u_velocity, v_velocity, polar_stereo=True)
     print(u_new, v_new)
     u_result2 = np.array(([1.222728, 1.21099989, 1.19965573], [
         1.28512188, 1.27230937, 1.25958666], [
