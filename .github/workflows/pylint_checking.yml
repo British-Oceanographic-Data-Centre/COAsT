@@ -1,7 +1,7 @@
 name: Pylint
 on: pull_request
 jobs:
-  formatting:
+  pylinting:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,11 +31,14 @@ jobs:
             git config --global user.email "bodcsoft@bodc.ac.uk"
             git config --global author.email "bodcsoft@bodc.ac.uk"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+            git status
             git checkout -b $GITHUB_HEAD_REF
             git pull --rebase origin $GITHUB_HEAD_REF
+            git status
             echo "NEW_SCORE is greater than THREESHOLD_SCORE"
             echo "Updating THREESHOLD_SCORE"
             echo "$NEW_SCORE" > .pylint-score
+            git status
             git commit -am "Update pylint threeshold score"
             git push --set-upstream origin $GITHUB_HEAD_REF
           elif [ "$(echo "$NEW_SCORE == $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
