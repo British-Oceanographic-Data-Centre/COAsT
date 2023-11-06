@@ -26,4 +26,4 @@ dependencies:
     - requests>=2.27.1
     - spyder>=5.1.5
     - jupyterlab
-    - pyproj
+    - pyproj>=3.5.0
