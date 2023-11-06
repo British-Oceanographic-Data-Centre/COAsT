@@ -382,7 +382,7 @@ class Profile(Indexed):
 
         # Get chunks along the time dimension and determine whether chunks
         # are described by a single equal size, or a tuples of sizes
-        time_chunks = gridded.chunks["t_dim"]
+        time_chunks = gridded.unify_chunks().chunks["t_dim"]
         time_dim = gridded.dims["t_dim"]
         start_ii = 0  # Starting index for loading data. Increments each loop
         count_ii = 0  # Counting index for allocating data. Increments 1 each loop

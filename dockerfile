@@ -1,5 +1,5 @@
 FROM conda/miniconda3-centos7
-RUN conda install python=3.8 cartopy
+RUN conda install python=3.10 cartopy
 COPY setup.cfg .
 COPY setup.py .
 COPY coast ./coast
