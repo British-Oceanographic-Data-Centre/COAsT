@@ -36,7 +36,8 @@ import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+
+plt.switch_backend("agg")
 import datetime
 import os.path as path
 import logging

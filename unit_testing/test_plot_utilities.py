@@ -7,7 +7,8 @@ from coast._utils import plot_util
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+
+plt.switch_backend("agg")
 import unit_test_files as files
 import os
 
