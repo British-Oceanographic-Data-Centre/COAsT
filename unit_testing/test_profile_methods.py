@@ -7,6 +7,7 @@ import coast
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import unit_test_files as files
 import datetime
 
