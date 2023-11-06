@@ -49,15 +49,16 @@
 
 9. test_tidegauge_methods
       a. load_multiple_tidegauge
-      b. read_gesla_and_compare_to_model
-      c. read_gesla_formats
-      d. tidegauge_cubic_spline_extrema
-      e. tidegauge_finding_extrema
-      f. tidegauge_for_tabulated_data
-      g. tidegauge_resample_and_apply_doodsonx0
-      h. time_mean
-      i. time_slice
-      j. time_std
+      b. read_bodc_and_compare_to_model
+      c. read_gesla_and_compare_to_model
+      d. read_gesla_formats
+      e. tidegauge_cubic_spline_extrema
+      f. tidegauge_finding_extrema
+      g. tidegauge_for_tabulated_data
+      h. tidegauge_resample_and_apply_doodsonx0
+      i. time_mean
+      j. time_slice
+      k. time_std
 
 10. test_eof_methods
       a. compute_heofs
