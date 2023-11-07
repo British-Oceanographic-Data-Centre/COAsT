@@ -54,22 +54,19 @@ class test_altimetry_methods(unittest.TestCase):
             crps = altimetry_nwes.crps(sci, "ssh", "ocean_tide_standard_name")
 
             # TEST: Check length of crps and that it contains values
-            check1 = crps.dataset.crps.shape[0] \
-                     == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
+            check1 = crps.dataset.crps.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
             check2 = False in np.isnan(crps.dataset.crps)
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
         with self.subTest("Altimetry stats methods"):
             stats = altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh")
-            altimetry_nwes.basic_stats("ocean_tide_standard_name",
-                                       "interp_ssh", create_new_object=False)
+            altimetry_nwes.basic_stats("ocean_tide_standard_name", "interp_ssh", create_new_object=False)
 
             # TEST: Check new object resembles internal object
             check1 = all(stats.dataset.error == altimetry_nwes.dataset.error)
             # TEST: Check lengths and values
-            check2 = stats.dataset.absolute_error.shape[0]\
-                     == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
+            check2 = stats.dataset.absolute_error.shape[0] == altimetry_nwes.dataset.ocean_tide_standard_name.shape[0]
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 
