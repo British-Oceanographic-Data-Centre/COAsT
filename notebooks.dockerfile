@@ -1,6 +1,6 @@
 FROM conda/miniconda3-centos7
 RUN yum install wget unzip -y
-RUN conda install python=3.8 cartopy
+RUN conda install python=3.10 cartopy
 RUN wget https://linkedsystems.uk/erddap/files/COAsT_example_files/COAsT_example_files.zip
 COPY coast ./coast
 COPY setup.cfg .
