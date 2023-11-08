@@ -1,10 +1,11 @@
 # IMPORT modules. Must have pytest.
 
-import os.path as path
-import pytest
+# import os.path as path
+# import pytest
 import numpy as np
 import pyproj
-import sys
+
+# import sys
 from coast._utils import plot_util
 
 # IMPORT THIS TO HAVE ACCESS TO EXAMPLE FILE PATHS:
