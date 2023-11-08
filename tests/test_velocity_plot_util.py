@@ -79,9 +79,7 @@ def test_velocity_grid_to_geo():
     u_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
     v_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat,
-                                                  u_velocity, v_velocity,
-                                                  polar_stereo_cartopy_bug_fix=False)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False)
     u_result1 = np.array(
         (
             [1.04903051, 1.05046004, 1.05188719],
@@ -98,16 +96,10 @@ def test_velocity_grid_to_geo():
     )
     assert np.isclose(u_new, u_result1).all() & np.isclose(v_new, v_result1).all()
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat,
-                                                  u_velocity, v_velocity,
-                                                  polar_stereo_cartopy_bug_fix=True)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=True)
     print(u_new, v_new)
     u_result2 = np.array(
-        (
-            [1.222728, 1.21099989, 1.19965573],
-            [1.28512188, 1.27230937, 1.25958666],
-            [1.34721927, 1.33542729, 1.32321739]
-        )
+        ([1.222728, 1.21099989, 1.19965573], [1.28512188, 1.27230937, 1.25958666], [1.34721927, 1.33542729, 1.32321739])
     )
     v_result2 = np.array(
         (
