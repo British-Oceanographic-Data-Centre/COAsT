@@ -1,7 +1,7 @@
 {
 	"type": "gridded",
 	"dimensionality": 3,
-	"chunks": {"latitude": 100, "longitude": 100},
+	"chunks": {"time_counter": 2, "latitude": 100, "longitude": 100},
 	"grid_ref": {
 		"t-grid": [
 			"glamt",
@@ -27,18 +27,18 @@
 		},
 		"variable_map": {
   		"time": "time",
-      "lev": "depth_0",
-			"votemper": "temperature",
-			"thetao": "temperature",
-			"temp": "temperature",
-			"toce": "temperature",
-			"so": "salinity",
-			"vosaline": "salinity",
-			"soce": "salinity",
-			"sossheig": "ssh",
-			"zos": "ssh",
-      "siconc": "siconc",
-      "sithick": "sithick"
+      	"lev": "depth_0",
+		"votemper": "temperature",
+		"thetao": "temperature",
+		"temp": "temperature",
+		"toce": "temperature",
+		"so": "salinity",
+		"vosaline": "salinity",
+		"soce": "salinity",
+		"sossheig": "ssh",
+		"zos": "ssh",
+      	"siconc": "siconc",
+      	"sithick": "sithick"
 		},
 		"coord_vars": [
 			"longitude",
@@ -49,10 +49,10 @@
 	},
 	"domain": {
 		"dimension_map": {
-			"t": "t_dim0",
-			"x": "x_dim",
-			"y": "y_dim",
-			"z": "z_dim"
+			"time": "t_dim0",
+			"lev": "z_dim",
+			"j": "y_dim",
+			"i": "x_dim"
 		},
 		"variable_map": {
 			"time_counter": "time0",
@@ -63,8 +63,9 @@
 			"e3t_0": "e3_0",
 			"tmask":"mask",
 			"deptht_0": "depth_0",
+			"gdept_0": "depth_0",
 			"bottom_level": "bottom_level",
-			"mbathy":"bottom_level",
+			"mbathy":"bathy_metry",
 			"hbatt":"bathymetry",
 			"bathymetry": "bathy_metry"
 		}

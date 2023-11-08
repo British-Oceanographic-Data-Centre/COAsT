@@ -470,8 +470,8 @@ def velocity_on_t(u_velocity, v_velocity):
     Returns:
         array, array: u and v velocity components co-located on the t-grid.
     """
-    u_on_t_points = (u_velocity * 1).astype(float)
-    v_on_t_points = (v_velocity * 1).astype(float)
+    u_on_t_points = (u_velocity * 1.0)
+    v_on_t_points = (v_velocity * 1.0)
     u_on_t_points[:, 1:] = 0.5 * (u_velocity[:, 1:] + u_velocity[:, :-1])
     v_on_t_points[1:, :] = 0.5 * (v_velocity[1:, :] + v_velocity[:-1, :])
     return u_on_t_points, v_on_t_points

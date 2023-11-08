@@ -24,10 +24,10 @@
 		},
 		"variable_map": {
   		"time": "time",
-      "lev": "depth_0",
-			"uoce": "u_velocity",
-			"vozocrtx": "u_velocity",
-      "uo": "u_velocity"
+      	"lev": "depth_0",
+		"uoce": "u_velocity",
+		"vozocrtx": "u_velocity",
+      	"uo": "u_velocity"
 		},
 		"coord_vars": [
 			"longitude",
@@ -38,23 +38,25 @@
 	},
 	"domain": {
 		"dimension_map": {
-			"t": "t_dim0",
-			"x": "x_dim",
-			"y": "y_dim",
-			"z": "z_dim"
+			"time": "t_dim0",
+			"lev": "z_dim",
+			"j": "y_dim",
+			"i": "x_dim"
 		},
 		"variable_map": {
-			"time_counter": "time0",
-			"glamu": "longitude",
-			"gphiu": "latitude",
-			"e1u": "e1",
-			"e2u": "e2",
-			"e3u_0": "e3_0",
-			"depthu_0": "depth_0",
-			"bottom_level": "bottom_level",
-			"umask": "mask",
-			"bathymetry": "bathy_metry",
-      "hbatt":"bathy_metry"
+		"time_counter": "time0",
+		"glamu": "longitude",
+		"gphiu": "latitude",
+		"e1u": "e1",
+		"e2u": "e2",
+		"e3u_0": "e3_0",
+		"depthu_0": "depth_0",
+		"gdepu": "depth_0",
+		"bottom_level": "bottom_level",
+		"mbathy":"bathy_metry",
+		"umask": "mask",
+		"bathymetry": "bathy_metry",
+      	"hbatt":"bathy_metry"
 		}
 	},
 	"static_variables": {
