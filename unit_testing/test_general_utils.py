@@ -41,11 +41,8 @@ class test_general_utils(unittest.TestCase):
         datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
         bst_obj = pytz.timezone("Europe/London")
         check1 = np.datetime64(
-            bst_obj.localize(datetime_obj).
-            astimezone(pytz.utc).
-            replace(tzinfo=None)) == np.datetime64(
-            "2020-10-11T11:00:00"
-        )
+            bst_obj.localize(datetime_obj).astimezone(pytz.utc).replace(tzinfo=None)
+        ) == np.datetime64("2020-10-11T11:00:00")
         self.assertTrue(check1, msg="check1")
 
     def test_nan_helper(self):
