@@ -537,12 +537,22 @@ class Tidegauge(Timeseries):
                         datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
                         if localtime_flag is True:
                             bst_obj = pytz.timezone("Europe/London")
+<<<<<<< HEAD
                             time.append(np.datetime64(bst_obj.localize(datetime_obj).
                                                       astimezone(pytz.utc).
                                                       replace(tzinfo=None)).
                                         astype('datetime64[ns]'))
                         else:
                             time.append(np.datetime64(datetime_obj).astype('datetime64[ns]'))
+=======
+                            time.append(
+                                np.datetime64(
+                                    bst_obj.localize(datetime_obj).astimezone(pytz.utc).replace(tzinfo=None)
+                                ).astype("datetime64[ns]")
+                            )
+                        else:
+                            time.append(np.datetime64(datetime_obj).astype("datetime64[ns]"))
+>>>>>>> 92b97eb9e4ab2e7e9009483056d30fea8e8587cf
                         ssh.append(float(working_line[2]))
                 line_count = line_count + 1
             debug(f'Read done, close file "{filnam}"')
@@ -574,7 +584,11 @@ class Tidegauge(Timeseries):
         Print out the values in the xarray
         Displays with specified timezone
         """
+<<<<<<< HEAD
         # debug(" Saltney pred", 
+=======
+        # debug(" Saltney pred",
+>>>>>>> 92b97eb9e4ab2e7e9009483056d30fea8e8587cf
         #       np.datetime_as_string(Saltney_time_pred[i],
         #                             unit='m',
         #                             timezone=pytz.timezone('Europe/London')),
@@ -596,9 +610,13 @@ class Tidegauge(Timeseries):
                 debug(
                     "time (" + timezone + "):",
                     general_utils.day_of_week(self.dataset.time[idx].values),
+<<<<<<< HEAD
                     np.datetime_as_string(self.dataset.time[idx], 
                                           unit="m",
                                           timezone=pytz.timezone(timezone)),
+=======
+                    np.datetime_as_string(self.dataset.time[idx], unit="m", timezone=pytz.timezone(timezone)),
+>>>>>>> 92b97eb9e4ab2e7e9009483056d30fea8e8587cf
                     "height:",
                     ssh.values,
                     "m",
