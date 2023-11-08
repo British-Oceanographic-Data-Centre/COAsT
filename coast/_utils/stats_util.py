@@ -67,24 +67,22 @@ def find_maxima(x, y, method="comp", **kwargs):
         return x[peaks], y[peaks]
 
     if method == "cubic":
-        """
-        Cleverness found at
-        https://stackoverflow.com/questions/50371298/find-maximum-minimum-of-a-1d-interpolated-function
+        # Cleverness found at
+        # https://stackoverflow.com/questions/50371298/find-maximum-minimum-of-a-1d-interpolated-function
 
-        Find the extrema on a cubic spline fitted to 1d array. E.g:
-        # Some data
-        x_axis = xr.DataArray([ 2.14414414,  2.15270826,  2.16127238,  2.1698365 ,  2.17840062, 2.18696474,  2.19552886,  2.20409298,  2.2126571 ,  2.22122122])
-        y_axis = xr.DataArray([ 0.67958442,  0.89628424,  0.78904004,  3.93404167,  6.46422317, 6.40459954,  3.80216674,  0.69641825,  0.89675386,  0.64274198])
-        # Fit cubic spline
-        f = scipy.interpolate.interp1d(x_axis, y_axis, kind = 'cubic')
-        x_new = np.linspace(x_axis[0], x_axis[-1],100)
-        cr_pts, cr_vals = stats_utils.find_maxima(x_axis, y_axis, method='cubic')
-        fig = plt.subplots()
-        plt.plot(x_axis, y_axis, 'r+') # The fitted spline
-        plt.plot(x_new, f(x_new)) # The fitted spline
-        plt.plot(cr_pts, cr_vals, 'o') # The extrema
+        # Find the extrema on a cubic spline fitted to 1d array. E.g:
+        # # Some data
+        # x_axis = xr.DataArray([ 2.14414414,  2.15270826,  2.16127238,  2.1698365 ,  2.17840062, 2.18696474,  2.19552886,  2.20409298,  2.2126571 ,  2.22122122])
+        # y_axis = xr.DataArray([ 0.67958442,  0.89628424,  0.78904004,  3.93404167,  6.46422317, 6.40459954,  3.80216674,  0.69641825,  0.89675386,  0.64274198])
+        # # Fit cubic spline
+        # f = scipy.interpolate.interp1d(x_axis, y_axis, kind = 'cubic')
+        # x_new = np.linspace(x_axis[0], x_axis[-1],100)
+        # cr_pts, cr_vals = stats_utils.find_maxima(x_axis, y_axis, method='cubic')
+        # fig = plt.subplots()
+        # plt.plot(x_axis, y_axis, 'r+') # The fitted spline
+        # plt.plot(x_new, f(x_new)) # The fitted spline
+        # plt.plot(cr_pts, cr_vals, 'o') # The extrema
 
-        """
         # Remove NaNs
         nan_mask = np.isnan(y)
         if sum(nan_mask) > 0:
