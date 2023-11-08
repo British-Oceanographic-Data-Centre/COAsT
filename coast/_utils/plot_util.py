@@ -93,9 +93,8 @@ def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
     ax.grid()
 
     if dofit:
-        ax.text(
-            0.4, 0.125, "{} {:03.2f} {} {:03.2f}".format("y =", fit_tmp[0], "x +", fit_tmp[1]), transform=ax.transAxes
-        )
+        ax.text(0.4, 0.125, "{} {:03.2f} {} {:03.2f}".format("y =", fit_tmp[0], "x +", fit_tmp[1]),
+                transform=ax.transAxes)
         ax.text(0.4, 0.05, "{} {:03.2f} ".format("$R^2$ =", r2), transform=ax.transAxes)
 
     return fig, ax
@@ -126,9 +125,8 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
     # If no figure or ax is provided, create a new one
     # fig = plt.figure()
     # fig.clf()
-    fig, ax = plt.subplots(
-        n_r, n_c, subplot_kw={"projection": ccrs.PlateCarree()}, sharey=True, sharex=True, figsize=figsize
-    )
+    fig, ax = plt.subplots(n_r, n_c, subplot_kw={"projection": ccrs.PlateCarree()},
+                           sharey=True, sharex=True, figsize=figsize)
     land_color = [0.9, 0.9, 0.9]
     coast_color = [0, 0, 0]
     coast_width = 0.25
@@ -136,10 +134,12 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
     if n_r * n_c > 1:
         ax = ax.flatten()
         for rr in range(n_r * n_c):
-            coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="110m")
+            coast = NaturalEarthFeature(category="physical", facecolor=land_color,
+                                        name="coastline", scale="110m")
             ax[rr].add_feature(coast, edgecolor=coast_color, linewidth=coast_width)
             # ax.coastlines(facecolor=[0.8,0.8,0.8])
-            gl = ax[rr].gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+            gl = ax[rr].gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                                  linewidth=0.5, color="gray", linestyle="-")
             gl.top_labels = False
             gl.right_labels = False
             if rr % n_c == 0:
@@ -157,10 +157,12 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
 
         ax = ax.reshape((n_r, n_c))
     else:
-        coast = NaturalEarthFeature(category="physical", facecolor=land_color, name="coastline", scale="110m")
+        coast = NaturalEarthFeature(category="physical", facecolor=land_color,
+                                    name="coastline", scale="110m")
         ax.add_feature(coast, edgecolor=coast_color, linewidth=coast_width)
         # ax.coastlines(facecolor=[0.8,0.8,0.8])
-        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                          linewidth=0.5, color="gray", linestyle="-")
         gl.top_labels = False
         gl.right_labels = False
 
@@ -205,10 +207,12 @@ def create_geo_axes(lonbounds, latbounds):
     fig.clf()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
-    coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9], name="coastline", scale="110m")
+    coast = NaturalEarthFeature(category="physical", facecolor=[0.9, 0.9, 0.9],
+                                name="coastline", scale="110m")
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                      linewidth=0.5, color="gray", linestyle="-")
     gl.top_labels = False
     gl.bottom_labels = True
     gl.right_labels = False
@@ -283,7 +287,8 @@ def geo_scatter(
     coast = NaturalEarthFeature(category="physical", **coastline_kwargs)
     ax.add_feature(coast, edgecolor="gray")
     # ax.coastlines(facecolor=[0.8,0.8,0.8])
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", linestyle="-")
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                      linewidth=0.5, color="gray", linestyle="-")
     gl.top_labels = False
     gl.bottom_labels = True
     gl.right_labels = False
@@ -441,8 +446,10 @@ def grid_angle(lon, lat):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            x_grid, y_grid = to_metre.transform(lon[j : j + 2, i : i + 2], lat[j : j + 2, i : i + 2])
-            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), (y_grid[1, 0] - y_grid[0, 0])) * (
+            x_grid, y_grid = to_metre.transform(lon[j : j + 2, i : i + 2],
+                                                lat[j : j + 2, i : i + 2])
+            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]),
+                                     (y_grid[1, 0] - y_grid[0, 0])) * (
                 180 / np.pi
             )  # relative to North
 
