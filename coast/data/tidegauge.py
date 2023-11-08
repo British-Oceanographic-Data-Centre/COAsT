@@ -585,7 +585,7 @@ class Tidegauge(Timeseries):
                 # debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (UTC):",
-                    general_utils.dayoweek(self.dataset.time[idx].values),
+                    general_utils.day_of_week(self.dataset.time[idx].values),
                     np.datetime_as_string(self.dataset.time[idx], unit="m"),
                     "height:",
                     ssh.values,

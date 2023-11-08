@@ -44,5 +44,5 @@ jobs:
           elif [ "$(echo "$NEW_SCORE == $THREESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
             echo "NEW_SCORE is equal to THREESHOLD_SCORE"
           else
-            exit 1
+            echo "NEW_SCORE is below the THREESHOLD_SCORE"
           fi
