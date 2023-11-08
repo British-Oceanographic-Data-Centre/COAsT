@@ -102,6 +102,7 @@ class CurrentsOnT(Gridded):
         """
         # %%
         import matplotlib.pyplot as plt
+        from matplotlib import cm
         from matplotlib.colors import LinearSegmentedColormap
 
         nx = self.dataset.x_dim.size
@@ -126,9 +127,7 @@ class CurrentsOnT(Gridded):
         # create a light colour map
         n_colours = int(Vmax * 100)
         n_c = 2
-        cmap = plt.get_cmap("BrBG")
-        n_colors = n_colours + n_c * 2  # Define the total number of colors you want
-        cmap0 = plt.cm.colors.ListedColormap(cmap(range(n_colors - 1, -1, -1)))
+        cmap0 = cm.get_cmap("BrBG_r", lut=n_colours + n_c * 2)
         colors = cmap0(np.arange(cmap0.N))
         colors1 = colors[n_c : cmap0.N - n_c]
         cmap1 = LinearSegmentedColormap.from_list("cmap1", colors1, cmap0.N - n_c * 2)
