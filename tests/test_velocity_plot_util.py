@@ -16,11 +16,11 @@ from coast._utils import plot_util
 
 
 def test_velocity_polar():
-    """Test the plot_util.velocity_polar function."""
+    """Test the plot_util.velocity_polar_bug_fix function."""
     lat = np.array([45, 55, 65, 75, 85])
     u_velocity = np.array([1, 1, 1, 1, 1])
     v_velocity = np.array([1, 1, 1, 1, 1])
-    u_new, v_new = plot_util.velocity_polar(u_velocity, v_velocity, lat)
+    u_new, v_new = plot_util.velocity_polar_bug_fix(u_velocity, v_velocity, lat)
 
     result1 = np.array([1.15470054, 1.22674459, 1.30265868, 1.36910064, 1.4088727])
     assert np.isclose(u_new, result1).all()
