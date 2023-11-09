@@ -15,6 +15,7 @@ from pyproj import crs
 from pyproj import Transformer
 import scipy.interpolate as si
 
+
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
     y_estimate = fit(x)
@@ -440,14 +441,12 @@ def grid_angle(lon, lat):
     angle = np.zeros(lon.shape)
 
     for j in range(lon.shape[0] - 1):
-        print((j / (lon.shape[0] - 1)) *100, '%')
+        print((j / (lon.shape[0] - 1)) * 100, "%")
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            x_grid, y_grid = list(to_metre.transform(lon[j : j + 2, i : i + 2],
-                                                     lat[j : j + 2, i : i + 2]))
-            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]),
-                                     (y_grid[1, 0] - y_grid[0, 0])) * (
+            x_grid, y_grid = list(to_metre.transform(lon[j : j + 2, i : i + 2], lat[j : j + 2, i : i + 2]))
+            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), (y_grid[1, 0] - y_grid[0, 0])) * (
                 180 / np.pi
             )  # relative to North
 
@@ -525,17 +524,17 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     Returns:
         plot object: can be used for making a colorbar
     """
-    crs_ps = crs.CRS('epsg:3413')
-    crs_wgs84 = crs.CRS('epsg:4326')
+    import cartopy.crs as ccrs
+
+    crs_ps = crs.CRS("epsg:3413")
+    crs_wgs84 = crs.CRS("epsg:4326")
     # NSIDC grid
-    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000,
-                                 np.linspace(-5350, 5850, 448) * 1000)
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000, np.linspace(-5350, 5850, 448) * 1000)
     to_latlon = Transformer.from_crs(crs_ps, crs_wgs84)
     lat_grid, lon_grid = list(to_latlon.transform(x_grid, y_grid))
     points = np.vstack((lon.flatten(), lat.flatten())).T
-    grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method='linear')
-    cs_out = ax_in.contour(x_grid, y_grid, grid_var,
-                           transform=crs.epsg(3413), **kwargs)
+    grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method="linear")
+    cs_out = ax_in.contour(x_grid, y_grid, grid_var, transform=ccrs.epsg(3413), **kwargs)
     return cs_out
 
 
