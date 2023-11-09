@@ -1,12 +1,12 @@
 from ..data.gridded import Gridded
-from .logging_util import info, warn, error
+from .logging_util import deprecated, info, warn, error
 import dask.array as da
 from dask import delayed
 import xarray as xr
 import numpy as np
 
 
-class Process_data:  # TODO All abstract methods should be implemented
+class ProcessData:  # TODO All abstract methods should be implemented
     """
     A Python class containing methods for processing time series.
     """
@@ -118,3 +118,6 @@ class Process_data:  # TODO All abstract methods should be implemented
         gd.dataset["residual"] = xr.full_like(time_series.chunk(residual.chunks), np.nan)
         gd.dataset["residual"][:] = residual
         return gd
+
+Process_data = deprecated("Please use the 'ProcessData' class instead. \
+    This name will change in the next release.")(ProcessData)

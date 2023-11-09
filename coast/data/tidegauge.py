@@ -1,16 +1,18 @@
 """Tide Gauge class"""
-from .timeseries import Timeseries
-import numpy as np
-import xarray as xr
-import matplotlib.pyplot as plt
-import pandas as pd
 import glob
 import re
-import pytz
-from .._utils import general_utils, plot_util, crps_util, stats_util
-from .._utils.logging_util import get_slug, debug, error, info
-from typing import Union
 from pathlib import Path
+from typing import Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pytz
+import xarray as xr
+
+from .._utils import general_utils, plot_util
+from .._utils.logging_util import debug, deprecated, get_slug, info
+from .timeseries import Timeseries
 
 
 class Tidegauge(Timeseries):
@@ -84,13 +86,15 @@ class Tidegauge(Timeseries):
                 ds_coords["time"] = ("t_dim", new_time_coords)
                 ds_coords = ds_coords.set_coords("time")
                 self.dataset = ds_coords.copy()
-
+            else:
+                self.dataset = self.dataset.set_coords("time")
         else:
             self.dataset = None
 
         print(f"{get_slug(self)} initialised")
 
     ############ tide gauge methods ###########################################
+    @deprecated("Please use the 'read_gesla' method instead.")
     def read_gesla_v3(self, fn_gesla, date_start=None, date_end=None):
         """
         Depreciated method.
@@ -105,7 +109,7 @@ class Tidegauge(Timeseries):
 
         if len(file_list) > 1:  # return list of tidegauge objects
             # multiple = True
-            return self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
+            self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
         else:  # return single tidegauge obj
             # multiple = False
             self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
@@ -166,8 +170,8 @@ class Tidegauge(Timeseries):
             # Attributes
             dataset["longitude"] = ("id_dim", [header_dict["longitude"]])
             dataset["latitude"] = ("id_dim", [header_dict["latitude"]])
-            dataset["id_name"] = ("id_dim", [header_dict["site_name"]])
-            dataset = dataset.set_coords(["longitude", "latitude", "id_name"])
+            dataset["site_name"] = ("id_dim", [header_dict["site_name"]])
+            dataset = dataset.set_coords(["longitude", "latitude", "site_name"])
 
             # Create tidegauge object, save dataset and append to list
             if multiple:
@@ -197,7 +201,7 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading GESLA header from "{fn_gesla}"')
-        with open(fn_gesla) as fid:
+        with open(fn_gesla, encoding="utf-8") as fid:
             # Read lines one by one (hopefully formatting is consistent)
             format_version = float(fid.readline().split()[3])
             # Geographical stuff
@@ -288,7 +292,7 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading GESLA header from "{fn_gesla}"')
-        with open(fn_gesla) as fid:
+        with open(fn_gesla, encoding="utf-8") as fid:
             # Read lines one by one (hopefully formatting is consistent)
             format_version = float(fid.readline().split()[3])
             # Geographical stuff
@@ -362,7 +366,7 @@ class Tidegauge(Timeseries):
         ssh = []
         qc_flags = []
         # Open file and loop until EOF
-        with open(fn_gesla) as file:
+        with open(fn_gesla, encoding="utf-8") as file:
             line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
@@ -406,7 +410,7 @@ class Tidegauge(Timeseries):
         return dataset
 
     ### tide table methods (HLW)
-    def read_hlw(self, fn_hlw, date_start=None, date_end=None):
+    def read_hlw(self, fn_hlw, date_start=None, date_end=None, latitude=None, longitude=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
         xarray dataset. File contains high water and low water heights and times
@@ -434,18 +438,20 @@ class Tidegauge(Timeseries):
         """
         debug(f'Reading "{fn_hlw}" as a HLW file with {get_slug(self)}')
         # TODO Maybe include start/end dates
-        try:
-            header_dict = self._read_hlw_header(fn_hlw)
-            dataset = self._read_hlw_data(fn_hlw, header_dict, date_start, date_end)
-            if header_dict["field"] == "TZ:UT(GMT)/BST":
-                debug("Read in as BST, stored as UTC")
-            elif header_dict["field"] == "TZ:GMTonly":
-                debug("Read and store as GMT/UTC")
-            else:
-                debug("Not expecting that timezone")
+        # try:
+        header_dict = self._read_hlw_header(fn_hlw)
+        header_dict["latitude"] = latitude
+        header_dict["longitude"] = longitude
+        dataset = self._read_hlw_data(fn_hlw, header_dict, date_start, date_end)
+        if header_dict["field"] == "TZ:UT(GMT)/BST":
+            debug("Read in as BST, stored as UTC")
+        elif header_dict["field"] == "TZ:GMTonly":
+            debug("Read and store as GMT/UTC")
+        else:
+            debug("Not expecting that timezone")
 
-        except:
-            raise Exception("Problem reading HLW file: " + fn_hlw)
+        # except:
+        #     raise Exception("Problem reading HLW file: " + fn_hlw)
 
         dataset.attrs = header_dict
         self.dataset = dataset
@@ -472,30 +478,29 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading HLW header from "{filnam}" ')
-        fid = open(filnam)
 
-        # Read lines one by one (hopefully formatting is consistent)
-        header = re.split(r"\s{2,}", fid.readline())
-        site_name = header[0]
-        site_name = site_name.replace(" ", "")
-
-        field = header[1]
-        field = field.replace(" ", "")
-
-        units = header[2]
-        units = units.replace(" ", "")
-
-        datum = header[3]
-        datum = datum.replace(" ", "")
+        # Read just the first line
+        with open(filnam, "r", encoding="utf-8") as file:
+            first_line = file.readline().strip()
 
         debug(f'Read done, close file "{filnam}"')
-        fid.close()
+
+        header = re.split(r"\s{2,}", first_line)
+        site_name = header[0].replace(" ", "")
+        field = header[1].replace(" ", "")
+        units = header[2].replace(" ", "")
+        datum = header[3].replace(" ", "")
         # Put all header info into an attributes dictionary
         header_dict = {"site_name": site_name, "field": field, "units": units, "datum": datum}
         return header_dict
 
     @classmethod
-    def _read_hlw_data(cls, filnam, header_dict, date_start=None, date_end=None, header_length: int = 1):
+    def _read_hlw_data(cls,
+                       filnam,
+                       header_dict,
+                       date_start=None,
+                       date_end=None,
+                       header_length: int = 1):
         """
         Reads HLW data from a tidetable file.
 
@@ -510,58 +515,38 @@ class Tidegauge(Timeseries):
         -------
         xarray.Dataset containing times, High and Low water values
         """
-        import datetime
-
         # Initialise empty dataset and lists
         debug(f'Reading HLW data from "{filnam}"')
-        dataset = xr.Dataset()
-        time = []
-        ssh = []
 
-        if header_dict["field"] == "TZ:UT(GMT)/BST":
-            localtime_flag = True
-        else:
-            localtime_flag = False
+        df = pd.read_csv(filnam, skiprows=1, header=None, delim_whitespace=True)
+        df["datetime"] = pd.to_datetime(df[0] + " " + df[1], format="%d/%m/%Y %H:%M", utc=False)
+        df["ssh"] = df[2]
+        df.drop(columns=[0, 1, 2], inplace=True)
+        debug(f'Read done, close file "{filnam}"')
 
-        # Open file and loop until EOF
-        with open(filnam) as file:
-            line_count = 1
-            for line in file:
-                # Read all data. Date boundaries are set later.
-                if line_count > header_length:
-                    working_line = line.split()
-                    if working_line[0] != "#":
-                        time_str = working_line[0] + " " + working_line[1]
-                        # Read time as datetime.datetime because it can handle local timezone easily AND the unusual date format
-                        datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
-                        if localtime_flag == True:
-                            bst_obj = pytz.timezone("Europe/London")
-                            time.append(np.datetime64(bst_obj.localize(datetime_obj).astimezone(pytz.utc)))
-                        else:
-                            time.append(np.datetime64(datetime_obj))
-                        ssh.append(float(working_line[2]))
-                line_count = line_count + 1
-            debug(f'Read done, close file "{filnam}"')
-
-        # Return only values between stated dates
-        start_index = 0
-        end_index = len(time)
         if date_start is not None:
-            # start_index = general_utils.nearest_datetime_ind(time, date_start)
             date_start = np.datetime64(date_start)
-            start_index = np.argmax(time >= date_start)
-            debug(f"date_start: {date_start}. start_index: {start_index}")
+            df = df[df["datetime"] >= date_start]
+            debug(f"date_start: {date_start}")
         if date_end is not None:
-            # end_index = general_utils.nearest_datetime_ind(time, date_end)
             date_end = np.datetime64(date_end)
-            end_index = np.argmax(time > date_end)
-            debug(f"date_end: {date_end}. end_index: {end_index}")
-        time = time[start_index:end_index]
-        ssh = ssh[start_index:end_index]
-        debug(f"ssh: {ssh}")
-        # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id_dim")
-        dataset = dataset.assign_coords(time=("time", time))
+            df = df[df["datetime"] <= date_end]
+            debug(f"date_end: {date_end}")
+        if header_dict["field"] == "TZ:UT(GMT)/BST":
+            df["datetime"] = df["datetime"].dt.tz_localize("Europe/London",
+                                                           ambiguous="NaT")
+            df.dropna(inplace=True)
+
+        dataset = xr.Dataset()
+        dataset["ssh"] = xr.DataArray(np.expand_dims(df["ssh"].values, axis=0),
+                                      dims=["id_dim", "t_dim"])
+        coords = {
+            "time": ("t_dim", df["datetime"]),
+            "longitude": ("id_dim", [header_dict["longitude"]]),
+            "latitude": ("id_dim", [header_dict["latitude"]]),
+            "site_name": ("id_dim", [header_dict["site_name"]]),
+        }
+        dataset.coords.update(coords)
         # Assign local dataset to object-scope dataset
         return dataset
 
@@ -570,27 +555,31 @@ class Tidegauge(Timeseries):
         Print out the values in the xarray
         Displays with specified timezone
         """
-        # debug(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
-        if timezone == None:
-            for i in range(len(self.dataset.ssh)):
-                #               debug('time:', self.dataset.time[i].values,
+        # debug(" Saltney pred",
+        #       np.datetime_as_string(Saltney_time_pred[i],
+        #                             unit='m',
+        #                             timezone=pytz.timezone('Europe/London')),
+        #       ". Height: {:.2f} m".format( HT.values[i] ))
+        if timezone is None:
+            for idx, ssh in enumerate(self.dataset.ssh):
                 debug(
                     "time (UTC):",
-                    general_utils.dayoweek(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m"),
+                    general_utils.day_of_week(self.dataset.time[idx].values),
+                    np.datetime_as_string(self.dataset.time[idx], unit="m"),
                     "height:",
-                    self.dataset.ssh[i].values,
+                    ssh.values,
                     "m",
                 )
         else:  # display timezone aware times
-            for i in range(len(self.dataset.ssh)):
-                #               debug('time:', self.dataset.time[i].values,
+            for idx, ssh in enumerate(self.dataset.ssh):
                 debug(
                     "time (" + timezone + "):",
-                    general_utils.day_of_week(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
-                    "height:",
-                    self.dataset.ssh[i].values,
+                    general_utils.day_of_week(self.dataset.time[idx].values),
+                    np.datetime_as_string(self.dataset.time[idx],
+                                            unit="m",
+                                            timezone=pytz.timezone(timezone)),
+                    "heighdxt:",
+                    ssh.values,
                     "m",
                 )
 
@@ -614,8 +603,10 @@ class Tidegauge(Timeseries):
             window:  +/- hours window size, winsize, (int) return values in that window
                 uses additional variable winsize (int) [default 2hrs]
             nearest_1: return only the nearest event, if in winsize [default:None]
-            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low), if in winsize [default:None]
-            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`), if in winsize [default:None]
+            nearest_2: return nearest event in future and the nearest in the past
+                (i.e. high and a low), if in winsize [default:None]
+            nearest_HW: return nearest High Water event (computed as the max of
+                `nearest_2`), if in winsize [default:None]
 
         returns: xr.DataArray( measure_var, coords=time_var)
             E.g. ssh (m), time (utc)
@@ -627,55 +618,32 @@ class Tidegauge(Timeseries):
         if not isinstance(time_guess, np.datetime64):
             debug("Convert date to np.datetime64")
             time_guess = np.datetime64(time_guess)
-
-        if time_guess == None:
+        if time_guess is None:
             debug("Use today's date")
             time_guess = np.datetime64("now")
 
         if method == "window":
-            if winsize == None:
+            if winsize is None:
                 winsize = 2
+            winsize_hours = np.timedelta64(winsize, "h")
+            ssh = self.dataset.where(
+                (self.dataset['time'] >= time_guess - winsize_hours) &
+                (self.dataset['time'] <= time_guess + winsize_hours),
+                drop=True)['ssh']
             # initialise start_index and end_index
-            start_index = 0
-            end_index = len(self.dataset[time_var])
-
-            date_start = time_guess - np.timedelta64(winsize, "h")
-            start_index = np.argmax(self.dataset[time_var].values >= date_start)
-
-            date_end = time_guess + np.timedelta64(winsize, "h")
-            end_index = np.argmax(self.dataset[time_var].values > date_end)
-
-            ssh = self.dataset[measure_var].isel(time=slice(start_index, end_index))
-
             return ssh[0]
 
-        elif method == "nearest_1":
-            dt = np.abs(self.dataset[time_var] - time_guess)
-            index = np.argsort(dt).values
-            if winsize is not None:  # if search window trucation exists
-                if np.timedelta64(dt[index[0]].values, "m").astype("int") <= 60 * winsize:  # compare in minutes
-                    debug(f"dt:{np.timedelta64(dt[index[0]].values, 'm').astype('int')}")
-                    debug(f"winsize:{winsize}")
-                    return self.dataset[measure_var].isel(time=index[0])
-                else:
-                    # return a NaN in an xr.Dataset
-                    # The rather odd trailing zero is to remove the array layer
-                    # on both time and measurement, and to match the other
-                    # alternative for a return object
-                    return xr.DataArray([np.NaN], dims=(time_var), coords={time_var: [time_guess]})[0]
-            else:  # give the closest without window search truncation
-                return self.dataset[measure_var].isel(time=index[0])
-
-        elif method == "nearest_2":
+        if method == "nearest_1":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            nearest_2 = self.dataset[measure_var].isel(time=index[0 : 1 + 1])  # , self.dataset.time[index[0:1+1]]
-            return nearest_2[0]
-
-        elif method == "nearest_HW":
+            return self.dataset[measure_var].isel(t_dim=index[0 : 1])[0]
+        if method == "nearest_2":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            # return self.dataset.ssh[ index[np.argmax( self.dataset.ssh[index[0:1+1]]] )] #, self.dataset.time[index[0:1+1]]
-            nearest_2 = self.dataset[measure_var].isel(time=index[0 : 1 + 1])  # , self.dataset.time[index[0:1+1]]
-            return nearest_2.isel(time=np.argmax(nearest_2.data))
+            return self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+
+        if method == "nearest_HW":
+            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
+            nearest_2 = self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+            return nearest_2.isel(t_dim=np.argmax(nearest_2.data))
 
         else:
             debug("Not expecting that option / method")
@@ -683,7 +651,11 @@ class Tidegauge(Timeseries):
     ############ environment.data.gov.uk gauge methods ###########################
     @classmethod
     def read_ea_api_to_xarray(
-        cls, n_days: int = 5, date_start: np.datetime64 = None, date_end: np.datetime64 = None, station_id="E70124"
+        cls,
+        n_days: int = 5,
+        date_start: np.datetime64 = None,
+        date_end: np.datetime64 = None,
+        station_id="E70124"
     ):
         """
         load gauge data via environment.data.gov.uk EA API
@@ -706,7 +678,9 @@ class Tidegauge(Timeseries):
         OUTPUT:
             ssh, time : xr.Dataset
         """
-        import requests, json
+        import json
+
+        import requests
 
         cls.n_days = n_days
         cls.date_start = date_start
@@ -728,21 +702,23 @@ class Tidegauge(Timeseries):
             header_dict["latitude"] = header_dict["items"]["lat"]
             header_dict["longitude"] = header_dict["items"]["long"]
         except:
-            info(f"possible missing some header info: site_name,latitude,longitude")
+            info("possible missing some header info: site_name,latitude,longitude")
         try:
             # Define url call with parameter from station info
             htmlcall_station_id = header_dict["items"]["measures"]["@id"] + "/readings?"
         except:
-            debug(f"problem defining the parameter to read")
+            debug("problem defining the parameter to read")
 
         # Construct API request for data recovery
         info("load station data")
-        if (cls.date_start == None) & (cls.date_end == None):
+        if (cls.date_start is None) & (cls.date_end is None):
             info(f"GETting n_days= {cls.n_days} of data")
             url = (
                 htmlcall_station_id
                 + "since="
-                + (np.datetime64("now") - np.timedelta64(n_days, "D")).item().strftime("%Y-%m-%dT%H:%M:%SZ")
+                + (np.datetime64("now") - np.timedelta64(n_days, "D"))
+                .item()
+                .strftime("%Y-%m-%dT%H:%M:%SZ")
             )
             debug(f"url request: {url}")
         else:
@@ -759,7 +735,7 @@ class Tidegauge(Timeseries):
 
         # Get the data
         try:
-            request_raw = requests.get(url)
+            request_raw = requests.get(url, timeout=20)
             request = json.loads(request_raw.content)
             debug(f"EA API request: {request_raw.text}")
         except ValueError:
@@ -862,14 +838,14 @@ class Tidegauge(Timeseries):
         dictionary of attributes
         """
         debug(f'Reading BODC header from "{fn_bodc}"')
-        fid = open(fn_bodc)
+        fid = open(fn_bodc, encoding='utf-8')
 
         # Read lines one by one (hopefully formatting is consistent)
         # Geographical stuff
         header_dict = {}
         header = True
         for line in fid:
-            if ":" in line and header == True:
+            if ":" in line and header is True:
                 (key, val) = line.split(":")
                 key = key.lower().strip().replace(" ", "_")
                 val = val.lower().strip().replace(" ", "_")
@@ -888,7 +864,10 @@ class Tidegauge(Timeseries):
         return header_dict
 
     @staticmethod
-    def _read_bodc_data(fn_bodc, date_start=None, date_end=None, header_length: int = 11):
+    def _read_bodc_data(fn_bodc,
+                        date_start=None,
+                        date_end=None,
+                        header_length: int = 11):
         """
         Reads observation data from a BODC file.
 
@@ -911,14 +890,15 @@ class Tidegauge(Timeseries):
         qc_flags = []
         residual = []
         # Open file and loop until EOF
-        with open(fn_bodc) as file:
+        with open(fn_bodc, encoding='utf-8') as file:
             line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
                 if line_count > header_length:
                     try:
                         working_line = line.split()
-                        time_str = working_line[1] + " " + working_line[2]  # Empty lines cause trouble
+                        time_str = working_line[1] + " " + working_line[2] 
+                        # Empty lines cause trouble
                         ssh_str = working_line[3]
                         residual_str = working_line[4]
                         if ssh_str[-1].isalpha():
@@ -932,7 +912,9 @@ class Tidegauge(Timeseries):
                             residual_str = residual_str.replace(qc_flag_str, "")
                         else:
                             qc_flag_str = ""
-                        # debug(line_count-header_length, residual_str, float(residual_str))
+                        # debug(line_count-header_length,
+                        #       residual_str, 
+                        #       float(residual_str))
                         # debug(working_line, ssh_str, qc_flag_str)
                         time.append(time_str)
                         qc_flags.append(qc_flag_str)
@@ -1176,6 +1158,11 @@ class Tidegauge(Timeseries):
         return: A new profile object containing subsetted data
         """
         ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+            self.dataset.longitude,
+            self.dataset.latitude,
+            lonbounds[0],
+            lonbounds[1],
+            latbounds[0],
+            latbounds[1]
         )
         return Tidegauge(dataset=self.dataset.isel(id_dim=ind[0]))
