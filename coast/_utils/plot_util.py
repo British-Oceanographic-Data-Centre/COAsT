@@ -6,11 +6,15 @@ Python definitions used to help with plotting routines.
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.path as mpath
 from warnings import warn
 from .logging_util import warn
 import numpy as np
 import pyproj
-
+import cartopy.crs as ccrs
+from pyproj import crs
+from pyproj import Transformer
+import scipy.interpolate as si
 
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
@@ -441,8 +445,10 @@ def grid_angle(lon, lat):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            x_grid, y_grid = to_metre.transform(lon[j : j + 2, i : i + 2], lat[j : j + 2, i : i + 2])
-            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), (y_grid[1, 0] - y_grid[0, 0])) * (
+            x_grid, y_grid = list(to_metre.transform(lon[j : j + 2, i : i + 2],
+                                                     lat[j : j + 2, i : i + 2]))
+            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]),
+                                     (y_grid[1, 0] - y_grid[0, 0])) * (
                 180 / np.pi
             )  # relative to North
 
@@ -471,8 +477,8 @@ def velocity_on_t(u_velocity, v_velocity):
     Returns:
         array, array: u and v velocity components co-located on the t-grid.
     """
-    u_on_t_points = (u_velocity * 1.0)
-    v_on_t_points = (v_velocity * 1.0)
+    u_on_t_points = u_velocity * 1.0
+    v_on_t_points = v_velocity * 1.0
     u_on_t_points[:, 1:] = 0.5 * (u_velocity[:, 1:] + u_velocity[:, :-1])
     v_on_t_points[1:, :] = 0.5 * (v_velocity[1:, :] + v_velocity[:-1, :])
     return u_on_t_points, v_on_t_points
@@ -503,3 +509,48 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
         u_new, v_new = velocity_polar(u_new, v_new, lat)
 
     return u_new, v_new
+
+
+def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
+    """
+    Interpolate the data onto a regular grid with no north fold
+    Generate new grid on NSIDC Polar Stereographic projection on WGS84
+
+    Args:
+        lon (array): longitude coordinate of the variable
+        lat (array): latitude coordinate of the variable
+        var (array): variable to plot
+        ax_in (axis): axis to plot contours on
+        **kwargs (dict): variables for plotting a contour
+
+    Returns:
+        plot object: can be used for making a colorbar
+    """
+    crs_ps = crs.CRS('epsg:3413')
+    crs_wgs84 = crs.CRS('epsg:4326')
+    # NSIDC grid
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000,
+                                 np.linspace(-5350, 5850, 448) * 1000)
+    to_latlon = Transformer.from_crs(crs_ps, crs_wgs84)
+    lat_grid, lon_grid = list(to_latlon.transform(x_grid, y_grid))
+    points = np.vstack((lon.flatten(), lat.flatten())).T
+    grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method='linear')
+    cs_out = ax_in.contour(x_grid, y_grid, grid_var,
+                           transform=ccrs.epsg(3413), **kwargs)
+    return cs_out
+
+
+def set_circle(ax_in):
+    """
+    Compute a circle in axes coordinates, which we can use as a boundary
+    for the map. We can pan/zoom as much as we like - the boundary will be
+    permanently circular.
+
+    Args:
+        ax_in (axis): axis object
+    """
+    theta = np.linspace(0, 2 * np.pi, 100)
+    center, radius = [0.5, 0.5], 0.5
+    verts = np.vstack([np.sin(theta), np.cos(theta)]).T
+    circle = mpath.Path(verts * radius + center)
+    ax_in.set_boundary(circle, transform=ax_in.transAxes)
