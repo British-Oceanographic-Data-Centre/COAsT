@@ -11,7 +11,6 @@ from warnings import warn
 from .logging_util import warn
 import numpy as np
 import pyproj
-import cartopy.crs as ccrs
 from pyproj import crs
 from pyproj import Transformer
 import scipy.interpolate as si
@@ -536,7 +535,7 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     points = np.vstack((lon.flatten(), lat.flatten())).T
     grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method='linear')
     cs_out = ax_in.contour(x_grid, y_grid, grid_var,
-                           transform=ccrs.epsg(3413), **kwargs)
+                           transform=crs.epsg(3413), **kwargs)
     return cs_out
 
 
