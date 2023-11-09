@@ -87,6 +87,7 @@ class Tidegauge(Timeseries):
                 ds_coords = ds_coords.set_coords("time")
                 self.dataset = ds_coords.copy()
             else:
+                print(self.dataset)
                 self.dataset = self.dataset.set_coords("time")
         else:
             self.dataset = None
@@ -813,8 +814,8 @@ class Tidegauge(Timeseries):
         # Attributes
         dataset["longitude"] = ("id_dim", [header_dict["longitude"]])
         dataset["latitude"] = ("id_dim", [header_dict["latitude"]])
-        dataset["id_name"] = ("id_dim", [header_dict["site_name"]])
-        dataset = dataset.set_coords(["longitude", "latitude", "id_name"])
+        dataset["site_name"] = ("id_dim", [header_dict["site_name"]])
+        dataset = dataset.set_coords(["longitude", "latitude", "site_name"])
 
         del header_dict["longitude"]
         del header_dict["latitude"]
@@ -947,10 +948,15 @@ class Tidegauge(Timeseries):
         # ssh[qc_flags==5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["time"]).expand_dims("id_dim")
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["time"]).expand_dims("id_dim")
-        dataset = dataset.assign_coords(time=("time", time))
-
+        dataset = xr.Dataset()
+        dataset["ssh"] = xr.DataArray(np.expand_dims(ssh, axis=0),
+                                      dims=["id_dim", "t_dim"])
+        dataset["qc_flags"] = xr.DataArray(np.expand_dims(qc_flags, axis=0),
+                                      dims=["id_dim", "t_dim"])
+        coords = {
+            "time": ("t_dim", time)
+        }
+        dataset.coords.update(coords)
         # Assign local dataset to object-scope dataset
         return dataset
 

@@ -368,6 +368,7 @@ class TidegaugeAnalysis:
             time_min, values_min = stats_util.find_maxima(x, -y, method=method, **kwargs)
             # Place the above values into a brand new dataset for this id_dim index
             new_dataset = xr.Dataset()
+            print(data_array.attrs)
             new_dataset.attrs = data_array.attrs
             new_dataset[data_array.name + "_highs"] = ("time_highs", values_max)
             new_dataset[data_array.name + "_lows"] = ("time_lows", -values_min)
