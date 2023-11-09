@@ -127,7 +127,10 @@ def find_maxima(x, y, method="comp", **kwargs):
         if flag_dt64:
             N = len(extr_x_vals[ind])
             x_out = [
-                np.datetime64("1970-01-01T00:00:00") + np.timedelta64(int(extr_x_vals[ind[i]]), "s") for i in range(N)
+                (np.datetime64("1970-01-01T00:00:00") + np.timedelta64(int(extr_x_vals[ind[i]]), "s")).astype(
+                    "datetime64[ns]"
+                )
+                for i in range(N)
             ]
         else:
             x_out = extr_x_vals[ind]

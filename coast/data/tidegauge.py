@@ -524,7 +524,7 @@ class Tidegauge(Timeseries):
             localtime_flag = False
 
         # Open file and loop until EOF
-        with open(filnam) as file:
+        with open(filnam, encoding="utf-8") as file:
             line_count = 1
             for line in file:
                 # Read all data. Date boundaries are set later.
@@ -532,13 +532,18 @@ class Tidegauge(Timeseries):
                     working_line = line.split()
                     if working_line[0] != "#":
                         time_str = working_line[0] + " " + working_line[1]
-                        # Read time as datetime.datetime because it can handle local timezone easily AND the unusual date format
+                        # Read time as datetime.datetime because it can handle
+                        # local timezone easily AND the unusual date format
                         datetime_obj = datetime.datetime.strptime(time_str, "%d/%m/%Y %H:%M")
-                        if localtime_flag == True:
+                        if localtime_flag is True:
                             bst_obj = pytz.timezone("Europe/London")
-                            time.append(np.datetime64(bst_obj.localize(datetime_obj).astimezone(pytz.utc)))
+                            time.append(
+                                np.datetime64(
+                                    bst_obj.localize(datetime_obj).astimezone(pytz.utc).replace(tzinfo=None)
+                                ).astype("datetime64[ns]")
+                            )
                         else:
-                            time.append(np.datetime64(datetime_obj))
+                            time.append(np.datetime64(datetime_obj).astype("datetime64[ns]"))
                         ssh.append(float(working_line[2]))
                 line_count = line_count + 1
             debug(f'Read done, close file "{filnam}"')
@@ -570,27 +575,31 @@ class Tidegauge(Timeseries):
         Print out the values in the xarray
         Displays with specified timezone
         """
-        # debug(" Saltney pred", np.datetime_as_string(Saltney_time_pred[i], unit='m', timezone=pytz.timezone('Europe/London')),". Height: {:.2f} m".format( HT.values[i] ))
-        if timezone == None:
-            for i in range(len(self.dataset.ssh)):
-                #               debug('time:', self.dataset.time[i].values,
+        # debug(" Saltney pred",
+        #       np.datetime_as_string(Saltney_time_pred[i],
+        #                             unit='m',
+        #                             timezone=pytz.timezone('Europe/London')),
+        #       ". Height: {:.2f} m".format( HT.values[i] ))
+        if timezone is None:
+            for ssh, idx in enumerate(self.dataset.ssh):
+                # debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (UTC):",
-                    general_utils.dayoweek(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m"),
+                    general_utils.day_of_week(self.dataset.time[idx].values),
+                    np.datetime_as_string(self.dataset.time[idx], unit="m"),
                     "height:",
-                    self.dataset.ssh[i].values,
+                    ssh.values,
                     "m",
                 )
         else:  # display timezone aware times
-            for i in range(len(self.dataset.ssh)):
-                #               debug('time:', self.dataset.time[i].values,
+            for ssh, idx in enumerate(self.dataset.ssh):
+                # debug('time:', self.dataset.time[i].values,
                 debug(
                     "time (" + timezone + "):",
-                    general_utils.day_of_week(self.dataset.time[i].values),
-                    np.datetime_as_string(self.dataset.time[i], unit="m", timezone=pytz.timezone(timezone)),
+                    general_utils.day_of_week(self.dataset.time[idx].values),
+                    np.datetime_as_string(self.dataset.time[idx], unit="m", timezone=pytz.timezone(timezone)),
                     "height:",
-                    self.dataset.ssh[i].values,
+                    ssh.values,
                     "m",
                 )
 
@@ -614,8 +623,10 @@ class Tidegauge(Timeseries):
             window:  +/- hours window size, winsize, (int) return values in that window
                 uses additional variable winsize (int) [default 2hrs]
             nearest_1: return only the nearest event, if in winsize [default:None]
-            nearest_2: return nearest event in future and the nearest in the past (i.e. high and a low), if in winsize [default:None]
-            nearest_HW: return nearest High Water event (computed as the max of `nearest_2`), if in winsize [default:None]
+            nearest_2: return nearest event in future and the nearest in the past
+        (i.e. high and a low), if in winsize [default:None]
+            nearest_HW: return nearest High Water event (computed as the max of
+        `nearest_2`), if in winsize [default:None]
 
         returns: xr.DataArray( measure_var, coords=time_var)
             E.g. ssh (m), time (utc)
