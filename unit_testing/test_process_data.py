@@ -11,7 +11,7 @@ class test_process_data_methods(unittest.TestCase):
         gd_t = coast.Gridded(files.fn_nemo_grid_t_dat, files.fn_nemo_dom, config=files.fn_config_t_grid)
         fake_time = np.arange(
             np.datetime64("2010-01-01"), np.datetime64("2014-01-01"), np.timedelta64(1, "M"), dtype="datetime64[M]"
-        ).astype("datetime64[s]")
+        ).astype("datetime64[ns]")
         fake_temp = (
             (np.arange(0, 48) * 0.05)[:, np.newaxis, np.newaxis, np.newaxis]
             + np.random.normal(0, 0.1, 48)[:, np.newaxis, np.newaxis, np.newaxis]
