@@ -525,6 +525,8 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     Returns:
         plot object: can be used for making a colorbar
     """
+    import cartopy.crs as ccrs 
+    
     crs_ps = crs.CRS('epsg:3413')
     crs_wgs84 = crs.CRS('epsg:4326')
     # NSIDC grid
@@ -535,7 +537,7 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     points = np.vstack((lon.flatten(), lat.flatten())).T
     grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method='linear')
     cs_out = ax_in.contour(x_grid, y_grid, grid_var,
-                           transform=crs.epsg(3413), **kwargs)
+                           transform=ccrs.epsg(3413), **kwargs)
     return cs_out
 
 
