@@ -1,3 +1,5 @@
+""" tests for plotting preparation methods.
+ At the time of writing specifically targeting cartopy vector plots of polar domains """
 # IMPORT modules. Must have pytest.
 
 # import os.path as path
@@ -18,11 +20,11 @@ from coast._utils import plot_util
 
 
 def test_velocity_polar():
-    """Test the plot_util.velocity_polar function."""
+    """Test the plot_util.velocity_polar_bug_fix function."""
     lat = np.array([45, 55, 65, 75, 85])
     u_velocity = np.array([1, 1, 1, 1, 1])
     v_velocity = np.array([1, 1, 1, 1, 1])
-    u_new, v_new = plot_util.velocity_polar(u_velocity, v_velocity, lat)
+    u_new, v_new = plot_util.velocity_polar_bug_fix(u_velocity, v_velocity, lat)
 
     result1 = np.array([1.15470054, 1.22674459, 1.30265868, 1.36910064, 1.4088727])
     assert np.isclose(u_new, result1).all()
@@ -79,7 +81,7 @@ def test_velocity_grid_to_geo():
     u_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
     v_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False)
     u_result1 = np.array(
         (
             [1.04903051, 1.05046004, 1.05188719],
@@ -96,7 +98,7 @@ def test_velocity_grid_to_geo():
     )
     assert np.isclose(u_new, u_result1).all() & np.isclose(v_new, v_result1).all()
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=True)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=True)
     print(u_new, v_new)
     u_result2 = np.array(
         ([1.222728, 1.21099989, 1.19965573], [1.28512188, 1.27230937, 1.25958666], [1.34721927, 1.33542729, 1.32321739])

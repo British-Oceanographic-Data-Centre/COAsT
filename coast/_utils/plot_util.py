@@ -348,14 +348,15 @@ def determine_clim_by_standard_deviation(color_data, n_std_dev=2.5):
     return vmin, vmax
 
 
-def velocity_polar(u_velocity, v_velocity, latitude):
-    """Adjust u and v to work-around a bug in cartopy for quiver plotting
+def velocity_polar_bug_fix(u_velocity, v_velocity, latitude):
+    """Adjust u and v to work-around a bug in cartopy=0.21.1 for quiver plotting
     specifically when using a stereographic projection. The bug means that
-    the the u component (x direction) of quivers will not be correctly
+    the u component (x direction) of quivers will not be correctly
     proportioned relative to the v component (y direction). This function
-    proportions the u and v components correctly for plotting.
+    scales the u and v components correctly for plotting. BUT IT TO BE USED ONLY FOR PLOTTING.
     NOTE: only use this for cartopy maps with NorthPolarStereo or SouthPolarStereo
-    projection
+    projection.
+    NOTE: this was developed with a bug that existed in cartopy=0.21.1
 
     Args:
         u_velocity (array): eastward velocity vectors
@@ -482,18 +483,20 @@ def velocity_on_t(u_velocity, v_velocity):
     return u_on_t_points, v_on_t_points
 
 
-def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
-    """Makes all the adjustments to the NEMO grid velocities to make them plot
+def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False):
+    """Makes combined adjustments to gridded velocities to make them plot
     with intuitive direction as quivers or streamlines in maps.
+    (Developed and tested with the NEMO tripolar "ORCA" grid.)
 
     Args:
         lon (array): longitude of the grid
         lat (array): latitude of the grid
         u_velocity (array): i-direction velocities along grid lines
         v_velocity (array): j-direction velocities along grid lines
-        polar_stereo (bool, optional): If True, makes an additional adjustment to the
-        velocity for plotting them on a stereographic (NorthPolarStereo or
-        SouthPolarStereo) projection in CartoPy. Defaults to False.
+        polar_stereo_cartopy_bug_fix (bool, optional): Addesses a plotting bug in CartoPy=0.21.1
+                            If True, makes an additional adjustment to the velocity
+                            for plotting them on a stereographic (NorthPolarStereo or
+                            SouthPolarStereo) projection in CartoPy. Defaults to False.
 
     Returns:
         array, array: NEMO grid u and v velocities that have been aligned
@@ -503,8 +506,8 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
     u_on_t, v_on_t = velocity_on_t(u_velocity, v_velocity)
     angle_to_north = grid_angle(lon, lat)
     u_new, v_new = velocity_rotate(u_on_t, v_on_t, angle_to_north)
-    if polar_stereo:
-        u_new, v_new = velocity_polar(u_new, v_new, lat)
+    if polar_stereo_cartopy_bug_fix:
+        u_new, v_new = velocity_polar_bug_fix(u_new, v_new, lat)
 
     return u_new, v_new
 
