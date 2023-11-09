@@ -110,6 +110,7 @@ def test_velocity_grid_to_geo():
     )
     assert np.isclose(u_new, u_result2).all() & np.isclose(v_new, v_result2).all()
 
+
 def test_plot_polar_contour():
     """Test the plot_util.plot_polar_contour function."""
     lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
@@ -118,9 +119,10 @@ def test_plot_polar_contour():
     figsize = (5, 5)  # Figure size
     mrc = cartopy.crs.NorthPolarStereo(central_longitude=0.0)
     fig = plt.figure(figsize=figsize)
-    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)  
+    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
     cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
     assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
+
 
 def test_set_circle():
     """Test the plot_util.set_circle function."""
