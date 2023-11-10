@@ -65,7 +65,7 @@ class CurrentsOnT(Gridded):
         ds_u.coords["longitude"] = self.dataset.longitude
         ds_u.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
+            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop_vars("depthu")
         except:
             self.dataset["ut_velocity"] = ds_u.ut_velocity
             debug("Did not find depthu variable to drop - to avoid conflicts in z_dim dimension")
@@ -84,7 +84,7 @@ class CurrentsOnT(Gridded):
         ds_v.coords["longitude"] = self.dataset.longitude
         ds_v.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop("depthv")
+            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop_vars("depthv")
         except:
             self.dataset["vt_velocity"] = ds_v.vt_velocity
             debug("Did not find depthv variable to drop - to avoid conflicts in z_dim dimension")
