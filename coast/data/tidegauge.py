@@ -1024,11 +1024,11 @@ class Tidegauge(Timeseries):
 
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
 
-        x_axys = self.dataset.longitude
-        y_axys = self.dataset.latitude
-        fig, ax = plot_util.geo_scatter(x_axys, y_axys)
-        ax.set_xlim((np.min(x_axys.data) - 1, np.max(x_axys.data) + 1))
-        ax.set_ylim((np.min(y_axys.data) - 1, np.min(y_axys.data) + 1))
+        x_axis = self.dataset.longitude
+        y_axis = self.dataset.latitude
+        fig, ax = plot_util.geo_scatter(x_axis, y_axis)
+        ax.set_xlim((np.min(x_axis.data) - 1, np.max(x_axis.data) + 1))
+        ax.set_ylim((np.min(y_axis.data) - 1, np.min(y_axis.data) + 1))
         return fig, ax
 
     @classmethod
@@ -1043,26 +1043,26 @@ class Tidegauge(Timeseries):
 
         debug(f"Plotting tide gauge locations for {get_slug(cls)}")
 
-        x_axys = []
-        y_axys = []
-        c_axys = []
+        x_axis = []
+        y_axis = []
+        c_axis = []
         for tg in tidegauge_list:
-            x_axys.append(tg.dataset.longitude.values)
-            y_axys.append(tg.dataset.latitude.values)
+            x_axis.append(tg.dataset.longitude.values)
+            y_axis.append(tg.dataset.latitude.values)
             if color_var_str is not None:
-                c_axys.append(tg.dataset[color_var_str].values)
+                c_axis.append(tg.dataset[color_var_str].values)
 
-        x_axys = np.hstack(x_axys)
-        y_axys = np.hstack(y_axys)
+        x_axis = np.hstack(x_axis)
+        y_axis = np.hstack(y_axis)
         title = ""
         if color_var_str is None:
-            fig, ax = plot_util.geo_scatter(x_axys, y_axys, title=title)
+            fig, ax = plot_util.geo_scatter(x_axis, y_axis, title=title)
         else:
-            c_axys = np.hstack(c_axys)
-            fig, ax = plot_util.geo_scatter(x_axys, y_axys, title=title, c=c_axys)
+            c_axis = np.hstack(c_axis)
+            fig, ax = plot_util.geo_scatter(x_axis, y_axis, title=title, c=c_axis)
 
-        ax.set_xlim((np.min(x_axys) - 10, np.max(x_axys) + 10))
-        ax.set_ylim((np.min(y_axys) - 10, np.max(y_axys) + 10))
+        ax.set_xlim((np.min(x_axis) - 10, np.max(x_axis) + 10))
+        ax.set_ylim((np.min(y_axis) - 10, np.max(y_axis) + 10))
         return fig, ax
 
     ##############################################################################
