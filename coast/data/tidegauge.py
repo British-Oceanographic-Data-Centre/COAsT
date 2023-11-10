@@ -107,10 +107,12 @@ class Tidegauge(Timeseries):
 
         if len(file_list) > 1:  # return list of tidegauge objects
             # multiple = True
-            self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
+            self.read_gesla(fn_gesla, date_start=date_start,
+                            date_end=date_end, format="v3")
         else:  # return single tidegauge obj
             # multiple = False
-            self.read_gesla(fn_gesla, date_start=date_start, date_end=date_end, format="v3")
+            self.read_gesla(fn_gesla, date_start=date_start,
+                            date_end=date_end, format="v3")
 
     def read_gesla(self, fn_gesla, date_start=None, date_end=None, format="v3"):
         """
@@ -162,14 +164,16 @@ class Tidegauge(Timeseries):
                     header_dict = self._read_gesla_header_v3(fn)
                 elif format == "v5":
                     header_dict = self._read_gesla_header_v5(fn)
-                dataset = self._read_gesla_data(fn, date_start, date_end, header_length=header_dict["header_length"])
+                dataset = self._read_gesla_data(
+                    fn, date_start, date_end, header_length=header_dict["header_length"])
             except:
                 raise Exception("Problem reading GESLA file: " + fn)
             # Attributes
             dataset["longitude"] = ("id_dim", [header_dict["longitude"]])
             dataset["latitude"] = ("id_dim", [header_dict["latitude"]])
             dataset["site_name"] = ("id_dim", [header_dict["site_name"]])
-            dataset = dataset.set_coords(["longitude", "latitude", "site_name"])
+            dataset = dataset.set_coords(
+                ["longitude", "latitude", "site_name"])
 
             # Create tidegauge object, save dataset and append to list
             if multiple:
@@ -400,14 +404,16 @@ class Tidegauge(Timeseries):
         ssh[qc_flags == 5] = np.nan
 
         # Assign arrays to Dataset
-        dataset["ssh"] = xr.DataArray(ssh, dims=["t_dim"]).expand_dims("id_dim")
-        dataset["qc_flags"] = xr.DataArray(qc_flags, dims=["t_dim"]).expand_dims("id_dim")
+        dataset["ssh"] = xr.DataArray(
+            ssh, dims=["t_dim"]).expand_dims("id_dim")
+        dataset["qc_flags"] = xr.DataArray(
+            qc_flags, dims=["t_dim"]).expand_dims("id_dim")
         dataset = dataset.assign_coords(time=("t_dim", time))
 
         # Assign local dataset to object-scope dataset
         return dataset
 
-    ### tide table methods (HLW)
+    # tide table methods (HLW)
     def read_hlw(self, fn_hlw, date_start=None, date_end=None, latitude=None, longitude=None):
         """
         For reading from a file of tidetable High and Low Waters (HLW) data into an
@@ -429,6 +435,8 @@ class Tidegauge(Timeseries):
         fn_hlw (str) : path to tabulated High Low Water file
         date_start (datetime) : start date for returning data
         date_end (datetime) : end date for returning data
+        latitude (float) : latitude of the station
+        longitude (float) : longitude of the station
 
         Returns
         -------
@@ -440,7 +448,8 @@ class Tidegauge(Timeseries):
         header_dict = self._read_hlw_header(fn_hlw)
         header_dict["latitude"] = latitude
         header_dict["longitude"] = longitude
-        dataset = self._read_hlw_data(fn_hlw, header_dict, date_start, date_end)
+        dataset = self._read_hlw_data(
+            fn_hlw, header_dict, date_start, date_end)
         if header_dict["field"] == "TZ:UT(GMT)/BST":
             debug("Read in as BST, stored as UTC")
         elif header_dict["field"] == "TZ:GMTonly":
@@ -489,7 +498,8 @@ class Tidegauge(Timeseries):
         units = header[2].replace(" ", "")
         datum = header[3].replace(" ", "")
         # Put all header info into an attributes dictionary
-        header_dict = {"site_name": site_name, "field": field, "units": units, "datum": datum}
+        header_dict = {"site_name": site_name,
+                       "field": field, "units": units, "datum": datum}
         return header_dict
 
     @classmethod
@@ -516,21 +526,24 @@ class Tidegauge(Timeseries):
         # Initialise empty dataset and lists
         debug(f'Reading HLW data from "{filnam}"')
 
-        df = pd.read_csv(filnam, skiprows=1, header=None, delim_whitespace=True)
-        df["datetime"] = pd.to_datetime(df[0] + " " + df[1], format="%d/%m/%Y %H:%M", utc=False)
+        df = pd.read_csv(filnam, skiprows=1, header=None,
+                         delim_whitespace=True)
+        df["datetime"] = pd.to_datetime(
+            df[0] + " " + df[1], format="%d/%m/%Y %H:%M", utc=False)
         df["ssh"] = df[2]
         df.drop(columns=[0, 1, 2], inplace=True)
         debug(f'Read done, close file "{filnam}"')
         if header_dict["field"] == "TZ:UT(GMT)/BST":
             df["datetime_new"] = df["datetime"].dt.tz_localize("Europe/London",
-                                                           ambiguous="NaT")
+                                                               ambiguous="NaT")
             ambigous_date_values = df[df['datetime_new'].isna()]['datetime']
             if not ambigous_date_values.empty:
                 bst_obj = pytz.timezone("Europe/London")
                 for idx, ambigous_date_value in df[df['datetime_new'].isna()]['datetime'].items():
                     df.loc[idx, "datetime_new"] = bst_obj.localize(
                         ambigous_date_value)
-            df['datetime'] = df['datetime_new'].dt.tz_convert(pytz.utc).dt.tz_localize(None)
+            df['datetime'] = df['datetime_new'].dt.tz_convert(
+                pytz.utc).dt.tz_localize(None)
         if date_start is not None:
             date_start = np.datetime64(date_start)
             df = df[df["datetime"] >= date_start]
@@ -578,8 +591,8 @@ class Tidegauge(Timeseries):
                     "time (" + timezone + "):",
                     general_utils.day_of_week(self.dataset.time[idx].values),
                     np.datetime_as_string(self.dataset.time[idx],
-                                            unit="m",
-                                            timezone=pytz.timezone(timezone)),
+                                          unit="m",
+                                          timezone=pytz.timezone(timezone)),
                     "heighdxt:",
                     ssh.values,
                     "m",
@@ -636,15 +649,19 @@ class Tidegauge(Timeseries):
             return ssh[0]
 
         if method == "nearest_1":
-            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            return self.dataset[measure_var].isel(t_dim=index[0 : 1])[0]
+            index = np.argsort(
+                np.abs(self.dataset[time_var] - time_guess)).values
+            return self.dataset[measure_var].isel(t_dim=index[0: 1])[0]
         if method == "nearest_2":
-            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            return self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+            index = np.argsort(
+                np.abs(self.dataset[time_var] - time_guess)).values
+            return self.dataset[measure_var].isel(t_dim=index[0: 1 + 1])[0]
 
         if method == "nearest_HW":
-            index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            nearest_2 = self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+            index = np.argsort(
+                np.abs(self.dataset[time_var] - time_guess)).values
+            nearest_2 = self.dataset[measure_var].isel(
+                t_dim=index[0: 1 + 1])[0]
             return nearest_2.isel(t_dim=np.argmax(nearest_2.data))
 
         else:
@@ -691,7 +708,8 @@ class Tidegauge(Timeseries):
 
         # Obtain and process header information
         info("load station info")
-        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + cls.station_id + ".json"
+        url = "https://environment.data.gov.uk/flood-monitoring/id/stations/" + \
+            cls.station_id + ".json"
         try:
             request_raw = requests.get(url)
             header_dict = json.loads(request_raw.content)
@@ -749,7 +767,8 @@ class Tidegauge(Timeseries):
         time = []
         ssh = []
         nvals = len(request["items"])
-        time = np.array([np.datetime64(request["items"][i]["dateTime"]) for i in range(nvals)])
+        time = np.array([np.datetime64(request["items"][i]["dateTime"])
+                        for i in range(nvals)])
         ssh = np.array([request["items"][i]["value"] for i in range(nvals)])
 
         # Assign arrays to Dataset
@@ -856,7 +875,8 @@ class Tidegauge(Timeseries):
             else:
                 # debug('No colon')
                 header = False
-        header_dict["site_name"] = header_dict["site"]  # duplicate as standard name
+        # duplicate as standard name
+        header_dict["site_name"] = header_dict["site"]
         debug(f'Read done, close file "{fn_bodc}"')
         fid.close()
 
@@ -899,23 +919,25 @@ class Tidegauge(Timeseries):
                 if line_count > header_length:
                     try:
                         working_line = line.split()
-                        time_str = working_line[1] + " " + working_line[2] 
+                        time_str = working_line[1] + " " + working_line[2]
                         # Empty lines cause trouble
                         ssh_str = working_line[3]
                         residual_str = working_line[4]
                         if ssh_str[-1].isalpha():
                             qc_flag_str = ssh_str[-1]
                             ssh_str = ssh_str.replace(qc_flag_str, "")
-                            residual_str = residual_str.replace(qc_flag_str, "")
+                            residual_str = residual_str.replace(
+                                qc_flag_str, "")
                         elif residual_str[-1].isalpha():  # sometimes residual has a
                             # flag when elevation does not
                             qc_flag_str = residual_str[-1]
                             ssh_str = ssh_str.replace(qc_flag_str, "")
-                            residual_str = residual_str.replace(qc_flag_str, "")
+                            residual_str = residual_str.replace(
+                                qc_flag_str, "")
                         else:
                             qc_flag_str = ""
                         # debug(line_count-header_length,
-                        #       residual_str, 
+                        #       residual_str,
                         #       float(residual_str))
                         # debug(working_line, ssh_str, qc_flag_str)
                         time.append(time_str)
@@ -923,7 +945,8 @@ class Tidegauge(Timeseries):
                         ssh.append(float(ssh_str))
                         residual.append(float(residual_str))
                     except:
-                        debug(f"{file} probably empty line at end. Breaks split()")
+                        debug(
+                            f"{file} probably empty line at end. Breaks split()")
                 line_count = line_count + 1
             debug(f'Read done, close file "{fn_bodc}"')
 
@@ -953,7 +976,7 @@ class Tidegauge(Timeseries):
         dataset["ssh"] = xr.DataArray(np.expand_dims(ssh, axis=0),
                                       dims=["id_dim", "t_dim"])
         dataset["qc_flags"] = xr.DataArray(np.expand_dims(qc_flags, axis=0),
-                                      dims=["id_dim", "t_dim"])
+                                           dims=["id_dim", "t_dim"])
         coords = {
             "time": ("t_dim", time)
         }
@@ -965,7 +988,7 @@ class Tidegauge(Timeseries):
     ###                ~            Plotting             ~                     ###
     ##############################################################################
 
-    def plot_timeseries(self, var_list=["ssh"], date_start=None, date_end=None, plot_line=False):
+    def plot_timeseries(self, var_list=None, date_start=None, date_end=None, plot_line=False):
         """
         Quick plot of time series stored within object's dataset
         Parameters
@@ -980,6 +1003,8 @@ class Tidegauge(Timeseries):
         matplotlib figure and axes objects
         """
         debug(f"Plotting timeseries for {get_slug(self)}")
+        if not var_list:
+            var_list = ['ssh']
         fig = plt.figure(figsize=(10, 10))
         # Check input is a list (even for one variable)
         if isinstance(var_list, str):
@@ -1005,7 +1030,8 @@ class Tidegauge(Timeseries):
 
             # Plot lines first if needed
             if plot_line:
-                plt.plot(x, y, c=[0.5, 0.5, 0.5], linestyle="--", linewidth=0.5)
+                plt.plot(x, y, c=[0.5, 0.5, 0.5],
+                         linestyle="--", linewidth=0.5)
 
             ax = plt.scatter(x, y, s=10)
 
@@ -1042,11 +1068,11 @@ class Tidegauge(Timeseries):
 
         debug(f"Plotting tide gauge locations for {get_slug(self)}")
 
-        X = self.dataset.longitude
-        Y = self.dataset.latitude
-        fig, ax = plot_util.geo_scatter(X, Y)
-        ax.set_xlim((np.min(X.data) - 1, np.max(X.data) + 1))
-        ax.set_ylim((np.min(Y.data) - 1, np.min(Y.data) + 1))
+        x_axys = self.dataset.longitude
+        y_axys = self.dataset.latitude
+        fig, ax = plot_util.geo_scatter(x_axys, y_axys)
+        ax.set_xlim((np.min(x_axys.data) - 1, np.max(x_axys.data) + 1))
+        ax.set_ylim((np.min(y_axys.data) - 1, np.min(y_axys.data) + 1))
         return fig, ax
 
     @classmethod
@@ -1061,26 +1087,26 @@ class Tidegauge(Timeseries):
 
         debug(f"Plotting tide gauge locations for {get_slug(cls)}")
 
-        X = []
-        Y = []
-        C = []
+        x_axys = []
+        y_axys = []
+        c_axys = []
         for tg in tidegauge_list:
-            X.append(tg.dataset.longitude.values)
-            Y.append(tg.dataset.latitude.values)
+            x_axys.append(tg.dataset.longitude.values)
+            y_axys.append(tg.dataset.latitude.values)
             if color_var_str is not None:
-                C.append(tg.dataset[color_var_str].values)
+                c_axys.append(tg.dataset[color_var_str].values)
 
-        X = np.hstack(X)
-        Y = np.hstack(Y)
+        x_axys = np.hstack(x_axys)
+        y_axys = np.hstack(y_axys)
         title = ""
         if color_var_str is None:
-            fig, ax = plot_util.geo_scatter(X, Y, title=title)
+            fig, ax = plot_util.geo_scatter(x_axys, y_axys, title=title)
         else:
-            C = np.hstack(C)
-            fig, ax = plot_util.geo_scatter(X, Y, title=title, c=C)
+            c_axys = np.hstack(c_axys)
+            fig, ax = plot_util.geo_scatter(x_axys, y_axys, title=title, c=c_axys)
 
-        ax.set_xlim((np.min(X) - 10, np.max(X) + 10))
-        ax.set_ylim((np.min(Y) - 10, np.max(Y) + 10))
+        ax.set_xlim((np.min(x_axys) - 10, np.max(x_axys) + 10))
+        ax.set_ylim((np.min(y_axys) - 10, np.max(y_axys) + 10))
         return fig, ax
 
     ##############################################################################
@@ -1128,7 +1154,10 @@ class Tidegauge(Timeseries):
         # Check interpolation distances
         print("Calculating interpolation distances.", flush=True)
         interp_dist = general_utils.calculate_haversine_distance(
-            extracted.longitude.values, extracted.latitude.values, ds.longitude.values, ds.latitude.values
+            extracted.longitude.values,
+            extracted.latitude.values,
+            ds.longitude.values,
+            ds.latitude.values
         )
 
         # Interpolate model onto obs times
@@ -1137,8 +1166,10 @@ class Tidegauge(Timeseries):
             extracted = extracted.rename_vars(
                 {"time": "t_dim"}
             )  # make variable name match dimension name for interpolation
-            extracted = extracted.interp(t_dim=ds.time.values, method=time_interp)
-            extracted = extracted.rename_vars({"t_dim": "time"})  # restore variable name
+            extracted = extracted.interp(
+                t_dim=ds.time.values, method=time_interp)
+            extracted = extracted.rename_vars(
+                {"t_dim": "time"})  # restore variable name
 
         # Put interp_dist into dataset
         extracted["interp_dist"] = (("id_dim"), interp_dist)
