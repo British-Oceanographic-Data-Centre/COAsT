@@ -86,9 +86,6 @@ class Tidegauge(Timeseries):
                 ds_coords["time"] = ("t_dim", new_time_coords)
                 ds_coords = ds_coords.set_coords("time")
                 self.dataset = ds_coords.copy()
-            else:
-                print(self.dataset)
-                self.dataset = self.dataset.set_coords("time")
         else:
             self.dataset = None
 
@@ -524,7 +521,16 @@ class Tidegauge(Timeseries):
         df["ssh"] = df[2]
         df.drop(columns=[0, 1, 2], inplace=True)
         debug(f'Read done, close file "{filnam}"')
-
+        if header_dict["field"] == "TZ:UT(GMT)/BST":
+            df["datetime_new"] = df["datetime"].dt.tz_localize("Europe/London",
+                                                           ambiguous="NaT")
+            ambigous_date_values = df[df['datetime_new'].isna()]['datetime']
+            if not ambigous_date_values.empty:
+                bst_obj = pytz.timezone("Europe/London")
+                for idx, ambigous_date_value in df[df['datetime_new'].isna()]['datetime'].items():
+                    df.loc[idx, "datetime_new"] = bst_obj.localize(
+                        ambigous_date_value)
+            df['datetime'] = df['datetime_new'].dt.tz_convert(pytz.utc).dt.tz_localize(None)
         if date_start is not None:
             date_start = np.datetime64(date_start)
             df = df[df["datetime"] >= date_start]
@@ -533,11 +539,6 @@ class Tidegauge(Timeseries):
             date_end = np.datetime64(date_end)
             df = df[df["datetime"] <= date_end]
             debug(f"date_end: {date_end}")
-        if header_dict["field"] == "TZ:UT(GMT)/BST":
-            df["datetime"] = df["datetime"].dt.tz_localize("Europe/London",
-                                                           ambiguous="NaT")
-            df.dropna(inplace=True)
-
         dataset = xr.Dataset()
         dataset["ssh"] = xr.DataArray(np.expand_dims(df["ssh"].values, axis=0),
                                       dims=["id_dim", "t_dim"])
