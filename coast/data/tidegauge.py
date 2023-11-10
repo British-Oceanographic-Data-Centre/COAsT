@@ -687,7 +687,6 @@ class Tidegauge(Timeseries):
         except ValueError:
             debug(f"Failed request for station {cls.station_id}")
             return
-
         try:
             header_dict["site_name"] = header_dict["items"]["label"]
             header_dict["latitude"] = header_dict["items"]["lat"]
