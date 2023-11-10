@@ -6,21 +6,25 @@ import functools
 import warnings
 import inspect
 import traceback
-warnings.simplefilter('always', DeprecationWarning)
-warnings.formatwarning = lambda message, category, filename, lineno, line=None: \
-        f"{filename}:{lineno}: {category.__name__}: {message}\n"
+
+warnings.simplefilter("always", DeprecationWarning)
+warnings.formatwarning = (
+    lambda message, category, filename, lineno, line=None: f"{filename}:{lineno}: {category.__name__}: {message}\n"
+)
 DEFAULT_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
 
 def deprecated(message=""):
-    
     def decorator(func):
         @functools.wraps(func)
         def new_func(*args, **kwargs):
             warnings.warn(f"{func.__name__} is deprecated: {message}", DeprecationWarning)
             return func(*args, **kwargs)
+
         return new_func
+
     return decorator
+
 
 def get_logger(name: str = None, level: int = logging.CRITICAL):
     logger = logging.getLogger(name=name)
