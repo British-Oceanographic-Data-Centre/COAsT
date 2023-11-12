@@ -385,9 +385,7 @@ def make_projection(x_origin, y_origin):
     Returns:
         CRS Object: A CRS for the bespoke projection defined here.
     """
-    aeqd = ccrs.CRS(
-        "+proj=aeqd +lon_0={:}".format(x_origin) + " +lat_0={:}".format(y_origin) + " +ellps=WGS84"
-    )
+    aeqd = ccrs.CRS("+proj=aeqd +lon_0={:}".format(x_origin) + " +lat_0={:}".format(y_origin) + " +ellps=WGS84")
     return aeqd
 
 
@@ -444,9 +442,8 @@ def grid_angle(lon, lat):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             grid = crs_aeqd.transform_points(crs_wgs84, lon[j + 1, i], lat[j + 1, i])
-            angle[j, i] = np.arctan2(grid[0, 0], grid[0, 1]) * (180 / np.pi
-                )  # relative to North
-           
+            angle[j, i] = np.arctan2(grid[0, 0], grid[0, 1]) * (180 / np.pi)  # relative to North
+
     # differentiate to get the angle so copy last row one further and average
     angle[:, -1] = angle[:, -2]
     angle[-1, :] = angle[-2, :]
@@ -524,11 +521,10 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
         plot object: can be used for making a colorbar
     """
 
-    crs_ps = ccrs.CRS("epsg:3413") # North pole projection
+    crs_ps = ccrs.CRS("epsg:3413")  # North pole projection
     crs_wgs84 = ccrs.CRS("epsg:4326")
     # NSIDC grid
-    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000,
-        np.linspace(-5350, 5850, 448) * 1000)
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000, np.linspace(-5350, 5850, 448) * 1000)
     grid = crs_wgs84.transform_points(crs_ps, x_grid, y_grid)
     # output is x, y, z triple but we don't need z
     lon_grid = grid[:, :, 0]
