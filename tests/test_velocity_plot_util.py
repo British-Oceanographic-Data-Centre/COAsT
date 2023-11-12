@@ -6,8 +6,6 @@
 # import pytest
 import numpy as np
 import cartopy.crs as ccrs
-
-# import pyproj
 import cartopy
 import matplotlib.pyplot as plt
 
@@ -21,7 +19,7 @@ from coast._utils import plot_util
 # Define a test function. Absolutely fine to have one or multiple per file.
 
 
-def test_velocity_polar():
+def test_velocity_polar_bug_fix():
     """Test the plot_util.velocity_polar_bug_fix function."""
     lat = np.array([45, 55, 65, 75, 85])
     u_velocity = np.array([1, 1, 1, 1, 1])
@@ -122,7 +120,7 @@ def test_plot_polar_contour():
     lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
     temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
     figsize = (5, 5)  # Figure size
-    mrc = cartopy.crs.NorthPolarStereo(central_longitude=0.0)
+    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
     fig = plt.figure(figsize=figsize)
     ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
     cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
@@ -132,7 +130,7 @@ def test_plot_polar_contour():
 def test_set_circle():
     """Test the plot_util.set_circle function."""
     figsize = (5, 5)  # Figure size
-    mrc = cartopy.crs.NorthPolarStereo(central_longitude=0.0)
+    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
     fig = plt.figure(figsize=figsize)
     ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
     try:
