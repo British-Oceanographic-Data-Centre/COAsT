@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from warnings import warn
 from .logging_util import warn
 import numpy as np
-import pyproj
+import cartopy.crs as ccrs
 
 
 def r2_lin(x, y, fit):
@@ -382,9 +382,9 @@ def make_projection(x_origin, y_origin):
     Returns:
         CRS Object: A CRS for the bespoke projection defined here.
     """
-    aeqd = pyproj.crs.CRS.from_proj4(
+    aeqd = ccrs.CRS(
         "+proj=aeqd +lon_0={:}".format(x_origin) + " +lat_0={:}".format(y_origin) + " +ellps=WGS84"
-    )
+    ) 
     return aeqd
 
 
@@ -433,17 +433,15 @@ def grid_angle(lon, lat):
         array: the angle in degrees of the j grid lines relative to geographic
         North (i.e. clockwise from 12)
     """
-    crs_wgs84 = pyproj.crs.CRS("epsg:4326")
+    crs_wgs84 = ccrs.CRS("epsg:4326")
     angle = np.zeros(lon.shape)
 
     for j in range(lon.shape[0] - 1):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
-            to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            x_grid, y_grid = to_metre.transform(lon[j : j + 2, i : i + 2], lat[j : j + 2, i : i + 2])
-            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), (y_grid[1, 0] - y_grid[0, 0])) * (
-                180 / np.pi
-            )  # relative to North
+            grid = crs_aeqd.transform_points(crs_wgs84, lon[j + 1, i], lat[j + 1, i])
+            angle[j, i] = np.arctan2(grid[0, 0], grid[0, 1]) * (180 / np.pi
+                )  # relative to North
 
     # differentiate to get the angle so copy last row one further and average
     angle[:, -1] = angle[:, -2]

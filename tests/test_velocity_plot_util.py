@@ -3,7 +3,7 @@
 # import os.path as path
 # import pytest
 import numpy as np
-import pyproj
+import cartopy.crs as ccrs
 
 # import sys
 from coast._utils import plot_util
@@ -33,7 +33,7 @@ def test_make_projection():
     x_origin = 5  # East
     y_origin = 50  # North
     test_proj = plot_util.make_projection(x_origin, y_origin)
-    assert isinstance(test_proj, pyproj.crs.CRS)
+    assert isinstance(test_proj, ccrs.CRS)
 
 
 def test_velocity_rotate():
