@@ -5,6 +5,7 @@
 # import os.path as path
 # import pytest
 import numpy as np
+import cartopy.crs as ccrs
 
 # import pyproj
 import cartopy
@@ -39,6 +40,7 @@ def test_make_projection():
     y_origin = 50  # North
     test_proj = plot_util.make_projection(x_origin, y_origin)
     assert test_proj.prime_meridian.unit_name == "degree"
+    assert isinstance(test_proj, ccrs.CRS)
 
 
 def test_velocity_rotate():
