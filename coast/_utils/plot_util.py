@@ -12,7 +12,7 @@ from .logging_util import warn
 import numpy as np
 import cartopy.crs as ccrs
 import scipy.interpolate as si
-
+from tqdm import tqdm
 
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
@@ -437,8 +437,7 @@ def grid_angle(lon, lat):
     crs_wgs84 = ccrs.CRS("epsg:4326")
     angle = np.zeros(lon.shape)
 
-    for j in range(lon.shape[0] - 1):
-        print((j / (lon.shape[0] - 1)) * 100, "%")
+    for j in tqdm(range(lon.shape[0] - 1)):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             grid = crs_aeqd.transform_points(crs_wgs84, lon[j + 1, i], lat[j + 1, i])
@@ -476,7 +475,7 @@ def velocity_on_t(u_velocity, v_velocity):
     return u_on_t_points, v_on_t_points
 
 
-def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False):
+def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo=False):
     """Makes combined adjustments to gridded velocities to make them plot
     with intuitive direction as quivers or streamlines in maps.
     (Developed and tested with the NEMO tripolar "ORCA" grid.)
@@ -486,7 +485,7 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_
         lat (array): latitude of the grid
         u_velocity (array): i-direction velocities along grid lines
         v_velocity (array): j-direction velocities along grid lines
-        polar_stereo_cartopy_bug_fix (bool, optional): Addesses a plotting bug in CartoPy=0.21.1
+        polar_stereo (bool, optional): Addesses a plotting bug in CartoPy=0.21.1
                             If True, makes an additional adjustment to the velocity
                             for plotting them on a stereographic (NorthPolarStereo or
                             SouthPolarStereo) projection in CartoPy. Defaults to False.
@@ -499,7 +498,7 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_
     u_on_t, v_on_t = velocity_on_t(u_velocity, v_velocity)
     angle_to_north = grid_angle(lon, lat)
     u_new, v_new = velocity_rotate(u_on_t, v_on_t, angle_to_north)
-    if polar_stereo_cartopy_bug_fix:
+    if polar_stereo:
         u_new, v_new = velocity_polar_bug_fix(u_new, v_new, lat)
 
     return u_new, v_new
