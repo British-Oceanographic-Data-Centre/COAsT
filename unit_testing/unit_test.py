@@ -33,11 +33,13 @@ from test_climatology import test_climatology
 from test_wod_read_data import test_wod_read_data
 from test_process_data import test_process_data_methods
 from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
+from test_velocity_plot_util import TestPlotUtilitiesVelocity
 
 
 # Test list -- comment out ones you don't want maybe (or add your own)
 tests_to_do = [
     # test_TEMPLATE,
+    TestPlotUtilitiesVelocity,
     test_gridded_initialisation,
     test_general_utils,
     test_crps_util,
