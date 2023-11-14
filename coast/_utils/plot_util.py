@@ -7,7 +7,6 @@ Python definitions used to help with plotting routines.
     -> geo_scatter(): Geographical scatter plot.
 """
 
-from warnings import warn
 import sys
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
@@ -17,7 +16,6 @@ import scipy.interpolate as si
 from tqdm import tqdm
 
 from .logging_util import warn
-
 
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
