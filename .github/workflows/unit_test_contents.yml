@@ -19,6 +19,7 @@ jobs:
         run: |
           pip install .
           mkdir -p example_files
+          apt-get install libgeos-dev
           pip install cartopy==0.21.0
           python unit_testing/generate_unit_test_contents.py
       - name: Commit changes
