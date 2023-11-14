@@ -53,6 +53,7 @@ def test_velocity_rotate():
     u_rotate, v_rotate = plot_util.velocity_rotate(u_velocity, v_velocity, angle, to_north=False)
     assert np.isclose(u_rotate, 0.93969) & np.isclose(v_rotate, 0.34202)
 
+
 def test_grid_angle():
     """Test the plot_util.grid_angle function."""
     lat = np.array(([50, 51], [50, 51]))
@@ -61,6 +62,7 @@ def test_grid_angle():
     assert np.isclose(angle, 90, rtol=0.5).all()
     angle = plot_util.grid_angle(lat, lon)
     assert np.isclose(angle, 0, rtol=0.5).all()
+
 
 def test_velocity_on_t():
     """Test the plot_util.velocity_on_t function."""
@@ -72,6 +74,7 @@ def test_velocity_on_t():
     assert np.isclose(u_on_t_points, result1).all()
     result2 = np.array(([3, 4, 4], [3.5, 4, 3.5], [2.5, 2.5, 2]))
     assert np.isclose(v_on_t_points, result2).all()
+
 
 def test_velocity_grid_to_geo():
     """Test the plot_util.velocity_grid_to_geo function."""
