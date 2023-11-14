@@ -439,6 +439,7 @@ def grid_angle(lon, lat):
 
     for j in tqdm(range(lon.shape[0] - 1)):
         for i in range(lon.shape[1] - 1):
+            # crs_aeqd = make_projection(0, 90)
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             grid = crs_aeqd.transform_points(crs_wgs84, lon[j + 1, i], lat[j + 1, i])
             angle[j, i] = np.arctan2(grid[0, 0], grid[0, 1]) * (180 / np.pi)  # relative to North
