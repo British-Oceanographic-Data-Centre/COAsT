@@ -45,6 +45,7 @@ PACKAGE = SimpleNamespace(
             "pydap>=3.2.2",
             "lxml>=4.9.0",  # Required for pydap CAS parsing,
             "requests>=2.27.1",
+            "tqdm>=4.66.1",
             # "xesmf>=0.3.0",  # Optional. Not part of main package
             # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],

@@ -19,6 +19,7 @@ dependencies:
     - gsw==3.4.0
     - utide>=0.3.0
     - scikit-learn>=1.0.2
+    - tqdm>=4.66.1
     - scikit-image>=0.19.2
     - statsmodels>=0.13.2
     - pydap>=3.2.2
