@@ -4,6 +4,7 @@
 
 # import os.path as path
 # import pytest
+import pyproj
 import numpy as np
 import cartopy.crs as ccrs
 import cartopy
@@ -38,7 +39,7 @@ def test_make_projection():
     y_origin = 50  # North
     test_proj = plot_util.make_projection(x_origin, y_origin)
     assert test_proj.prime_meridian.unit_name == "degree"
-    assert isinstance(test_proj, ccrs.CRS)
+    assert isinstance(test_proj, pyproj.CRS)
 
 
 def test_velocity_rotate():
@@ -52,7 +53,6 @@ def test_velocity_rotate():
     u_rotate, v_rotate = plot_util.velocity_rotate(u_velocity, v_velocity, angle, to_north=False)
     assert np.isclose(u_rotate, 0.93969) & np.isclose(v_rotate, 0.34202)
 
-
 def test_grid_angle():
     """Test the plot_util.grid_angle function."""
     lat = np.array(([50, 51], [50, 51]))
@@ -61,7 +61,6 @@ def test_grid_angle():
     assert np.isclose(angle, 90, rtol=0.5).all()
     angle = plot_util.grid_angle(lat, lon)
     assert np.isclose(angle, 0, rtol=0.5).all()
-
 
 def test_velocity_on_t():
     """Test the plot_util.velocity_on_t function."""
@@ -74,15 +73,15 @@ def test_velocity_on_t():
     result2 = np.array(([3, 4, 4], [3.5, 4, 3.5], [2.5, 2.5, 2]))
     assert np.isclose(v_on_t_points, result2).all()
 
-
 def test_velocity_grid_to_geo():
     """Test the plot_util.velocity_grid_to_geo function."""
     lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
     lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
     u_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
     v_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
+    uv_velocity = [u_velocity, v_velocity]
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, uv_velocity, polar_stereo_cartopy_bug_fix=False)
     u_result1 = np.array(
         (
             [1.04903051, 1.05046004, 1.05188719],
@@ -99,7 +98,7 @@ def test_velocity_grid_to_geo():
     )
     assert np.isclose(u_new, u_result1).all() & np.isclose(v_new, v_result1).all()
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=True)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, uv_velocity, polar_stereo_cartopy_bug_fix=True)
     print(u_new, v_new)
     u_result2 = np.array(
         ([1.222728, 1.21099989, 1.19965573], [1.28512188, 1.27230937, 1.25958666], [1.34721927, 1.33542729, 1.32321739])
