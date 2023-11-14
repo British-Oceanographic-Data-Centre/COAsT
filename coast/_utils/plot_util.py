@@ -14,6 +14,7 @@ import cartopy.crs as ccrs
 import scipy.interpolate as si
 from tqdm import tqdm
 
+
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
     y_estimate = fit(x)
