@@ -17,6 +17,7 @@ from tqdm import tqdm
 
 from .logging_util import warn
 
+
 def r2_lin(x, y, fit):
     """For calculating r-squared of a linear fit. Fit should be a python polyfit object."""
     y_estimate = fit(x)
