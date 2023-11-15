@@ -10,14 +10,14 @@ jobs:
         python-version: [ '3.10' ]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }} for running python script.
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Generate contents.
         run: |
-          pip install .
+          pip install . 
           mkdir -p example_files
           python unit_testing/generate_unit_test_contents.py
       - name: Commit changes
@@ -27,6 +27,7 @@ jobs:
           git config --global user.email "bodcsoft@bodc.ac.uk"
           git config --global author.email "bodcsoft@bodc.ac.uk"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git fetch origin
           git checkout $GITHUB_HEAD_REF
           git pull
           git diff-index --quiet $GITHUB_HEAD_REF || git commit -am "Commit generated unit test contents."
