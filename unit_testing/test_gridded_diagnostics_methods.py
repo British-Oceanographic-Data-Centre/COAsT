@@ -13,7 +13,7 @@ plt.switch_backend("agg")
 import unit_test_files as files
 
 
-class test_diagnostic_methods(unittest.TestCase):
+class test_gridded_diagnostics_methods(unittest.TestCase):
     def test_compute_vertical_spatial_derivative(self):
         nemo_t = coast.Gridded(
             fn_data=files.fn_nemo_grid_t_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid
@@ -127,7 +127,7 @@ class test_diagnostic_methods(unittest.TestCase):
             self.assertTrue(check4, msg=log_str)
             self.assertTrue(check5, msg=log_str)
 
-        with self.subTest("Plot pycnocline depth"):
+        with self.subTest("Test quick_plot pycnocline depth"):
             fig, ax = strat.quick_plot("strat_1st_mom_masked")
             fig.tight_layout()
             fig.savefig(files.dn_fig + "strat_1st_mom.png")
@@ -171,4 +171,26 @@ class test_diagnostic_methods(unittest.TestCase):
             fig = nemo_t.quick_plot("Test")
             fig.tight_layout()
             fig.savefig(files.dn_fig + "surface_circulation.png")
+            plt.close("all")
+
+    def test_calc_pea(self):
+
+        nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer, files.fn_nemo_dom, config=files.fn_config_t_grid)
+
+        # Compute a vertical max to exclude depths below 200m
+        Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(200.)
+
+        # Initiate a stratification diagnostics object
+        strat = coast.GriddedStratification(nemo_t)
+
+        # calculate PEA for unmasked depths
+        strat.calc_pea(nemo_t, Zd_mask)
+        # Check the calculations are as expected
+        check1 = np.isclose(strat.dataset.PEA.mean().item(), 124.5029568214227)
+        self.assertTrue(check1, msg="check1")
+
+        with self.subTest("Test quick_plot()"):
+            fig, ax = strat.quick_plot('PEA')
+            fig.tight_layout()
+            fig.savefig(files.dn_fig + "gridded_pea.png")
             plt.close("all")
