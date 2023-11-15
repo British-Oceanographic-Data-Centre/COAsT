@@ -38,11 +38,6 @@ class MaskMaker:
     def __init__(self):
         return
 
-
-
-
-
-
     @staticmethod
     def make_mask_dataset(longitude, latitude, mask_list, mask_names: list = None):
         """
