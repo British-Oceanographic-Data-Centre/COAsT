@@ -462,7 +462,8 @@ class Profile(Indexed):
         mod_profiles["nearest_index_y"] = (["id_dim"], ind_y.values)
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
-    def match_to_grid(self, gridded, limits = [0, 0, 0, 0], rmax = 7000.) -> None:
+
+    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=7000.0) -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
         Args:
@@ -482,50 +483,48 @@ class Profile(Indexed):
 
         prf = self.dataset
         grd = gridded.dataset
-        grd['landmask']=grd.bottom_level == 0
+        grd["landmask"] = grd.bottom_level == 0
         lon_prf = prf["longitude"]
         lat_prf = prf["latitude"]
         lon_grd = grd["longitude"]
         lat_grd = grd["latitude"]
         # SPATIAL indices - 4 nearest neighbour
         ind_x, ind_y = general_utils.nearest_indices_2d(
-            lon_grd,lat_grd,
-            lon_prf,lat_prf,
-            mask = grd.landmask,
-            number_of_neighbors = 4
+            lon_grd, lat_grd, lon_prf, lat_prf, mask=grd.landmask, number_of_neighbors=4
         )
-        ind_x=ind_x.values
-        ind_y=ind_y.values
+        ind_x = ind_x.values
+        ind_y = ind_y.values
 
-        #Exclude out of bound points
-        i_exc =np.concatenate((
-           np.where(lon_prf < lon_grd.values.ravel().min())[0],
-           np.where(lon_prf > lon_grd.values.ravel().max())[0],
-           np.where(lat_prf < lat_grd.values.ravel().min())[0],
-           np.where(lat_prf > lat_grd.values.ravel().max())[0],
-        ))
-        ind_x[i_exc,:] = -1
-        ind_y[i_exc,:] = -1
+        # Exclude out of bound points
+        i_exc = np.concatenate(
+            (
+                np.where(lon_prf < lon_grd.values.ravel().min())[0],
+                np.where(lon_prf > lon_grd.values.ravel().max())[0],
+                np.where(lat_prf < lat_grd.values.ravel().min())[0],
+                np.where(lat_prf > lat_grd.values.ravel().max())[0],
+            )
+        )
+        ind_x[i_exc, :] = -1
+        ind_y[i_exc, :] = -1
         prf["ind_x_min"] = limits[2]  # reference back to original grid
         prf["ind_y_min"] = limits[0]
 
         ind_x_min = limits[2]
         ind_y_min = limits[0]
 
-
         # Sort 4 NN by distance on grid
 
-        ip = np.where(np.logical_or(ind_x[:, 0] >=0  ,
-                                    ind_y[:, 0] >=0 ))[0]
+        ip = np.where(np.logical_or(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]
 
         lon_prf4 = np.repeat(lon_prf.values[ip, np.newaxis], 4, axis=1).ravel()
         lat_prf4 = np.repeat(lat_prf.values[ip, np.newaxis], 4, axis=1).ravel()
         r = np.ones(ind_x.shape) * np.nan
-#distance between nearest neighbors and grid
+        # distance between nearest neighbors and grid
         rr = general_utils.calculate_haversine_distance(
-            lon_prf4, lat_prf4,
-            lon_grd.values[ind_y[ip,:].ravel(),ind_x[ip,:].ravel()],
-            lat_grd.values[ind_y[ip,:].ravel(),ind_x[ip,:].ravel()]
+            lon_prf4,
+            lat_prf4,
+            lon_grd.values[ind_y[ip, :].ravel(), ind_x[ip, :].ravel()],
+            lat_grd.values[ind_y[ip, :].ravel(), ind_x[ip, :].ravel()],
         )
 
         r[ip, :] = np.reshape(rr, (ip.size, 4))
@@ -536,20 +535,18 @@ class Profile(Indexed):
         ind_y = np.take_along_axis(ind_y, ii, axis=1)
 
         ii = np.nonzero(np.min(r, axis=1) > rmax)
-        #Reference to original grid
+        # Reference to original grid
         ind_x = ind_x + ind_x_min
         ind_y = ind_y + ind_y_min
-        #mask bad values with -1
+        # mask bad values with -1
         ind_x[ii, :] = -1
         ind_y[ii, :] = -1
         ind_x[i_exc, :] = -1
         ind_y[i_exc, :] = -1
-        #Add to profile object
+        # Add to profile object
         self.dataset["ind_x"] = xr.DataArray(ind_x, dims=["id_dim", "NNs"])
         self.dataset["ind_y"] = xr.DataArray(ind_y, dims=["id_dim", "NNs"])
         self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
-
-
 
     def calculate_en4_qc_flags_levels(self):
         """

@@ -235,7 +235,7 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     return array
 
 
-def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None, number_of_neighbors = 1):
+def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None, number_of_neighbors=1):
     """
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
