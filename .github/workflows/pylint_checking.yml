@@ -31,16 +31,14 @@ jobs:
             git config --global user.email "bodcsoft@bodc.ac.uk"
             git config --global author.email "bodcsoft@bodc.ac.uk"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
-            git status
-            git checkout -b $GITHUB_HEAD_REF
-            git pull --rebase --strategy-option=theirs origin $GITHUB_HEAD_REF
-            git status
+            git fetch origin
+            git checkout $GITHUB_HEAD_REF
+            git pull
             echo "NEW_SCORE is greater than THESHOLD_SCORE"
             echo "Updating THESHOLD_SCORE"
             echo "$NEW_SCORE" > .pylint-score
-            git status
             git commit -am "Update pylint THESHOLD score"
-            git push --set-upstream origin $GITHUB_HEAD_REF
+            git push
           elif [ "$(echo "$NEW_SCORE == $THESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
             echo "NEW_SCORE is equal to THESHOLD_SCORE"
           else
