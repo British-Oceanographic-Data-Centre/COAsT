@@ -75,7 +75,6 @@ class Gridded(Coast):  # TODO Complete this docstring
         lims = kwargs.get("lims", [])
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
-
             self.set_dimension_names(self.config.dataset.dimension_map)
             self.set_variable_names(self.config.dataset.variable_map)
             self.dataset = self.spatial_subset(self.dataset, lims)  # Trim data size if indices specified
@@ -86,10 +85,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         else:
             self.filename_domain = self.fn_domain  # store domain fileanme
             dataset_domain = self.load_domain(self.fn_domain, chunks)
-#jth subset
+            # jth subset
             if len(lims) == 4:
-                dataset_domain=dataset_domain.isel(y_dim=range(lims[2],lims[3]),x_dim=range(lims[0],lims[1]))
-#
+                dataset_domain = dataset_domain.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
+            #
             # Define extra domain attributes using kwargs dictionary
             # This is a bit of a placeholder. Some domain/nemo files will have missing variables
             for key, value in kwargs.items():
@@ -213,10 +212,14 @@ class Gridded(Coast):  # TODO Complete this docstring
 
         # All bathymetry should now be mapped to bathy_metry
 <<<<<<< HEAD
+<<<<<<< HEAD
         calculate_bathymetry = kwargs.get("calculate_bathymetry", False)
 =======
         calculate_bathymetry = kwargs.get('calculate_bathymetry',False)
 >>>>>>> b188dc8 (Added option to subset dataset and domain on loading. This reduces the big overhead of calculating depth witth big models.)
+=======
+        calculate_bathymetry = kwargs.get("calculate_bathymetry", False)
+>>>>>>> e591188 (Apply Black formatting to Python code.)
         try:
             if calculate_bathymetry:  # calculate bathymetry from scale factors
                 bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)
