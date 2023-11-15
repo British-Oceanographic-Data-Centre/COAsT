@@ -33,7 +33,7 @@ jobs:
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
             git status
             git checkout -b $GITHUB_HEAD_REF
-            git pull --rebase origin $GITHUB_HEAD_REF
+            git pull --rebase --strategy-option=theirs origin $GITHUB_HEAD_REF
             git status
             echo "NEW_SCORE is greater than THESHOLD_SCORE"
             echo "Updating THESHOLD_SCORE"
