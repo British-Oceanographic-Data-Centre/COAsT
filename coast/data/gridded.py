@@ -211,15 +211,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         # keyword to allow calcution of bathymetry from scale factors
 
         # All bathymetry should now be mapped to bathy_metry
-<<<<<<< HEAD
-<<<<<<< HEAD
         calculate_bathymetry = kwargs.get("calculate_bathymetry", False)
-=======
-        calculate_bathymetry = kwargs.get('calculate_bathymetry',False)
->>>>>>> b188dc8 (Added option to subset dataset and domain on loading. This reduces the big overhead of calculating depth witth big models.)
-=======
-        calculate_bathymetry = kwargs.get("calculate_bathymetry", False)
->>>>>>> e591188 (Apply Black formatting to Python code.)
         try:
             if calculate_bathymetry:  # calculate bathymetry from scale factors
                 bathymetry, mask, time_mask = self.calc_bathymetry(dataset_domain)

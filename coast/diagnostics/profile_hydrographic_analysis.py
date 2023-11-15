@@ -17,7 +17,6 @@ earth_radius = 6367456 * np.pi / 180
 
 
 class ProfileHydrography(Indexed):
-
     ###############################################################################
     def __init__(self, filename="none", dataset_names="none", config="", region_bounds=[]):
         """Reads and manipulates lists of hydrographic profiles.
@@ -205,7 +204,6 @@ class ProfileHydrography(Indexed):
             # depth from model
             print("Depth from model")
             for ip in range(nprof):
-
                 DP[ip] = 0.0
                 rr = 0.0
                 for iS in range(0, 4):
@@ -227,7 +225,6 @@ class ProfileHydrography(Indexed):
             DP[DP == 0] = np.nan
 
             for ip in range(nprof):
-
                 Dp = DP[ip]
                 T[:] = tmp[ip, :]
                 S[:] = sal[ip, :]
