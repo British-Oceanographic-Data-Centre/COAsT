@@ -568,8 +568,8 @@ class Profile(Indexed):
 
 
         """
-        #ensure there are indices in profile
-        if not 'ind_x' in self.dataset:
+        # ensure there are indices in profile
+        if not "ind_x" in self.dataset:
             self.match_to_grid(gridded)
         #
         prf = self.dataset
@@ -911,13 +911,13 @@ class Profile(Indexed):
             lat = self.dataset.latitude.values
             lon = self.dataset.longitude.values
             if not pot_dens or not CT_AS:
-                lat2d = np.repeat(lat[:,np.newaxis],shape_ds[1],axis=1)
-                lon2d = np.repeat(lon[:,np.newaxis],shape_ds[1],axis=1)
+                lat2d = np.repeat(lat[:, np.newaxis], shape_ds[1], axis=1)
+                lon2d = np.repeat(lon[:, np.newaxis], shape_ds[1], axis=1)
             # Absolute Pressure
             if pot_dens:
                 pressure_absolute = 0.0  # calculate potential density
             else:
-                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels,lat2d))  # depth must be negative
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat2d))  # depth must be negative
             if not rhobar:  # calculate full depth
                 # Absolute Salinity
                 if not CT_AS:  # abs salinity not provided
