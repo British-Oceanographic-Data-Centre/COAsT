@@ -240,12 +240,6 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[0, :, :] = 0.5 * e3w_0[0, :, :]
                 depth_0[1:, :, :] = depth_0[0, :, :] + np.cumsum(e3w_0[1:, :, :], axis=0)
 
-
-
-
-
-
-
             elif self.grid_ref == "w-grid":
                 e3t_0 = np.squeeze(dataset_domain.e3t_0.values)
                 depth_0 = np.zeros_like(e3t_0)
