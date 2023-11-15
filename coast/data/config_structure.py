@@ -19,6 +19,7 @@ class ConfigKeys:
     GRID_REF = "grid_ref"
     PROC_FLAGS = "processing_flags"
     DATASET = "dataset"
+    ZARR = "zarr"
     DOMAIN = "domain"
     CODE_PROCESSING = "static_variables"
     DIM_MAP = "dimension_map"
@@ -93,6 +94,7 @@ class Config:
     dataset: Dataset
     processing_flags: list
     chunks: dict
+    zarr_file: bool
     type: ConfigTypes
 
 

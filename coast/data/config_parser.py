@@ -15,7 +15,7 @@ class ConfigParser:
         Args:
             json_path (Union[Path, str]): path to json config file.
         """
-        with open(json_path, "r") as j:
+        with open(json_path, "r", encoding='utf-8') as j:
             json_content = json.loads(j.read())
             conf_type = ConfigTypes(json_content[ConfigKeys.TYPE])
             if conf_type == ConfigTypes.GRIDDED:
@@ -34,6 +34,7 @@ class ConfigParser:
         grid_ref = json_content[ConfigKeys.GRID_REF]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
         chunks = json_content[ConfigKeys.CHUNKS]
+        zarr_file = json_content.get(ConfigKeys.ZARR, False)
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
         static_variables = ConfigParser._get_code_processing_object(json_content)
         try:
@@ -48,6 +49,7 @@ class ConfigParser:
             domain=domain,
             processing_flags=proc_flags,
             code_processing=static_variables,
+            zarr_file=zarr_file,
         )
 
     @staticmethod
@@ -60,8 +62,9 @@ class ConfigParser:
         dimensionality = json_content[ConfigKeys.DIMENSIONALITY]
         proc_flags = json_content[ConfigKeys.PROC_FLAGS]
         chunks = json_content[ConfigKeys.CHUNKS]
+        zarr_file = json_content.get(ConfigKeys.ZARR, False)
         dataset = ConfigParser._get_datafile_object(json_content, ConfigKeys.DATASET)
-        return IndexedConfig(dimensionality=dimensionality, chunks=chunks, dataset=dataset, processing_flags=proc_flags)
+        return IndexedConfig(dimensionality=dimensionality, zarr_file=zarr_file, chunks=chunks, dataset=dataset, processing_flags=proc_flags)
 
     @staticmethod
     def _get_code_processing_object(json_content: dict) -> CodeProcessing:
