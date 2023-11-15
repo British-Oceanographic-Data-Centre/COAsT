@@ -246,6 +246,15 @@ class Gridded(Coast):  # TODO Complete this docstring
                 depth_0[0, :, :] = 0.0
                 depth_0[1:, :, :] = np.cumsum(e3t_0, axis=0)[:-1, :, :]
 
+
+
+
+
+
+
+
+
+
             elif self.grid_ref == "u-grid":
                 e3w_0 = dataset_domain.e3w_0.values.squeeze()
                 e3w_0_on_u = 0.5 * (e3w_0[:, :, :-1] + e3w_0[:, :, 1:])
