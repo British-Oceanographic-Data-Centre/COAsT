@@ -37,7 +37,7 @@ PACKAGE = SimpleNamespace(
             "matplotlib>=3.5.3",
             "netCDF4>=1.5.8",
             "scipy>=1.8.0",
-            "gsw==3.4.0",
+            "gsw>=3.6.17",
             "utide>=0.3.0",
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",
