@@ -23,8 +23,8 @@ pa = coast.ProfileStratification(profile)
 fn_grd_dom = "example_files/coast_example_nemo_domain.nc"
 fn_grd_cfg = "config/example_nemo_grid_t.json"
 nemo = coast.Gridded(fn_domain=fn_grd_dom, config=fn_grd_cfg)
-#profile.match_to_grid(nemo)
-#profile.gridded_to_profile_2d(nemo, "bathymetry")
+# profile.match_to_grid(nemo)
+# profile.gridded_to_profile_2d(nemo, "bathymetry")
 
 Zmax = 200  # metres
 pa.calc_pea(profile, nemo, Zmax)

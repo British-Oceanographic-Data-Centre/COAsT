@@ -8,6 +8,7 @@ from .._utils.logging_util import debug, warn
 from ..data.gridded import Gridded
 from ..diagnostics.gridded_stratification import GriddedStratification
 
+
 class GriddedMonthlyHydrographicClimatology(Gridded):
     """
     Calculates the monthly climatology for sss, sst and pea from multi-annual monthly Gridded data.
@@ -29,7 +30,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
     def calc_climatologies(self):
         """
         Calculate the climatologies for SSH, sss and pea.
-        
+
         Returns:
             gridded_t: Gridded dataset object.
         """
@@ -58,20 +59,13 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
                     print("copied", im)
                     pea = GriddedStratification(gridded_t2)
                     pea.calc_pea(gridded_t2, zd_mask)
-                    pea_monthy_clim[im, :, :] = pea_monthy_clim[
-                        im, :, :] + pea.dataset["pea"].values
+                    pea_monthy_clim[im, :, :] = pea_monthy_clim[im, :, :] + pea.dataset["pea"].values
             pea_monthy_clim = pea_monthy_clim / nyear
         except Exception as error:
-            (
-                warn(
-                    f"Unable to perform pea calculation. Please check the error {error}"
-                )
-            )
-            debug(
-                f"Unable to perform pea calculation. Please check the error {error}"
-            )
+            (warn(f"Unable to perform pea calculation. Please check the error {error}"))
+            debug(f"Unable to perform pea calculation. Please check the error {error}")
 
-            print('not possible to calculate pea')
+            print("not possible to calculate pea")
 
         sst = self.gridded_t.dataset.variables["sst"]
         sss = self.gridded_t.dataset.variables["sss"]
@@ -91,8 +85,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         dims = ["mon_dim", "y_dim", "x_dim"]
         attributes_sst = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
         attributes_sss = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
-        attributes_pea = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to "
-                          + str(self.z_max) + "m"}
+        attributes_pea = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(self.z_max) + "m"}
 
         self.dataset = self.gridded_t.dataset["sst_monthy_clim"] = xr.DataArray(
             np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst

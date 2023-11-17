@@ -650,7 +650,6 @@ class Profile(Indexed):
 
         return qc_integers_tem, qc_integers_sal, qc_integers_both
 
-
     """================Reshape to 2D================"""
 
     def reshape_2d(self, var_user_want):

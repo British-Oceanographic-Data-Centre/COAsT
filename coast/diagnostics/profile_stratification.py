@@ -12,6 +12,7 @@ from .._utils.logging_util import get_slug, debug
 
 ####
 
+
 class ProfileStratification(Profile):  # TODO All abstract methods should be implemented
     """
     Object for handling and storing necessary information, methods and outputs
@@ -45,11 +46,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         Stage 3. Fill gaps in data and extrapolate so there are T and S values where ever there is a depth value
 
         """
-#%%
+        # %%
         print("Cleaning the data")
         # find profiles good for SST and NBT
         dz_max = 25.0
-        
+
         n_prf = profile.dataset.id_dim.shape[0]
         n_depth = profile.dataset.z_dim.shape[0]
         tmp_clean = profile.dataset.potential_temperature.values[:, :]
@@ -60,8 +61,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         # Find good SST and SSS depths
         def first_nonzero(arr, axis=0, invalid_val=np.nan):
-            mask = arr!=0
+            mask = arr != 0
             return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
+
         if "bathymetry" in gridded.dataset:
             profile.gridded_to_profile_2d(gridded, "bathymetry")
             D_prf = profile.dataset.bathymetry.values
@@ -74,15 +76,14 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             I_tmp = np.nonzero(np.any(test_tmp.values, axis=1))[0]
             I_sal = np.nonzero(np.any(test_sal.values, axis=1))[0]
             #
-            #for ip in I_tmp:
+            # for ip in I_tmp:
             #    good_sst[ip] = np.min(np.nonzero(test_tmp.values[ip, :]))
-            #for ip in I_sal:
+            # for ip in I_sal:
             #    good_sss[ip] = np.min(np.nonzero(test_sal.values[ip, :]))
 
-            good_sst=first_nonzero(test_tmp.values,axis=1)  
-            good_sss=first_nonzero(test_sal.values,axis=1)  
-                
-                
+            good_sst = first_nonzero(test_tmp.values, axis=1)
+            good_sss = first_nonzero(test_sal.values, axis=1)
+
             I_tmp = np.where(np.isfinite(good_sst))[0]
             I_sal = np.where(np.isfinite(good_sss))[0]
 
@@ -97,7 +98,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
             ###
         else:
-            print('error no bathy provided, cant clean the data')
+            print("error no bathy provided, cant clean the data")
             return profile
         SST = np.zeros(n_prf) * np.nan
         SSS = np.zeros(n_prf) * np.nan
@@ -107,9 +108,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         # fill holes in data
         # jth This is slow, there may be a more 'vector' way of doing it
-#%%
+        # %%
         for i_prf in range(n_prf):
-            
             tmp = profile.dataset.potential_temperature.values[i_prf, :]
             sal = profile.dataset.practical_salinity.values[i_prf, :]
             z = profile.dataset.depth.values[i_prf, :]
@@ -120,7 +120,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
                 tmp_clean[i_prf, :] = tmp
             if any_sal[i_prf]:
                 sal = coast.general_utils.fill_holes_1d(sal)
-            
+
                 sal[np.isnan(z)] = np.nan
                 sal_clean[i_prf, :] = sal
 
@@ -136,7 +136,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         profile.dataset["sea_surface_salinity"] = xr.DataArray(SSS, coords=coords, dims=["id_dim"])
         profile.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
         print("All nice and clean")
-#%%
+        # %%
         return profile
 
     def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax):
@@ -237,4 +237,5 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             )
 
         return fig, ax
+
     ##############################################################################
