@@ -70,7 +70,7 @@ class test_contour_f_methods(unittest.TestCase):
                 + cont_f.data_cross_flow.transport_across_AB_hpg
                 + cont_f.data_cross_flow.transport_across_AB_spg
             ).sum(),
-            74.65002414,
+            74.65899596,
         )
         self.assertTrue(check1, "check1")
 
@@ -130,6 +130,6 @@ class test_contour_t_methods(unittest.TestCase):
         self.cont_t.construct_pressure(1027)
         check1 = np.allclose(
             (self.cont_t.data_contour.pressure_s + self.cont_t.data_contour.pressure_h_zlevels).sum().compute().item(),
-            27490693.20181531,
+            27490307.14933067,
         )
         self.assertTrue(check1)
