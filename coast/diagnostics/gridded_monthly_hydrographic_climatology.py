@@ -1,3 +1,6 @@
+""""
+This class calculates the monthly hydrographic climatology
+"""
 import numpy as np
 import xarray as xr
 
@@ -76,7 +79,6 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         for im in range(12):
             print("Month", im)
             it = np.arange(im, nt, 12).astype(int)
-            print('it', it)
             sst_monthy_clim[im, :, :] = np.mean(sst[it, :, :], axis=0)
             sss_monthy_clim[im, :, :] = np.mean(sss[it, :, :], axis=0)
         # NBTy[im,:,:]=np.mean(NBT[it,:,:],axis=0)

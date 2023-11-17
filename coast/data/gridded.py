@@ -78,7 +78,6 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.set_dimension_names(self.config.dataset.dimension_map)
             self.set_variable_names(self.config.dataset.variable_map)
             self.dataset = self.spatial_subset(self.dataset, lims)  # Trim data size if indices specified
-
         if self.fn_domain is None:
             self.filename_domain = ""  # empty store for domain fileanme
             warn("No NEMO domain specified, only limited functionality" + " will be available")

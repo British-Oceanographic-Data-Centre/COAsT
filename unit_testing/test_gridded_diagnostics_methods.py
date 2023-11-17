@@ -207,7 +207,6 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
             fig.savefig(files.dn_fig + "gridded_pea.png")
             plt.close("all")
 
-
     def test_calc_monthly_grided(self):
         """
         This test was created in order to verify if the calculation off monthly

@@ -595,18 +595,7 @@ class Profile(Indexed):
         combination of possible QC integers. That's what this routine does.
         Used in Profile.process_en4().
 
-        INPUTS
-         NO INPUTS
-
-        OUTPUTS
-         qc_integers_tem  : Array of integers signifying the rejection of ONLY
-                            temperature datapoints
-         qc_integers_sal  : Array of integers signifying the rejection of ONLY
-                            salinity datapoints
-         qc_integers_both : Array of integers signifying the rejection of BOTH
-                            temperature and salinity datapoints.
         """
-
         reject_tem_ind = 0
         reject_sal_ind = 1
         if "4.2.0" in self.dataset.history:
@@ -660,6 +649,7 @@ class Profile(Indexed):
         qc_integers_both = list(set(qc_integers_both))
 
         return qc_integers_tem, qc_integers_sal, qc_integers_both
+
 
     """================Reshape to 2D================"""
 
