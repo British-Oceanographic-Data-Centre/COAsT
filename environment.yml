@@ -19,6 +19,8 @@ dependencies:
     - gsw>=3.6.17
     - utide>=0.3.0
     - scikit-learn>=1.0.2
+    - tqdm>=4.66.1
+    - pyproj>=3.5.0
     - scikit-image>=0.19.2
     - statsmodels>=0.13.2
     - pydap>=3.2.2
@@ -26,4 +28,3 @@ dependencies:
     - requests>=2.27.1
     - spyder>=5.1.5
     - jupyterlab
-    - pyproj>=3.5.0

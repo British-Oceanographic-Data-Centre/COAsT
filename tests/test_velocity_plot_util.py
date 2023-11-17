@@ -4,8 +4,11 @@
 
 # import os.path as path
 # import pytest
-import numpy as np
 import pyproj
+import numpy as np
+import cartopy.crs as ccrs
+import cartopy
+import matplotlib.pyplot as plt
 
 # import sys
 from coast._utils import plot_util
@@ -17,7 +20,7 @@ from coast._utils import plot_util
 # Define a test function. Absolutely fine to have one or multiple per file.
 
 
-def test_velocity_polar():
+def test_velocity_polar_bug_fix():
     """Test the plot_util.velocity_polar_bug_fix function."""
     lat = np.array([45, 55, 65, 75, 85])
     u_velocity = np.array([1, 1, 1, 1, 1])
@@ -35,7 +38,8 @@ def test_make_projection():
     x_origin = 5  # East
     y_origin = 50  # North
     test_proj = plot_util.make_projection(x_origin, y_origin)
-    assert isinstance(test_proj, pyproj.crs.CRS)
+    assert test_proj.prime_meridian.unit_name == "degree"
+    assert isinstance(test_proj, pyproj.CRS)
 
 
 def test_velocity_rotate():
@@ -78,8 +82,9 @@ def test_velocity_grid_to_geo():
     lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
     u_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
     v_velocity = np.array(([1, 1, 1], [1, 1, 1], [1, 1, 1]))
+    uv_velocity = [u_velocity, v_velocity]
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, uv_velocity, polar_stereo_cartopy_bug_fix=False)
     u_result1 = np.array(
         (
             [1.04903051, 1.05046004, 1.05188719],
@@ -96,7 +101,7 @@ def test_velocity_grid_to_geo():
     )
     assert np.isclose(u_new, u_result1).all() & np.isclose(v_new, v_result1).all()
 
-    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=True)
+    u_new, v_new = plot_util.velocity_grid_to_geo(lon, lat, uv_velocity, polar_stereo_cartopy_bug_fix=True)
     print(u_new, v_new)
     u_result2 = np.array(
         ([1.222728, 1.21099989, 1.19965573], [1.28512188, 1.27230937, 1.25958666], [1.34721927, 1.33542729, 1.32321739])
@@ -109,3 +114,29 @@ def test_velocity_grid_to_geo():
         )
     )
     assert np.isclose(u_new, u_result2).all() & np.isclose(v_new, v_result2).all()
+
+
+def test_plot_polar_contour():
+    """Test the plot_util.plot_polar_contour function."""
+    lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
+    lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
+    temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
+    figsize = (5, 5)  # Figure size
+    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
+    fig = plt.figure(figsize=figsize)
+    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
+    cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
+    assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
+
+
+def test_set_circle():
+    """Test the plot_util.set_circle function."""
+    figsize = (5, 5)  # Figure size
+    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
+    fig = plt.figure(figsize=figsize)
+    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
+    try:
+        plot_util.set_circle(ax1)
+        assert True
+    except AssertionError:
+        assert False

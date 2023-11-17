@@ -31,4 +31,7 @@ jobs:
         run: |
           pip install dask[complete]
           pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y libgeos-dev
+          pip install cartopy==0.21.0
           pytest tests
