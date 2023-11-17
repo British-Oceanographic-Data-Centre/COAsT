@@ -28,12 +28,13 @@
 4. test_xesmf_convert
       a. basic_conversion_to_xesmf
 
-5. test_diagnostic_methods
-      a. circulation
+5. test_gridded_diagnostics_methods
+      a. calc_monthly_grided
       b. calc_pea
-      c. compute_vertical_spatial_derivative
-      d. construct_density
-      e. construct_pycnocline_depth_and_thickness
+      c. circulation
+      d. compute_vertical_spatial_derivative
+      e. construct_density
+      f. construct_pycnocline_depth_and_thickness
 
 6. test_transect_methods
       a. calculate_transport_velocity_and_depth
