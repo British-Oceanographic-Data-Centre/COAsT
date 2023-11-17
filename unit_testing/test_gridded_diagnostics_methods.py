@@ -137,25 +137,36 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
         # %%
         lims = [150, 250, 100, 350]
         nemo_u = coast.Gridded(
-            fn_data=files.fn_nemo_grid_u_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_u_grid, lims=lims
+            fn_data=files.fn_nemo_grid_u_dat,
+            fn_domain=files.fn_nemo_dom,
+            config=files.fn_config_u_grid, lims=lims
         )
         nemo_v = coast.Gridded(
-            fn_data=files.fn_nemo_grid_v_dat, fn_domain=files.fn_nemo_dom, config=files.fn_config_v_grid, lims=lims
+            fn_data=files.fn_nemo_grid_v_dat,
+            fn_domain=files.fn_nemo_dom,
+            config=files.fn_config_v_grid, lims=lims
         )
 
         with self.subTest("Map velocities to t-points"):
-            nemo_t = coast.CurrentsOnT(fn_domain=files.fn_nemo_dom, config=files.fn_config_t_grid, lims=lims)
+            nemo_t = coast.CurrentsOnT(fn_domain=files.fn_nemo_dom,
+                                       config=files.fn_config_t_grid,
+                                       lims=lims)
             nemo_t.currents_on_t(nemo_u, nemo_v)
             nemo_t.subset(z_dim=[0], t_dim=[0])
 
             u1 = 0.5 * (
-                nemo_u.dataset.u_velocity[0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values
+                nemo_u.dataset.u_velocity[
+                    0, 0, 150, 60].values + nemo_u.dataset.u_velocity[0, 0, 150, 59].values
             )
             u2 = nemo_t.dataset.ut_velocity[0, 0, 150, 60].values
-            # print(f"u vel on u-pts: {nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
-            # print(f"u vel on t-pts: {nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61), y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            # print(f"u vel on u-pts: {nemo_u.dataset.u_velocity.isel(x_dim=slice(59,61), \
+                # y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
+            # print(f"u vel on t-pts: \
+                # {nemo_t.dataset.ut_velocity.isel(x_dim=slice(59,61),
+                # y_dim=slice(149,151), t_dim=0, z_dim=0).values}")
             v1 = 0.5 * (
-                nemo_v.dataset.v_velocity[0, 0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values
+                nemo_v.dataset.v_velocity[
+                    0,0, 150, 60].values + nemo_v.dataset.v_velocity[0, 0, 149, 60].values
             )
             v2 = nemo_t.dataset.vt_velocity[0, 0, 150, 60].values
             speed = nemo_t.dataset.speed_t[0, 0, 150, 60].values
@@ -174,7 +185,9 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
             plt.close("all")
 
     def test_calc_pea(self):
-        nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer, files.fn_nemo_dom, config=files.fn_config_t_grid)
+        nemo_t = coast.Gridded(files.fn_nemo_grid_t_dat_summer,
+                               files.fn_nemo_dom,
+                               config=files.fn_config_t_grid)
 
         # Compute a vertical max to exclude depths below 200m
         Zd_mask, kmax, Ikmax = nemo_t.calculate_vertical_mask(200.0)
@@ -193,3 +206,49 @@ class test_gridded_diagnostics_methods(unittest.TestCase):
             fig.tight_layout()
             fig.savefig(files.dn_fig + "gridded_pea.png")
             plt.close("all")
+
+
+    def test_calc_monthly_grided(self):
+        """
+        This test was created in order to verify if the calculation off monthly
+        grid are performed in a correct way
+        """
+        dom = xr.open_zarr(files.fn_nemo_zarr_dom_mask)
+        mesh_zgr = xr.open_zarr(files.fn_nemo_zarr_dom_mesh_zgr)
+        mesh_hgr = xr.open_zarr(files.fn_nemo_zarr_dom_mesh_hgr)
+
+        for var_name in mesh_zgr.data_vars:
+            dom[var_name] = mesh_zgr[var_name]
+        for var_name in mesh_hgr.data_vars:
+            dom[var_name] = mesh_hgr[var_name]
+        
+        
+        dom = dom.isel(y=slice(500, 700), x=slice(1000,1100))
+          
+        u_grid = xr.open_zarr(files.fn_nemo_zarr_u_grid)
+        u_grid = u_grid.isel(time_counter=slice(0,119)).rename({'depthu': 'depth'})
+        v_grid = xr.open_zarr(files.fn_nemo_zarr_v_grid)
+        v_grid = v_grid.isel(time_counter=slice(0,119)).rename({'depthv': 'depth'})
+        t_grid = xr.open_zarr(files.fn_nemo_zarr_t_grid)
+        t_grid = t_grid.rename({'deptht': 'depth'})
+
+        for var_name in u_grid.data_vars:
+            t_grid[var_name] = u_grid[var_name]
+        for var_name in v_grid.data_vars:
+            t_grid[var_name] = v_grid[var_name]
+
+        t_grid = t_grid.isel(y=slice(500, 700), x=slice(1000,1100), time_counter=slice(0,15))
+
+        nemo_dom=coast.Gridded(fn_domain = dom, config=files.fn_config_t_grid)
+        nemo = coast.Gridded(fn_data= t_grid, fn_domain = dom, config=files.fn_config_t_grid)
+
+        nemo.dataset['e3_0']=nemo_dom.dataset['e3_0']
+
+        gridded_month = coast.GriddedMonthlyHydrographicClimatology(nemo,z_max=200)
+        gridded_month.calc_climatologies()
+
+        check1 = np.isclose(gridded_month.dataset['SST_monthy_clim'].mean(), 124.5029568214227)
+        self.assertTrue(check1, msg="check1")
+
+        check2 = np.isclose(gridded_month.dataset['SSS_monthy_clim'].mean(), 124.5029568214227)
+        self.assertTrue(check2, msg="check2")

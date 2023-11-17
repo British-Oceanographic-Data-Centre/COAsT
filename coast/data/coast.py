@@ -85,8 +85,11 @@ class Coast:
             chunks (Dict): Chunks to use in Dask [default None].
         """
         info(f"Loading a single file ({file} for {get_slug(self)}")
-        with xr.open_dataset(file, chunks=chunks) as xrfile:
-            self.dataset = xrfile
+        if isinstance(file, xr.core.dataset.Dataset):
+            self.dataset = file
+        else:
+            with xr.open_dataset(file, chunks=chunks) as xrfile:
+                self.dataset = xrfile
 
     def load_multiple(self, directory_to_files: str, chunks: Dict = None):
         """Loads multiple files from directory into dataset variable.

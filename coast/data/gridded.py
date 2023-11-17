@@ -129,11 +129,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         """Loads domain file and renames dimensions with dim_mapping_domain"""
         # Load xarray dataset
         info(f'Loading domain: "{fn_domain}"')
-        if self.config.zarr_file:
-            dataset_domain = xr.open_zarr(fn_domain)
+        if isinstance(fn_domain, xr.core.dataset.Dataset):
+            dataset_domain = fn_domain
         else:
-            dataset_domain = xr.open_zarr(fn_domain)
-            # dataset_domain = xr.open_dataset(fn_domain)
+            dataset_domain = xr.open_dataset(fn_domain)
         self.domain_loaded = True
         # Rename dimensions
         for key, value in self.config.domain.dimension_map.items():
@@ -223,7 +222,7 @@ class Gridded(Coast):  # TODO Complete this docstring
                 bathymetry = dataset_domain.bathy_metry.squeeze()
 
         except AttributeError as err:
-            bathymetry = xr.zeros_like(dataset_domain.vmaskutil.squeeze())
+            bathymetry = xr.zeros_like(dataset_domain.e1.squeeze())
 
             # bathymetry = xr.zeros_like(dataset_domain.e1.squeeze())
             (

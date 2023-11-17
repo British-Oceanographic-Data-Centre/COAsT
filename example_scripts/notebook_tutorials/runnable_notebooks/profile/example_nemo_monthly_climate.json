@@ -2,7 +2,6 @@
 	"type": "gridded",
 	"dimensionality": 3,
 	"chunks": {"time_counter":2},
-	"zarr": true,
 	"grid_ref": {
 		"t-grid": [
 			"glamt",
@@ -33,11 +32,11 @@
 			"thetao": "temperature",
 			"temp": "temperature",
 			"toce": "temperature",
-                        "thetao_con":  "temperature",
+			"thetao_con":  "temperature",
 			"so": "salinity",
 			"vosaline": "salinity",
 			"soce": "salinity",
-                        "so_abs": "salinity",
+      "so_abs": "salinity",
 			"sossheig": "ssh",
 			"zos": "ssh"
 		},
@@ -63,7 +62,7 @@
 			"e1t": "e1",
 			"e2t": "e2",
 			"e3t_0": "e3_0",
-            "e3w_0": "e3w_0",
+      "e3w_0": "e3w_0",
 			"tmask":"mask",
 			"deptht_0": "depth_0",
 			"bottom_level": "bottom_level",
