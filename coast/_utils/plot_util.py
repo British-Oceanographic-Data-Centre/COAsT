@@ -523,7 +523,6 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     Returns:
         plot object: can be used for making a colorbar
     """
-
     crs_ps = ccrs.CRS("epsg:3413") # North pole projection
     crs_wgs84 = ccrs.CRS("epsg:4326")
     # NSIDC grid
