@@ -544,12 +544,11 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     except ImportError:
         warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
         sys.exit(-1)
-        
-    crs_ps = ccrs.CRS("epsg:3413") # North pole projection
+
+    crs_ps = ccrs.CRS("epsg:3413")  # North pole projection
     crs_wgs84 = ccrs.CRS("epsg:4326")
     # NSIDC grid
-    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000,
-        np.linspace(-5350, 5850, 448) * 1000)
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000, np.linspace(-5350, 5850, 448) * 1000)
     grid = crs_wgs84.transform_points(crs_ps, x_grid, y_grid)
     # output is x, y, z triple but we don't need z
     lon_grid = grid[:, :, 0]
