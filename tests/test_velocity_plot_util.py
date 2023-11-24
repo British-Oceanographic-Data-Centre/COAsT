@@ -122,12 +122,14 @@ def test_plot_polar_contour():
     lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
     temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
     figsize = (5, 5)  # Figure size
-    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
-    fig = plt.figure(figsize=figsize)
-    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
-    cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
-    assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
-
+    try:
+        mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
+        fig = plt.figure(figsize=figsize)
+        ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
+        cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
+        assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
+    except AssertionError:
+        assert False
 
 def test_set_circle():
     """Test the plot_util.set_circle function."""
