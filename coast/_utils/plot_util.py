@@ -539,16 +539,24 @@ def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
     Returns:
         plot object: can be used for making a colorbar
     """
-
-    # crs_ps = pyproj.Proj("epsg:3413")  # North pole projection
-    # crs_wgs84 = pyproj.Proj("epsg:4326")
-    transformer = pyproj.Transformer.from_crs("epsg:3413", "epsg:4326")
+    try:
+        import cartopy.crs as ccrs  # mapping plots
+    except ImportError:
+        warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+        sys.exit(-1)
+        
+    crs_ps = ccrs.CRS("epsg:3413") # North pole projection
+    crs_wgs84 = ccrs.CRS("epsg:4326")
     # NSIDC grid
-    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000, np.linspace(-5350, 5850, 448) * 1000)
-    lon_grid, lat_grid = transformer.transform(x_grid, y_grid)
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000,
+        np.linspace(-5350, 5850, 448) * 1000)
+    grid = crs_wgs84.transform_points(crs_ps, x_grid, y_grid)
+    # output is x, y, z triple but we don't need z
+    lon_grid = grid[:, :, 0]
+    lat_grid = grid[:, :, 1]
     points = np.vstack((lon.flatten(), lat.flatten())).T
     grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method="linear")
-    cs_out = ax_in.contour(x_grid, y_grid, grid_var, **kwargs)
+    cs_out = ax_in.contour(x_grid, y_grid, grid_var, transform=ccrs.epsg(3413), **kwargs)
     return cs_out
 
 
