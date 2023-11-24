@@ -118,21 +118,15 @@ def test_velocity_grid_to_geo():
 
 def test_plot_polar_contour():
     """Test the plot_util.plot_polar_contour function."""
-    try:
-        import cartopy.crs as ccrs  # mapping plots
-
-        lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
-        lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
-        temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
-        figsize = (5, 5)  # Figure size
-
-        mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
-        fig = plt.figure(figsize=figsize)
-        ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
-        cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
-        assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
-    except ImportError:
-        warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+    lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
+    lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
+    temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
+    figsize = (5, 5)  # Figure size
+    mrc = ccrs.NorthPolarStereo(central_longitude=0.0)
+    fig = plt.figure(figsize=figsize)
+    ax1 = fig.add_axes([0.1, 0.1, 0.8, 0.75], projection=mrc)
+    cs1 = plot_util.plot_polar_contour(lon, lat, temp, ax1)
+    assert isinstance(cs1, cartopy.mpl.contour.GeoContourSet)
 
 
 def test_set_circle():
