@@ -131,6 +131,7 @@ def test_plot_polar_contour():
     except AssertionError:
         assert False
 
+
 def test_set_circle():
     """Test the plot_util.set_circle function."""
     figsize = (5, 5)  # Figure size
