@@ -120,6 +120,7 @@ def test_plot_polar_contour():
     """Test the plot_util.plot_polar_contour function."""
     try:
         import cartopy.crs as ccrs  # mapping plots
+
         lat = np.array(([50, 48, 46], [60, 58, 56], [70, 68, 66]))  # y, x
         lon = np.array(([5, 8, 11], [6, 9, 12], [7, 10, 13]))
         temp = np.array(([2, 1, 0], [2, 1, 0], [2, 2, 1]))
