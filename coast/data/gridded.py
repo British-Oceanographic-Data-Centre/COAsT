@@ -7,14 +7,13 @@ import warnings
 # import graphviz
 import gsw
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from .._utils import general_utils, stats_util
+from .._utils.logging_util import debug, error, get_slug, info, warn, warning
 from .coast import Coast
 from .config_parser import ConfigParser
-from .._utils.logging_util import get_slug, debug, info, warn, error, warning
-import pandas as pd
-
 
 class Gridded(Coast):  # TODO Complete this docstring
     """
@@ -49,7 +48,9 @@ class Gridded(Coast):  # TODO Complete this docstring
                 self._setup_grid_obj(self.config.chunks, multiple, **kwargs)
             else:
                 self._setup_grid_obj(None, multiple, **kwargs)
-        else:  # allow for usage without config file, this will be limted and dosen't bring the full COAST features
+        # allow for usage without config file, this will be limted and dosen't
+        # bring the full COAST features
+        else:
             debug("Config file expected. Limited functionality without config file")
             if self.fn_data is not None:
                 self.load(self.fn_data, None, multiple)
@@ -62,11 +63,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         """This is a helper method to reduce the size of def __init__
 
         Args:
-            chunks: This is a setting for xarray as to whether dask (parrell processing) should be on and how it works
+            chunks: This is a setting for xarray as to whether dask (parrell
+        processing) should be on and how it works
             multiple: flag to tell if we are loading one or more files
             **kwargs: pass direct to loaded xarray dataset
-                lims = [x_dim index 1, x_dim_index 2, y_dim index 1, y_dim_index 2] - subset region defined from
-                                                                            lower left to upper right corners
+                lims = [x_dim index 1,
+                        x_dim_index 2,
+                        y_dim index 1,
+                        y_dim_index 2] - subset region defined from lower left to
+                                        upper right corners
                 calculate_bathymetry [boolean]: default-False
         """
         self.set_grid_vars()
@@ -78,7 +83,8 @@ class Gridded(Coast):  # TODO Complete this docstring
 
             self.set_dimension_names(self.config.dataset.dimension_map)
             self.set_variable_names(self.config.dataset.variable_map)
-            self.dataset = self.spatial_subset(self.dataset, lims)  # Trim data size if indices specified
+            # Trim data size if indices specified
+            self.dataset = self.spatial_subset(self.dataset, lims) 
 
         if self.fn_domain is None:
             self.filename_domain = ""  # empty store for domain fileanme
@@ -92,12 +98,16 @@ class Gridded(Coast):  # TODO Complete this docstring
             for key, value in kwargs.items():
                 dataset_domain[key] = value
 
-            dataset_domain = self.spatial_subset(dataset_domain, lims)  # Trim domain size if indices specified
+            # Trim domain size if indices specified
+            dataset_domain = self.spatial_subset(dataset_domain, lims)  
+
+            # Trim domain size if self.data is smaller
             if self.fn_data is not None:
-                dataset_domain = self.trim_domain_size(dataset_domain)  # Trim domain size if self.data is smaller
+                dataset_domain = self.trim_domain_size(dataset_domain)  
             self.set_timezero_depths(
                 dataset_domain, **kwargs
-            )  # THIS ADDS TO dataset_domain. Should it be 'return'ed (as in trim_domain_size) or is implicit OK?
+            )  # THIS ADDS TO dataset_domain. Should it be 'return'ed
+            # (as in trim_domain_size) or is implicit OK?
             self.merge_domain_into_dataset(dataset_domain)
             debug(f"Initialised {get_slug(self)}")
 
@@ -110,9 +120,11 @@ class Gridded(Coast):  # TODO Complete this docstring
             lon = self.dataset.longitude.values
             nx = self.dataset.longitude.size
             ny = self.dataset.latitude.size
-            self.dataset["latitude"] = xr.DataArray(np.repeat(lat[:, np.newaxis], nx, axis=1), dims=["y_dim", "x_dim"])
+            self.dataset["latitude"] = xr.DataArray(np.repeat(lat[:, np.newaxis], nx, axis=1),
+                                                    dims=["y_dim", "x_dim"])
 
-            self.dataset["longitude"] = xr.DataArray(np.repeat(lon[np.newaxis, :], ny, axis=0), dims=["y_dim", "x_dim"])
+            self.dataset["longitude"] = xr.DataArray(np.repeat(lon[np.newaxis, :], ny, axis=0),
+                                                     dims=["y_dim", "x_dim"])
 
     def set_grid_vars(self):
         """Define the variables to map from the domain file to the NEMO obj"""
@@ -127,7 +139,10 @@ class Gridded(Coast):  # TODO Complete this docstring
         """Loads domain file and renames dimensions with dim_mapping_domain"""
         # Load xarray dataset
         info(f'Loading domain: "{fn_domain}"')
-        dataset_domain = xr.open_dataset(fn_domain)
+        if isinstance(fn_domain, xr.core.dataset.Dataset):
+            dataset_domain = fn_domain
+        else:
+            dataset_domain = xr.open_dataset(fn_domain)
         self.domain_loaded = True
         # Rename dimensions
         for key, value in self.config.domain.dimension_map.items():
@@ -136,7 +151,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dataset_domain = dataset_domain.rename_dims(mapping)
             except ValueError as err:
                 warning(
-                    f"{get_slug(self)}: Problem renaming domain dimension from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{get_slug(self)}: Problem renaming domain dimension from "
+                    f"{get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
         # Rename domain variables.
@@ -146,7 +162,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                 dataset_domain = dataset_domain.rename_vars(mapping)
             except ValueError as err:
                 warning(
-                    f"{get_slug(self)}: Problem renaming domain variable from {get_slug(self.dataset)}: {key} -> {value}."
+                    f"{get_slug(self)}: Problem renaming domain variable from "
+                    f"{get_slug(self.dataset)}: {key} -> {value}."
                     f"{chr(10)}Error message of '{err}'"
                 )
         return dataset_domain
@@ -405,7 +422,12 @@ class Gridded(Coast):  # TODO Complete this docstring
         i, j = np.unravel_index(indx, grid_lon.shape)
         return [i, j, dist]
 
-    def find_j_i_domain(self, *, lat: float, lon: float, dataset_domain: xr.DataArray, KDTree=False):
+    def find_j_i_domain(self,
+                        *,
+                        lat: float,
+                        lon: float,
+                        dataset_domain: xr.DataArray,
+                        KDTree=False):
         """
         A routine to find the nearest y x coordinates for a given latitude and longitude
         Usage: [y,x] = find_j_i_domain(lat=49, lon=-12, dataset_domain=dataset_domain)
@@ -415,7 +437,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         :param dataset_domain: dataset domain
         :return: the y and x coordinates for the grid_ref variable within the domain file
         """
-        debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using {get_slug(dataset_domain)}")
+        debug(f"Finding j,i domain for {lat},{lon} from {get_slug(self)} using "
+              f"{get_slug(dataset_domain)}")
         internal_lat = dataset_domain["latitude"]  # [f"gphi{self.grid_ref.replace('-grid','')}"]
         internal_lon = dataset_domain["longitude"]  # [f"glam{self.grid_ref.replace('-grid','')}"]
         dist2 = np.square(internal_lat - lat) + np.square(internal_lon - lon)
@@ -509,13 +532,19 @@ class Gridded(Coast):  # TODO Complete this docstring
             )
         else:
             interpolated = interpolated.interp(time=new_times, method=interp_method)
-        # interpolated = interpolated.swap_dims({'time':'t_dim'})  # TODO Do something with this or delete it
+        # TODO Do something with this or delete it
+        # interpolated = interpolated.swap_dims({'time':'t_dim'})  
 
         return interpolated
 
-    def construct_density(
-        self, eos="EOS10", rhobar=False, Zd_mask=[], CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
-    ):
+    def construct_density(self,
+                          eos="EOS10",
+                          rhobar=False,
+                          Zd_mask=[],
+                          CT_AS=False,
+                          pot_dens=False,
+                          Tbar=True,
+                          Sbar=True):
         """
             Constructs the in-situ density using the salinity, temperture and
             depth_0 fields and adds a density attribute to the t-grid dataset
@@ -543,9 +572,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             DESCRIPTION. The default is 'False'.
         pot_dens :Calculation at zero pressure
             DESCRIPTION. The default is 'False'.
-        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to
-                        remain depth varying. So Tbar=Flase gives temperature component, Sbar=Flase gives Salinity component
-            DESCRIPTION. The default is 'True'.
+        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one
+            component to remain depth varying. So Tbar=Flase gives temperature component,
+            Sbar=Flase gives Salinity component DESCRIPTION. The default is 'True'.
 
         Returns
         -------
@@ -637,17 +666,23 @@ class Gridded(Coast):  # TODO Complete this docstring
                 else:  # Either insitue density or one of Tbar or Sbar Flase
                     if Sbar:
                         sal_absolute = np.repeat(
-                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
+                            (np.sum(
+                                np.ma.masked_less(sal_absolute,
+                                                  0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
                             shape_ds[1],
                             axis=1,
                         )
                     if Tbar:
                         temp_conservative = np.repeat(
-                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis, :, :],
+                            (np.sum(
+                                np.ma.masked_less(temp_conservative, 0) * DZ, axis=1
+                            ) / DP)[:, np.newaxis, :, :],
                             shape_ds[1],
                             axis=1,
                         )
-                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute,
+                                                           temp_conservative,
+                                                           pressure_absolute))
 
                 if Tbar and Sbar:
                     new_var_name = "density_bar"
@@ -682,7 +717,9 @@ class Gridded(Coast):  # TODO Complete this docstring
 
     def spatial_subset(self, dataset, lims):
         """
-        Specify indices to subset the data. Subset region defined as a 2D box from lower left to upper right corners
+        Specify indices to subset the data. Subset region defined as a 2D box from
+        lower left to upper right corners
+        
         lims = [x_dim index_1, x_dim_index_2, y_dim index_1, y_dim_index_2] -
         Modifies self.dataset
         """
@@ -691,7 +728,8 @@ class Gridded(Coast):  # TODO Complete this docstring
             # subsetting will wrap longitude across dateline if 1st longitude is larger than 2nd.
             if "x_dim" in dataset.dims:
                 if lims[0] < lims[1]:  # usual case
-                    dataset = dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], lims[1]))
+                    dataset = dataset.isel(y_dim=range(lims[2], lims[3]),
+                                           x_dim=range(lims[0], lims[1]))
                 else:  # longitude  wrap around
                     nx = dataset.dims["x_dim"]
                     ds1 = dataset.isel(y_dim=range(lims[2], lims[3]), x_dim=range(lims[0], nx))
@@ -713,24 +751,24 @@ class Gridded(Coast):  # TODO Complete this docstring
             self.dataset["y_dim"].size != dataset_domain["y_dim"].size
         ):
             info(
-                "The domain  and dataset objects are different sizes:"
-                " [{},{}] cf [{},{}]. Trim domain.".format(
-                    dataset_domain["x_dim"].size,
-                    dataset_domain["y_dim"].size,
-                    self.dataset["x_dim"].size,
-                    self.dataset["y_dim"].size,
-                )
+                f"The domain and dataset objects are different sizes:"
+                f" [{dataset_domain['x_dim'].size},{dataset_domain['y_dim'].size}]"
+                f" cf [{self.dataset['x_dim'].size},{self.dataset['y_dim'].size}]. Trim domain."
             )
 
             # Find the corners of the cut out domain.
             try:
                 [j0, i0] = self.find_j_i_domain(
-                    lat=self.dataset.latitude[0, 0], lon=self.dataset.longitude[0, 0], dataset_domain=dataset_domain
+                    lat=self.dataset.latitude[0, 0],
+                    lon=self.dataset.longitude[0, 0],
+                    dataset_domain=dataset_domain
                 )
                 [j1, i1] = self.find_j_i_domain(
-                    lat=self.dataset.latitude[-1, -1], lon=self.dataset.longitude[-1, -1], dataset_domain=dataset_domain
+                    lat=self.dataset.latitude[-1, -1],
+                    lon=self.dataset.longitude[-1, -1],
+                    dataset_domain=dataset_domain
                 )
-                debug(f"trim_domain_size(): USED dataset.longitude")
+                debug("trim_domain_size(): USED dataset.longitude")
             except:  # if called before variables are re-mapped. Not very pretty...
                 [j0, i0] = self.find_j_i_domain(
                     lat=self.dataset.nav_lat[0, 0], lon=self.dataset.nav_lon[0, 0], dataset_domain=dataset_domain
@@ -740,17 +778,18 @@ class Gridded(Coast):  # TODO Complete this docstring
                 )
                 debug(f"trim_domain_size(): USED dataset.nav_lon")
 
-            dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1), x_dim=slice(i0, i1 + 1))
+            dataset_subdomain = dataset_domain.isel(y_dim=slice(j0, j1 + 1),
+                                                    x_dim=slice(i0, i1 + 1))
             return dataset_subdomain
-        else:
-            return dataset_domain
+        return dataset_domain
 
     def copy_domain_vars_to_dataset(self, dataset_domain, grid_vars):
         """
         Map the domain coordinates and metric variables to the dataset object.
         Expects the source and target DataArrays to be same sizes.
         """
-        debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} to {get_slug(self)}")
+        debug(f"Copying domain vars from {get_slug(dataset_domain)}/{get_slug(grid_vars)} "
+              f"to {get_slug(self)}")
         for var in grid_vars:
             try:
                 new_name = self.config.domain.variable_map[var]
@@ -762,11 +801,16 @@ class Gridded(Coast):  # TODO Complete this docstring
                 else:
                     self.dataset[new_name] = dataset_domain[new_name].squeeze()
 
-                debug("map: {} --> {}".format(var, new_name))
+                debug(f"map: {var} --> {new_name}")
             except:  # FIXME Catch specific exception(s)
                 pass  # TODO Should we log something here?
 
-    def differentiate(self, in_var_str, config_path=None, dim="z_dim", out_var_str=None, out_obj=None):
+    def differentiate(self,
+                      in_var_str,
+                      config_path=None,
+                      dim="z_dim",
+                      out_var_str=None,
+                      out_obj=None):
         """
         Derivatives are computed in x_dim, y_dim, z_dim (or i,j,k) directions
         wrt lambda, phi, or z coordinates (with scale factor in metres not degrees).
@@ -799,11 +843,13 @@ class Gridded(Coast):  # TODO Complete this docstring
         nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim' )
 
         # For f(z)=-z. Compute df/dz = -1. Surface value is set to zero
-        nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'], nemo_t.dataset['temperature'] )
+        nemo_t.dataset['depth4D'],_ = xr.broadcast( nemo_t.dataset['depth_0'],
+            nemo_t.dataset['temperature'] )
         nemo_w_4 = nemo_t.differentiate( 'depth4D', dim='z_dim', out_var_str='dzdz' )
 
         Provide an existing target NEMO object and target variable name:
-        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim', out_var_str='dTdz', out_obj=nemo_w_1 )
+        nemo_w_1 = nemo_t.differentiate( 'temperature', dim='z_dim',
+            out_var_str='dTdz', out_obj=nemo_w_1 )
 
 
         Parameters
@@ -815,8 +861,6 @@ class Gridded(Coast):  # TODO Complete this docstring
         out_obj : exiting NEMO obj to store xr.DataArray (optional)
 
         """
-        import xarray as xr
-
         new_units = ""
 
         # Check in_var_str exists in self.
@@ -851,7 +895,8 @@ class Gridded(Coast):  # TODO Complete this docstring
 
                 # Create new DataArray with the same dimensions as the parent
                 # Crucially have a coordinate value that is appropriate to the target location.
-                blank = xr.zeros_like(var.isel(z_dim=[0]))  # Using "z_dim=[0]" as a list preserves z-dimension
+                # Using "z_dim=[0]" as a list preserves z-dimension
+                blank = xr.zeros_like(var.isel(z_dim=[0]))
                 blank.coords["depth_0"] -= blank.coords["depth_0"]  # reset coord vals to zero
                 # Add blank slice to the 'surface'. Concat over the 'dim' coords
                 diff = xr.concat([blank, var.diff(dim)], dim)
@@ -862,13 +907,18 @@ class Gridded(Coast):  # TODO Complete this docstring
                 # Assign attributes
                 new_units = var.units + "/" + out_obj.dataset.depth_0.units
                 # Convert to a xr.DataArray and return
-                out_obj.dataset[out_var_str].attrs = {"units": new_units, "standard_name": out_var_str}
+                out_obj.dataset[out_var_str].attrs = {"units": new_units,
+                                                      "standard_name": out_var_str}
 
                 # Return in object.
                 return out_obj
 
             else:
-                warn("Not ready for that combination of grid ({}) and " "derivative ({})".format(self.grid_ref, dim))
+                warning_message = (
+                    f"Not ready for that combination of grid ({self.grid_ref}) "
+                    f"and derivative ({dim})"
+                )
+                warn(warning_message)
                 return None
         else:
             warn(f"{in_var_str} does not exist in {get_slug(self)} dataset")
@@ -895,7 +945,13 @@ class Gridded(Coast):  # TODO Complete this docstring
         return
 
     @staticmethod
-    def get_e3_from_ssh(nemo_t, e3t=True, e3u=False, e3v=False, e3f=False, e3w=False, dom_fn: str = None):
+    def get_e3_from_ssh(nemo_t,
+                        e3t=True,
+                        e3u=False,
+                        e3v=False,
+                        e3f=False,
+                        e3w=False,
+                        dom_fn: str = None):
         """
         Where the model has been run with a nonlinear free surface
         and z* variable volumne (ln_vvl_zstar=True) then the vertical scale factors
@@ -942,7 +998,8 @@ class Gridded(Coast):  # TODO Complete this docstring
         if dom_fn is None:
             dom_fn = nemo_t.filename_domain
         try:
-            ds_dom = xr.open_dataset(dom_fn).squeeze().rename({"z": "z_dim", "x": "x_dim", "y": "y_dim"})
+            ds_dom = xr.open_dataset(dom_fn).squeeze().rename(
+                {"z": "z_dim", "x": "x_dim", "y": "y_dim"})
         except OSError:
             print(f"Problem opening domain_cfg file: {dom_fn}")
             return
@@ -972,7 +1029,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             e1e2u = ds_dom.e1u * ds_dom.e2u
             # interpolate onto u-grid
             e3u_temp = (
-                (0.5 / e1e2u[:, :-1]) * ((e1e2t[:, :-1] * e3t_dt[:, :, :, :-1]) + (e1e2t[:, 1:] * e3t_dt[:, :, :, 1:]))
+                (0.5 / e1e2u[:, :-1]) * (
+                    (e1e2t[:, :-1] * e3t_dt[:, :, :, :-1]) + (
+                        e1e2t[:, 1:] * e3t_dt[:, :, :, 1:]))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             # u mask
             e3u_temp = e3u_temp.where(e3t_dt[:, :, :, 1:] != 0, 0)
@@ -993,7 +1052,9 @@ class Gridded(Coast):  # TODO Complete this docstring
         if e3v:
             e1e2v = ds_dom.e1v * ds_dom.e2v
             e3v_temp = (
-                (0.5 / e1e2v[:-1, :]) * ((e1e2t[:-1, :] * e3t_dt[:, :, :-1, :]) + (e1e2t[1:, :] * e3t_dt[:, :, 1:, :]))
+                (0.5 / e1e2v[:-1, :]) * (
+                    (e1e2t[:-1, :] * e3t_dt[:, :, :-1, :]) + (
+                        e1e2t[1:, :] * e3t_dt[:, :, 1:, :]))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             e3v_temp = e3v_temp.where(e3t_dt[:, :, 1:, :] != 0, 0)
             e3v_temp = e3v_temp.where(e3v_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
@@ -1011,7 +1072,9 @@ class Gridded(Coast):  # TODO Complete this docstring
             e1e2f = ds_dom.e1f * ds_dom.e2f
             e3u_dt = e3u_new - ds_dom.e3u_0
             e3f_temp = (
-                (0.5 / e1e2f[:-1, :]) * ((e1e2u[:-1, :] * e3u_dt[:, :, :-1, :]) + (e1e2u[1:, :] * e3u_dt[:, :, 1:, :]))
+                (0.5 / e1e2f[:-1, :]) * (
+                    (e1e2u[:-1, :] * e3u_dt[:, :, :-1, :]) + (
+                        (e1e2u[1:, :] * e3u_dt[:, :, 1:, :])))
             ).transpose("t_dim", "z_dim", "y_dim", "x_dim")
             e3f_temp = e3f_temp.where(e3u_dt[:, :, 1:, :] != 0, 0)
             e3f_temp = e3f_temp.where(e3f_temp.z_dim < ds_dom.bottom_level[:-1, :], 0)
@@ -1034,7 +1097,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                 0.5 * e3t_dt[:, :-1, :, :] + 0.5 * e3t_dt[:, 1:, :, :] + ds_dom.e3w_0[1:, :, :]
             )
             # bottom and below levels
-            e3w_new = e3w_new.where(e3w_new.z_dim < ds_dom.bottom_level, e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
+            e3w_new = e3w_new.where(e3w_new.z_dim < ds_dom.bottom_level,
+                                    e3t_dt.shift(z_dim=1) + ds_dom.e3w_0)
             e3_return.append(e3w_new.squeeze())
 
         return tuple(e3_return)
@@ -1135,11 +1199,15 @@ class Gridded(Coast):  # TODO Complete this docstring
         Modifies NEMO() dataset in place. New variables added.
         """
         if direction == "cart2polar":
-            a, g = general_utils.cartesian_to_polar(self.dataset[x_var], self.dataset[y_var], degrees=degrees)
+            a, g = general_utils.cartesian_to_polar(self.dataset[x_var],
+                                                    self.dataset[y_var],
+                                                    degrees=degrees)
             self.dataset[a_var] = a
             self.dataset[g_var] = g
         elif direction == "polar2cart":
-            x, y = general_utils.polar_to_cartesian(self.dataset[a_var], self.dataset[g_var], degrees=degrees)
+            x, y = general_utils.polar_to_cartesian(self.dataset[a_var],
+                                                    self.dataset[g_var],
+                                                    degrees=degrees)
             self.dataset[x_var] = x
             self.dataset[y_var] = y
         else:
@@ -1189,7 +1257,8 @@ class Gridded(Coast):  # TODO Complete this docstring
                     if ZW[mbot[j, i], j, i] > Zmax:
                         kkmax = np.max(np.where(ZW[:, j, i] < Zmax))
                         Zd_mask[kkmax + 1 :, j, i] = 0
-                        Zd_mask[kkmax, j, i] = (Zmax - ZW[kkmax, j, i]) / (ZW[kkmax + 1, j, i] - ZW[kkmax, j, i])
+                        Zd_mask[kkmax, j, i] = (
+                            Zmax - ZW[kkmax, j, i]) / (ZW[kkmax + 1, j, i] - ZW[kkmax, j, i])
                         kmax[j, i] = kkmax
                         IIkmax[kkmax, j, i] = 1
         Ikmax = np.nonzero(IIkmax.ravel())
