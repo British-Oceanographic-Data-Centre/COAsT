@@ -14,9 +14,7 @@ from .._utils.logging_util import debug, get_slug, info, warn, warning
 from .opendap import OpendapInfo
 
 
-def setup_dask_client(workers: int = 2,
-                      threads: int = 2,
-                      memory_limit_per_worker: str = "2GB"):
+def setup_dask_client(workers: int = 2, threads: int = 2, memory_limit_per_worker: str = "2GB"):
     """Setup Dask client.
 
     Args:
@@ -25,8 +23,7 @@ def setup_dask_client(workers: int = 2,
         memory_limit_per_worker (str, optional): memory limit per worker.
     Defaults to "2GB".
     """
-    Client(n_workers=workers, threads_per_worker=threads,
-           memory_limit=memory_limit_per_worker)
+    Client(n_workers=workers, threads_per_worker=threads, memory_limit=memory_limit_per_worker)
 
 
 class Coast:
@@ -81,8 +78,7 @@ class Coast:
         If false load a single file [default False].
         """
         if (opendap := isinstance(file_or_dir, OpendapInfo)) and multiple:
-            raise NotImplementedError(
-                "Loading multiple OPeNDAP datasets is not supported")
+            raise NotImplementedError("Loading multiple OPeNDAP datasets is not supported")
         if opendap:
             self.load_dataset(file_or_dir.open_dataset(chunks=chunks))
         elif multiple:
@@ -114,12 +110,8 @@ class Coast:
             directory_to_files (str):
             chunks (Dict): Chunks to use in Dask [default None].
         """
-        info(
-            f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
-        with xr.open_mfdataset(directory_to_files,
-                               chunks=chunks,
-                               parallel=True,
-                               combine="by_coords") as files:
+        info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
+        with xr.open_mfdataset(directory_to_files, chunks=chunks, parallel=True, combine="by_coords") as files:
             self.dataset = files
 
     def load_dataset(self, dataset: xr.Dataset):
@@ -144,8 +136,7 @@ class Coast:
     def set_grid_ref_attribute(self):
         """Set grid reference attribute."""
         self.grid_ref_attr_mapping = None  # TODO Object attributes should be defined in the __init__
-        debug(
-            f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
+        debug(f"grid_ref_attr_mapping for {get_slug(self)} set to {self.grid_ref_attr_mapping}")
 
     def set_dimension_names(self, dim_mapping: Dict):
         """
@@ -155,8 +146,7 @@ class Coast:
         Args:
             dim_mapping (Dict): keys are dimension names to change and values new dimension names.
         """
-        debug(
-            f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}")
+        debug(f"Setting dimension names for {get_slug(self)} with mapping {dim_mapping}")
         if dim_mapping is None:
             return
         for key, value in dim_mapping.items():
@@ -177,8 +167,7 @@ class Coast:
         Args:
             var_mapping (Dict): keys are variable names to change and values are new variable names
         """
-        debug(
-            f"Setting variable names for {get_slug(self)} with mapping {var_mapping}")
+        debug(f"Setting variable names for {get_slug(self)} with mapping {var_mapping}")
         if var_mapping is None:
             return
         for key, value in var_mapping.items():
@@ -199,9 +188,7 @@ class Coast:
         Args:
             grid_ref_attr_mapping (Dict): Dict containing mappings.
         """
-        debug(
-            f"Setting variable attributes for {get_slug(self)} with mapping "
-            f"{grid_ref_attr_mapping}")
+        debug(f"Setting variable attributes for {get_slug(self)} with mapping " f"{grid_ref_attr_mapping}")
         if grid_ref_attr_mapping is None:
             return
         for key, value in grid_ref_attr_mapping.items():
@@ -328,8 +315,7 @@ class Coast:
         # Calculate the distances between every model point and the specified
         # centre. Calls another routine dist_haversine.
 
-        dist = self.calculate_haversine_distance(
-            centre_lon, centre_lat, lon, lat)
+        dist = self.calculate_haversine_distance(centre_lon, centre_lat, lon, lat)
         indices_bool = dist < radius
         indices = np.where(indices_bool.compute())
 
@@ -379,8 +365,7 @@ class Coast:
             float: Haversine distance between points.
         """
 
-        debug(
-            f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
+        debug(f"Calculating haversine distance between {lon1},{lat1} and {lon2},{lat2}")
 
         # Convert to radians for calculations
         lon1 = np.deg2rad(lon1)
@@ -393,19 +378,14 @@ class Coast:
         dlon = (lon2 - lon1) / 2
 
         # Haversine function.
-        distance = np.sin(dlat) ** 2 + np.cos(lat1) * \
-            np.cos(lat2) * np.sin(dlon) ** 2
+        distance = np.sin(dlat) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon) ** 2
         distance = 2 * 6371.007176 * np.arcsin(np.sqrt(distance))
 
         return distance
 
-    def get_subset_as_xarray(self,
-                             var: str,
-                             points_x: slice,
-                             points_y: slice,
-                             line_length: int = None,
-                             time_counter: int = 0
-                             ) -> xr.DataArray:
+    def get_subset_as_xarray(
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+    ) -> xr.DataArray:
         """This method gets a subset of the data across the x/y indices given for the
         chosen variable.
 
@@ -441,17 +421,13 @@ class Coast:
         if time_counter is None:
             smaller = self.dataset[var].isel(x_dim=dx, y_dim=dy)
         else:
-            smaller = self.dataset[var].isel(
-                t_dim=time_counter, x_dim=dx, y_dim=dy)
+            smaller = self.dataset[var].isel(t_dim=time_counter, x_dim=dx, y_dim=dy)
 
         return smaller
 
-    def get_2d_subset_as_xarray(self,
-                                var: str,
-                                points_x: slice,
-                                points_y: slice,
-                                line_length: int = None,
-                                time_counter: int = 0):
+    def get_2d_subset_as_xarray(
+        self, var: str, points_x: slice, points_y: slice, line_length: int = None, time_counter: int = 0
+    ):
         """Get 2d subset as an xarray.
 
         Args:
@@ -476,17 +452,13 @@ class Coast:
         if time_counter is None:
             smaller = self.dataset[var].isel(x=points_x, y=points_y)
         else:
-            smaller = self.dataset[var].isel(
-                time_counter=time_counter, x=points_x, y=points_y)
+            smaller = self.dataset[var].isel(time_counter=time_counter, x=points_x, y=points_y)
 
         return smaller
 
-    def plot_simple_2d(self,
-                       x: xr.Variable,
-                       y: xr.Variable,
-                       data: xr.DataArray,
-                       cmap: matplotlib.cm,
-                       plot_info: Dict) -> plt:
+    def plot_simple_2d(
+        self, x: xr.Variable, y: xr.Variable, data: xr.DataArray, cmap: matplotlib.cm, plot_info: Dict
+    ) -> plt:
         """This is a simple method that will plot data in a 2d. It is a wrapper
         for matplotlib's 'pcolormesh' method.
 
@@ -531,10 +503,8 @@ class Coast:
         try:
             import cartopy.crs as ccrs  # mapping plots
             import cartopy.feature  # add rivers, regional boundaries etc
-            from cartopy.feature import \
-                NaturalEarthFeature  # fine resolution coastline
-            from cartopy.mpl.gridliner import (LATITUDE_FORMATTER,  # deg symb
-                                               LONGITUDE_FORMATTER)
+            from cartopy.feature import NaturalEarthFeature  # fine resolution coastline
+            from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER  # deg symb
         except ImportError:
             import sys
 
@@ -551,9 +521,7 @@ class Coast:
             self.dataset[var]
             .isel(time_counter=time_counter, deptht=0)
             .plot.pcolormesh(
-                np.ma.masked_where(math.isnan(plot_var), plot_var),
-                transform=ccrs.PlateCarree(),
-                cmap=params.cmap
+                np.ma.masked_where(math.isnan(plot_var), plot_var), transform=ccrs.PlateCarree(), cmap=params.cmap
             )
         )
 
@@ -562,17 +530,11 @@ class Coast:
         ax.add_feature(cartopy.feature.OCEAN)
         ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
         ax.add_feature(cartopy.feature.RIVERS)
-        coast = NaturalEarthFeature(
-            category="physical", scale="10m", facecolor="none", name="coastline")
+        coast = NaturalEarthFeature(category="physical", scale="10m", facecolor="none", name="coastline")
         ax.add_feature(coast, edgecolor="gray")
 
         gl = ax.gridlines(
-            crs=ccrs.PlateCarree(),
-            draw_labels=True,
-            linewidth=0.5,
-            color="gray",
-            alpha=0.5,
-            linestyle="-"
+            crs=ccrs.PlateCarree(), draw_labels=True, linewidth=0.5, color="gray", alpha=0.5, linestyle="-"
         )
 
         gl.xlabels_top = False
