@@ -22,7 +22,7 @@ ________________________________________________________________________________
 COAsT is Diagnostic and Assessment toolbox for kilometric scale regional models.
 It's aim is to deliver a flexible, community-ready framework for assessing kilometric scale ocean models. The focus, initially, is be on delivering novel diagnostics for processes that are emergent at the kilometric scale and with NEMO model output. The framework leans heavily on xarray.
 
-Documentation can be found [here](https://british-oceanographic-data-centre.github.io/COAsT/docs/).
+Documentation can be found [here](https://british-oceanographic-data-centre.github.io/COAsT/).
 
 ![PyPI version](https://badge.fury.io/py/COAsT.svg)
 ![Anaconda version](https://anaconda.org/bodc/coast/badges/version.svg)
