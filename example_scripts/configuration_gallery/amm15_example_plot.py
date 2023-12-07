@@ -18,7 +18,7 @@ config = "AMM15"
 dir_nam = "/projectsa/NEMO/gmaya/2013p2/"
 fil_nam = "20130415_25hourm_grid_T.nc"
 dom_nam = "/projectsa/NEMO/gmaya/AMM15_GRID/amm15.mesh_mask.cs3x.nc"
-config = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json"
+config = "https://raw.githubusercontent.com/British-Oceanographic-Data-Centre/COAsT/master/config/example_nemo_grid_t.json"
 
 sci_t = coast.Gridded(dir_nam + fil_nam, dom_nam, config=config)  # , chunks=chunks)
 chunks = {

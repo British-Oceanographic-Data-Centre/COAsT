@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 dir_nam = "/projectsa/COAsT/NEMO_example_data/SEAsia_R12/"
 fil_nam = "SEAsia_R12_5d_20120101_20121231_gridT.nc"
 dom_nam = "domain_cfg_ORCA12_adj.nc"
-config_t = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_t.json"
+config_t = "https://raw.githubusercontent.com/British-Oceanographic-Data-Centre/COAsT/master/config/example_nemo_grid_t.json"
 
 sci_t = coast.Gridded(dir_nam + fil_nam, dir_nam + dom_nam, config=config_t)
 
