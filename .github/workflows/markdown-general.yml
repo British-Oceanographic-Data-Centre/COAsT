@@ -37,6 +37,7 @@ jobs:
           unzip COAsT_example_files.zip && mv COAsT_example_files ./example_scripts/notebook_tutorials/runnable_notebooks/general/example_files          
           mkdir -p ./example_scripts/notebook_tutorials/markdown/general
           ls ./example_scripts/notebook_tutorials
+          pip install --upgrade pip
           pip install .
           sudo apt-get update 
           sudo apt-get install -y libgeos-dev
@@ -44,7 +45,8 @@ jobs:
           pip install zarr
           pip uninstall -y ipykernel
           pip install ipykernel
-          pip install notebook jupyter-contrib-core jupyter-contrib-nbextensions jupyter-highlight-selected-word jupyter-latex-envs
-          pip install jupyter-nbextensions-configurator jupyter-resource-usage jupyter-server jupyter_client jupyter_core
+          pip uninstall -y jupyter
+          pip uninstall -y nbconvert
+          pip install nbconvert jupyter
           mv config ./example_scripts/notebook_tutorials/runnable_notebooks/general/config
           bash notebook_to_md.sh general
