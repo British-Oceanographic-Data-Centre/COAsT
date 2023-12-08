@@ -42,7 +42,5 @@ jobs:
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
           pip install zarr
-          pip uninstall -y notebook
-          pip install notebook jupyter-contrib-core jupyter-contrib-nbextensions jupyter-highlight-selected-word jupyter-latex-envs jupyter-nbextensions-configurator jupyter-resource-usage jupyter-server jupyter_client jupyter_core
           mv config ./example_scripts/notebook_tutorials/runnable_notebooks/general/config
           bash notebook_to_md.sh general
