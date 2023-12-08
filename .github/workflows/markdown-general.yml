@@ -38,7 +38,7 @@ jobs:
           mkdir -p ./example_scripts/notebook_tutorials/markdown/general
           ls ./example_scripts/notebook_tutorials
           pip install .
-          sudo apt-get update
+          sudo apt-get update 
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
           pip install zarr
