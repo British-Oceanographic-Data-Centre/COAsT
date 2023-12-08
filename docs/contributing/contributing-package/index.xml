@@ -1,0 +1,139 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing to the Package</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/</link><description>Recent content in Contributing to the Package on COAsT</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Tue, 05 Oct 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Code styling</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/code_styling/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/code_styling/</guid><description>
+&lt;p>Python as a language comes with more stringent recommendations than most when it comes to code styling. This is advantageous in our case as it gives us an obvious set of guidelines to adopt.&lt;/p>
+&lt;p>When it comes to simple code styling, much of what&amp;rsquo;s recommended here will be copied from &lt;a href="https://www.python.org/dev/peps/pep-0008/">Python Enhancement Proposal (PEP) 8&lt;/a>, an officially proposed and accepted Python style guide.&lt;/p>
+&lt;p>In our code, we use pylint and black applied on CI/CD codes in order to fix some code styling and to check the code styling. Your pull request will only be accepted if the new code have a styling score equal or higher than the actual code.&lt;/p>
+&lt;h2 id="code-styling-conventions">Code Styling Conventions&lt;/h2>
+&lt;p>Let&amp;rsquo;s keep things simple to start with&amp;hellip;&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Indentation should be achieved with spaces rather than tabs and each new level of indentation should be indented by four columns (i.e four spaces).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Any single line, including its indentation characters, should not exceed 79 characters in length.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Top-level (i.e at the module/file level rather than inside a function or class) function and class definitions should be separated by two blank lines.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Method (functions within a class) definitions are separated by a single blank line.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Usually, &amp;ldquo;import&amp;rdquo; statements should be on separate lines, that is to say that you should have one line per distinct module or package import. An exception to this rule is when multiple objects are imported from a single module or package, using a &amp;ldquo;from&amp;rdquo; statement, in which case individual objects can be imported on the same line, separated by commas.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>PEP 8 does not make a recommendation relating to the use of double or single quotes in general use, but for the sake of consistency, this document suggests the use of double quotes wherever practical. This recommendation is intended for the sake of consistency with triple-quoted strings, as per Docstring Conventions (PEP 257).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Operators should be separated by single columns (i.e one space) either side, unless inside parentheses, in which case no whitespace is required.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Comments (beginning with the # character) should be indented as if they were code. In the case of inline comments, separate the comment with two spaces following the code it shares the line with.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>All functions should contain a docstring, which provides basic information on its usage. For this project, the &lt;a href="https://www.python.org/dev/peps/pep-0287/">reStructuredText docstring format&lt;/a> is suggested.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When it comes to naming variables and functions, snake case (lower_case_words_separated_by_underscores) is preferred. There are however a few exceptions to this rule:
+Class names should be styled as camel case (EveryNewWordIsCapitalised).
+Constants (Variables that should not be changed) can be indicated by the use of screaming snake case (UPPER_CASE_WORDS_SEPARATED_BY_UNDERSCORES). Note that this library currently targets Python 3.7, so the use of &lt;a href="https://www.python.org/dev/peps/pep-0591/">typing.Final&lt;/a> official support for constant variables, new as of Python 3.8: is not currently supported.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>In general, it is suggested to avoid the use of single-character variable names, but this is acceptable in certain cases, such as when defining coordinates (such as x, y and z), as these will be commonly recognized and enforcing different rules could cause confusion.
+PEP 8 advises the following regarding names to avoid:
+&amp;ldquo;Never use the characters &amp;rsquo;l&amp;rsquo; (lowercase letter el), &amp;lsquo;O&amp;rsquo; (uppercase letter oh), or &amp;lsquo;I&amp;rsquo; (uppercase letter eye) as single character variable names.&amp;rdquo;
+These specific characters should be avoided because they present an accessibility issue, as under many fonts these characters may be difficult to distinguish or completely indistinguishable from numerals one (1) and zero (0).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>In the interest of readability, where named iterator variables are required, this document suggests the use of double characters (e.g. &amp;ldquo;ii&amp;rdquo; rather than &amp;ldquo;i&amp;rdquo;).&lt;/p>
+&lt;/li>
+&lt;/ul></description></item><item><title>Docs: Code structure</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/code_structure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/code_structure/</guid><description>
+&lt;p>COAsT is an object-orientated package, meaning that data is stored within Python object
+structures. In addition to data storage, these objects contain methods (subroutines)
+which allow for manipulation of this data.&lt;/p>
+&lt;p>The fundamental concepts of Object-Oriented Programming (OOP) are well-established and thoroughly documented. However, we believe it is important to focus certain guidelines that are particularly relevant to this programming language and its specific application:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>In Python, all class attributes are technically public, but semantically, attributes can be designated as non-public by including leading underscores in the name. For instance, &amp;ldquo;my_variable&amp;rdquo; becomes &amp;ldquo;_my_variable&amp;rdquo;. These attributes are generally referred to as &amp;ldquo;protected&amp;rdquo;.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When you define a Python class, it is a best practice to inherit from the base object type. This convention stems from Python 2.X, as classes and types were not originally synonymous. This behaviour is implicit in Python 3.X but the convention has persisted nonetheless. Classes defined this way are referred to as &amp;ldquo;new-style&amp;rdquo; classes.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>When defining a class that inherits from another, it is important to remember that overridden methods (in particular, this behaviour is important when dealing with __init__ methods) do not implicitly call the parent method. What this means is that unless you want to deliberately prevent the behaviour of the parent class (this is a very niche use-case), it is important to include a reference to the parent method. An example of this is: super().__init__()
+This functionality is advantageous as it prevents unnecessary duplication of code, which is a key tenet of object-oriented software.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>An example of such an object in COAsT is the Gridded object, which allows for the
+storage and manipulation of e.g. NEMO output and domain data. It is important to
+understand how to load data using COAsT and the structure of the resulting
+objects.&lt;/p>
+&lt;p>A Gridded object is created and initialised by passing it the paths of the domain and data
+files. Ideally, the grid type should also be specified (T, U, V or F in the case of NEMO).
+For example, to load in data from a file containing data on a NEMO T-grid:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">fn_data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;&amp;lt;path to T-grid data file(s)&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">fn_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;&amp;lt;path to domain file&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">fn_config&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;&amp;lt;path to json config file&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">data&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ideally, Gridded model output data should be in grid-specific files, i.e. containing output
+variables situated on a NEMO T, U, V or F grid, whereas the grid variables are in a single domain file. On loading into COAsT,
+only the grid specific variables appropriate for the paired data are placed into the Gridded object. A Gridded object
+therefore contains grid-specific data and all corresponding grid variables. One of the
+file names can be omitted (to get a data-only or grid only object), however functionality
+in this case will be limited.&lt;/p>
+&lt;p>Once loaded, data is stored inside the object using an xarray.dataset object. Following
+on from the previous code example, this can be viewed by calling:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This reveals all netcdf-type aspects of the data and domain variables that were loaded,
+including dimensions, coordinates, variables and attributes. For example:&lt;/p>
+&lt;pre tabindex="0">&lt;code>&amp;lt;xarray.Dataset&amp;gt;
+Dimensions: (axis_nbounds: 2, t_dim: 7, x_dim: 297, y_dim: 375, z_dim: 51)
+Coordinates:
+time (t_dim) datetime64[ns] 2007-01-01T11:58:56 ... 2007-01-31T11:58:56
+longitude (y_dim, x_dim) float32 ...
+latitude (y_dim, x_dim) float32 ...
+Dimensions without coordinates: axis_nbounds, t_dim, x_dim, y_dim, z_dim
+Data variables:
+deptht_bounds (z_dim, axis_nbounds) float32 ...
+sossheig (t_dim, y_dim, x_dim) float32 ...
+time_counter_bounds (t_dim, axis_nbounds) datetime64[ns] ...
+time_instant (t_dim) datetime64[ns] ...
+temperature (t_dim, z_dim, y_dim, x_dim) float32 ...
+e1 (y_dim, x_dim) float32 ...
+e2 (y_dim, x_dim) float32 ...
+e3_0 (z_dim, y_dim, x_dim) float32 1.0 1.0 1.0 ... 1.0 1.0
+&lt;/code>&lt;/pre>&lt;p>Variables may be obtained in a number of ways. For example, to get temperature data, the
+following are all equivalent:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">temp&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">temperature&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">temp&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">temp&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">data&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#4e9a06">&amp;#39;temperature&amp;#39;&lt;/span>&lt;span style="color:#000;font-weight:bold">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>These commands will all return an xarray.dataarray object. Manipulation of this object
+can be done using xarray commands, for example indexing using [] or `xarray.isel``. Be aware
+that indexing will preserve lazy loading, however and direct access or modifying of the
+data will not. For this reason, if you require a subset of the data, it is best to
+index first.&lt;/p>
+&lt;p>The names of common grid variables are standardised within the COAsT package using JSON configuration files. For example, the following lists COAsT internal variable followed by the typical NEMO variable names:&lt;/p>
+&lt;ol>
+&lt;li>longitude [glamt / glamu / glamv / glamf]&lt;/li>
+&lt;li>latitude [gphit / gphiu / gphiv / gphif]&lt;/li>
+&lt;li>time [time_counter]&lt;/li>
+&lt;li>e1 [e1t / e1u / e1v / e1f] (dx variable)&lt;/li>
+&lt;li>e2 [e1t / e1u / e1v / e1f] (dy variable)&lt;/li>
+&lt;li>e3_0 [e3t_0 / e3u_0 / e3v_0 / e3f_0] (dz variable at time 0)&lt;/li>
+&lt;/ol>
+&lt;p>Longitude, latitude and time are also set as coordinates. You might notice that dimensions
+are also standardised:&lt;/p>
+&lt;ol>
+&lt;li>x_dim The dimension for the x-axis (longitude)&lt;/li>
+&lt;li>y_dim The dimension for the y-axis (latitude)&lt;/li>
+&lt;li>t_dim The dimension for the time axis&lt;/li>
+&lt;li>z_dim The dimension for the depth axis.&lt;/li>
+&lt;/ol>
+&lt;p>Wherever possible, the aim is to ensure that all of the above is consistent across the
+whole COAsT toolbox. Therefore, you will also find the same names and dimensions in, for
+example observation objects. Future objects, where applicable, will also follow these
+conventions. If you (as a contributor) add new objects to the toolbox, following
+the above template is strongly encouraged. This includes using xarray dataset/dataarray
+objects where possible, adopting an object oriented approach and adhering to naming
+conventions.&lt;/p></description></item></channel></rss>

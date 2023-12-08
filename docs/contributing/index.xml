@@ -1,0 +1,174 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – Contributing to COAsT</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/</link><description>Recent content in Contributing to COAsT on COAsT</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Bug Report</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/bug_report/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/bug_report/</guid><description>
+&lt;p>Bug reports are an important part of making COAsT more stable. Having a complete bug report will allow others to reproduce the bug and provide insight into fixing. See this &lt;a href="https://stackoverflow.com/help/minimal-reproducible-example">stackoverflow article&lt;/a> for tips on writing a good bug report.&lt;/p>
+&lt;p>Trying if the bug is ocurring in the lastest version of the package is worthwhile exercise to confirm the bug still exists. It is also worth searching existing bug reports and pull requests to see if the issue has already been reported and/or fixed.&lt;/p>
+&lt;p>Bug reports must:&lt;/p>
+&lt;ol>
+&lt;li>Include a short, self contained Python snippet reproducing the problem. You can format the code nicely by using GitHub Flavored Markdown:&lt;/li>
+&lt;/ol>
+&lt;pre tabindex="0">&lt;code>.```python
+import coast
+fn_data = &amp;#34;&amp;lt;path to T-grid data file(s)&amp;gt;&amp;#34;
+fn_domain = &amp;#34;&amp;lt;path to domain file&amp;gt;&amp;#34;
+fn_config = &amp;#34;&amp;lt;path to json config file&amp;gt;&amp;#34;
+data = coast.Gridded(fn_data, fn_domain, fn_config)
+```.
+&lt;/code>&lt;/pre>&lt;ol start="2">
+&lt;li>Include the full version string of COAsT and its dependencies. Explain why the current behavior is wrong/not desired and what you expect instead. The issue will then show up to the COAsT community and be open to comments/ideas from others.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/issues/new">Click here&lt;/a> to open an issue.&lt;/p></description></item><item><title>Docs: Contributing: Documentation</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-docs/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-docs/</guid><description>
+&lt;p>If you&amp;rsquo;re not a developer, your contributions to the documentation are still of huge value, even if you&amp;rsquo;re not an expert in COAsT. In fact, some sections of our docs may benefit from your fresh perspective. If you come across something that doesn&amp;rsquo;t make sense to you, updating that section once you figure it out can greatly assist the next person.&lt;/p>
+&lt;p>All submissions, including those from project members, require review. We use GitHub pull requests for this purpose. For more information on using pull requests, consult &lt;a href="https://help.github.com/articles/about-pull-requests/">GitHub Help&lt;/a>.&lt;/p>
+&lt;h2 id="about-coast-documentation">About COAsT Documentation&lt;/h2>
+&lt;p>We rely on the following technologies to create our Documentation:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://gohugo.io/">Hugo&lt;/a> Extended Version for formatting and generating our Documentation website.&lt;/li>
+&lt;li>The &lt;a href="https://github.com/google/docsy">Docsy&lt;/a> theme for styling and site structure.&lt;/li>
+&lt;li>&lt;a href="https://help.github.com/en/github/working-with-github-pages">GitHub Pages&lt;/a> for site deployment.&lt;/li>
+&lt;/ul>
+&lt;p>Hugo, an open-source static site generator, provides templates, a standardized content organization, and website generation. You write pages in Markdown (or HTML if you prefer), and Hugo transforms them into a website.&lt;/p>
+&lt;p>Here are some key points about our documentation:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>COAsT documentation consists of three parts: tutorial notebooks within the code itself, docstrings within the code, and the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site">documentation repository&lt;/a>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>The tutorial notebooks provide guidance on using the code for analysis, docstrings explain individual function usage, and the documentation offers topic-based overviews along with other information (overviews, installation, usage, etc).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>All functions should contain a docstring, which provides basic information on its usage. For this project, the &lt;a href="https://www.python.org/dev/peps/pep-0287/">reStructuredText docstring format&lt;/a> is suggested.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="updating-a-single-page">Updating a Single Page&lt;/h2>
+&lt;p>If you come across something you&amp;rsquo;d like to change while using the docs, Docsy provides a convenient way to do so:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Click &lt;strong>Edit this page&lt;/strong> in the top right-hand corner of the page.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>If you don&amp;rsquo;t already have an up-to-date fork of the project repo, you&amp;rsquo;ll be prompted to get one. Click &lt;strong>Fork this repository and propose changes&lt;/strong> or &lt;strong>Update your Fork&lt;/strong> to obtain an up-to-date version of the project to edit. The relevant page in your fork will be displayed in edit mode.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Make your edits.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Submit a pull request with a summary of the changes.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="previewing-your-changes-locally">Previewing Your Changes Locally&lt;/h2>
+&lt;p>To preview your changes locally, run your own Hugo server. Ensure you have the following prerequisites:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Node.js and npm Installation&lt;/strong>: Download and install Node.js, including npm, from the official &lt;a href="https://nodejs.org/">Node.js website&lt;/a>. We recommend using version 18 or later.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Hugo Installation&lt;/strong>: You&amp;rsquo;ll need an extended version of Hugo, preferably version 0.120.1 or later, for local builds and previews of sites using Docsy. To ensure you have the correct Hugo version, follow these steps:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>If you install Hugo from the release page, select the &lt;strong>extended Hugo version&lt;/strong> to support SCSS.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>After installation, verify your Hugo version with &lt;code>hugo version&lt;/code>. It should resemble the following:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>hugo v0.120.2-9c2b2414d231ec1bdaf3e3a030bf148a45c7aa17+extended linux/amd64 &lt;span style="color:#000">BuildDate&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>2023-10-31T16:27:18Z &lt;span style="color:#000">VendorInfo&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>gohugoio
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Ensure the version name includes &amp;ldquo;extended.&amp;rdquo;&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>For more details, see &lt;a href="https://gohugo.io/getting-started/installing/">this installation guide&lt;/a>.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>Next, fork the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git">COAsT-site repo&lt;/a> into your project and create a local copy using &lt;code>git clone&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>git clone --recurse-submodules --depth &lt;span style="color:#0000cf;font-weight:bold">1&lt;/span> git@github.com:British-Oceanographic-Data-Centre/COAsT-site.git
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87">cd&lt;/span> COAsT-site
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now, install the necessary dependencies and scripts:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm install &lt;span style="color:#8f5902;font-style:italic"># Install package dependencies &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm run prepare &lt;span style="color:#8f5902;font-style:italic"># Fetch the submodule used as the theme and install its dependencies&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After cloning the site repository, navigate to the root folder and execute the following command to serve the website locally:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>hugo server
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The &lt;code>hugo server&lt;/code> command builds and serves the site at http://localhost:1313/COAsT by default. While serving your site locally, Hugo will monitor content changes and refresh your site automatically.&lt;/p>
+&lt;p>Follow the standard GitHub workflow to edit files, commit changes, push them to your fork, and create a pull request.&lt;/p>
+&lt;h2 id="creating-an-issue">Creating an Issue&lt;/h2>
+&lt;p>If you&amp;rsquo;ve identified a problem in the documentation but aren&amp;rsquo;t sure how to fix it yourself, please create an issue in the &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT-site.git">COAsT-site repo&lt;/a>. You can also create an issue about a specific page by clicking the &lt;strong>Create Issue&lt;/strong> button in the top right-hand corner of the page.&lt;/p>
+&lt;h2 id="useful-resources">Useful Resources&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://www.docsy.dev/about/">Docsy User Guide&lt;/a>: All about Docsy, including navigation, design, and multi-language support.&lt;/li>
+&lt;li>&lt;a href="https://gohugo.io/documentation/">Hugo Documentation&lt;/a>: A comprehensive reference for Hugo.&lt;/li>
+&lt;li>&lt;a href="https://guides.github.com/activities/hello-world/">GitHub Hello World!&lt;/a>: A basic introduction to GitHub concepts and workflow.&lt;/li>
+&lt;/ul></description></item><item><title>Docs: Contributing to the Package</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/contributing/contributing-package/</guid><description>
+&lt;p>Anyone interested in helping to develop COAsT need to have in mind that for COAsT development we use a Github workflow to manage version control and collaboration. Git allows use to keep track of changes made to the COAsT code base, avoid breaking existing code and work as a group on a single package.&lt;/p>
+&lt;p>Before understand more about the workflow of how to contribute to the package, you need to have in mind some key ideas.&lt;/p>
+&lt;h2 id="key-ideas">Key Ideas&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>The COAsT repository has two core branches: &lt;code>master&lt;/code> and &lt;code>develop&lt;/code>. The &lt;code>master&lt;/code> branch contains the tested code that you install when using Anaconda. This is updated less frequently, and is the &amp;ldquo;user-facing&amp;rdquo; branch of code. Most contributors do not need to edit this branch. The &lt;code>develop&lt;/code> branch is the &amp;lsquo;pre-master&amp;rsquo; branch, where &lt;strong>working&lt;/strong> code is kept. This is the leading branch, with the most up-to-date code, although it is not necessarily user-facing. When writing code into your own branch (see below), it is &amp;lsquo;branched&amp;rsquo; from &lt;code>develop&lt;/code> and then eventually merged back into &lt;code>develop&lt;/code>. &lt;strong>You should never make changes directly to either &lt;code>master&lt;/code> or &lt;code>develop&lt;/code>&lt;/strong>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>There is a &amp;rsquo;local&amp;rsquo; and &amp;lsquo;remote&amp;rsquo; copy of the COAsT repository. The local repository exists only on your machine. The remote repository is the one you see on the Github website and exists separately. The two versions of the repository can be synchronised at a single point using commands such as &lt;code>git pull&lt;/code> &lt;code>git push&lt;/code> and &lt;code>git fetch&lt;/code> (see below). After cloning (downloading) the repository, all modifications you make/add/commit will &lt;strong>only be local until you push them to the remote repository&lt;/strong>.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="typical-workflow-for-contribution">Typical Workflow for contribution&lt;/h2>
+&lt;p>A typical workflow for editting COAsT in git might look like:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Clone Repository:&lt;/strong> &lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>. This will create a new copy of COAsT on your local system which you can use to interact with git and view/edit the source code. This only needs to be done once. The branch that will be clonned will be the &lt;code>develop&lt;/code>;&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create/checkout your new branch:&lt;/strong> &lt;code>git checkout -b new_branch_name&lt;/code>. This will create and checkout your new branch &amp;ndash; right now it is an identical copy of &lt;code>develop&lt;/code>. However, any changes you commit to your local repository will be saved into your branch. Once you have created your branch, you can open it as before, using &lt;code>git checkout new_branch_name&lt;/code>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Make changes/additions to code:&lt;/strong> Make any changes you like to COAsT. At this point it is separate from the main branches and it is safe to do so. If in doubt, enter &lt;code>git branch&lt;/code> again to ensure you are within your own branch.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Add changes to branch:&lt;/strong> &lt;code>git add modified_file&lt;/code>. Using this command will tell git that you have changed/added this file and you want to save it to the branch you are currently in. Upon entering this command, the file changes/additions &lt;em>are not saved&lt;/em> to the branch and won&amp;rsquo;t be until the next step. You can remove an added file by entering &lt;code>git reset modified_file&lt;/code> and can check which files have changed by typing &lt;code>git status&lt;/code>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Commit changes to branch:&lt;/strong> &lt;code>git commit -m &amp;quot;type a message in quotations&amp;quot;&lt;/code>. Entering this command will &amp;ldquo;save&amp;rdquo; the changes you added using &lt;code>git add &lt;/code> in the step above to the branch you are currently in. Once entered, git will identify what has changed since the previous commit. If this is the first commit in your new branch then since the version of &lt;code>develop&lt;/code> that you branch from. This will not change any other branch except the one you are in and you can/should do this often with an appropriate message. At this point, all changes are still only on your local machine and will not change the remote repository. It is also possible to undo a commit using &lt;code>git revert&lt;/code>, so nothing is unfixable.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Continue modifying code:&lt;/strong> At this point, you may want to continue modifying the code, repeatedly adding changes and commiting them to your local repository, as above.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Push your local repository to the remote:&lt;/strong> &lt;code>git push origin&lt;/code>. This will upload the changes you have made in the branch you are in (and only this branch) to the remote (website) repository. If this is the first time you have pushed this branch then an error may appear telling you to repush with the &lt;code>--set-upstream&lt;/code> flag enable. Simply copy and paste this command back into the terminal. This will &amp;ldquo;create&amp;rdquo; your branch in the remote repository. Once pushed, github will do some auto-checks to make sure the code works (which it may not, but that is fine). You can continue to modify the code at any point, and push multiple times. This is encouraged if sharing with other collaboraters.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>&lt;strong>Once you are satisfied with your changes, move onto the next steps.&lt;/strong>&lt;/p>
+&lt;ol start="9">
+&lt;li>
+&lt;p>&lt;strong>Make sure your local branch is up to date with the remote:&lt;/strong> &lt;code>git pull origin&lt;/code> when in your branch. This is to ensure that nobody else has changed your branch, or if they have to update your local branch with the changes on the remote.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Update your branch with develop:&lt;/strong>. Before requesting that your branch and its changes be merged back into the &lt;code>develop&lt;/code> branch, it is good practice to first merge develop back into your branch. This is because &lt;code>develop&lt;/code> may have changed since you started working on your branch and these changes should be merged into your branch to ensure that conflicts are resolved. To do this, first update develop by entering &lt;code>git checkout develop&lt;/code> and &lt;code>git pull&lt;/code>. This will update the &lt;code>develop&lt;/code> branch on your local machine. Then merge &lt;code>develop&lt;/code> back into your branch by entering &lt;code>git checkout your_branch&lt;/code> and &lt;code>git merge develop&lt;/code>. This may say up-to-date (in which case GREAT), or successful (in which case GREAT) or may say there are some conflicts. This happens when more than one person has changed the same piece of code.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Resolve Conflicts:&lt;/strong> This step may not be necessary if there are no conflicts. If git tells you there are conflicts, it will also tell you which files they occur in. For more information/help with conflict resolution see &lt;a href="https://www.atlassian.com/git/tutorials/using-branches/merge-conflicts">here&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create a pull request for your branch&lt;/strong>. First your most up to date branch using &lt;code>git push origin&lt;/code>, even after merging develop in step 9/10. On the website you may then create a &amp;lsquo;pull request&amp;rsquo; which is a formal way of saying you want to merge your branch back into &lt;code>develop&lt;/code>. A pull request allows you to ask people to &amp;lsquo;review&amp;rsquo; your branch, share your code, view the changes in your branch and other things. To make a pull request, go to the website, click on the pull requests tab and click &lt;code>Create new pull request&lt;/code>. Then select your branch in the right drop down menu and &lt;code>develop&lt;/code> in the left. You may then enter a description of the changes you have made and anything else you would like reviewers to see.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Check Github actions results&lt;/strong>. Some github actions runs everytime you open a pull request. Please make sure that all of then passed. Otherwise, you will not be able to continue with the pull request. In this step, please pay attention on the code formating and styling, following PEP8 guide.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Reviewers review the code:&lt;/strong> Requested reviewers take a look at your changes and run the unit_test. Once they are satisfied, they will approve the pull request, or add comments about any problems.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Merge branch into develop:&lt;/strong> Once reviewers are satisfied, you may click &lt;code>Merge branch&lt;/code> at the bottom of the pull request. Now your changes will be added into develop! Again, this is fine as the branch has been inspected by reviewers and any change can be reverted using &lt;code>git revert&lt;/code> (although this is not encouraged for the &lt;code>develop&lt;/code> branch).&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>**Note: After creating a pull request, Github will automatically apply &amp;ldquo;black formatting&amp;rdquo; to the code and update &amp;ldquo;pylint score&amp;rdquo;. This will commit new (small) changes to the branch so you should always do a &lt;code>git pull&lt;/code> on your branch to make sure your local version is up to date with the remote.&lt;/p>
+&lt;h2 id="condensed-workflow">Condensed Workflow&lt;/h2>
+&lt;ol>
+&lt;li>&lt;code>git clone git@github.com:British-Oceanographic-Data-Centre/COAsT.git&lt;/code>.&lt;/li>
+&lt;li>&lt;code>git checkout -b new_branch_name&lt;/code>&lt;/li>
+&lt;li>Make changes&lt;/li>
+&lt;li>&lt;code>git add changed_file&lt;/code>&lt;/li>
+&lt;li>&lt;code>git commit -m &amp;quot;what changes have you made&amp;quot;&lt;/code>&lt;/li>
+&lt;li>&lt;code>git push origin&lt;/code>&lt;/li>
+&lt;li>If your branch changed by anyone else, &lt;code>git pull&lt;/code>&lt;/li>
+&lt;li>Repeat steps 4-8&lt;/li>
+&lt;li>&lt;code>git checkout develop&lt;/code> &lt;code>git pull&lt;/code> &lt;code>git checkout your_branch&lt;/code> &lt;code>git merge develop&lt;/code> &lt;code>git push origin&lt;/code>&lt;/li>
+&lt;li>Create pull request from &lt;code>your_branch&lt;/code> to &lt;code>develop&lt;/code>, include description and request reviewers.&lt;/li>
+&lt;li>Reviewers accept, Merge branch.&lt;/li>
+&lt;/ol></description></item></channel></rss>

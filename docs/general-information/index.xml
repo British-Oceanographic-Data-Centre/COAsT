@@ -1,0 +1,626 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>COAsT – General Information</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/</link><description>Recent content in General Information on COAsT</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 05 Jan 2017 00:00:00 +0000</lastBuildDate><atom:link href="https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/index.xml" rel="self" type="application/rss+xml"/><item><title>Docs: Logging</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/python_logging/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/python_logging/</guid><description>
+&lt;p>COAsT utilises Python’s default logging library and includes a simple setup function for those unfamiliar with how to use it.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">logging_util&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">setup_logging&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is all you need to enable full logging output to the console.&lt;/p>
+&lt;p>By default, setup_logging will use the &amp;ldquo;CRITICAL&amp;rdquo; logging level, if you want to adjust this, you can use the flags from the logging library.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">logging&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">logging_util&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">setup_logging&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">INFO&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Alternative logging levels in increasing levels of severity. Note logs are reported at the chosen severity level and higher:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">DEBUG&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># Detailed information, typically of interest only when diagnosing problems.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">INFO&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># Confirmation that things are working as expected.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">WARNING&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">ERROR&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># Due to a more serious problem, the software has not been able to perform some function&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">level&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">logging&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">CRITICAL&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># A serious error, indicating that the program itself may be unable to continue running&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>For more info on logging levels, see the &lt;a href="https://docs.python.org/3/library/logging.html">relevant Python documentation&lt;/a>.&lt;/p>
+&lt;p>Logging output will be printed in the console once enabled by default, but output can be directed to any Stream, for instance, to an opened file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">coast&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">file&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#204a87">open&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;coast.log&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#4e9a06">&amp;#34;w&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">logging_util&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">setup_logging&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">stream&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">file&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">logging_util&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">info&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;Hello World!&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Your use of COAsT would go here, this line is included as an example&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">file&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">close&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Docs: Working Lazily</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/lazy-loading/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/lazy-loading/</guid><description>
+&lt;h2 id="what-is-lazy">What is lazy&amp;hellip;&lt;/h2>
+&lt;h3 id="loading">&amp;hellip;loading&lt;/h3>
+&lt;p>Lazy loading determines if data is read into memory straight away (on that line of code execution) or if the loading is delayed until the data is physical altered by some function (normally mathematical in nature)&lt;/p>
+&lt;h3 id="evaluation">&amp;hellip;evaluation&lt;/h3>
+&lt;p>Lazy evaluation is about delaying the execution of a method/function call until the value is physical required, normally as a graph or printed to screen. Lazy evaluation can also help with memory management, useful with large dataset, by allowing for optimisation on the chained methods calls.&lt;/p>
+&lt;p>Lazy loading and Lazy evaluation are offer used together, though it is not mandatory and always worth checking that both are happening.&lt;/p>
+&lt;h2 id="being-lazy-in-coast">Being Lazy in COAsT&lt;/h2>
+&lt;p>There are two way to be Lazy within the COAsT package.&lt;/p>
+&lt;ul>
+&lt;li>xarray&lt;/li>
+&lt;li>Dask&lt;/li>
+&lt;/ul>
+&lt;h2 id="xarray">xarray&lt;/h2>
+&lt;p>COAsT uses xarray to load NetCDF files in, by default this will be Lazy, the raw data values will not be brought into memory.&lt;/p>
+&lt;p>you can slice and subset the data while still having the lazy loading honoured, it is not &lt;em>until&lt;/em> the data is altered, say via a call to NumPy.cumsum, that the required data will be loaded into memory.&lt;/p>
+&lt;p>Note the data on disk (in the NetCDF file) is never altered, only the values in memory are changed.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">NumPy&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">np&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">dataset_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># still lazy loaded&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0_cs&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">cumsum&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:],&lt;/span> &lt;span style="color:#000">axis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># now in memory&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="dask">Dask&lt;/h2>
+&lt;p>When in use Dask will provide lazy evaluation on top of the lazy loading.&lt;/p>
+&lt;p>using the same example as above, a file loaded in using xarray, this time with the chunks option set, will not only lazy load the data, but will turn on Dask, now using either the xarray or Dask wrapper functions will mean the NumPy cumsum call is not evaluated right way, in fact it will not be evaluated until either the compute function is called, or a greedy method from another library is used.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">xarray&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">xr&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">dataset_domain&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">xr&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">open_dataset&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000;font-weight:bold">{&lt;/span>&lt;span style="color:#4e9a06">&amp;#34;t&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">})&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># still lazy loaded&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0_cs&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">cumsum&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">axis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Dask backed Lazy evaluation&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We discuss Dask even more &lt;a href="../dask/">here&lt;/a>.&lt;/p></description></item><item><title>Docs: Dask</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/dask/</link><pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/dask/</guid><description>
+&lt;h2 id="what-is-dask">What is Dask&lt;/h2>
+&lt;p>Dask is a python library that allows code to be run in parallel based on the hardware your running on. This means Dask works just as well on your laptop as on your large server.&lt;/p>
+&lt;h3 id="using-dask">Using Dask&lt;/h3>
+&lt;p>Dask is included in the xarray library. When loading a data source (file/NumPy array) Dask is automatically initiated with the &lt;em>chunks&lt;/em> variable in the config file. However the chunking may not be optimal but you can adjust it before computation are made.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">nemo_t&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span> &lt;span style="color:#000">fn_data&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span>&lt;span style="color:#000">fn_nemo_grid_t_dat&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">fn_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">dn_files&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span>&lt;span style="color:#000">fn_nemo_dom&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">config&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#000">fn_config&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">chunks&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000;font-weight:bold">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;x_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;y_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;t_dim&amp;#34;&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">10&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000;font-weight:bold">}&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># Chunks are prescribed in the config json file, but can be adjusted while the data is lazy loaded.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">nemo_t&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">dataset&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">chunk&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">chunks&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>chunks&lt;/strong> tell Dask where to &lt;em>break&lt;/em> your data across the different processor tasks.&lt;/p>
+&lt;h4 id="direct-dask">Direct Dask&lt;/h4>
+&lt;p>Dask can be imported and used directly&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">Dask.array&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">da&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">big_array&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">multiple&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">array1&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span>&lt;span style="color:#000">array2&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Dask arrays follow the NumPy API. This means that most NumPy functions have a Dask version.&lt;/p>
+&lt;h3 id="potential-issues">Potential Issues&lt;/h3>
+&lt;p>Dask objects are immutable. This means that the classic approach, pre-allocation follow by modification will not work.&lt;/p>
+&lt;p>The following code will error.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">import&lt;/span> &lt;span style="color:#000">Dask.array&lt;/span> &lt;span style="color:#204a87;font-weight:bold">as&lt;/span> &lt;span style="color:#000">da&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">squeeze&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">zero_like&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">0.5&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">*&lt;/span> &lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#8f5902;font-style:italic"># this line will error out&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>&lt;strong>Option 1&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;p>Continue using NumPy function but wrapping the final value in a Dask array. This final Dask object will still be in-memory.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">e3w_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">squeeze&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">zeros_like&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#0000cf;font-weight:bold">0.5&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">*&lt;/span> &lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:]&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">+&lt;/span> &lt;span style="color:#000">np&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">cumsum&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">e3w_0&lt;/span>&lt;span style="color:#000;font-weight:bold">[&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">1&lt;/span>&lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:,&lt;/span> &lt;span style="color:#000;font-weight:bold">:],&lt;/span> &lt;span style="color:#000">axis&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span>&lt;span style="color:#0000cf;font-weight:bold">0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">depth_0&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">da&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">array&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#000">depth_0&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ul>
+&lt;li>&lt;strong>Option 2&lt;/strong>&lt;/li>
+&lt;/ul>
+&lt;p>Dask offers a feature called &lt;a href="https://docs.dask.org/en/latest/delayed.html">delayed&lt;/a>. This can be used as a modifier on your
+complex methods as follows;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#5c35cc;font-weight:bold">@Dask.delayed&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">def&lt;/span> &lt;span style="color:#000">set_timezero_depths&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#3465a4">self&lt;/span>&lt;span style="color:#000;font-weight:bold">,&lt;/span> &lt;span style="color:#000">dataset_domain&lt;/span>&lt;span style="color:#000;font-weight:bold">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#8f5902;font-style:italic"># complex workings&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>these do not return the computed answer, rather it returns a delayed object. These delayed object get stacked, as more delayed methods are called. When the value is needed, it can be computed like so;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">ne&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># come complex delayed methods called&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">ne&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_variable&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">compute&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Dask will now work out a computing path via all the required methods using as many processor tasks as possible.&lt;/p>
+&lt;h4 id="visualising-the-graph">Visualising the Graph&lt;/h4>
+&lt;p>Dask is fundamentally a computational graph library, to understand what is happening in the background it can help to see these graphs (on smaller/simpler problems). This can be achieved by running;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">ne&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> &lt;span style="color:#000">coast&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">Gridded&lt;/span>&lt;span style="color:#000;font-weight:bold">(&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">...&lt;/span>&lt;span style="color:#000;font-weight:bold">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># come complex delayed methods called&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">ne&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">data_variable&lt;/span>&lt;span style="color:#ce5c00;font-weight:bold">.&lt;/span>&lt;span style="color:#000">visualize&lt;/span>&lt;span style="color:#000;font-weight:bold">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>this will output a png image of the graph in the calling directory and could look like this;&lt;/p>
+&lt;figure class="card rounded p-2 td-post-card mb-4 mt-4" style="max-width: 6344px">
+&lt;img class="card-img-top" src="https://british-oceanographic-data-centre.github.io/COAsT/COAsT/docs/general-information/dask/mydask_huff6e57bba272ec52469a454020e8d978_582299_6334x945_fit_q75_catmullrom.jpg" width="6334" height="945">
+&lt;figcaption class="card-body px-0 pt-2 pb-0">
+&lt;p class="card-text">
+&lt;/p>
+&lt;/figcaption>
+&lt;/figure></description></item><item><title>Docs: Build test</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/build_test/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/build_test/</guid><description>
+&lt;p>In order to run Build Tests locally, you need to follow the procedures of &lt;a href="https://british-oceanographic-data-centre.github.io/COAsT/docs/getting-started/">Getting Started&lt;/a> related to &lt;code>Development use installation&lt;/code> and &lt;code>Example data files&lt;/code>.&lt;/p>
+&lt;p>After that you can run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>pip install . &lt;span style="color:#ce5c00;font-weight:bold">&amp;amp;&amp;amp;&lt;/span> pytest unit_testing/unit_test.py -s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It will ask you for the path of your example files.&lt;/p></description></item><item><title>Docs: Github Actions Flowchart</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/github_actions_flowchart/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/github_actions_flowchart/</guid><description>
+&lt;h1 id="github-actions-diagram">GitHub actions diagram&lt;/h1>
+&lt;p>This is a collection of flowcharts for all the GitHub actions used across the COAsT and COAsT-site repos&lt;/p>
+&lt;h2 id="coast">COAsT&lt;/h2>
+&lt;h3 id="building-packages">building Packages&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR;
+subgraph publish_package - runs on push to master
+A1[Setup python]-- 3.8 -->B1;
+B1[Install dependencies]-->C1;
+C1[Setup Enviroment]-->D1;
+D1[Build package]-->E1;
+E1[Test Package Install]-->F1
+F1[Publish to pypi]-->G1
+G1[Generate Conda Metadata]-->H1
+H1[Publish to Anaconda]
+end;
+subgraph build_package - runs on push to non-master
+A[Setup python]-- 3.8 and 3.9 -->B;
+B[Install dependencies]-->C;
+C[Setup Enviroment]-->D;
+D[Build package]-->E;
+E[Test Package Install]-->F
+F[Generate Conda Metadata]
+end;
+&lt;/div>
+&lt;h3 id="verification-formatting-ans-pylint">Verification, Formatting ans Pylint&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph formatting - runs on pull requests
+A[Setup python]-- 3.9 -->B;
+B[Install black]-->C;
+C[Check formatting]--> D;
+D[Apply formatting]
+end;
+subgraph pylint - runs on pull requests
+A1[Setup python]-- 3.9 -->B1;
+B1[Install pylint]-->C1;
+C1[Check Score]-- if test pass --> D1;
+D1[Update Score]
+end;
+subgraph verifiy_package - runs for every push
+A2[Setup python]-- 3.8 and 3.9 -->B2;
+B2[Install dependencies]-->C2;
+C2[Lint]-->D2;
+D2[Test]
+end;
+click B1 "https://www.github.com" "tooltip"
+&lt;/div>
+&lt;h3 id="interactions-with-other-repos">interactions with other repos&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b1[push_notebooks - runs on push to develop]
+direction LR
+subgraph b2[COAsT site - markdown ]
+direction TB
+a[checkout docsy site] -->b
+b[checkout coast] -->c
+c[create environment] -->d
+d[execute notebooks] -->e
+e[covert notebooks to MD] -->f
+f[move images to static dir] -->g
+g[commit changes]
+end
+t[Repository Dispatch] -- event pushed --> b2
+end
+click a "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+flowchart LR
+subgraph b3[push_docstrings - runs on push to master]
+direction LR
+subgraph b4[COAsT site - docstrings ]
+direction TB
+a1[checkout docsy site] -->b1
+b1[checkout coast] -->c1
+c1[add python] -->d1
+d1[covert docstrings] -->e1
+e1[commit changes]
+end
+r[Repository Dispatch] -- event pushed --> b4
+end
+click a1 "https://github.com/British-Oceanographic-Data-Centre/COAsT-site" "Docsy site for COAsT repo"
+&lt;/div>
+&lt;h3 id="generate-unit-test-contents-file">Generate unit test contents file&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph generate-test-contents - runs on pull_request
+A[checkout COAsT]-->B;
+B[install package]-->C;
+C[make example files dir]--> D;
+D[run generate_unit_test_contents.py]-->E
+E[commit changes]
+end;
+&lt;/div>
+&lt;h2 id="coast-site">COAsT-site&lt;/h2>
+&lt;p>These are the actions used on the COAsT-site repo.&lt;/p>
+&lt;h3 id="convert-to-markdown">Convert to markdown&lt;/h3>
+&lt;p>See &lt;a href="#interactions-with-other-repos">Interactions with other repos&lt;/a> for the related markdown and docstring workflows&lt;/p>
+&lt;h3 id="build-site">Build site&lt;/h3>
+&lt;script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js">&lt;/script>
+&lt;script>
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let mermaidTheme = (isDark) ? 'dark' : 'default';
+let mermaidConfig = {
+theme: mermaidTheme,
+logLevel: 'fatal',
+securityLevel: 'strict',
+startOnLoad: true,
+arrowMarkerAbsolute: false,
+er: {
+diagramPadding: 20,
+layoutDirection: 'TB',
+minEntityWidth: 100,
+minEntityHeight: 75,
+entityPadding: 15,
+stroke: 'gray',
+fill: 'honeydew',
+fontSize: 12,
+useMaxWidth: true,
+},
+flowchart: {
+diagramPadding: 8,
+htmlLabels: true,
+curve: 'basis',
+},
+sequence: {
+diagramMarginX: 50,
+diagramMarginY: 10,
+actorMargin: 50,
+width: 150,
+height: 65,
+boxMargin: 10,
+boxTextMargin: 5,
+noteMargin: 10,
+messageMargin: 35,
+messageAlign: 'center',
+mirrorActors: true,
+bottomMarginAdj: 1,
+useMaxWidth: true,
+rightAngles: false,
+showSequenceNumbers: false,
+},
+gantt: {
+titleTopMargin: 25,
+barHeight: 20,
+barGap: 4,
+topPadding: 50,
+leftPadding: 75,
+gridLineStartPadding: 35,
+fontSize: 11,
+fontFamily: '"Open-Sans", "sans-serif"',
+numberSectionStyles: 4,
+axisFormat: '%Y-%m-%d',
+topAxis: false,
+},
+};
+mermaid.initialize(mermaidConfig);
+&lt;/script>
+&lt;div class="mermaid">
+graph LR
+subgraph hugo - runs on push to master
+A[checkout site]-->B;
+B[Setup Hugo] -- v0.70.0 -->C;
+C[Setup Nodejs]-- v12 --> D;
+D[Build]-->E
+E[Deploy]
+end;
+&lt;/div></description></item><item><title>Docs: Push to master</title><link>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/push_to_master/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://british-oceanographic-data-centre.github.io/COAsT/docs/general-information/push_to_master/</guid><description>
+&lt;p>To date the workflow has been to unit test anything and everything that goes
+into the develop branch and then periodically push to master less frequently
+and issue a new github release.&lt;/p>
+&lt;p>With the push to master Git Actions build the conda and pip packages and the
+package receives a zenodo update (&lt;a href="https://zenodo.org/account/settings/github/repository/British-Oceanographic-Data-Centre/COAsT">https://zenodo.org/account/settings/github/repository/British-Oceanographic-Data-Centre/COAsT&lt;/a>) and DOI.&lt;/p>
+&lt;h3 id="1-push-to-master">1. Push to master&lt;/h3>
+&lt;p>Any push to master initiates the Git Actions to build and release the package. It is advisable then to prepare the release in develop and only ever pull into master from develop. (Pulling from master to develop could bring unexpected Git Actions to develop). In order for the package builds to work the version of the package must be unique. The &lt;strong>version&lt;/strong> of the package is set in
+file &lt;em>setup.py&lt;/em>. E.g. shown as 2.0.1 below:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-shell" data-lang="shell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># setup.py&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#000">PACKAGE&lt;/span> &lt;span style="color:#ce5c00;font-weight:bold">=&lt;/span> SimpleNamespace&lt;span style="color:#ce5c00;font-weight:bold">(&lt;/span>**&lt;span style="color:#ce5c00;font-weight:bold">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#4e9a06">&amp;#34;COAsT&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;version&amp;#34;&lt;/span>: &lt;span style="color:#4e9a06">&amp;#34;2.0.1&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;description&amp;#34;&lt;/span>: &lt;span style="color:#4e9a06">&amp;#34;This is the Coast Ocean Assessment Tool&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;url&amp;#34;&lt;/span>: &lt;span style="color:#4e9a06">&amp;#34;https://www.bodc.ac.uk&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#4e9a06">&amp;#34;download_url&amp;#34;&lt;/span>: &lt;span style="color:#4e9a06">&amp;#34;https://github.com/British-Oceanographic-Data-Centre/COAsT/&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ....
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Package version also appears in CITATION.cff file, which therefore also needs updating. E.g.:&lt;/p>
+&lt;pre tabindex="0">&lt;code>...
+title: British-Oceanographic-Data-Centre/COAsT: v2.0.1
+version: v2.0.1
+date-released: 2022-04-07
+&lt;/code>&lt;/pre>&lt;p>Version numbering follows the &lt;a href="http://semver.org/">semantic versioning convention&lt;/a>.
+Briefly, given a version number MAJOR.MINOR.PATCH, increment the:&lt;/p>
+&lt;ul>
+&lt;li>MAJOR version when you make incompatible API changes,&lt;/li>
+&lt;li>MINOR version when you add functionality in a backwards compatible manner, and&lt;/li>
+&lt;li>PATCH version when you make backwards compatible bug fixes.
+Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.&lt;/li>
+&lt;/ul>
+&lt;h3 id="2-issue-new-release">2. Issue new release&lt;/h3>
+&lt;p>Then issue a &lt;a href="https://github.com/British-Oceanographic-Data-Centre/COAsT/releases">new release&lt;/a>, with the new version label, and annotate the major changes.&lt;/p></description></item></channel></rss>
