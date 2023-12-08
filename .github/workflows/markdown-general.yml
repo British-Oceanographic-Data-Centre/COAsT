@@ -32,6 +32,7 @@ jobs:
           conda list
           conda config --show
           cd $GITHUB_WORKSPACE/external
+          ls ./example_scripts/notebook_tutorials/runnable_notebooks/general
           sudo apt install wget unzip -y
           wget -q https://linkedsystems.uk/erddap/files/COAsT_example_files/COAsT_example_files.zip
           unzip COAsT_example_files.zip && mv COAsT_example_files ./example_scripts/notebook_tutorials/runnable_notebooks/general/example_files          
