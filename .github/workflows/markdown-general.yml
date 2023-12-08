@@ -42,7 +42,7 @@ jobs:
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
           pip install zarr
-          pip uninstall ipykernel
+          pip uninstall -y ipykernel
           pip install ipykernel
           pip install notebook jupyter-contrib-core jupyter-contrib-nbextensions jupyter-highlight-selected-word jupyter-latex-envs
           pip install jupyter-nbextensions-configurator jupyter-resource-usage jupyter-server jupyter_client jupyter_core
