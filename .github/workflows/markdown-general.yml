@@ -42,6 +42,9 @@ jobs:
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
           pip install zarr
-          pip install jupyter notebook jupyter-contrib-core==0.4.0 jupyter-contrib-nbextensions==0.5.1 jupyter-highlight-selected-word==0.2.0 jupyter-latex-envs==1.4.6 jupyter-nbextensions-configurator==0.5.0 jupyter-resource-usage==0.6.3 jupyter-server==1.21.0 jupyter_client==7.4.3 jupyter_core==4.11.2 jupyterlab==3.4.8 jupyterlab-pygments==0.2.2 jupyterlab-widgets==1.1.1 jupyterlab_server==2.16.1
+          pip uninstall ipykernel
+          pip install ipykernel
+          pip install notebook jupyter-contrib-core jupyter-contrib-nbextensions jupyter-highlight-selected-word jupyter-latex-envs
+          pip install jupyter-nbextensions-configurator jupyter-resource-usage jupyter-server jupyter_client jupyter_core
           mv config ./example_scripts/notebook_tutorials/runnable_notebooks/general/config
           bash notebook_to_md.sh general
