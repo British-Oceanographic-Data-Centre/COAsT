@@ -4,7 +4,7 @@ on:
   push:
     branches: develop
     paths:
-      - example_scripts/notebooks/**
+      - example_scripts/notebook_tutorials/**
 jobs:
   push-notebooks:
     runs-on: ubuntu-latest

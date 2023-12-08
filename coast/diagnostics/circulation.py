@@ -65,7 +65,7 @@ class CurrentsOnT(Gridded):
         ds_u.coords["longitude"] = self.dataset.longitude
         ds_u.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
+            self.dataset["ut_velocity"] = ds_u.ut_velocity.drop_vars("depthu")
         except:
             self.dataset["ut_velocity"] = ds_u.ut_velocity
             debug("Did not find depthu variable to drop - to avoid conflicts in z_dim dimension")
@@ -84,7 +84,7 @@ class CurrentsOnT(Gridded):
         ds_v.coords["longitude"] = self.dataset.longitude
         ds_v.coords["depth_0"] = self.dataset.depth_0
         try:
-            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop("depthv")
+            self.dataset["vt_velocity"] = ds_v.vt_velocity.drop_vars("depthv")
         except:
             self.dataset["vt_velocity"] = ds_v.vt_velocity
             debug("Did not find depthv variable to drop - to avoid conflicts in z_dim dimension")
@@ -101,7 +101,7 @@ class CurrentsOnT(Gridded):
         magnitude: shaded
         """
         # %%
-        from matplotlib import cm
+        import matplotlib.pyplot as plt
         from matplotlib.colors import LinearSegmentedColormap
 
         nx = self.dataset.x_dim.size
@@ -124,9 +124,9 @@ class CurrentsOnT(Gridded):
         X = self.dataset.longitude
         Y = self.dataset.latitude
         # create a light colour map
-        N_colours = int(Vmax * 100)
+        n_colours = int(Vmax * 100)
         n_c = 2
-        cmap0 = cm.get_cmap("BrBG_r", lut=N_colours + n_c * 2)
+        cmap0 = plt.get_cmap("BrBG_r", lut=n_colours + n_c * 2)
         colors = cmap0(np.arange(cmap0.N))
         colors1 = colors[n_c : cmap0.N - n_c]
         cmap1 = LinearSegmentedColormap.from_list("cmap1", colors1, cmap0.N - n_c * 2)

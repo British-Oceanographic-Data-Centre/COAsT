@@ -2,11 +2,16 @@ from setuptools import setup
 from sys import argv
 from types import SimpleNamespace
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "3.2.1",
+        "version": "3.2.2",
         "description": "This is the Coast Ocean Assessment Tool",
+        "long_description": long_description,
+        "long_description_content_type": "text/markdown",
         "url": "https://www.bodc.ac.uk",
         "download_url": "https://github.com/British-Oceanographic-Data-Centre/COAsT/",
         "author": "British Oceanographic Data Centre (BODC)",
@@ -20,6 +25,8 @@ PACKAGE = SimpleNamespace(
             "Topic :: Scientific/Engineering :: Hydrology",
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
         ],
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
@@ -35,7 +42,7 @@ PACKAGE = SimpleNamespace(
             "matplotlib>=3.5.3",
             "netCDF4>=1.5.8",
             "scipy>=1.8.0",
-            "gsw==3.4.0",
+            "gsw>=3.6.17",
             "utide>=0.3.0",
             "scikit-learn>=1.0.2",
             "scikit-image>=0.19.2",
@@ -43,10 +50,12 @@ PACKAGE = SimpleNamespace(
             "pydap>=3.2.2",
             "lxml>=4.9.0",  # Required for pydap CAS parsing,
             "requests>=2.27.1",
+            "tqdm>=4.66.1",
+            "pyproj>=3.5.0"
             # "xesmf>=0.3.0",  # Optional. Not part of main package
             # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],
-        "python_requires": ">=3.8,<3.10",  # Pydap not currently compatible with 3.10
+        "python_requires": ">=3.8,<3.11",
         "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],
         "include_package_data": True,
         "github": "British-Oceanographic-Data-Centre",
@@ -97,6 +106,8 @@ if __name__ == "__main__":
             name=PACKAGE.name,
             version=PACKAGE.version,
             description=PACKAGE.description,
+            long_description=PACKAGE.long_description,
+            long_description_content_type=PACKAGE.long_description_content_type,
             url=PACKAGE.url,
             download_url=PACKAGE.download_url,
             author=PACKAGE.author,

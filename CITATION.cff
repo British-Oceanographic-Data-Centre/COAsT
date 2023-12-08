@@ -20,12 +20,18 @@ authors:
  - family-names: "Rulent"
    given-names: "Julia"
    orcid: "https://orcid.org/0000-0002-2357-4838"
+ - family-names: "Barton"
+   given-names: "Benjamin"
+   orcid: "https://orcid.org/0000-0001-9998-2064"
  - family-names: "Gardner"
    given-names: "Thomas"
    orcid: "https://orcid.org/0000-0001-5452-5791"
  - family-names: "Cazaly"
    given-names: "Matthew"
    orcid: "https://orcid.org/0000-0002-0679-4054"
+ - family-names: "Ferreira"
+   given-names: "Tobias"
+   orcid: "https://orcid.org/0000-0002-0888-9751"
  - family-names: "Hearn"
    given-names: "Malcolm"
  - family-names: "Jennings"
@@ -40,6 +46,6 @@ authors:
  - family-names: "de Mora"
    given-names: "Lee"
    orcid: "https://orcid.org/0000-0002-5080-3149"
-title: "British-Oceanographic-Data-Centre/COAsT: v3.2.1"
-version: v3.2.1
-date-released: 2023-04-04
+title: "British-Oceanographic-Data-Centre/COAsT: v3.2.2"
+version: v3.2.2
+date-released: 2023-12-06

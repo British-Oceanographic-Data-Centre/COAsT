@@ -22,7 +22,9 @@ dom_nam = "/projectsa/FASTNEt/jelt/AMM60/mesh_mask.nc"
 dir_nam = "/projectsa/NEMO/jelt/AMM60_ARCHER_DUMP/AMM60smago/EXP_NSea/OUTPUT/"
 fil_nam = "AMM60_1h_20120204_20120208_NorthSea.nc"
 
-config = "/work/jelt/GitHub/COAsT/config/example_nemo_grid_w.json"
+config = (
+    "https://raw.githubusercontent.com/British-Oceanographic-Data-Centre/COAsT/master/config/example_nemo_grid_w.json"
+)
 
 chunks = {
     "x_dim": 10,

@@ -33,6 +33,7 @@ docs/source/generated/
 
 docstring2md.log
 
-example_scripts/notebooks/markdown/*
+example_scripts/notebook_tutorials/markdown/*
 
 markdown/
+.python-version

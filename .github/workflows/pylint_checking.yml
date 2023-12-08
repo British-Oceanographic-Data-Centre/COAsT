@@ -1,0 +1,46 @@
+name: Pylint
+on: pull_request
+jobs:
+  pylinting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.10' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }} for Pylint
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Pylint
+        run: pip install pylint
+      - name: Check Score
+        run: |
+          echo "Start checking scores"
+          pylint `find . -name "*.py"` | grep 'Your code has been rated' | awk '{print $10}' | awk -F/ '{print $1}'
+          NEW_SCORE=$(pylint `find . -name "*.py"` | grep 'Your code has been rated' | awk '{print $10}' | awk -F/ '{print $1}')
+          NEW_SCORE=$(echo "scale=2; $NEW_SCORE" | bc)
+          echo NEW_SCORE=$NEW_SCORE
+          OLD_SCORE=$(cat .pylint-score);
+          OLD_SCORE=$(echo "scale=2; $OLD_SCORE" | bc)
+          THRESHOLD_SCORE=$OLD_SCORE;
+          echo THRESHOLD_SCORE=$THRESHOLD_SCORE
+          if [ "$(echo "$NEW_SCORE > $THRESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
+            git config --global user.name "PylintBot"
+            git config --global author.name "PylintBot"
+            git config --global user.email "bodcsoft@bodc.ac.uk"
+            git config --global author.email "bodcsoft@bodc.ac.uk"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+            git fetch origin
+            git checkout $GITHUB_HEAD_REF
+            git pull
+            echo "NEW_SCORE is greater than THESHOLD_SCORE"
+            echo "Updating THESHOLD_SCORE"
+            echo "$NEW_SCORE" > .pylint-score
+            git commit -am "Update pylint THESHOLD score"
+            git push
+          elif [ "$(echo "$NEW_SCORE == $THESHOLD_SCORE" | bc -l)" -eq 1 ] ; then
+            echo "NEW_SCORE is equal to THESHOLD_SCORE"
+          else
+            echo "NEW_SCORE is below the THESHOLD_SCORE. Check your pylint"
+          fi

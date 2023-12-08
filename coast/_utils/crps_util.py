@@ -35,7 +35,7 @@ def crps_empirical(sample: np.ndarray, obs: float) -> Union[np.ndarray, float]:
 
     xa = float(obs)
     crps_integral = 0
-    sample = np.array(sample)
+    sample = np.array(sample).flatten()
 
     if all(np.isnan(sample)) or np.isnan(obs):
         return np.nan
@@ -101,7 +101,7 @@ def crps_empirical_loop(sample: np.ndarray, obs: float) -> float:
         return alpha * p**2 + beta * (1 - p) ** 2  # TODO Could this be a lambda?
 
     crps_integral = 0
-    sample = np.array(sample)
+    sample = np.array(sample).flatten()
     sample = sample[~np.isnan(sample)]
     sample = np.sort(sample)
     sample_size = len(sample)

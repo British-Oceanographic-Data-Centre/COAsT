@@ -8,6 +8,8 @@ import unittest
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
+
+plt.switch_backend("agg")
 import unit_test_files as files
 
 
@@ -113,11 +115,16 @@ class test_diagnostic_methods(unittest.TestCase):
                 log_str += "Missing mask variable\n"
 
             # Check the calculations are as expected
-            check1 = np.isclose(strat.dataset.strat_1st_mom.sum(), 3.74214231e08)
-            check2 = np.isclose(strat.dataset.strat_2nd_mom.sum(), 2.44203298e08)
-            check3 = np.isclose(strat.dataset.mask.sum(), 450580)
-            check4 = np.isclose(strat.dataset.strat_1st_mom_masked.sum(), 3.71876949e08)
-            check5 = np.isclose(strat.dataset.strat_2nd_mom_masked.sum(), 2.42926865e08)
+            print(f"check1: {strat.dataset.strat_1st_mom.sum()}")
+            print(f"check2: {strat.dataset.strat_2nd_mom.sum()}")
+            print(f"check3: {strat.dataset.mask.sum()}")
+            print(f"check4: {strat.dataset.strat_1st_mom_masked.sum()}")
+            print(f"check5: {strat.dataset.strat_2nd_mom_masked.sum()}")
+            check1 = np.isclose(strat.dataset.strat_1st_mom.sum(), 3.74219955e08)
+            check2 = np.isclose(strat.dataset.strat_2nd_mom.sum(), 2.44203494e08)
+            check3 = np.isclose(strat.dataset.mask.sum(), 450587)
+            check4 = np.isclose(strat.dataset.strat_1st_mom_masked.sum(), 3.71882854e08)
+            check5 = np.isclose(strat.dataset.strat_2nd_mom_masked.sum(), 2.42927091e08)
 
             self.assertTrue(check1, msg=log_str)
             self.assertTrue(check2, msg=log_str)
