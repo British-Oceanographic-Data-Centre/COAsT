@@ -35,6 +35,4 @@ jobs:
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
           pip install zarr
-          pip install xarray[complete]
-          pip install aiohttp requests
           pytest tests
