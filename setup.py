@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 PACKAGE = SimpleNamespace(
     **{
         "name": "COAsT",
-        "version": "3.2.2",
+        "version": "3.3.0",
         "description": "This is the Coast Ocean Assessment Tool",
         "long_description": long_description,
         "long_description_content_type": "text/markdown",
