@@ -64,6 +64,9 @@ data_v = nemo_data_v[["v_velocity"]]
 data_u = data_u.isel(t_dim=0, z_dim=0)
 data_v = data_v.isel(t_dim=0, z_dim=0)
 
+# Calculate speed
+speed = ((data_u.to_array().values[0, :, :] ** 2 + data_v.to_array().values[0, :, :] ** 2) ** 0.5)
+
 # Calculate adjustment for the curvilinear grid
 # This function may take a while
 uv_velocities = [data_u.to_array().values[0, :, :], data_v.to_array().values[0, :, :]]
