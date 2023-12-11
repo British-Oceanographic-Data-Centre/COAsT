@@ -34,4 +34,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
+          pip install zarr
           pytest tests
