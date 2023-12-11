@@ -68,7 +68,7 @@ data_u = data_u.isel(t_dim=0, z_dim=0)
 data_v = data_v.isel(t_dim=0, z_dim=0)
 
 # Calculate speed
-speed = ((data_u.to_array().values[0, :, :] ** 2 + data_v.to_array().values[0, :, :] ** 2) ** 0.5)
+speed = (data_u.to_array().values[0, :, :] ** 2 + data_v.to_array().values[0, :, :] ** 2) ** 0.5
 
 # Calculate adjustment for the curvilinear grid
 # This function may take a while
@@ -141,12 +141,7 @@ ax[0].quiver(
     regrid_shape=40,
 )
 
-ax[1].pcolormesh(nemo_data_t.longitude.values,
-                 nemo_data_t.latitude.values,
-                 speed,
-                 transform=data_crs,
-                 vmin=0,
-                 vmax=0.3)
+ax[1].pcolormesh(nemo_data_t.longitude.values, nemo_data_t.latitude.values, speed, transform=data_crs, vmin=0, vmax=0.3)
 ax[1].quiver(
     nemo_data_t.longitude.values,
     nemo_data_t.latitude.values,
