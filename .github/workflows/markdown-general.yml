@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: British-Oceanographic-Data-Centre/COAsT
-          ref: develop
+          ref: bug/comment-notebook-polat
           path: external
 
       - name: Prepare environment
@@ -41,5 +41,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
+          pip install zarr
           mv config ./example_scripts/notebook_tutorials/runnable_notebooks/general/config
           bash notebook_to_md.sh general
