@@ -141,7 +141,12 @@ ax[0].quiver(
     regrid_shape=40,
 )
 
-ax[1].pcolormesh(nemo_data_t.longitude.values, nemo_data_t.latitude.values, speed, transform=data_crs, vmin=0, vmax=0.3)
+ax[1].pcolormesh(nemo_data_t.longitude.values,
+                 nemo_data_t.latitude.values,
+                 speed,
+                 transform=data_crs,
+                 vmin=0,
+                 vmax=0.3)
 ax[1].quiver(
     nemo_data_t.longitude.values,
     nemo_data_t.latitude.values,
