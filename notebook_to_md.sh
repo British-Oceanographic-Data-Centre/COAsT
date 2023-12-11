@@ -5,7 +5,7 @@ directory=$1
 
 # Convert ipynb files to markdown.
 echo "starting notebook execute for ${directory}"
-jupyter nbconvert --to notebook --execute example_scripts/notebook_tutorials/runnable_notebooks/${directory}/*.ipynb --log-level=DEBUG --allow-errors --output-dir example_scripts/notebook_tutorials/runnable_notebooks/executed/${directory}/
+jupyter nbconvert --to notebook --execute example_scripts/notebook_tutorials/runnable_notebooks/${directory}/*.ipynb --allow-errors --output-dir example_scripts/notebook_tutorials/runnable_notebooks/executed/${directory}/
 echo "starting notebook convert"
 jupyter nbconvert --to markdown example_scripts/notebook_tutorials/runnable_notebooks/executed/${directory}/*.ipynb --output-dir example_scripts/notebook_tutorials/markdown/${directory}/
 echo "starting clean up (rm)"
