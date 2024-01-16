@@ -13,6 +13,8 @@ from typing import Union
 from pathlib import Path
 import pandas as pd
 
+import os
+
 
 class Profile(Indexed):
     """
@@ -154,7 +156,36 @@ class Profile(Indexed):
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
         return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
+    def extract_en4_profiles(self, dataset_names, region_bounds):
+        """
+        Helper method to load EN4 data file, subset by region and process.
 
+        Args:
+            dataset_names: list of file names.
+            region_bounds: [lon min, lon max, lat min lat max]
+            config : a configuration file (optional)
+        """
+        x_min = region_bounds[0]
+        x_max = region_bounds[1]
+        y_min = region_bounds[2]
+        y_max = region_bounds[3]
+        #self.profile = Profile(config=config)
+        self.read_en4(dataset_names, multiple=True)
+        pr = self.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
+        pr= pr.process_en4()
+        return pr
+    @staticmethod
+    def make_filenames(path, dataset, yr_start, yr_stop):
+        if dataset == "EN4":
+            dataset_names = []
+            january = 1
+            december = 13  # range is non-inclusive so we need 12 + 1
+            for yr in range(yr_start, yr_stop + 1):
+                for im in range(january, december):
+                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im:02}.nc")
+                    dataset_names.append(name)
+            return dataset_names
+        print("Data set not coded")
     """======================= Plotting ======================="""
 
     def plot_profile(self, var: str, profile_indices=None):

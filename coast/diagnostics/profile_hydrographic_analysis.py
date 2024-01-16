@@ -318,7 +318,7 @@ class ProfileHydrography(Indexed):
 
     ###############################################################################
     @staticmethod
-    def makefilenames(path, dataset, yr_start, yr_stop):
+    def make_filenames(path, dataset, yr_start, yr_stop):
         if dataset == "EN4":
             dataset_names = []
             january = 1
