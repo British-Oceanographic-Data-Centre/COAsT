@@ -1,7 +1,7 @@
 [![PyPI version](https://badge.fury.io/py/coast.svg)](https://badge.fury.io/py/coast)
 [![Conda COAsT version](https://img.shields.io/conda/v/bodc/coast.svg)](https://anaconda.org/bodc/coast)
 [![Anaconda-Server Badge](https://anaconda.org/bodc/coast/badges/latest_release_relative_date.svg)](https://anaconda.org/bodc/coast)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7799863.svg)](https://zenodo.org/record/7799863)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4041413.svg)](https://zenodo.org/record/4041413)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ```
 __________________________________________________________________________________________
@@ -22,7 +22,7 @@ ________________________________________________________________________________
 COAsT is Diagnostic and Assessment toolbox for kilometric scale regional models.
 It's aim is to deliver a flexible, community-ready framework for assessing kilometric scale ocean models. The focus, initially, is be on delivering novel diagnostics for processes that are emergent at the kilometric scale and with NEMO model output. The framework leans heavily on xarray.
 
-Documentation can be found [here](https://british-oceanographic-data-centre.github.io/COAsT/docs/).
+Documentation can be found [here](https://british-oceanographic-data-centre.github.io/COAsT/).
 
 ![PyPI version](https://badge.fury.io/py/COAsT.svg)
 ![Anaconda version](https://anaconda.org/bodc/coast/badges/version.svg)

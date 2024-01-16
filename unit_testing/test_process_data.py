@@ -29,7 +29,7 @@ class test_process_data_methods(unittest.TestCase):
         )
 
         # Coast version
-        proc_data = coast.Process_data()
+        proc_data = coast.ProcessData()
         grd = proc_data.seasonal_decomposition(fake_data_array, 4, model="additive", period=6, extrapolate_trend="freq")
         # statsmodel version
         from statsmodels.tsa.seasonal import seasonal_decompose

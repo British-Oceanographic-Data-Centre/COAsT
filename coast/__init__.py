@@ -24,7 +24,7 @@ from .data.tidegauge import Tidegauge
 from .diagnostics.tidegauge_analysis import TidegaugeAnalysis
 from .data.config_parser import ConfigParser
 from ._utils.xesmf_convert import xesmf_convert
-from ._utils.process_data import Process_data
+from ._utils.process_data import Process_data, ProcessData
 from .data.opendap import OpendapInfo
 from .data.copernicus import Copernicus, Product
 from ._utils.experiments_file_handling import experiments

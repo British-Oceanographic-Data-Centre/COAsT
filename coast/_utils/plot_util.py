@@ -1,3 +1,5 @@
+# pylint: disable=E0633
+# Pylint add in order to remove a false positive with pyproj.Transform
 """
 Python definitions used to help with plotting routines.
 
@@ -5,11 +7,15 @@ Python definitions used to help with plotting routines.
     -> geo_scatter(): Geographical scatter plot.
 """
 
+import sys
+import matplotlib.path as mpath
 import matplotlib.pyplot as plt
-from warnings import warn
-from .logging_util import warn
 import numpy as np
 import pyproj
+import scipy.interpolate as si
+from tqdm import tqdm
+
+from .logging_util import warn
 
 
 def r2_lin(x, y, fit):
@@ -93,10 +99,8 @@ def scatter_with_fit(x, y, s=10, c="k", yex=True, dofit=True):
     ax.grid()
 
     if dofit:
-        ax.text(
-            0.4, 0.125, "{} {:03.2f} {} {:03.2f}".format("y =", fit_tmp[0], "x +", fit_tmp[1]), transform=ax.transAxes
-        )
-        ax.text(0.4, 0.05, "{} {:03.2f} ".format("$R^2$ =", r2), transform=ax.transAxes)
+        ax.text(0.4, 0.125, f"y = {fit_tmp[0]:03.2f} x + {fit_tmp[1]:03.2f}", transform=ax.transAxes)
+        ax.text(0.4, 0.05, f"$R^2$ = {r2:03.2f}", transform=ax.transAxes)
 
     return fig, ax
 
@@ -120,9 +124,12 @@ def create_geo_subplots(lonbounds, latbounds, n_r=1, n_c=1, figsize=(7, 7)):
             positive number)
     """
 
-    import cartopy.crs as ccrs  # mapping plots
-    from cartopy.feature import NaturalEarthFeature
-
+    try:
+        import cartopy.crs as ccrs  # mapping plots
+        from cartopy.feature import NaturalEarthFeature
+    except ImportError:
+        warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+        sys.exit(-1)
     # If no figure or ax is provided, create a new one
     # fig = plt.figure()
     # fig.clf()
@@ -197,8 +204,12 @@ def create_geo_axes(lonbounds, latbounds):
             positive number)
     """
 
-    import cartopy.crs as ccrs  # mapping plots
-    from cartopy.feature import NaturalEarthFeature
+    try:
+        import cartopy.crs as ccrs  # mapping plots
+        from cartopy.feature import NaturalEarthFeature
+    except ImportError:
+        warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+        sys.exit(-1)
 
     # If no figure or ax is provided, create a new one
     fig = plt.figure(1)
@@ -223,6 +234,17 @@ def create_geo_axes(lonbounds, latbounds):
 
 
 def ts_diagram(temperature, salinity, depth):
+    """
+    A routine for plotting a T-S diagram.
+
+    Args:
+        temperature (array): temperature data
+        salinity (array): salinity data
+        depth (array): depth data
+
+    Returns:
+        fig, ax: fig and ax matplotlib elements
+    """
     fig = plt.figure(figsize=(10, 7))
     ax = plt.scatter(salinity, temperature, c=depth)
     cbar = plt.colorbar()
@@ -241,10 +263,8 @@ def geo_scatter(
     s=None,
     scatter_kwargs=None,
     coastline_kwargs=None,
-    gridline_kwargs=None,
     figure_kwargs={},
     title="",
-    figsize=None,
 ):  # TODO Some unused parameters here
     """
     Uses CartoPy to create a geographical scatter plot with land boundaries.
@@ -267,8 +287,6 @@ def geo_scatter(
         import cartopy.crs as ccrs  # mapping plots
         from cartopy.feature import NaturalEarthFeature
     except ImportError:
-        import sys
-
         warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
         sys.exit(-1)
 
@@ -383,9 +401,9 @@ def make_projection(x_origin, y_origin):
     Returns:
         CRS Object: A CRS for the bespoke projection defined here.
     """
-    aeqd = pyproj.crs.CRS.from_proj4(
-        "+proj=aeqd +lon_0={:}".format(x_origin) + " +lat_0={:}".format(y_origin) + " +ellps=WGS84"
-    )
+    aeqd = pyproj.CRS(proj="aeqd", lon_0=x_origin, lat_0=y_origin, ellps="WGS84")
+    # eqd = ccrs.CRS("+proj=aeqd +lon_0={:}".format(x_origin) +
+    #                " +lat_0={:}".format(y_origin) + " +ellps=WGS84")
     return aeqd
 
 
@@ -418,6 +436,8 @@ def velocity_rotate(u_velocity, v_velocity, angle, to_north=True):
 
     u_rotate = speed * np.sin(new_direction * (np.pi / 180))
     v_rotate = speed * np.cos(new_direction * (np.pi / 180))
+    # u_rotate = speed * np.sin(angle * (np.pi / 180))
+    # v_rotate = speed * np.cos(angle * (np.pi / 180))
 
     return u_rotate, v_rotate
 
@@ -434,25 +454,22 @@ def grid_angle(lon, lat):
         array: the angle in degrees of the j grid lines relative to geographic
         North (i.e. clockwise from 12)
     """
-    crs_wgs84 = pyproj.crs.CRS("epsg:4326")
+    crs_wgs84 = pyproj.CRS("epsg:4326")
     angle = np.zeros(lon.shape)
-
-    for j in range(lon.shape[0] - 1):
+    for j in tqdm(range(lon.shape[0] - 1)):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
-            to_metre = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd, always_xy=True)
-            x_grid, y_grid = to_metre.transform(lon[j : j + 2, i : i + 2], lat[j : j + 2, i : i + 2])
-            angle[j, i] = np.arctan2((x_grid[1, 0] - x_grid[0, 0]), (y_grid[1, 0] - y_grid[0, 0])) * (
-                180 / np.pi
-            )  # relative to North
+            transformer = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd)
+            x_grid, y_grid = transformer.transform(lat[j + 1, i], lon[j + 1, i])
+            angle[j, i] = np.arctan2(x_grid, y_grid)
 
     # differentiate to get the angle so copy last row one further and average
     angle[:, -1] = angle[:, -2]
     angle[-1, :] = angle[-2, :]
 
     # average angles in centre of array using cartesian coordinates
-    xa = np.sin(angle * (np.pi / 180))
-    ya = np.cos(angle * (np.pi / 180))
+    xa = np.sin(angle)
+    ya = np.cos(angle)
     xa[:, 1:-1] = (xa[:, :-2] + xa[:, 1:-1]) / 2
     ya[:, 1:-1] = (ya[:, :-2] + ya[:, 1:-1]) / 2
     xa[1:-1, :] = (xa[:-2, :] + xa[1:-1, :]) / 2
@@ -471,14 +488,14 @@ def velocity_on_t(u_velocity, v_velocity):
     Returns:
         array, array: u and v velocity components co-located on the t-grid.
     """
-    u_on_t_points = (u_velocity * 1).astype(float)
-    v_on_t_points = (v_velocity * 1).astype(float)
+    u_on_t_points = u_velocity * 1.0
+    v_on_t_points = v_velocity * 1.0
     u_on_t_points[:, 1:] = 0.5 * (u_velocity[:, 1:] + u_velocity[:, :-1])
     v_on_t_points[1:, :] = 0.5 * (v_velocity[1:, :] + v_velocity[:-1, :])
     return u_on_t_points, v_on_t_points
 
 
-def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_bug_fix=False):
+def velocity_grid_to_geo(lon, lat, uv_velocity, polar_stereo_cartopy_bug_fix=False):
     """Makes combined adjustments to gridded velocities to make them plot
     with intuitive direction as quivers or streamlines in maps.
     (Developed and tested with the NEMO tripolar "ORCA" grid.)
@@ -486,22 +503,73 @@ def velocity_grid_to_geo(lon, lat, u_velocity, v_velocity, polar_stereo_cartopy_
     Args:
         lon (array): longitude of the grid
         lat (array): latitude of the grid
-        u_velocity (array): i-direction velocities along grid lines
-        v_velocity (array): j-direction velocities along grid lines
+        uv_velocity (array): u and v velocities along grid lines
         polar_stereo_cartopy_bug_fix (bool, optional): Addesses a plotting bug in CartoPy=0.21.1
                             If True, makes an additional adjustment to the velocity
                             for plotting them on a stereographic (NorthPolarStereo or
                             SouthPolarStereo) projection in CartoPy. Defaults to False.
+
 
     Returns:
         array, array: NEMO grid u and v velocities that have been aligned
         in the north and east directions for plotting on the t-grid
     """
 
-    u_on_t, v_on_t = velocity_on_t(u_velocity, v_velocity)
+    u_on_t, v_on_t = velocity_on_t(uv_velocity[0], uv_velocity[1])
     angle_to_north = grid_angle(lon, lat)
     u_new, v_new = velocity_rotate(u_on_t, v_on_t, angle_to_north)
     if polar_stereo_cartopy_bug_fix:
         u_new, v_new = velocity_polar_bug_fix(u_new, v_new, lat)
 
     return u_new, v_new
+
+
+def plot_polar_contour(lon, lat, var, ax_in, **kwargs):
+    """
+    Interpolate the data onto a regular grid with no north fold
+    Generate new grid on NSIDC Polar North Stereographic projection on WGS84
+
+    Args:
+        lon (array): longitude coordinate of the variable
+        lat (array): latitude coordinate of the variable
+        var (array): variable to plot
+        ax_in (axis): axis to plot contours on
+        **kwargs (dict): variables for plotting a contour
+
+    Returns:
+        plot object: can be used for making a colorbar
+    """
+    try:
+        import cartopy.crs as ccrs  # mapping plots
+    except ImportError:
+        warn("No cartopy found - please run\nconda install -c conda-forge cartopy")
+        sys.exit(-1)
+
+    crs_ps = ccrs.CRS("epsg:3413")  # North pole projection
+    crs_wgs84 = ccrs.CRS("epsg:4326")
+    # NSIDC grid
+    x_grid, y_grid = np.meshgrid(np.linspace(-3850, 3750, 304) * 1000, np.linspace(-5350, 5850, 448) * 1000)
+    grid = crs_wgs84.transform_points(crs_ps, x_grid, y_grid)
+    # output is x, y, z triple but we don't need z
+    lon_grid = grid[:, :, 0]
+    lat_grid = grid[:, :, 1]
+    points = np.vstack((lon.flatten(), lat.flatten())).T
+    grid_var = si.griddata(points, var.flatten(), (lon_grid, lat_grid), method="linear")
+    cs_out = ax_in.contour(x_grid, y_grid, grid_var, transform=ccrs.epsg(3413), **kwargs)
+    return cs_out
+
+
+def set_circle(ax_in):
+    """
+    Compute a circle in axes coordinates, which we can use as a boundary
+    for the map. We can pan/zoom as much as we like - the boundary will be
+    permanently circular.
+
+    Args:
+        ax_in (axis): axis object
+    """
+    theta = np.linspace(0, 2 * np.pi, 100)
+    center, radius = [0.5, 0.5], 0.5
+    verts = np.vstack([np.sin(theta), np.cos(theta)]).T
+    circle = mpath.Path(verts * radius + center)
+    ax_in.set_boundary(circle, transform=ax_in.transAxes)

@@ -8,20 +8,20 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout site
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive # Fetch Hugo themes and all extra projects
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
           path: site
 
       - name: Checkout coast
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: British-Oceanographic-Data-Centre/COAsT
           ref: develop
           path: external
 
-      - name: Prepare environement
+      - name: Prepare environment
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: coast
@@ -38,5 +38,11 @@ jobs:
           mkdir -p ./example_scripts/notebook_tutorials/markdown/general
           ls ./example_scripts/notebook_tutorials
           pip install .
+          sudo apt-get update
+          sudo apt-get install -y libgeos-dev
+          pip install cartopy==0.21.0
+          pip install zarr
+          pip install xarray[complete]
+          pip install aiohttp requests
           mv config ./example_scripts/notebook_tutorials/runnable_notebooks/general/config
           bash notebook_to_md.sh general

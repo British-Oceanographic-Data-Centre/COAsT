@@ -147,7 +147,7 @@ class test_tidegauge_methods(unittest.TestCase):
 
             # TEST: Check attribute dictionary and length of sea_level.
             check1 = len(lowestoft.dataset.ssh.isel(id_dim=0)) == 193
-            check2 = lowestoft.dataset.id_name.values[0] == "Lowestoft"
+            check2 = lowestoft.dataset.site_name.values[0] == "Lowestoft"
             self.assertTrue(check1, "check1")
             self.assertTrue(check2, "check2")
 

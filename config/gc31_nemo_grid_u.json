@@ -1,0 +1,83 @@
+{
+	"type": "gridded",
+	"dimensionality": 3,
+	"chunks": {"latitude": 100, "longitude": 100},
+	"grid_ref": {
+		"u-grid": [
+			"glamu",
+			"gphiu",
+			"e1u",
+			"e2u",
+			"e3u_0",
+			"depthu_0",
+			"umask"
+		]
+	},
+	"dataset": {
+		"dimension_map": {
+			"time": "t_dim",
+			"lev": "z_dim",
+			"j": "y_dim",
+			"i": "x_dim",
+			"x_grid_U": "x_dim",
+			"y_grid_U": "y_dim"
+		},
+		"variable_map": {
+  		"time": "time",
+      	"lev": "depth_0",
+		"uoce": "u_velocity",
+		"vozocrtx": "u_velocity",
+      	"uo": "u_velocity"
+		},
+		"coord_vars": [
+			"longitude",
+			"latitude",
+			"time",
+			"depth_0"
+		]
+	},
+	"domain": {
+		"dimension_map": {
+			"time": "t_dim0",
+			"lev": "z_dim",
+			"j": "y_dim",
+			"i": "x_dim"
+		},
+		"variable_map": {
+		"time_counter": "time0",
+		"glamu": "longitude",
+		"gphiu": "latitude",
+		"e1u": "e1",
+		"e2u": "e2",
+		"e3u_0": "e3_0",
+		"depthu_0": "depth_0",
+		"gdepu": "depth_0",
+		"bottom_level": "bottom_level",
+		"mbathy":"bathy_metry",
+		"umask": "mask",
+		"bathymetry": "bathy_metry",
+      	"hbatt":"bathy_metry"
+		}
+	},
+	"static_variables": {
+		"not_grid_vars": [
+			"jpiglo",
+			"jpjglo",
+			"jpkglo",
+			"jperio",
+			"ln_zco",
+			"ln_zps",
+			"ln_sco",
+			"ln_isfcav"
+		],
+		"delete_vars": [
+			"nav_lat",
+			"nav_lon",
+			"deptht"
+		]
+	},
+	"processing_flags": [
+		"example_flag1",
+		"example_flag2"
+	]
+}

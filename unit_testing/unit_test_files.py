@@ -45,19 +45,17 @@ fn_nemo_harmonics_dom = path.join(dn_files, "coast_nemo_harmonics_dom.nc")
 fn_profile = path.join(dn_files, "coast_example_en4_201008.nc")
 fn_wod = path.join(dn_files, "WOD_example_ragged_standard_level.nc")
 fn_nemo_bgc = path.join(dn_files, "coast_example_SEAsia_BGC_1990.nc")
-
-fn_nemo_zarr_dom_mask = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mask.zarr"
-fn_nemo_zarr_dom_mesh_zgr = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mesh_zgr.zarr"
-fn_nemo_zarr_dom_mesh_hgr = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mesh_hgr.zarr"
-fn_nemo_zarr_dat = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr"
-
-fn_nemo_zarr_u_grid = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_U.zarr"
-fn_nemo_zarr_v_grid = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_V.zarr"
-fn_nemo_zarr_t_grid = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr"
+fn_nemo_dat_t = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr"
+fn_nemo_dat_u = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_U.zarr"
+fn_nemo_dat_v = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_V.zarr"
 
 # Domain files
 fn_nemo_dom = path.join(dn_files, "coast_example_nemo_domain.nc")
 fn_nemo_dom_bgc = path.join(dn_files, "coast_example_domain_SEAsia.nc")
+fn_nemo_dom_mask = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mask.zarr"
+fn_nemo_dom_mesh_zgr = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mesh_zgr.zarr"
+fn_nemo_dom_mesh_hgr = "https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/mesh_hgr.zarr"
+
 
 # Configuration files
 fn_profile_config = path.join(dn_config, "example_en4_profiles.json")
@@ -69,4 +67,4 @@ fn_config_u_grid = path.join(dn_config, "example_nemo_grid_u.json")
 fn_config_v_grid = path.join(dn_config, "example_nemo_grid_v.json")
 fn_config_w_grid = path.join(dn_config, "example_nemo_grid_w.json")
 fn_nemo_config_bgc = path.join(dn_config, "example_nemo_bgc.json")
-fn_nemo_config_monthly_climate = path.join(dn_config, "example_nemo_monthly_climate.json")
+fn_config_zarr_grid = path.join(dn_config, "example_nemo_monthly_climate.json")

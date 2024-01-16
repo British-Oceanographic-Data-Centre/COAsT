@@ -163,3 +163,29 @@ class test_gridded_initialisation(unittest.TestCase):
         check1 = np.isclose(T1, T2)
 
         self.assertTrue(check1, msg="check1")
+
+    def test_gridded_preload_dataset_and_zarr(self):
+        """Test loading of dataset and zarr files."""
+        # preload dataset and zarr
+        dom = xr.open_zarr(files.fn_nemo_dom_mask)
+        mesh_zgr = xr.open_zarr(files.fn_nemo_dom_mesh_zgr)
+        mesh_hgr = xr.open_zarr(files.fn_nemo_dom_mesh_hgr)
+        for var_name in mesh_zgr.data_vars:
+            dom[var_name] = mesh_zgr[var_name]
+        for var_name in mesh_hgr.data_vars:
+            dom[var_name] = mesh_hgr[var_name]
+        u_grid = xr.open_zarr(files.fn_nemo_dat_u)
+        u_grid = u_grid.isel(time_counter=slice(0, 119)).rename({"depthu": "depth"})
+        v_grid = xr.open_zarr(files.fn_nemo_dat_v)
+        v_grid = v_grid.isel(time_counter=slice(0, 119)).rename({"depthv": "depth"})
+        t_grid = xr.open_zarr(files.fn_nemo_dat_t)
+        t_grid = t_grid.rename({"deptht": "depth"})
+        for var_name in u_grid.data_vars:
+            t_grid[var_name] = u_grid[var_name]
+        for var_name in v_grid.data_vars:
+            t_grid[var_name] = v_grid[var_name]
+        dom = dom.isel(y=slice(600, 700), x=slice(1100, 1200))
+        t_grid = t_grid.isel(y=slice(600, 700), x=slice(1100, 1200), time_counter=slice(0, 24))
+        sci = coast.Gridded(fn_data=t_grid, fn_domain=dom, config=files.fn_config_zarr_grid)
+        check1 = np.isclose(sci.dataset.sst.mean().compute(), 5.923905)
+        self.assertTrue(check1, msg="check1")
