@@ -29,11 +29,11 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
 
     def calc_climatologies(self):
         """
-        Calculate the climatologies for SSH, sss and pea.
+                Calculate the climatologies for SSH, sss and pea.
 
-        Returns:
-#            gridded_t: Gridded dataset object.
-             dataset:  Gridded dataset object containing monthly climatologies
+                Returns:
+        #            gridded_t: Gridded dataset object.
+                     dataset:  Gridded dataset object containing monthly climatologies
         """
 
         # calculate a depth mask
@@ -49,7 +49,6 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         pea_monthy_clim = np.zeros((12, ny, nx))
 
         try:
-
             nyear = int(nt / 12)  # hard wired for monthly data starting in Jan
             for iy in range(nyear):
                 print("Calc pea", iy)
@@ -63,7 +62,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
                     pea.calc_pea(gridded_t2, zd_mask)
                     pea_monthy_clim[im, :, :] = pea_monthy_clim[im, :, :] + pea.dataset["PEA"].values
             pea_monthy_clim = pea_monthy_clim / nyear
-        
+
         except Exception as error:
             (warn(f"Unable to perform pea calculation. Please check the error {error}"))
             debug(f"Unable to perform pea calculation. Please check the error {error}")
@@ -89,17 +88,17 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         attributes_sst = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
         attributes_sss = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
         attributes_pea = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(self.z_max) + "m"}
-#jth this adds the new variables to the full data set, which makes saving difficult, easier just to keep the new variables in seperate object
-#        self.dataset = self.gridded_t.dataset["sst_monthy_clim"] = xr.DataArray(
-#            np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst
-#        )
-#        self.gridded_t.dataset["sss_monthy_clim"] = xr.DataArray(
-#            np.squeeze(sss_monthy_clim), coords=coords, dims=dims, attrs=attributes_sss
-#        )
-#        self.gridded_t.dataset["pea_monthy_clim"] = xr.DataArray(
-#            np.squeeze(pea_monthy_clim), coords=coords, dims=dims, attrs=attributes_pea
-#        )
-#        self.dataset = self.gridded_t.dataset
+        # jth this adds the new variables to the full data set, which makes saving difficult, easier just to keep the new variables in seperate object
+        #        self.dataset = self.gridded_t.dataset["sst_monthy_clim"] = xr.DataArray(
+        #            np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst
+        #        )
+        #        self.gridded_t.dataset["sss_monthy_clim"] = xr.DataArray(
+        #            np.squeeze(sss_monthy_clim), coords=coords, dims=dims, attrs=attributes_sss
+        #        )
+        #        self.gridded_t.dataset["pea_monthy_clim"] = xr.DataArray(
+        #            np.squeeze(pea_monthy_clim), coords=coords, dims=dims, attrs=attributes_pea
+        #        )
+        #        self.dataset = self.gridded_t.dataset
         self.dataset["sst_monthy_clim"] = xr.DataArray(
             np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst
         )
