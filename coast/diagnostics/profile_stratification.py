@@ -8,6 +8,7 @@ from .._utils.plot_util import geo_scatter
 from .._utils.logging_util import get_slug, debug
 from typing import List
 from dask.diagnostics import ProgressBar
+
 ####
 #
 earth_radius = 6367456 * np.pi / 180
@@ -113,9 +114,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         tmp1 = profile.dataset.potential_temperature.values[:, :]
         sal1 = profile.dataset.practical_salinity.values[:, :]
-        z1 =  profile.dataset.depth.values[:, :]
+        z1 = profile.dataset.depth.values[:, :]
         for i_prf in range(n_prf):
-
             tmp = tmp1[i_prf, :]
             sal = sal1[i_prf, :]
             z = z1[i_prf, :]
@@ -310,8 +310,6 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.dataset["i_prf"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
         self.dataset["j_prf"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
         self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
-
-
 
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
         DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)

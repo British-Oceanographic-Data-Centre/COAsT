@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pyproj
 import scipy.interpolate as si
-#jth from tqdm import tqdm
+
+# jth from tqdm import tqdm
 
 from .logging_util import warn
 
@@ -456,7 +457,7 @@ def grid_angle(lon, lat):
     """
     crs_wgs84 = pyproj.CRS("epsg:4326")
     angle = np.zeros(lon.shape)
-    for j in (range(lon.shape[0] - 1)): # breaks env tqdm(range(lon.shape[0] - 1)):
+    for j in range(lon.shape[0] - 1):  # breaks env tqdm(range(lon.shape[0] - 1)):
         for i in range(lon.shape[1] - 1):
             crs_aeqd = make_projection(lon[j, i], lat[j, i])
             transformer = pyproj.Transformer.from_crs(crs_wgs84, crs_aeqd)
