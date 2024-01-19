@@ -6,9 +6,11 @@ import copy
 import coast
 from .._utils.plot_util import geo_scatter
 from .._utils.logging_util import get_slug, debug
-
+from typing import List
+from dask.diagnostics import ProgressBar
 ####
-
+#
+earth_radius = 6367456 * np.pi / 180
 
 ####
 
@@ -109,18 +111,20 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # fill holes in data
         # jth This is slow, there may be a more 'vector' way of doing it
         # %%
+        tmp1 = profile.dataset.potential_temperature.values[:, :]
+        sal1 = profile.dataset.practical_salinity.values[:, :]
+        z1 =  profile.dataset.depth.values[:, :]
         for i_prf in range(n_prf):
-            tmp = profile.dataset.potential_temperature.values[i_prf, :]
-            sal = profile.dataset.practical_salinity.values[i_prf, :]
-            z = profile.dataset.depth.values[i_prf, :]
+
+            tmp = tmp1[i_prf, :]
+            sal = sal1[i_prf, :]
+            z = z1[i_prf, :]
             if any_tmp[i_prf]:
                 tmp = coast.general_utils.fill_holes_1d(tmp)
-
                 tmp[np.isnan(z)] = np.nan
                 tmp_clean[i_prf, :] = tmp
             if any_sal[i_prf]:
                 sal = coast.general_utils.fill_holes_1d(sal)
-
                 sal[np.isnan(z)] = np.nan
                 sal_clean[i_prf, :] = sal
 
@@ -153,6 +157,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         gravity = 9.81
         # Clean data This is quit slow and over writes potential temperature and practical salinity variables
+
         profile = ProfileStratification.clean_data(profile, gridded, Zmax)
 
         # Define grid spacing, dz. Required for depth integral
@@ -241,3 +246,71 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         return fig, ax
 
     ##############################################################################
+    def match_to_grid(self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax: int = 7000) -> None:
+        """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
+
+        Args:
+            gridded (Gridded): Gridded object.
+            limits (List): [jmin,jmax,imin,imax] - Subset to this region.
+            rmax (int): 7000 m - maxmimum search distance (metres).
+
+        ### NEED TO DESCRIBE THE OUTPUT. WHAT DO i_prf, j_prf, rmin_prf REPRESENT?
+
+        ### THIS LOOKS LIKE SOMETHING THE profile.obs_operator WOULD DO
+        """
+        self.gridded = gridded
+        if sum(limits) != 0:
+            gridded.subset(ydim=range(limits[0], limits[1] + 0), xdim=range(limits[2], limits[3] + 1))
+        # keep the grid or subset on the hydrographic profiles object
+        gridded.dataset["limits"] = limits
+        self.gridded = gridded
+        lon_prf = self.dataset.longitude.values
+        lat_prf = self.dataset.latitude.values
+
+        # Find 4 nearest neighbours on grid
+        j_prf, i_prf, rmin_prf = gridded.find_j_i_list(lat=lat_prf, lon=lon_prf, n_nn=4)
+
+        self.dataset["i_min"] = limits[0]  # reference back to origianl grid
+        self.dataset["j_min"] = limits[2]
+
+        i_min = self.dataset.i_min.values
+        j_min = self.dataset.j_min.values
+
+        # Sort 4 NN by distance on grid
+        ii = np.nonzero(np.isnan(lon_prf))
+        i_prf[ii, :] = 0
+        j_prf[ii, :] = 0
+        ip = np.where(np.logical_or(i_prf[:, 0] != 0, j_prf[:, 0] != 0))[0]
+        lon_prf4 = np.repeat(lon_prf[ip, np.newaxis], 4, axis=1).ravel()
+        lat_prf4 = np.repeat(lat_prf[ip, np.newaxis], 4, axis=1).ravel()
+        r = np.ones(i_prf.shape) * np.nan
+        lon_grd = gridded.dataset.longitude.values
+        lat_grd = gridded.dataset.latitude.values
+
+        rr = ProfileStratification.distance_on_grid(
+            lat_grd, lon_grd, j_prf[ip, :].ravel(), i_prf[ip, :].ravel(), lat_prf4, lon_prf4
+        )
+        r[ip, :] = np.reshape(rr, (ip.size, 4))
+        # sort by distance
+        ii = np.argsort(r, axis=1)
+        rmin_prf = np.take_along_axis(r, ii, axis=1)
+        i_prf = np.take_along_axis(i_prf, ii, axis=1)
+        j_prf = np.take_along_axis(j_prf, ii, axis=1)
+
+        ii = np.nonzero(np.logical_or(np.min(r, axis=1) > rmax, np.isnan(lon_prf)))
+        i_prf = i_prf + i_min
+        j_prf = j_prf + j_min
+        i_prf[ii, :] = 0  # should the be nan?
+        j_prf[ii, :] = 0
+
+        self.dataset["i_prf"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
+        self.dataset["j_prf"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
+        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
+
+
+
+    def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
+        DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)
+        DY = (Ypts - Y[jpts, ipts]) * earth_radius
+        r = np.sqrt(DX**2 + DY**2)
+        return r

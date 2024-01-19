@@ -156,7 +156,7 @@ class Profile(Indexed):
             self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
         return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
-    def extract_en4_profiles(self, dataset_names, region_bounds):
+    def extract_en4_profiles(self, dataset_names, region_bounds,chunks: dict = {}):
         """
         Helper method to load EN4 data file, subset by region and process.
 
@@ -170,7 +170,7 @@ class Profile(Indexed):
         y_min = region_bounds[2]
         y_max = region_bounds[3]
         #self.profile = Profile(config=config)
-        self.read_en4(dataset_names, multiple=True)
+        self.read_en4(dataset_names, multiple=True, chunks = chunks)
         pr = self.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
         pr= pr.process_en4()
         return pr
