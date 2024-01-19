@@ -199,8 +199,12 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         dims = ["id_dim"]
         attributes = {"units": "J / m^3", "standard_name": "Potential Energy Anomaly"}
         self.dataset["pea"] = xr.DataArray(pot_energy_anom, coords=coords, dims=dims, attrs=attributes)
-        self.dataset["sst"] = xr.DataArray(profile.dataset.variables["sea_surface_temperature"], coords=coords, dims=dims, attrs=attributes)
-        self.dataset["sss"] = xr.DataArray(profile.dataset.variables["sea_surface_salinity"], coords=coords, dims=dims, attrs=attributes)
+        self.dataset["sst"] = xr.DataArray(
+            profile.dataset.variables["sea_surface_temperature"], coords=coords, dims=dims, attrs=attributes
+        )
+        self.dataset["sss"] = xr.DataArray(
+            profile.dataset.variables["sea_surface_salinity"], coords=coords, dims=dims, attrs=attributes
+        )
 
     def quick_plot(self, var: xr.DataArray = None):
         """
