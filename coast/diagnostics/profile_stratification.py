@@ -250,7 +250,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         return fig, ax
 
     ##############################################################################
-    def match_to_grid(self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax: int = 7000) -> None:
+    def match_to_grid(self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax: int = 7000, grid_name = 'prf') -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
         Args:
@@ -307,9 +307,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         i_prf[ii, :] = 0  # should the be nan?
         j_prf[ii, :] = 0
 
-        self.dataset["i_prf"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
-        self.dataset["j_prf"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
-        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
+        self.dataset[f"i_{grid_name}"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
+        self.dataset[f"j_{grid_name}"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
+        self.dataset[f"rmin_{grid_name}"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
 
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
         DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)
