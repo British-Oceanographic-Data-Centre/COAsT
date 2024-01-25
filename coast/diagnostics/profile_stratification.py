@@ -250,9 +250,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         return fig, ax
 
     ##############################################################################
-    def match_to_grid(
-        self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax = 7000., grid_name="prf"
-    ) -> None:
+    def match_to_grid(self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax=7000.0, grid_name="prf") -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
         Args:
