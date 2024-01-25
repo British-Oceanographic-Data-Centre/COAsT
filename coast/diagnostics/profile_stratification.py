@@ -251,7 +251,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
     ##############################################################################
     def match_to_grid(
-        self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax: int = 7000, grid_name="prf"
+        self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax = 7000., grid_name="prf"
     ) -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
@@ -264,12 +264,14 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         ### THIS LOOKS LIKE SOMETHING THE profile.obs_operator WOULD DO
         """
-        self.gridded = gridded
+
         if sum(limits) != 0:
-            gridded.subset(ydim=range(limits[0], limits[1] + 0), xdim=range(limits[2], limits[3] + 1))
-        # keep the grid or subset on the hydrographic profiles object
+            gridded.subset(y_dim=range(limits[0], limits[1] + 1), x_dim=range(limits[2], limits[3] + 1))
+        # keep the bathymetry and mask or subset on the hydrographic profiles object
         gridded.dataset["limits"] = limits
-        self.gridded = gridded
+        self.gridded_bathymetry = gridded.dataset.bathymetry
+        self.gridded_mask = gridded.dataset.bottom_level != 0
+
         lon_prf = self.dataset.longitude.values
         lat_prf = self.dataset.latitude.values
 
