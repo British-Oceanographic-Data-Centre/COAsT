@@ -1,4 +1,5 @@
 """Script to turn google docstrings into markdown"""
+
 from pathlib import Path
 from datetime import date
 from typing import Generator, List, Optional

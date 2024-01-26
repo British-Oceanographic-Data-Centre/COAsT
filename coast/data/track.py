@@ -1,4 +1,5 @@
 """Track class"""
+
 from .index import Indexed
 
 

@@ -1,4 +1,5 @@
 """A class to help with writting markdown."""
+
 from typing import List, Type
 
 

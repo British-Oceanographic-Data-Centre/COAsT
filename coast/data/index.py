@@ -1,4 +1,5 @@
 """Index class."""
+
 from dask import array
 from dask.distributed import Client
 from .._utils.logging_util import get_slug, debug, info, warn, warning

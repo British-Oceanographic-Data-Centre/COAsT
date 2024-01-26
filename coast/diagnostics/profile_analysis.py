@@ -1,4 +1,5 @@
 """Profile Class"""
+
 from ..data.index import Indexed
 import numpy as np
 import xarray as xr

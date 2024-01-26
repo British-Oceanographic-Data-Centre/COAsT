@@ -265,10 +265,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
 
         if sum(limits) != 0:
             gridded.subset(y_dim=range(limits[0], limits[1] + 1), x_dim=range(limits[2], limits[3] + 1))
-            #gridded.spatial _subset(limits) might need this one for wrapping
+            # gridded.spatial _subset(limits) might need this one for wrapping
         # keep the bathymetry and mask or subset on the hydrographic profiles object
         gridded.dataset["limits"] = limits
-
 
         lon_prf = self.dataset.longitude.values
         lat_prf = self.dataset.latitude.values
@@ -312,8 +311,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.dataset[f"i_{grid_name}"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
         self.dataset[f"j_{grid_name}"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
         self.dataset[f"rmin_{grid_name}"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
-        #self.dataset[f"bathy_{grid_name}"] = gridded.dataset.bathymetry
-        #self.dataset[f"mask_{grid_name}"] = gridded.dataset.bottom_level != 0
+        # self.dataset[f"bathy_{grid_name}"] = gridded.dataset.bathymetry
+        # self.dataset[f"mask_{grid_name}"] = gridded.dataset.bottom_level != 0
 
     def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
         DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)
