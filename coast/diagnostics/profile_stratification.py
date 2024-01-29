@@ -39,7 +39,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax,limits=[0,0,0,0],rmax=25.):
+    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax, limits=[0, 0, 0, 0], rmax=25.0):
         """
         Cleaning data for stratification metric calculations
         Stage 1:...
@@ -68,7 +68,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
 
         if "bathymetry" in gridded.dataset:
-            profile.gridded_to_profile_2d(gridded, "bathymetry",limits=limits,rmax=rmax)
+            profile.gridded_to_profile_2d(gridded, "bathymetry", limits=limits, rmax=rmax)
             D_prf = profile.dataset.bathymetry.values
             z = profile.dataset.depth
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
@@ -143,7 +143,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         return profile
 
-    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax, rmax=25.0, limits=[0,0,0,0]):
+    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax, rmax=25.0, limits=[0, 0, 0, 0]):
         """
         Calculates Potential Energy Anomaly
 
