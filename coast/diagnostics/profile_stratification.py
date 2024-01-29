@@ -39,7 +39,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax):
+    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax,limits=[0,0,0,0],rmax=25.):
         """
         Cleaning data for stratification metric calculations
         Stage 1:...
@@ -68,7 +68,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
 
         if "bathymetry" in gridded.dataset:
-            profile.gridded_to_profile_2d(gridded, "bathymetry")
+            profile.gridded_to_profile_2d(gridded, "bathymetry",limits=limits,rmax=rmax)
             D_prf = profile.dataset.bathymetry.values
             z = profile.dataset.depth
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
@@ -143,7 +143,7 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         return profile
 
-    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax):
+    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax, rmax=25.0, limits=[0,0,0,0]):
         """
         Calculates Potential Energy Anomaly
 
@@ -250,72 +250,3 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         return fig, ax
 
     ##############################################################################
-    def match_to_grid(self, gridded: xr.Dataset, limits: List = [0, 0, 0, 0], rmax=7000.0, grid_name="prf") -> None:
-        """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
-
-        Args:
-            gridded (Gridded): Gridded object.
-            limits (List): [jmin,jmax,imin,imax] - Subset to this region.
-            rmax (int): 7000 m - maxmimum search distance (metres).
-
-        ### NEED TO DESCRIBE THE OUTPUT. WHAT DO i_prf, j_prf, rmin_prf REPRESENT?
-
-        ### THIS LOOKS LIKE SOMETHING THE profile.obs_operator WOULD DO
-        """
-
-        if sum(limits) != 0:
-            gridded.subset(y_dim=range(limits[0], limits[1] + 1), x_dim=range(limits[2], limits[3] + 1))
-            # gridded.spatial _subset(limits) might need this one for wrapping
-        # keep the bathymetry and mask or subset on the hydrographic profiles object
-        gridded.dataset["limits"] = limits
-
-        lon_prf = self.dataset.longitude.values
-        lat_prf = self.dataset.latitude.values
-
-        # Find 4 nearest neighbours on grid
-        j_prf, i_prf, rmin_prf = gridded.find_j_i_list(lat=lat_prf, lon=lon_prf, n_nn=4)
-
-        self.dataset["i_min"] = limits[0]  # reference back to origianl grid
-        self.dataset["j_min"] = limits[2]
-
-        i_min = self.dataset.i_min.values
-        j_min = self.dataset.j_min.values
-
-        # Sort 4 NN by distance on grid
-        ii = np.nonzero(np.isnan(lon_prf))
-        i_prf[ii, :] = 0
-        j_prf[ii, :] = 0
-        ip = np.where(np.logical_or(i_prf[:, 0] != 0, j_prf[:, 0] != 0))[0]
-        lon_prf4 = np.repeat(lon_prf[ip, np.newaxis], 4, axis=1).ravel()
-        lat_prf4 = np.repeat(lat_prf[ip, np.newaxis], 4, axis=1).ravel()
-        r = np.ones(i_prf.shape) * np.nan
-        lon_grd = gridded.dataset.longitude.values
-        lat_grd = gridded.dataset.latitude.values
-
-        rr = ProfileStratification.distance_on_grid(
-            lat_grd, lon_grd, j_prf[ip, :].ravel(), i_prf[ip, :].ravel(), lat_prf4, lon_prf4
-        )
-        r[ip, :] = np.reshape(rr, (ip.size, 4))
-        # sort by distance
-        ii = np.argsort(r, axis=1)
-        rmin_prf = np.take_along_axis(r, ii, axis=1)
-        i_prf = np.take_along_axis(i_prf, ii, axis=1)
-        j_prf = np.take_along_axis(j_prf, ii, axis=1)
-
-        ii = np.nonzero(np.logical_or(np.min(r, axis=1) > rmax, np.isnan(lon_prf)))
-        i_prf = i_prf + i_min
-        j_prf = j_prf + j_min
-        i_prf[ii, :] = 0  # should the be nan?
-        j_prf[ii, :] = 0
-
-        self.dataset[f"i_{grid_name}"] = xr.DataArray(i_prf, dims=["id_dim", "4"])
-        self.dataset[f"j_{grid_name}"] = xr.DataArray(j_prf, dims=["id_dim", "4"])
-        self.dataset[f"rmin_{grid_name}"] = xr.DataArray(rmin_prf, dims=["id_dim", "4"])
-        # self.dataset[f"bathy_{grid_name}"] = gridded.dataset.bathymetry
-        # self.dataset[f"mask_{grid_name}"] = gridded.dataset.bottom_level != 0
-
-    def distance_on_grid(Y, X, jpts, ipts, Ypts, Xpts):
-        DX = (Xpts - X[jpts, ipts]) * earth_radius * np.cos(Ypts * np.pi / 180.0)
-        DY = (Ypts - Y[jpts, ipts]) * earth_radius
-        r = np.sqrt(DX**2 + DY**2)
-        return r

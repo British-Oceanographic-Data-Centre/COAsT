@@ -153,9 +153,19 @@ class Profile(Indexed):
 
         return: A new profile object containing subsetted data
         """
-        ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+        if lonbounds[0] < lonbounds[1]:
+            ind = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
         )
+        else:
+            ind1 = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, lonbounds[0], 180.0 , latbounds[0], latbounds[1]
+            )
+            ind2 = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, -180.0, lonbounds[1], latbounds[0], latbounds[1]
+        )
+            ind={}
+            ind[0] = np.concatenate((ind1[0],ind2[0]))
         return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
 
     def extract_en4_profiles(self, dataset_names, region_bounds, chunks: dict = {}):
@@ -173,6 +183,7 @@ class Profile(Indexed):
         y_max = region_bounds[3]
         # self.profile = Profile(config=config)
         self.read_en4(dataset_names, multiple=True, chunks=chunks)
+
         pr = self.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
         pr = pr.process_en4()
         return pr
@@ -498,7 +509,7 @@ class Profile(Indexed):
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
 
-    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=7.0) -> None:
+    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=25.0) -> None:
         """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
 
         Args:
@@ -516,13 +527,17 @@ class Profile(Indexed):
         """
 
         if sum(limits) != 0:
-            gridded.subset(ydim=range(limits[0], limits[1] + 0), xdim=range(limits[2], limits[3] + 1))
+            gridded.subset(y_dim=range(limits[0], limits[1] + 1), x_dim=range(limits[2], limits[3] + 1))
         # keep the grid or subset on the hydrographic profiles object
         gridded.dataset["limits"] = limits
 
         prf = self.dataset
         grd = gridded.dataset
-        grd["landmask"] = grd.bottom_level == 0
+        if "bottom_level" in grd:
+            grd["landmask"] = grd.bottom_level == 0
+        else: #resort to using bathymetry
+            grd["landmask"] = grd.bathymetry == 0
+
         lon_prf = prf["longitude"]
         lat_prf = prf["latitude"]
         lon_grd = grd["longitude"]
@@ -590,7 +605,7 @@ class Profile(Indexed):
         self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "NNs"])
         self.dataset["ind_good"] = xr.DataArray(ind_good, dims=["Ngood"])
 
-    def gridded_to_profile_2d(self, gridded, variable) -> None:
+    def gridded_to_profile_2d(self, gridded, variable,limits=[0,0,0,0],rmax=25.0) -> None:
         """
         Evaluated a gridded data variable on each profile. Here just 2D, but could be extended to 3 or 4D
 
@@ -605,11 +620,15 @@ class Profile(Indexed):
         """
         # ensure there are indices in profile
         if not "ind_x" in self.dataset:
-            self.match_to_grid(gridded)
+            self.match_to_grid(gridded,limits=limits,rmax=rmax)
         #
         prf = self.dataset
         grd = gridded.dataset
-        grd["landmask"] = grd.bottom_level == 0
+        if "botton_level" in grd:
+            grd["landmask"] = grd.bottom_level == 0
+        else: # resort to bathymetry for mask
+            grd["landmask"] = grd.bathymetry == 0
+
         nprof = self.dataset.id_dim.shape[0]
         var = np.ma.masked_where(grd["landmask"], grd[variable])
         ig = prf.ind_good
