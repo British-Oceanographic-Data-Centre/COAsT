@@ -185,7 +185,10 @@ class Profile(Indexed):
         self.read_en4(dataset_names, multiple=True, chunks=chunks)
 
         pr = self.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
-        pr = pr.process_en4()
+        if pr.dataset.id_dim.shape[0]  >0:
+            pr = pr.process_en4()
+        else:
+            print("No data can't process")
         return pr
 
     @staticmethod
