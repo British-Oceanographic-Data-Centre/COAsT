@@ -156,16 +156,16 @@ class Profile(Indexed):
         if lonbounds[0] < lonbounds[1]:
             ind = general_utils.subset_indices_lonlat_box(
                 self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
-        )
+            )
         else:
             ind1 = general_utils.subset_indices_lonlat_box(
-                self.dataset.longitude, self.dataset.latitude, lonbounds[0], 180.0 , latbounds[0], latbounds[1]
+                self.dataset.longitude, self.dataset.latitude, lonbounds[0], 180.0, latbounds[0], latbounds[1]
             )
             ind2 = general_utils.subset_indices_lonlat_box(
                 self.dataset.longitude, self.dataset.latitude, -180.0, lonbounds[1], latbounds[0], latbounds[1]
-        )
-            ind={}
-            ind[0] = np.concatenate((ind1[0],ind2[0]))
+            )
+            ind = {}
+            ind[0] = np.concatenate((ind1[0], ind2[0]))
         return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
 
     def extract_en4_profiles(self, dataset_names, region_bounds, chunks: dict = {}):
@@ -538,7 +538,7 @@ class Profile(Indexed):
         grd = gridded.dataset
         if "bottom_level" in grd:
             grd["landmask"] = grd.bottom_level == 0
-        else: #resort to using bathymetry
+        else:  # resort to using bathymetry
             grd["landmask"] = grd.bathymetry == 0
 
         lon_prf = prf["longitude"]
@@ -608,7 +608,7 @@ class Profile(Indexed):
         self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "NNs"])
         self.dataset["ind_good"] = xr.DataArray(ind_good, dims=["Ngood"])
 
-    def gridded_to_profile_2d(self, gridded, variable,limits=[0,0,0,0],rmax=25.0) -> None:
+    def gridded_to_profile_2d(self, gridded, variable, limits=[0, 0, 0, 0], rmax=25.0) -> None:
         """
         Evaluated a gridded data variable on each profile. Here just 2D, but could be extended to 3 or 4D
 
@@ -623,13 +623,13 @@ class Profile(Indexed):
         """
         # ensure there are indices in profile
         if not "ind_x" in self.dataset:
-            self.match_to_grid(gridded,limits=limits,rmax=rmax)
+            self.match_to_grid(gridded, limits=limits, rmax=rmax)
         #
         prf = self.dataset
         grd = gridded.dataset
         if "botton_level" in grd:
             grd["landmask"] = grd.bottom_level == 0
-        else: # resort to bathymetry for mask
+        else:  # resort to bathymetry for mask
             grd["landmask"] = grd.bathymetry == 0
 
         nprof = self.dataset.id_dim.shape[0]
