@@ -1,4 +1,5 @@
 """This is file deals with empirical orthogonal functions."""
+
 import xarray as xr
 import numpy as np
 from scipy import linalg

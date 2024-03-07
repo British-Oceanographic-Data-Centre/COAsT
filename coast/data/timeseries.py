@@ -1,4 +1,5 @@
 """Timeseries Class"""
+
 from .index import Indexed
 
 

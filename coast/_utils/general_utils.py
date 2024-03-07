@@ -1,4 +1,5 @@
 """A general utility file."""
+
 import xarray as xr
 import numpy as np
 import sklearn.neighbors as nb
@@ -235,7 +236,7 @@ def reinstate_indices_by_mask(array_removed, mask, fill_value=np.nan):
     return array
 
 
-def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
+def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None, number_of_neighbors=1):
     """
     Obtains the 2 dimensional indices of the nearest model points to specified
     lists of longitudes and latitudes. Makes use of sklearn.neighbours
@@ -294,7 +295,7 @@ def nearest_indices_2d(mod_lon, mod_lat, new_lon, new_lat, mask=None):
 
     # Do nearest neighbour interpolation using BallTree (gets indices)
     tree = nb.BallTree(mod_loc, leaf_size=5, metric="haversine")
-    _, ind_1d = tree.query(new_loc, k=1)
+    _, ind_1d = tree.query(new_loc, k=number_of_neighbors)
 
     if mask is None:
         # Get 2D indices from 1D index output from BallTree
@@ -368,3 +369,21 @@ def nan_helper(y):
         return np.isnan(y), lambda z: z.nonzero()[0]
     else:
         return np.isnan(y).values, lambda z: z.nonzero()[0]
+
+
+def fill_holes_1d(y):
+    """
+    extrapolate and linearly interpolate over nans in 1d vectors
+    Input:
+        - y, 1d numpy array, or xr.DataArray, with possible NaNs
+    Output:
+        - 1d array with nans filled in
+    Examples:
+        pp = xr.DataArray(np.array([np.nan, np.nan, 2., np.nan, 4,5,6], dtype='float64'))
+        fill_holes_new(pp).values
+        Returns:
+            array([2., 2., 2., 3., 4., 5., 6.])
+    """
+    nans, x = nan_helper(y)  # location interior nans
+    y[nans] = np.interp(x(nans), x(~nans), y[~nans])  # interpolate and extrapolate
+    return y

@@ -19,8 +19,9 @@
       b. coast_variable_renaming
       c. copy_coast_object
       d. day_of_week
-      e. getitem
-      f. nan_helper
+      e. fill_holes_1d
+      f. getitem
+      g. nan_helper
 
 3. test_gridded_harmonics
       a. combine_and_convert_harmonics
@@ -28,11 +29,13 @@
 4. test_xesmf_convert
       a. basic_conversion_to_xesmf
 
-5. test_diagnostic_methods
-      a. circulation
-      b. compute_vertical_spatial_derivative
-      c. construct_density
-      d. construct_pycnocline_depth_and_thickness
+5. test_gridded_diagnostics_methods
+      a. calc_monthly_grided
+      b. calc_pea
+      c. circulation
+      d. compute_vertical_spatial_derivative
+      e. construct_density
+      f. construct_pycnocline_depth_and_thickness
 
 6. test_transect_methods
       a. calculate_transport_velocity_and_depth
@@ -75,32 +78,37 @@
       c. calculate_pressure_along_contour
 
 13. test_profile_methods
-      a. compare_processed_profile_with_model
-      b. load_process_and_compare_profile_data
+      a. calculate_vertical_mask
+      b. compare_processed_profile_with_model
+      c. compute_density
+      d. load_process_and_compare_profile_data
 
-14. test_plot_utilities
+14. test_profile_stratification_methods
+      a. calculate_pea
+
+15. test_plot_utilities
       a. determine_clim_by_stdev
       b. determine_colorbar_extension
       c. geo_axes
       d. scatter_with_fit
 
-15. test_stats_utilities
+16. test_stats_utilities
       a. find_maxima
 
-16. test_maskmaker_methods
+17. test_maskmaker_methods
       a. fill_polygon_by_index
       b. fill_polygon_by_lonlat
       c. make_mask_dataset_and_quick_plot
       d. make_region_from_vertices
 
-17. test_climatology
+18. test_climatology
       a. monthly_and_seasonal_climatology
 
-18. test_wod_read_data
+19. test_wod_read_data
       a. load_wod
       b. reshape_wod
 
-19. test_bgc_gridded_initialisation
+20. test_bgc_gridded_initialisation
       a. gridded_load_bgc_data
       b. gridded_load_bgc_data_and_domain
       c. gridded_load_bgc_dimensions_correctly_renamed

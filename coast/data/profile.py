@@ -1,15 +1,20 @@
 """Profile Class"""
+
 from .index import Indexed
 import numpy as np
 import xarray as xr
+import gsw
 from .._utils import general_utils, plot_util
 import matplotlib.pyplot as plt
 import glob
 import datetime
-from .._utils.logging_util import get_slug, debug, info, warn, warning
+from .._utils.logging_util import get_slug, debug, info, warn, warning, error
+
 from typing import Union
 from pathlib import Path
 import pandas as pd
+
+import os
 
 
 class Profile(Indexed):
@@ -148,10 +153,56 @@ class Profile(Indexed):
 
         return: A new profile object containing subsetted data
         """
-        ind = general_utils.subset_indices_lonlat_box(
-            self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
-        )
+        if lonbounds[0] < lonbounds[1]:
+            ind = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, lonbounds[0], lonbounds[1], latbounds[0], latbounds[1]
+            )
+        else:
+            ind1 = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, lonbounds[0], 180.0, latbounds[0], latbounds[1]
+            )
+            ind2 = general_utils.subset_indices_lonlat_box(
+                self.dataset.longitude, self.dataset.latitude, -180.0, lonbounds[1], latbounds[0], latbounds[1]
+            )
+            ind = {}
+            ind[0] = np.concatenate((ind1[0], ind2[0]))
         return Profile(dataset=self.dataset.isel(id_dim=ind[0]))
+
+    def extract_en4_profiles(self, dataset_names, region_bounds, chunks: dict = {}):
+        """
+        Helper method to load EN4 data file, subset by region and process.
+
+        Args:
+            dataset_names: list of file names.
+            region_bounds: [lon min, lon max, lat min lat max]
+            config : a configuration file (optional)
+        """
+        x_min = region_bounds[0]
+        x_max = region_bounds[1]
+        y_min = region_bounds[2]
+        y_max = region_bounds[3]
+        # self.profile = Profile(config=config)
+        self.read_en4(dataset_names, multiple=True, chunks=chunks)
+
+        pr = self.subset_indices_lonlat_box(lonbounds=[x_min, x_max], latbounds=[y_min, y_max])
+        if pr.dataset.id_dim.shape[0] > 0:
+            pr = pr.process_en4()
+        else:
+            print("No data can't process")
+        return pr
+
+    @staticmethod
+    def make_filenames(path, dataset, yr_start, yr_stop):
+        if dataset == "EN4":
+            dataset_names = []
+            january = 1
+            december = 13  # range is non-inclusive so we need 12 + 1
+            for yr in range(yr_start, yr_stop + 1):
+                for im in range(january, december):
+                    name = os.path.join(path, f"EN.4.2.1.f.profiles.l09.{yr}{im:02}.nc")
+                    dataset_names.append(name)
+            return dataset_names
+        print("Data set not coded")
 
     """======================= Plotting ======================="""
 
@@ -461,6 +512,138 @@ class Profile(Indexed):
         mod_profiles["nearest_index_t"] = (["id_dim"], ind_t.values)
         return Profile(dataset=mod_profiles)
 
+    def match_to_grid(self, gridded, limits=[0, 0, 0, 0], rmax=25.0) -> None:
+        """Match profiles locations to grid, finding 4 nearest neighbours for each profile.
+
+        Args:
+            gridded (Gridded): Gridded object.
+            limits (List): [jmin,jmax,imin,imax] - Subset to this region.
+            rmax (int): 7 km - maxmimum search distance (metres).
+
+            Adds to the profile object:
+            ind_x, ind_y (int array ) (id_dim,4)
+                        Index of the 4 closest grid cells to each profile, in distance order.
+                        Profiles outside the gridded region are set to -9999
+            rmin_prf  float array  (id_dim,4)
+                        Distance (km) of the losest grid cells to each profile, in distance order
+
+        """
+
+        if sum(limits) != 0:
+            gridded.subset(y_dim=range(limits[0], limits[1] + 1), x_dim=range(limits[2], limits[3] + 1))
+        # keep the grid or subset on the hydrographic profiles object
+        gridded.dataset["limits"] = limits
+
+        prf = self.dataset
+        grd = gridded.dataset
+        if "bottom_level" in grd:
+            grd["landmask"] = grd.bottom_level == 0
+        else:  # resort to using bathymetry
+            grd["landmask"] = grd.bathymetry == 0
+
+        lon_prf = prf["longitude"]
+        lat_prf = prf["latitude"]
+        lon_grd = grd["longitude"]
+        lat_grd = grd["latitude"]
+        # SPATIAL indices - 4 nearest neighbour
+        ind_x, ind_y = general_utils.nearest_indices_2d(
+            lon_grd, lat_grd, lon_prf, lat_prf, mask=grd.landmask, number_of_neighbors=4
+        )
+        ind_x = ind_x.values
+        ind_y = ind_y.values
+
+        # Exclude out of bound points
+        i_exc = np.concatenate(
+            (
+                np.where(lon_prf < lon_grd.values.ravel().min())[0],
+                np.where(lon_prf > lon_grd.values.ravel().max())[0],
+                np.where(lat_prf < lat_grd.values.ravel().min())[0],
+                np.where(lat_prf > lat_grd.values.ravel().max())[0],
+            )
+        )
+        ind_x[i_exc, :] = -9999
+        ind_y[i_exc, :] = -9999
+        prf["ind_x_min"] = limits[2]  # reference back to original grid
+        prf["ind_y_min"] = limits[0]
+
+        ind_x_min = limits[2]
+        ind_y_min = limits[0]
+
+        # Sort 4 NN by distance on grid
+
+        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]  # good points
+
+        lon_prf4 = np.repeat(lon_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
+        lat_prf4 = np.repeat(lat_prf.values[ind_good, np.newaxis], 4, axis=1).ravel()
+        r = np.ones(ind_x.shape) * np.nan
+        # distance between nearest neighbors and grid
+        rr = general_utils.calculate_haversine_distance(
+            lon_prf4,
+            lat_prf4,
+            lon_grd.values[ind_y[ind_good, :].ravel(), ind_x[ind_good, :].ravel()],
+            lat_grd.values[ind_y[ind_good, :].ravel(), ind_x[ind_good, :].ravel()],
+        )
+
+        r[ind_good, :] = np.reshape(rr, (ind_good.size, 4))
+        # sort by distance and re-order the indices with closest first
+        ii = np.argsort(r, axis=1)
+        rmin_prf = np.take_along_axis(r, ii, axis=1)
+        ind_x = np.take_along_axis(ind_x, ii, axis=1)
+        ind_y = np.take_along_axis(ind_y, ii, axis=1)
+
+        ii = np.nonzero(np.min(r, axis=1) > rmax)
+        # Reference to original grid
+        ind_x = ind_x + ind_x_min
+        ind_y = ind_y + ind_y_min
+        # mask bad values with -9999
+        ind_x[ii, :] = -9999
+        ind_y[ii, :] = -9999
+        ind_x[i_exc, :] = -9999
+        ind_y[i_exc, :] = -9999
+        ind_good = np.where(np.logical_and(ind_x[:, 0] >= 0, ind_y[:, 0] >= 0))[0]
+
+        # Add to profile object
+        self.dataset["ind_x"] = xr.DataArray(ind_x, dims=["id_dim", "NNs"])
+        self.dataset["ind_y"] = xr.DataArray(ind_y, dims=["id_dim", "NNs"])
+        self.dataset["rmin_prf"] = xr.DataArray(rmin_prf, dims=["id_dim", "NNs"])
+        self.dataset["ind_good"] = xr.DataArray(ind_good, dims=["Ngood"])
+
+    def gridded_to_profile_2d(self, gridded, variable, limits=[0, 0, 0, 0], rmax=25.0) -> None:
+        """
+        Evaluated a gridded data variable on each profile. Here just 2D, but could be extended to 3 or 4D
+
+        Args:
+            gridded (Gridded): Gridded object
+            variable string : Name of variable in gridded object to interpolate
+
+            Output variable is distance weighted mean and is added to profile object with
+            same name as in the  gridded object
+
+
+        """
+        # ensure there are indices in profile
+        if not "ind_x" in self.dataset:
+            self.match_to_grid(gridded, limits=limits, rmax=rmax)
+        #
+        prf = self.dataset
+        grd = gridded.dataset
+        if "botton_level" in grd:
+            grd["landmask"] = grd.bottom_level == 0
+        else:  # resort to bathymetry for mask
+            grd["landmask"] = grd.bathymetry == 0
+
+        nprof = self.dataset.id_dim.shape[0]
+        var = np.ma.masked_where(grd["landmask"], grd[variable])
+        ig = prf.ind_good
+        # Distance weighted mean
+        v = var[prf.ind_y[ig, :], prf.ind_x[ig, :]] / prf.rmin_prf[ig, :]
+        norm = 1.0 / prf.rmin_prf[ig, :]
+        norm = np.ma.masked_where(v.mask, norm)
+        var_int = np.nansum(v, axis=1) / np.nansum(norm, axis=1)
+        var_prf = np.ones(nprof) * np.nan
+        var_prf[ig] = var_int
+        self.dataset[variable] = xr.DataArray(var_prf, dims=["id_dim"])
+
     def calculate_en4_qc_flags_levels(self):
         """
         Brute force method for identifying all rejected points according to
@@ -469,18 +652,7 @@ class Profile(Indexed):
         combination of possible QC integers. That's what this routine does.
         Used in Profile.process_en4().
 
-        INPUTS
-         NO INPUTS
-
-        OUTPUTS
-         qc_integers_tem  : Array of integers signifying the rejection of ONLY
-                            temperature datapoints
-         qc_integers_sal  : Array of integers signifying the rejection of ONLY
-                            salinity datapoints
-         qc_integers_both : Array of integers signifying the rejection of BOTH
-                            temperature and salinity datapoints.
         """
-
         reject_tem_ind = 0
         reject_sal_ind = 1
         if "4.2.0" in self.dataset.history:
@@ -685,3 +857,280 @@ class Profile(Indexed):
         t_ind = pd.to_datetime(dataset.time.values) < date1
         dataset = dataset.isel(id_dim=t_ind)
         return Profile(dataset=dataset)
+
+    def calculate_vertical_spacing(self):
+        """
+        Profile data is given at depths, z, however for some calculations a thickness measure, dz, is required
+        Define the upper thickness: dz[0] = 0.5*(z[0] + z[1]) and thereafter the centred difference:
+        dz[k] = 0.5*(z[k-1] - z[k+1])
+
+        Notionally, dz is the separation between w-points, when w-points are estimated from depths
+        at t-points.
+        """
+
+        if hasattr(self.dataset, "dz"):  # Requires spacing variable. Test to see if variable exists
+            pass
+        else:
+            # Compute dz on w-pts
+            depth_t = self.dataset.depth
+            self.dataset["dz"] = xr.where(
+                depth_t == depth_t.min(dim="z_dim"),
+                0.5 * (depth_t + depth_t.shift(z_dim=-1)),
+                0.5 * (depth_t.shift(z_dim=-1) - depth_t.shift(z_dim=+1)),  # .fillna(0.)
+            )
+        attributes = {"units": "m", "standard name": "centre difference thickness"}
+        self.dataset.dz.attrs = attributes
+
+    def construct_density(
+        self, eos="EOS10", rhobar=False, Zd_mask: xr.DataArray = None, CT_AS=False, pot_dens=False, Tbar=True, Sbar=True
+    ):
+        """
+            Constructs the in-situ density using the salinity, temperature and
+            depth fields. Adds a density attribute to the profile dataset
+
+            Requirements: The supplied Profile dataset must contain the
+            Practical Salinity and the Potential Temperature variables. The depth
+            field must also be supplied. The GSW package is used to calculate
+            The Absolute Pressure, Absolute Salinity and Conservative Temperature.
+
+            Note that currently density can only be constructed using the EOS10
+            equation of state.
+
+        Parameters
+        ----------
+        eos : equation of state, optional
+            DESCRIPTION. The default is 'EOS10'.
+
+        rhobar : Calculate density with depth mean T and S
+            DESCRIPTION. The default is 'False'.
+        Zd_mask : (xr.DataArray) Provide a (id_dim, z_dim) mask for rhobar calculation
+            Calculate using calculate_vertical_mask
+            DESCRIPTION. The default is empty.
+
+        CT_AS  : Conservative Temperature and Absolute Salinity already provided
+            DESCRIPTION. The default is 'False'.
+        pot_dens :Calculation at zero pressure
+            DESCRIPTION. The default is 'False'.
+        Tbar and Sbar : If rhobar is True then these can be switch to False to allow one component to
+                        remain depth varying. So Tbar=Flase gives temperature component, Sbar=False gives Salinity component
+            DESCRIPTION. The default is 'True'.
+
+        Returns
+        -------
+        None.
+        adds attribute profile.dataset.density
+
+        """
+        debug(f'Constructing in-situ density for {get_slug(self)} with EOS "{eos}"')
+
+        try:
+            if eos != "EOS10":
+                raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
+
+            try:
+                shape_ds = (
+                    self.dataset.id_dim.size,
+                    self.dataset.z_dim.size,
+                    # jth                    self.dataset.z_dim.size,
+                    #                    self.dataset.id_dim.size,
+                )
+                sal = self.dataset.practical_salinity.to_masked_array()
+                temp = self.dataset.potential_temperature.to_masked_array()
+
+                if np.shape(sal) != shape_ds:
+                    sal = sal.T
+                    temp = temp.T
+            except AttributeError:
+                error(f"We have a problem with {self.dataset.dims}")
+
+            density = np.ma.zeros(shape_ds)
+
+            # print(f"shape sal:{np.shape(sal)}")
+            # print(f"shape rho:{np.shape(density)}")
+
+            s_levels = self.dataset.depth.to_masked_array()
+            if np.shape(s_levels) != shape_ds:
+                s_levels = s_levels.T
+
+            lat = self.dataset.latitude.values
+            lon = self.dataset.longitude.values
+            if not pot_dens or not CT_AS:
+                lat = np.repeat(lat[:, np.newaxis], shape_ds[1], axis=1)
+                lon = np.repeat(lon[:, np.newaxis], shape_ds[1], axis=1)
+            # Absolute Pressure
+            if pot_dens:
+                pressure_absolute = 0.0  # calculate potential density
+            else:
+                pressure_absolute = np.ma.masked_invalid(gsw.p_from_z(-s_levels, lat))  # depth must be negative
+            if not rhobar:  # calculate full depth
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+                sal_absolute = np.ma.masked_less(sal_absolute, 0)
+                # Conservative Temperature
+                if not CT_AS:  # conservative temp not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+                # In-situ density
+                density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                new_var_name = "density"
+            else:  # calculate density with depth integrated T S
+                if hasattr(self.dataset, "dz"):  # Requires spacing variable. Test to see if variable exists
+                    pass
+                else:  # Create it
+                    self.calculate_vertical_spacing()
+
+                # prepare coordinate variables
+                if Zd_mask is None:
+                    DZ = self.dataset.dz
+                else:
+                    DZ = self.dataset.dz * Zd_mask
+                DP = DZ.sum(dim="z_dim").to_masked_array()
+                DZ = DZ.to_masked_array()
+                if np.shape(DZ) != shape_ds:
+                    DZ = DZ.T
+                # DP=np.repeat(DP[np.newaxis,:,:],shape_ds[1],axis=0)
+
+                # DZ = np.repeat(DZ[np.newaxis, :, :, :], shape_ds[0], axis=0)
+                # DP = np.repeat(DP[np.newaxis, :, :], shape_ds[0], axis=0)
+
+                # Absolute Salinity
+                if not CT_AS:  # abs salinity not provided
+                    sal_absolute = np.ma.masked_invalid(gsw.SA_from_SP(sal, pressure_absolute, lon, lat))
+                else:  # abs salinity provided
+                    sal_absolute = np.ma.masked_invalid(sal)
+
+                # Conservative Temperature
+                if not CT_AS:  # Conservative temperature not provided
+                    temp_conservative = np.ma.masked_invalid(gsw.CT_from_pt(sal_absolute, temp))
+                else:  # conservative temp provided
+                    temp_conservative = np.ma.masked_invalid(temp)
+
+                if pot_dens and (Sbar and Tbar):  # usual case pot_dens and depth averaged everything
+                    sal_absolute = np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP
+                    temp_conservative = np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+                    density = np.repeat(density[:, np.newaxis], shape_ds[1], axis=1)
+
+                else:  # Either insitu density or one of Tbar or Sbar False
+                    if Sbar:
+                        sal_absolute = np.repeat(
+                            (np.sum(np.ma.masked_less(sal_absolute, 0) * DZ, axis=1) / DP)[:, np.newaxis],
+                            shape_ds[1],
+                            axis=1,
+                        )
+                    if Tbar:
+                        temp_conservative = np.repeat(
+                            (np.sum(np.ma.masked_less(temp_conservative, 0) * DZ, axis=1) / DP)[:, np.newaxis],
+                            shape_ds[1],
+                            axis=1,
+                        )
+                    density = np.ma.masked_invalid(gsw.rho(sal_absolute, temp_conservative, pressure_absolute))
+
+                if Tbar and Sbar:
+                    new_var_name = "density_bar"
+
+                else:
+                    if not Tbar:
+                        new_var_name = "density_T"
+                    else:
+                        new_var_name = "density_S"
+
+            # rho and rhobar
+            coords = {
+                "time": (("id_dim"), self.dataset.time.values),
+                "latitude": (("id_dim"), self.dataset.latitude.values),
+                "longitude": (("id_dim"), self.dataset.longitude.values),
+            }
+            #            dims = ["z_dim", "id_dim"]
+            dims = ["id_dim", "z_dim"]
+
+            if pot_dens:
+                attributes = {"units": "kg / m^3", "standard name": "Potential density "}
+            else:
+                attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
+
+            density = np.squeeze(density)
+            self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
+
+        except AttributeError as err:
+            error(err)
+
+    def calculate_vertical_mask(self, Zmax=200):
+        """
+        Calculates a mask to a specified level Zmax. 1 for sea; 0 for below sea bed
+        and linearly ramped for last level
+
+        Inputs:
+            Zmax float - max depth (m)
+        Returns
+        Zd_mask (id_dim, z_dim)  xr.DataArray, float mask.
+        kmax (id_dim) deepest index above Zmax
+        """
+
+        depth_t = self.dataset.depth
+        ##construct a W array, zero at surface 1/2 way between T-points
+
+        depth_w = xr.zeros_like(depth_t)
+        I = np.arange(depth_w.shape[1] - 1)
+        depth_w[:, 0] = 0.0
+        depth_w[:, I + 1] = 0.5 * (depth_t[:, I] + depth_t[:, I + 1])
+
+        ## Contruct a mask array that is:
+        # zeros below Zmax
+        # ones above Zmax, except the closest shallower depth which has a value [0,1] that is the weighted distance to Zmax
+
+        ## prepare depth profiles
+
+        # remove deep nans
+        # depth_t = depth_t.fillna(1E6)
+        # depth_t = depth_t.interpolate_na(dim="z_dim", method="nearest", fill_value="extrapolate")
+        # print(depth_t)
+
+        ## construct a mask to identify location of and separation from Zmax
+
+        # mask_arr = np.zeros((depth_t.shape))*np.nan
+        # print(np.shape(mask_arr))
+        # mask_arr[depth_t <= Zmax] = 1
+        # mask_arr[depth_t > Zmax] = 0
+        # mask = xr.DataArray( mask_arr, dims=["id_dim", "z_dim"])
+        mask = depth_w * np.nan
+
+        mask = xr.where(depth_w <= Zmax, 1, mask)
+        mask = xr.where(depth_w > Zmax, 0, mask)
+
+        # print(mask)
+        # print('\n')
+
+        max_shallower_depth = (depth_w * mask).max(dim="z_dim")
+        min_deeper_depth = (depth_w.roll(z_dim=-1) * mask).max(dim="z_dim")
+        # NB if max_shallower_depth was already deepest value in profile, then this produces the same value
+        # I.e.
+        # max_shallower_depth <= Zmax
+        # min_deeper_depth > Zmax or min_deeper_depth = max_shallower_depth
+
+        # print(f"max_shallower_depth:{max_shallower_depth}")
+        # print(f"min_deeper_depth:{min_deeper_depth}")
+        # print('\n')
+
+        # Compute fraction, the relative closeness of Zmax to max_shallower_depth from 1 to 0 (as Zmax -> min_deeper_depth)
+        fraction = xr.where(
+            min_deeper_depth != max_shallower_depth,
+            (Zmax - max_shallower_depth) / (min_deeper_depth - max_shallower_depth),
+            1,
+        )
+
+        max_shallower_depth_2d = max_shallower_depth.expand_dims(dim={"z_dim": depth_w.sizes["z_dim"]})
+        fraction_2d = fraction.expand_dims(dim={"z_dim": depth_t.sizes["z_dim"]})
+
+        # locate the depth index for the deepest level above Zmax
+        kmax = xr.where(depth_w == max_shallower_depth, 1, 0).argmax(dim="z_dim")
+        # print(kmax)
+
+        # replace mask values with fraction_2d at depth above Zmax)
+        mask = xr.where(depth_w == max_shallower_depth_2d, fraction_2d, mask)
+
+        return mask, kmax
