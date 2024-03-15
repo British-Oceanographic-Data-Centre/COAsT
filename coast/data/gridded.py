@@ -73,7 +73,7 @@ class Gridded(Coast):  # TODO Complete this docstring
         self.set_dimension_mapping()
         self.set_variable_mapping()
         lims = kwargs.get("lims", [])
-        no_depths  =  kwargs.get("no_depth",False)
+        no_depths  =  kwargs.get("no_depths",False)
         if self.fn_data is not None:
             self.load(self.fn_data, chunks, multiple)
 
