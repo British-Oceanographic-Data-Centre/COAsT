@@ -63,7 +63,8 @@ class CurrentsOnT(Gridded):
         del _, _lon
         ds_u.coords["latitude"] = self.dataset.latitude
         ds_u.coords["longitude"] = self.dataset.longitude
-        ds_u.coords["depth_0"] = self.dataset.depth_0
+        if "depth_0" in self.dataset:
+            ds_u.coords["depth_0"] = self.dataset.depth_0
         try:
             self.dataset["ut_velocity"] = ds_u.ut_velocity.drop("depthu")
         except:
@@ -82,7 +83,8 @@ class CurrentsOnT(Gridded):
         del _, _lat
         ds_v.coords["latitude"] = self.dataset.latitude
         ds_v.coords["longitude"] = self.dataset.longitude
-        ds_v.coords["depth_0"] = self.dataset.depth_0
+        if "depth_0" in self.dataset:
+            ds_v.coords["depth_0"] = self.dataset.depth_0
         try:
             self.dataset["vt_velocity"] = ds_v.vt_velocity.drop("depthv")
         except:
