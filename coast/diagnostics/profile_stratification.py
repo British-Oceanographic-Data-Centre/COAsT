@@ -39,11 +39,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         self.nz = profile.dataset.dims["z_dim"]
         debug(f"Initialised {get_slug(self)}")
 
-    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax, CT_AS: bool=False, limits=[0, 0, 0, 0], rmax=25.0):
+    def clean_data(profile: xr.Dataset, gridded: xr.Dataset, Zmax, CT_AS: bool = False, limits=[0, 0, 0, 0], rmax=25.0):
         """
-        
-        parameters: 
-             CT_AS: bool  - determines whether conservative_temperature and absolute salinity are expected (if True). 
+
+        parameters:
+             CT_AS: bool  - determines whether conservative_temperature and absolute salinity are expected (if True).
                             if False: potential_temperature and practical_salinity
 
         Cleaning data for stratification metric calculations
@@ -60,11 +60,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         dz_max = 25.0
 
         if not CT_AS:
-          temperature_var = "potential_temperature"
-          salinity_var = "practical_salinity"
+            temperature_var = "potential_temperature"
+            salinity_var = "practical_salinity"
         else:
-          temperature_var = "conservative_temperature"
-          salinity_var = "absolute_salinity"
+            temperature_var = "conservative_temperature"
+            salinity_var = "absolute_salinity"
 
         n_prf = profile.dataset.id_dim.shape[0]
         n_depth = profile.dataset.z_dim.shape[0]
@@ -83,9 +83,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             profile.gridded_to_profile_2d(gridded, "bathymetry", limits=limits, rmax=rmax)
             D_prf = profile.dataset.bathymetry.values
             z = profile.dataset.depth
-            if np.shape(z.values) != (n_prf, n_depth): z = z.transpose()
-            if np.shape(z.values) != (n_prf, n_depth): print(f"Problem with the shape of profile.dataset.depth")
-        
+            if np.shape(z.values) != (n_prf, n_depth):
+                z = z.transpose()
+            if np.shape(z.values) != (n_prf, n_depth):
+                print(f"Problem with the shape of profile.dataset.depth")
+
             print(f"shape pot temp:{np.shape(profile.dataset[temperature_var].values[:,:])}")
             print(f"shape z:{np.shape(z)}. shape D_prf:{np.shape(np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))}")
             test_surface = z < np.minimum(dz_max, 0.25 * np.repeat(D_prf[:, np.newaxis], n_depth, axis=1))
@@ -132,9 +134,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         tmp1 = profile.dataset[temperature_var].values[:, :]
         sal1 = profile.dataset[salinity_var].values[:, :]
         z1 = profile.dataset.depth.values[:, :]
-        if np.shape(z1) != (n_prf, n_depth): z1 = z1.transpose()
-        if np.shape(z1) != (n_prf, n_depth): print(f"Problem with the shape of profile.dataset.depth")
-        
+        if np.shape(z1) != (n_prf, n_depth):
+            z1 = z1.transpose()
+        if np.shape(z1) != (n_prf, n_depth):
+            print(f"Problem with the shape of profile.dataset.depth")
+
         for i_prf in range(n_prf):
             tmp = tmp1[i_prf, :]
             sal = sal1[i_prf, :]
@@ -163,7 +167,9 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # %%
         return profile
 
-    def calc_pea(self, profile: xr.Dataset, gridded: xr.Dataset, Zmax, CT_AS: bool=False, rmax=25.0, limits=[0, 0, 0, 0]):
+    def calc_pea(
+        self, profile: xr.Dataset, gridded: xr.Dataset, Zmax, CT_AS: bool = False, rmax=25.0, limits=[0, 0, 0, 0]
+    ):
         """
         Calculates Potential Energy Anomaly
 
@@ -179,11 +185,11 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         # Clean data This is quit slow and over writes potential temperature and practical salinity variables
 
         if not CT_AS:
-          temperature_var = "potential_temperature"
-          salinity_var = "practical_salinity"
+            temperature_var = "potential_temperature"
+            salinity_var = "practical_salinity"
         else:
-          temperature_var = "conservative_temperature"
-          salinity_var = "absolute_salinity"
+            temperature_var = "conservative_temperature"
+            salinity_var = "absolute_salinity"
 
         ## JP ## profile = ProfileStratification.clean_data(profile, gridded, Zmax, CT_AS)
         n_prf = profile.dataset.id_dim.shape[0]
@@ -194,9 +200,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
         }
         good_profile = np.array(np.ones(n_prf), dtype=bool)
         profile.dataset["good_profile"] = xr.DataArray(good_profile, coords=coords, dims=["id_dim"])
-        profile.dataset["sea_surface_temperature"] =  profile.dataset[temperature_var].isel(z_dim=0)
-        profile.dataset["sea_surface_salinity"] =  profile.dataset[salinity_var].isel(z_dim=0)
-
+        profile.dataset["sea_surface_temperature"] = profile.dataset[temperature_var].isel(z_dim=0)
+        profile.dataset["sea_surface_salinity"] = profile.dataset[salinity_var].isel(z_dim=0)
 
         # Define grid spacing, dz. Required for depth integral
         profile.calculate_vertical_spacing()
