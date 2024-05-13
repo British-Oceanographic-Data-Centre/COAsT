@@ -934,8 +934,13 @@ class Profile(Indexed):
                     # jth                    self.dataset.z_dim.size,
                     #                    self.dataset.id_dim.size,
                 )
-                sal = self.dataset.practical_salinity.to_masked_array()
-                temp = self.dataset.potential_temperature.to_masked_array()
+                
+                if CT_AS:
+                    temp = self.dataset.conservative_temperature.to_masked_array()
+                    sal = self.dataset.absolute_salinity.to_masked_array()
+                else:
+                    temp = self.dataset.potential_temperature.to_masked_array()
+                    sal = self.dataset.practical_salinity.to_masked_array()
 
                 if np.shape(sal) != shape_ds:
                     sal = sal.T
@@ -1053,7 +1058,7 @@ class Profile(Indexed):
             else:
                 attributes = {"units": "kg / m^3", "standard name": "In-situ density "}
 
-            density = np.squeeze(density)
+            #density = np.squeeze(density) # squeezing out id_dim, if size=1 is bad.
             self.dataset[new_var_name] = xr.DataArray(density, coords=coords, dims=dims, attrs=attributes)
 
         except AttributeError as err:
