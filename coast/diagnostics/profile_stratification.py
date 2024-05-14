@@ -224,10 +224,8 @@ class ProfileStratification(Profile):  # TODO All abstract methods should be imp
             profile.construct_density(CT_AS=CT_AS, pot_dens=True)
 
         # Update Zd_mask to exlude nan points
-        Zd_mask = Zd_mask.where(
-            np.isfinite(profile.dataset.variables["density"]), 0
-        )  
-            
+        Zd_mask = Zd_mask.where(np.isfinite(profile.dataset.variables["density"]), 0)
+
         if not "density_bar" in profile.dataset:
             profile.construct_density(CT_AS=CT_AS, rhobar=True, Zd_mask=Zd_mask, pot_dens=True)
         rho = profile.dataset.variables["density"].fillna(0)  # density
