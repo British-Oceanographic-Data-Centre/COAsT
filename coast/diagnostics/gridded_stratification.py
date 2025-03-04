@@ -199,16 +199,16 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
         self.dataset["strat_2nd_mom_masked"] = xr.DataArray(zt_m, coords=coords, dims=dims)
         self.dataset.strat_2nd_mom_masked.attrs["units"] = "m"
         self.dataset.strat_2nd_mom_masked.attrs["standard_name"] = "masked pycnocline thickness"
-        self.dataset.strat_2nd_mom_masked.attrs[
-            "long_name"
-        ] = "Second depth moment of stratification, masked in weak stratification"
+        self.dataset.strat_2nd_mom_masked.attrs["long_name"] = (
+            "Second depth moment of stratification, masked in weak stratification"
+        )
 
         self.dataset["strat_1st_mom_masked"] = xr.DataArray(zd_m, coords=coords, dims=dims)
         self.dataset.strat_1st_mom_masked.attrs["units"] = "m"
         self.dataset.strat_1st_mom_masked.attrs["standard_name"] = "masked pycnocline depth"
-        self.dataset.strat_1st_mom_masked.attrs[
-            "long_name"
-        ] = "First depth moment of stratification, masked in weak stratification"
+        self.dataset.strat_1st_mom_masked.attrs["long_name"] = (
+            "First depth moment of stratification, masked in weak stratification"
+        )
 
         # Inherit horizontal grid information from gridded_w
         self.dataset["e1"] = xr.DataArray(

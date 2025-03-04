@@ -50,7 +50,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         # Test that the mean has been removed
         timeseries = lowestoft.dataset.ssh[0, :].values
         demeaned = timeseries - np.nanmean(timeseries)
-        self.assertTrue( (np.isclose(tg1.dataset.ssh[0, :].values, demeaned)).all(), "check1")
+        self.assertTrue((np.isclose(tg1.dataset.ssh[0, :].values, demeaned)).all(), "check1")
 
     def test_harmonic_analysis_utide(self):
         tganalysis = coast.TidegaugeAnalysis()

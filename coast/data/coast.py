@@ -1,4 +1,5 @@
 """The coast class is the main access point into this package."""
+
 import copy
 from typing import Any, Dict, List
 import math
