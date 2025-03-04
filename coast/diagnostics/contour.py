@@ -8,7 +8,7 @@ import traceback
 from ..data.coast import Coast
 from ..data.gridded import Gridded
 from scipy import interpolate
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid
 from sklearn.neighbors import BallTree
 from skimage import measure
 from .._utils.logging_util import warn, error
@@ -944,7 +944,7 @@ class ContourT(Contour):
         )
 
         # Cumulative integral of perturbation density on z levels
-        density_cumulative = -cumtrapz(density_z - ref_density, x=-z_levels, axis=1, initial=0)
+        density_cumulative = -cumulative_trapezoid(density_z - ref_density, x=-z_levels, axis=1, initial=0)
         hydrostatic_pressure = density_cumulative * self.GRAVITY
 
         attributes = {

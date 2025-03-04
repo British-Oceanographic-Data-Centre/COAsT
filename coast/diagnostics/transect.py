@@ -6,7 +6,7 @@ import gsw
 import os.path as path_lib
 import xarray as xr
 import numpy as np
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid
 import warnings
 import traceback
 from .._utils.logging_util import get_slug, debug, warn, info
@@ -1050,7 +1050,7 @@ class TransectT(Transect):
         self.data["density_zlevels"] = xr.DataArray(np.squeeze(density_z), coords=coords, dims=dims, attrs=attributes)
 
         # Cumulative integral of perturbation density on z levels
-        density_cumulative = -cumtrapz(density_z - ref_density, x=-z_levels, axis=1, initial=0)
+        density_cumulative = -cumulative_trapezoid(density_z - ref_density, x=-z_levels, axis=1, initial=0)
         hydrostatic_pressure = density_cumulative * self.gravity
 
         attributes = {
