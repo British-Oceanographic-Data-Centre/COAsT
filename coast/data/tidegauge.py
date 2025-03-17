@@ -514,7 +514,7 @@ class Tidegauge(Timeseries):
         # Initialise empty dataset and lists
         debug(f'Reading HLW data from "{filnam}"')
 
-        df = pd.read_csv(filnam, skiprows=1, header=None, sep='\s+')
+        df = pd.read_csv(filnam, skiprows=1, header=None, sep="\s+")
         df["datetime"] = pd.to_datetime(df[0] + " " + df[1], format="%d/%m/%Y %H:%M", utc=False)
         df["ssh"] = df[2]
         df.drop(columns=[0, 1, 2], inplace=True)
