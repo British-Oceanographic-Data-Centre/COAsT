@@ -114,7 +114,6 @@ class Coast:
         info(f"Loading a directory ({directory_to_files}) for {get_slug(self)}")
         with xr.open_mfdataset(directory_to_files, chunks=chunks, parallel=True, combine="by_coords") as files:
             self.dataset = files
-        self.dataset = xr.open_mfdataset(directory_to_files, chunks=chunks, parallel=True, combine="by_coords")
 
     def load_dataset(self, dataset: xr.Dataset):
         """Loads a dataset.
