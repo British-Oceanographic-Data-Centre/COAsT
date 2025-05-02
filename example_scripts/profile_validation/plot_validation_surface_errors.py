@@ -1,6 +1,6 @@
 """
 Plot up surface or bottom (or any fixed level) errors from a profile object
-with no z_dim (vertical dimension). Provide an array of netcdf files and 
+with no z_dim (vertical dimension). Provide an array of netcdf files and
 mess with the options to get a figure you like.
 
 You can define how many rows and columns the plot will have. This script will
