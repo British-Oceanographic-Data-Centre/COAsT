@@ -456,22 +456,22 @@ class TransectF(Transect):
         # DataArray attributes
         self.data_cross_tran_flow.normal_velocities.attrs["units"] = "m/s"
         self.data_cross_tran_flow.normal_velocities.attrs["standard_name"] = "velocity across the transect"
-        self.data_cross_tran_flow.normal_velocities.attrs[
-            "long_name"
-        ] = "velocity across the transect defined on the normal velocity grid points"
+        self.data_cross_tran_flow.normal_velocities.attrs["long_name"] = (
+            "velocity across the transect defined on the normal velocity grid points"
+        )
         if compute_transports:
             self.data_cross_tran_flow.normal_transports.attrs["units"] = "Sv"
-            self.data_cross_tran_flow.normal_transports.attrs[
-                "standard_name"
-            ] = "depth integrated volume transport across transect"
-            self.data_cross_tran_flow.normal_transports.attrs[
-                "long_name"
-            ] = "depth integrated volume transport across the transect defined on the normal velocity grid points"
+            self.data_cross_tran_flow.normal_transports.attrs["standard_name"] = (
+                "depth integrated volume transport across transect"
+            )
+            self.data_cross_tran_flow.normal_transports.attrs["long_name"] = (
+                "depth integrated volume transport across the transect defined on the normal velocity grid points"
+            )
         self.data_cross_tran_flow.depth_0.attrs["units"] = "m"
         self.data_cross_tran_flow.depth_0.attrs["standard_name"] = "depth"
-        self.data_cross_tran_flow.depth_0.attrs[
-            "long_name"
-        ] = "Initial depth at time zero defined at the normal velocity grid points"
+        self.data_cross_tran_flow.depth_0.attrs["long_name"] = (
+            "Initial depth at time zero defined at the normal velocity grid points"
+        )
         self.data_cross_tran_flow = self.data_cross_tran_flow.squeeze()
 
     @staticmethod
@@ -794,9 +794,9 @@ class TransectF(Transect):
         self.data_cross_tran_flow["depth_0_original"] = xr.DataArray(depth_0, dims=["z_dim", "r_dim"])
         self.data_cross_tran_flow.depth_0_original.attrs["units"] = "m"
         self.data_cross_tran_flow.depth_0_original.attrs["standard_name"] = "original depth coordinate"
-        self.data_cross_tran_flow.e12.attrs[
-            "standard_name"
-        ] = "horizontal scale factor along the transect at the normal velocity point"
+        self.data_cross_tran_flow.e12.attrs["standard_name"] = (
+            "horizontal scale factor along the transect at the normal velocity point"
+        )
 
     def plot_normal_velocity(self, time, plot_info: dict, cmap, smoothing_window=0):
         """

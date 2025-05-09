@@ -1,4 +1,5 @@
 """Config parser."""
+
 import json
 from pathlib import Path
 from typing import Union
@@ -15,7 +16,7 @@ class ConfigParser:
         Args:
             json_path (Union[Path, str]): path to json config file.
         """
-        with open(json_path, "r") as j:
+        with open(json_path, "r", encoding="utf-8") as j:
             json_content = json.loads(j.read())
             conf_type = ConfigTypes(json_content[ConfigKeys.TYPE])
             if conf_type == ConfigTypes.GRIDDED:

@@ -1,4 +1,5 @@
 """Glider class"""
+
 from .index import Indexed
 import xarray as xr
 from .._utils.logging_util import get_slug, debug, info, warn, warning

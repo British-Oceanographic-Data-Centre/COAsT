@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # IMPORT modules. Must have unittest, and probably coast.
 from coast._utils import plot_util

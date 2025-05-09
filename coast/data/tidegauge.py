@@ -1,4 +1,5 @@
 """Tide Gauge class"""
+
 import glob
 import re
 from pathlib import Path

@@ -1,0 +1,11 @@
+{
+		"exp_names": [
+                "ZPS_TIDE"
+        		],
+		"dirs":[
+                 "/gws/nopw/j04/class_vol2/senemo/cwilso01/ZPS_REF_TIDE/OUTPUTS/"
+                ],
+        "domains":[    
+                  "/gws/nopw/j04/class_vol2/senemo/cwilso01/EXP_REF_NOTIDE/domcfg_eORCA025_v2.nc" 
+              ]
+}

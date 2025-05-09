@@ -1,4 +1,5 @@
 """Lagrangian class"""
+
 from .index import Indexed
 
 
