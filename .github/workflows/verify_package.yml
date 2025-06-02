@@ -30,7 +30,7 @@ jobs:
       - name: Test with pytest
         run: |
           pip install dask[complete]
-          pip install -r requirements.txt
+          conda install --file environment.yml
           sudo apt-get update
           sudo apt-get install -y libgeos-dev
           pip install cartopy==0.21.0
