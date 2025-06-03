@@ -9,6 +9,9 @@ echo "Creating new virtual environment..."
 python3 -m virtualenv ./venv
 echo "Installing required packages..."
 ./venv/bin/pip install setuptools wheel twine
-./venv/bin/pip install -r requirements.txt
+CONDA_BASE=$(conda info --base)
+source "${CONDA_BASE}/etc/profile.d/conda.sh"
+conda env update --prune --file environment.yml 
+conda activate coast
 
 echo "Done!"
