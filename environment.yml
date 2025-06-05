@@ -17,7 +17,7 @@ dependencies:
   - numpy==1.26.4
   - dask==2024.8.1
   - dask[complete]==2024.8.1
-  - matplotlib==3.10.1
+  - matplotlib==3.6.0
   - scipy==1.15.2
   - utide==0.3.1
   - scikit-learn==1.6.1
