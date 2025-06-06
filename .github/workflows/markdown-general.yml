@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: British-Oceanographic-Data-Centre/COAsT
-          ref: develop
+          ref: 675_scipy_integrate_cumtrapz_update
           path: external
 
       - name: Prepare environment
