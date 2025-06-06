@@ -36,7 +36,7 @@ PACKAGE = SimpleNamespace(
             "pytest==7.1.1",
             "pytest-mock==3.7.0",
             "numpy==1.26.4",
-            "dask==2022.3.0",
+            "dask==2024.8.1",
             "dask[complete]==2024.8.1",
             "xarray[complete]==2022.3.0",
             "matplotlib==3.8.4",
