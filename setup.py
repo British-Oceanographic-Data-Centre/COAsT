@@ -41,7 +41,7 @@ PACKAGE = SimpleNamespace(
             "xarray[complete]==2023.7.0",
             "matplotlib==3.8.4",
             "netCDF4==1.5.8",
-            "scipy==1.15.2",
+            "scipy==1.13.1",
             "gsw==3.6.19",
             "utide==0.3.1",
             "scikit-learn==1.6.1",
