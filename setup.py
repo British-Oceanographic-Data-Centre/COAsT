@@ -59,7 +59,7 @@ PACKAGE = SimpleNamespace(
             "zarr==2.18.3",
             "pip==25.1.1",
             "spyder==6.0.7",
-            "jupyterlab==4.4.3"
+            "jupyterlab==4.4.3",
             # "xesmf>=0.3.0",  # Optional. Not part of main package
             # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],
