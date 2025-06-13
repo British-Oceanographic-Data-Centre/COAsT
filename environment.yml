@@ -7,7 +7,7 @@ dependencies:
   - cython==3.1.1
   - cartopy==0.24.0
   - gsw==3.6.19
-  - xarray==2023.7.0
+  - xarray[complete]==2023.7.0
   - h5py==3.6.0
   - netCDF4==1.5.8
   - zarr==2.18.3
@@ -15,9 +15,9 @@ dependencies:
   - pytest==7.1.1
   - pytest-mock==3.7.0
   - numpy==1.26.4
-  - dask==2024.8.1
-  - dask[complete]==2024.8.1
-  - matplotlib==3.6.0
+  - dask==2024.8.0
+  - dask[complete]==2024.8.0
+  - matplotlib==3.8.4
   - scipy==1.15.2
   - utide==0.3.1
   - scikit-learn==1.6.1
@@ -30,3 +30,6 @@ dependencies:
   - requests==2.32.3
   - spyder==6.0.7
   - jupyterlab==4.4.3
+  - aiohttp==3.11.13
+  - PyYAML==6.0
+  - oyaml==1.0
