@@ -10,7 +10,7 @@ dependencies:
   - xarray[complete]==2023.7.0
   - h5py==3.6.0
   - netCDF4==1.5.8
-  - zarr==2.18.3
+  - zarr==2.18.2
   - pip==25.1.1
   - pytest==7.1.1
   - pytest-mock==3.7.0
