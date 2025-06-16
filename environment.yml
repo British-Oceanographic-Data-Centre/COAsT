@@ -25,7 +25,7 @@ dependencies:
   - pyproj==3.6.1
   - scikit-image==0.24.0
   - statsmodels==0.14.4
-  - pydap==3.5.5
+  - pydap==3.5.0
   - lxml==4.9.2
   - requests==2.32.3
   - spyder==6.0.7

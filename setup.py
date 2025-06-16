@@ -47,7 +47,7 @@ PACKAGE = SimpleNamespace(
             "scikit-learn==1.6.1",
             "scikit-image==0.24.0",
             "statsmodels==0.14.4",
-            "pydap==3.5.5",
+            "pydap==3.5.0",
             "lxml==4.9.2",  # Required for pydap CAS parsing,
             "requests==2.32.3",
             "aiohttp==3.11.13",
