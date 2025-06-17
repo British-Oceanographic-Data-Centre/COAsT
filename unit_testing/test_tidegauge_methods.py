@@ -51,6 +51,7 @@ class test_tidegauge_analysis(unittest.TestCase):
         timeseries = lowestoft.dataset.ssh[0, :].values
         demeaned = timeseries - np.nanmean(timeseries)
         self.assertTrue(np.array_equal(tg1.dataset.ssh[0, :].values, demeaned), "check1")
+        # self.assertTrue((np.isclose(tg1.dataset.ssh[0, :].values, demeaned)).all(), "check1")  # might need this with later numpy>1.26 versions
 
     def test_harmonic_analysis_utide(self):
         tganalysis = coast.TidegaugeAnalysis()
@@ -66,7 +67,7 @@ class test_tidegauge_analysis(unittest.TestCase):
 
         # Reconstruct for a different time period
         with self.subTest("Reconstruct time series"):
-            new_times = pd.date_range(datetime.datetime(2008, 1, 1), datetime.datetime(2008, 12, 31), freq="1H")
+            new_times = pd.date_range(datetime.datetime(2008, 1, 1), datetime.datetime(2008, 12, 31), freq="1h")
             tg_recon = coast.Tidegauge(dataset=lowestoft.dataset, new_time_coords=new_times)
             reconstructed = tganalysis.reconstruct_tide_utide(tg_recon.dataset, ha, constit="M2", output_name="test")
 
@@ -210,15 +211,15 @@ class test_tidegauge_methods(unittest.TestCase):
         self.assertTrue(check2, "check2")
 
     def test_tidegauge_resample_and_apply_doodsonx0(self):
-        with self.subTest("Resample to 1H"):
+        with self.subTest("Resample to 1h"):
             tganalysis = coast.TidegaugeAnalysis()
             date0 = datetime.datetime(2007, 1, 10)
             date1 = datetime.datetime(2007, 1, 12)
             lowestoft = coast.Tidegauge()
             lowestoft.read_gesla(files.fn_tidegauge, date_start=date0, date_end=date1)
-            resampled = tganalysis.resample_mean(lowestoft.dataset, "1H")
+            resampled = tganalysis.resample_mean(lowestoft.dataset, "1h")
             check1 = pd.to_datetime(resampled.dataset.time.values[2]) == datetime.datetime(2007, 1, 10, 2, 0, 0)
-            check2 = resampled.dataset.dims["t_dim"] == 49
+            check2 = resampled.dataset.sizes["t_dim"] == 49
             self.assertTrue(check1)
             self.assertTrue(check2)
 

@@ -17,6 +17,7 @@ There is also some elegance in having all the indexed class load methods togethe
 As opposed to having one file per object, with all its methods too. Better filenaming
 could help point out the parent object.
 """
+
 from coast import Altimetry, Profile, Glider, Argos, Oceanparcels, Tidegauge
 import datetime
 
