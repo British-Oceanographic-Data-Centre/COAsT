@@ -12,6 +12,7 @@ echo "Installing required packages..."
 CONDA_BASE=$(conda info --base)
 source "${CONDA_BASE}/etc/profile.d/conda.sh"
 conda clean --all
+conda config --set verbosity 3 --env
 conda env update --prune --file environment.yml 
 conda activate coast
 
