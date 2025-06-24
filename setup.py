@@ -31,8 +31,8 @@ PACKAGE = SimpleNamespace(
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
         "install_requires": [
-            "cython<3.0.0",
-            "PyYAML==6.0",
+            "cython==0.29.37",
+            "PyYAML==5.4.1",
             "oyaml==1.0",
             "pytest==7.1.1",
             "pytest-mock==3.7.0",
