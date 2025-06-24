@@ -42,6 +42,10 @@ jobs:
       - name: Test Package Install
         run: |
           sudo apt-get update && sudo apt-get install -y libhdf5-dev libnetcdf-dev
+          CONDA_BASE=$(conda info --base)
+          source "${CONDA_BASE}/etc/profile.d/conda.sh"
+          conda init
+          conda activate coast
           python -m pip install dist/coast-*.tar.gz
       - name: Generate Conda Metadata
         run: |
