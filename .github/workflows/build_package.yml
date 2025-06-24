@@ -23,7 +23,8 @@ jobs:
           python -m pip install --upgrade pip virtualenv
           CONDA_BASE=$(conda info --base)
           source "${CONDA_BASE}/etc/profile.d/conda.sh"
-          conda env update --prune --file environment.yml 
+          conda env update --prune --file environment.yml
+          conda install conda-forge::hdf5
           conda activate coast
       - name: Shell Script Permissions
         run: |
