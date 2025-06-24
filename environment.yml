@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python==3.10
   - cython<3.0.0
+  - hdf5
   - cartopy==0.23.0
   - gsw==3.6.19
   - xarray[complete]==2023.7.0

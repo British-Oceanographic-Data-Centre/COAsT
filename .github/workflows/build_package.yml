@@ -39,8 +39,6 @@ jobs:
           conda init
           conda activate coast
           ./build.sh
-      - name: Install system dependencies for netCDF4
-        run: sudo apt-get update && sudo apt-get install -y libhdf5-dev libnetcdf-dev
       - name: Test Package Install
         run: |
           python -m pip install dist/coast-*.tar.gz
