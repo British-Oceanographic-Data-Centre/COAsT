@@ -5,6 +5,8 @@ cd "$(dirname "$0")"  # Set working directory
 
 mkdir -p build dist
 echo "Cleaning up old versions..."
+./venv/bin/pip install Cython
+./venv/bin/pip install --no-build-isolation PyYAML==6.0
 rm -rf ./build/* ./dist/* ./Example_Python_Package.egg-info
 echo "Building package for distribution..."
 ./venv/bin/python ./setup.py sdist bdist_wheel
