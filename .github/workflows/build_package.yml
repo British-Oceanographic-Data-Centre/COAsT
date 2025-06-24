@@ -34,6 +34,9 @@ jobs:
           ./setup_environment.sh
       - name: Build Package
         run: |
+          CONDA_BASE=$(conda info --base)
+          source "${CONDA_BASE}/etc/profile.d/conda.sh"
+          conda activate coast
           ./build.sh
       - name: Install system dependencies for netCDF4
         run: sudo apt-get update && sudo apt-get install -y libhdf5-dev libnetcdf-dev
