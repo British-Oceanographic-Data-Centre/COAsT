@@ -53,7 +53,7 @@ PACKAGE = SimpleNamespace(
             "aiohttp==3.11.13",
             "tqdm==4.67.1",
             "pyproj==3.6.1",
-            "cython==3.1.1",
+            "cython<3.0.0",
             "cartopy==0.23.0",
             "h5py==3.6.0",
             "zarr==2.18.2",
