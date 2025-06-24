@@ -35,6 +35,8 @@ jobs:
       - name: Build Package
         run: |
           ./build.sh
+      - name: Install system dependencies for netCDF4
+        run: sudo apt-get update && sudo apt-get install -y libhdf5-dev libnetcdf-dev
       - name: Test Package Install
         run: |
           python -m pip install dist/coast-*.tar.gz
