@@ -9,5 +9,6 @@ echo "Installing required packages..."
 CONDA_BASE=$(conda info --base)
 source "${CONDA_BASE}/etc/profile.d/conda.sh"
 conda activate coast
+conda install -c conda-forge cython setuptools wheel twine
 
 echo "Done!"
