@@ -31,7 +31,8 @@ PACKAGE = SimpleNamespace(
         "keywords": ["NEMO", "shallow water", "ocean assessment"],
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
         "install_requires": [
-            "PyYAML==6.0",
+            "cython==0.29.37",
+            "PyYAML==5.4.1",
             "oyaml==1.0",
             "pytest==7.1.1",
             "pytest-mock==3.7.0",
@@ -53,7 +54,6 @@ PACKAGE = SimpleNamespace(
             "aiohttp==3.11.13",
             "tqdm==4.67.1",
             "pyproj==3.6.1",
-            "cython==3.1.1",
             "cartopy==0.23.0",
             "h5py==3.6.0",
             "zarr==2.18.2",
@@ -63,7 +63,7 @@ PACKAGE = SimpleNamespace(
             # "xesmf>=0.3.0",  # Optional. Not part of main package
             # "esmpy>=8.0.0",  # Optional. Not part of main package
         ],
-        "python_requires": ">3.8,<3.11",
+        "python_requires": ">3.8,<3.13",
         "packages": ["coast", "coast.data", "coast._utils", "coast.diagnostics"],
         "include_package_data": True,
         "github": "British-Oceanographic-Data-Centre",

@@ -17,7 +17,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Generate contents.
         run: |
-          pip install . 
+          CONDA_BASE=$(conda info --base)
+          source "${CONDA_BASE}/etc/profile.d/conda.sh"
+          conda env update --prune --file environment.yml
+          conda activate coast
+          pip install .
           mkdir -p example_files
           sudo apt-get update
           sudo apt-get install -y libgeos-dev

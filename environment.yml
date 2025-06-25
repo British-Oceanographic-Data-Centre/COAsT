@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - python==3.10
-  - cython==3.1.1
+  - cython==0.29.37
   - cartopy==0.23.0
   - gsw==3.6.19
   - xarray[complete]==2023.7.0
@@ -31,5 +31,5 @@ dependencies:
   - spyder==6.0.7
   - jupyterlab==4.4.3
   - aiohttp==3.11.13
-  - PyYAML==6.0
+  - PyYAML==5.4.1
   - oyaml==1.0
