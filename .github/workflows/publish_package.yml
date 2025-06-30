@@ -39,7 +39,7 @@ jobs:
           CONDA_BASE=$(conda info --base)
           source "${CONDA_BASE}/etc/profile.d/conda.sh"
           conda activate coast
-          python -m pip install dist/COAsT-*.tar.gz
+          python -m pip install dist/coast-*.tar.gz
       # - name: Publish Package to PyPi
       #   shell: bash
       #   env:
