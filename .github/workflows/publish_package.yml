@@ -3,7 +3,7 @@ name: Build and Deploy Python package
 on:
   push:
     branches:
-      675_scipy_integrate_cumtrapz_update
+      master
 
 jobs:
   build-and-publish:
@@ -40,19 +40,19 @@ jobs:
           source "${CONDA_BASE}/etc/profile.d/conda.sh"
           conda activate coast
           python -m pip install dist/coast-*.tar.gz
-      # - name: Publish Package to PyPi
-      #   shell: bash
-      #   env:
-      #     PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-      #   run: |
-      #     ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
+      - name: Publish Package to PyPi
+        shell: bash
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
       - name: Generate Conda Metadata
         run: |
           ./generate_conda_meta.sh
           cat conda/meta.yaml
-      # - name: Publish Package to Anaconda
-      #   uses: fcakyon/conda-publish-action@v1.3
-      #   with:
-      #     subdir: "conda"
-      #     anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
-      #     platforms: 'win osx linux'
+      - name: Publish Package to Anaconda
+        uses: fcakyon/conda-publish-action@v1.3
+        with:
+          subdir: "conda"
+          anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
+          platforms: 'win osx linux'
