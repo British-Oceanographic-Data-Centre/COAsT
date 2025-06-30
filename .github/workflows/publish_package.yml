@@ -3,7 +3,7 @@ name: Build and Deploy Python package
 on:
   push:
     branches:
-      master
+      develop
 
 jobs:
   build-and-publish:
@@ -21,7 +21,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip virtualenv
-          python -m pip install -r requirements.txt
+          CONDA_BASE=$(conda info --base)
+          source "${CONDA_BASE}/etc/profile.d/conda.sh"
+          conda env update --prune --file environment.yml 
+          conda activate coast
       - name: Shell Script Permissions
         run: |
           chmod +x *.sh
@@ -33,20 +36,23 @@ jobs:
           ./build.sh
       - name: Test Package Install
         run: |
+          CONDA_BASE=$(conda info --base)
+          source "${CONDA_BASE}/etc/profile.d/conda.sh"
+          conda activate coast
           python -m pip install dist/COAsT-*.tar.gz
-      - name: Publish Package to PyPi
-        shell: bash
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
+      # - name: Publish Package to PyPi
+      #   shell: bash
+      #   env:
+      #     PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      #   run: |
+      #     ./publish.sh "https://upload.pypi.org/legacy/" "$PYPI_TOKEN"
       - name: Generate Conda Metadata
         run: |
           ./generate_conda_meta.sh
           cat conda/meta.yaml
-      - name: Publish Package to Anaconda
-        uses: fcakyon/conda-publish-action@v1.3
-        with:
-          subdir: "conda"
-          anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
-          platforms: 'win osx linux'
+      # - name: Publish Package to Anaconda
+      #   uses: fcakyon/conda-publish-action@v1.3
+      #   with:
+      #     subdir: "conda"
+      #     anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
+      #     platforms: 'win osx linux'
