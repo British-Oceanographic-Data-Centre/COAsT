@@ -3,7 +3,7 @@ name: Build and Deploy Python package
 on:
   push:
     branches:
-      develop
+      675_scipy_integrate_cumtrapz_update
 
 jobs:
   build-and-publish:
