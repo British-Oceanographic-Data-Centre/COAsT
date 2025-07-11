@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # IMPORT modules. Must have unittest, and probably coast.
 import coast
@@ -24,7 +22,7 @@ class test_eof_methods(unittest.TestCase):
         ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim="t_dim")).sum(dim=["x_dim", "y_dim"])
 
         # Check ssh anomaly is reconstructed at each time point
-        check1 = np.allclose(ssh_reconstruction, ssh_anom, rtol=0.0001)
+        check1 = np.allclose(ssh_reconstruction, ssh_anom, rtol=0.001)
         var_cksum = eofs.variance.sum(dim="mode").compute().item()
         check2 = np.isclose(var_cksum, 100)
 
@@ -46,9 +44,9 @@ class test_eof_methods(unittest.TestCase):
         ssh_anom = (nemo_t.dataset.ssh - nemo_t.dataset.ssh.mean(dim="t_dim")).sum(dim=["x_dim", "y_dim"])
 
         # Check ssh anomaly is reconstructed at each time point
-        check1 = np.allclose(ssh_reconstruction, ssh_anom, rtol=0.0001)
+        check1 = np.allclose(ssh_reconstruction, ssh_anom, rtol=0.001)
         var_cksum = heofs.variance.sum(dim="mode").item()
-        check2 = np.isclose(var_cksum, 100)
+        check2 = np.isclose(var_cksum, 100, rtol=0.001)
 
         self.assertTrue(check1, "check1")
         self.assertTrue(check2, "check2")

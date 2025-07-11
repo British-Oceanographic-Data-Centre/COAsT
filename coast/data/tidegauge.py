@@ -1,4 +1,5 @@
 """Tide Gauge class"""
+
 import glob
 import re
 from pathlib import Path
@@ -513,7 +514,7 @@ class Tidegauge(Timeseries):
         # Initialise empty dataset and lists
         debug(f'Reading HLW data from "{filnam}"')
 
-        df = pd.read_csv(filnam, skiprows=1, header=None, delim_whitespace=True)
+        df = pd.read_csv(filnam, skiprows=1, header=None, sep="\s+")
         df["datetime"] = pd.to_datetime(df[0] + " " + df[1], format="%d/%m/%Y %H:%M", utc=False)
         df["ssh"] = df[2]
         df.drop(columns=[0, 1, 2], inplace=True)
@@ -620,24 +621,23 @@ class Tidegauge(Timeseries):
             if winsize is None:
                 winsize = 2
             winsize_hours = np.timedelta64(winsize, "h")
-            ssh = self.dataset.where(
-                (self.dataset["time"] >= time_guess - winsize_hours)
-                & (self.dataset["time"] <= time_guess + winsize_hours),
+            water_level = self.dataset.where(
+                (self.dataset[time_var] >= time_guess - winsize_hours)
+                & (self.dataset[time_var] <= time_guess + winsize_hours),
                 drop=True,
-            )["ssh"]
-            # initialise start_index and end_index
-            return ssh[0]
+            )[measure_var]
+            return water_level.squeeze()
 
         if method == "nearest_1":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            return self.dataset[measure_var].isel(t_dim=index[0:1])[0]
+            return self.dataset[measure_var].isel(t_dim=index[0:1]).squeeze()
         if method == "nearest_2":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            return self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+            return self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1]).squeeze()
 
         if method == "nearest_HW":
             index = np.argsort(np.abs(self.dataset[time_var] - time_guess)).values
-            nearest_2 = self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1])[0]
+            nearest_2 = self.dataset[measure_var].isel(t_dim=index[0 : 1 + 1]).squeeze()
             return nearest_2.isel(t_dim=np.argmax(nearest_2.data))
 
         else:

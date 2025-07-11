@@ -1,4 +1,5 @@
 """A class to convert from coast gridded to xesmf."""
+
 import os.path as path_lib
 import warnings
 from ..data.gridded import Gridded

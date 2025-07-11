@@ -1,4 +1,5 @@
 """Altimetry class"""
+
 from .track import Track
 import numpy as np
 import xarray as xr
