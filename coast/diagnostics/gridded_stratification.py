@@ -44,10 +44,10 @@ class GriddedStratification(Gridded):  # TODO All abstract methods should be imp
 
         # Define the spatial dimensional size and check the dataset and domain arrays are the same size in
         # z_dim, ydim, xdim
-        self.nt = gridded_t.dataset.dims["t_dim"]
-        self.nz = gridded_t.dataset.dims["z_dim"]
-        self.ny = gridded_t.dataset.dims["y_dim"]
-        self.nx = gridded_t.dataset.dims["x_dim"]
+        self.nt = gridded_t.dataset.sizes["t_dim"]
+        self.nz = gridded_t.dataset.sizes["z_dim"]
+        self.ny = gridded_t.dataset.sizes["y_dim"]
+        self.nx = gridded_t.dataset.sizes["x_dim"]
         debug(f"Initialised {get_slug(self)}")
 
     def construct_pycnocline_vars(self, gridded_t: Gridded, gridded_w: Gridded, strat_thres=-0.01):

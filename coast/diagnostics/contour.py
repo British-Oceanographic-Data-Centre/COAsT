@@ -9,7 +9,7 @@ import traceback
 from ..data.coast import Coast
 from ..data.gridded import Gridded
 from scipy import interpolate
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid as cumtrapz #jth fix for newer version of scipy
 from sklearn.neighbors import BallTree
 from skimage import measure
 from .._utils.logging_util import warn, error

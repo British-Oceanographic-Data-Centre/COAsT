@@ -16,7 +16,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
     Derived fields (sss, sst, pea) are placed into supplied coast.Gridded object.
     """
 
-    def __init__(self, gridded_t, z_max=200.0):
+    def __init__(self, gridded_t, z_max=200.0, variables=['pea','sst','sss']):
         """
         Assumes monthly values in gridded_t, starting from Jan and multiyear
 
@@ -27,6 +27,7 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         self.gridded_t = gridded_t
         self.dataset = xr.Dataset()
         self.z_max = z_max
+        self.variables = variables
 
     def calc_climatologies(self):
         """
@@ -40,44 +41,54 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         # calculate a depth mask
         zd_mask, _, _ = self.gridded_t.calculate_vertical_mask(self.z_max)
 
-        ny = self.gridded_t.dataset.dims["y_dim"]
-        nx = self.gridded_t.dataset.dims["x_dim"]
+        ny = self.gridded_t.dataset.sizes["y_dim"]
+        nx = self.gridded_t.dataset.sizes["x_dim"]
+        nt = self.gridded_t.dataset.sizes["t_dim"]
+        monthly_clim={}
+        variables = self.variables
+        for var in variables:
+            monthly_clim[var] = np.zeros((12, ny, nx))
+        for var in variables:
+            if var == 'pea':
+                try:
+                    nyear = int(nt / 12)  # hard wired for monthly data starting in Jan
+                    for iy in range(nyear):
+                        print("Calc pea", iy)
+                        it = np.arange((iy) * 12, (iy) * 12 + 12).astype(int)
+                        for im in range(12):
+                            itt = [it[im]]
+                            print(itt)
+                            gridded_t2 = self.gridded_t.subset_as_copy(t_dim=itt)
+                            print("copied", im)
+                            pea = GriddedStratification(gridded_t2)
+                            pea.calc_pea(gridded_t2, zd_mask)
+                            monthly_clim['pea'][im, :, :] = monthly_clim['pea'][im, :, :] + pea.dataset["PEA"].values
+                    monthly_clim['pea'] = monthly_clim['pea'] / nyear
 
-        nt = self.gridded_t.dataset.dims["t_dim"]
+                except Exception as error:
+                    (warn(f"Unable to perform pea calculation. Please check the error {error}"))
+                    debug(f"Unable to perform pea calculation. Please check the error {error}")
 
-        sst_monthy_clim = np.zeros((12, ny, nx))
-        sss_monthy_clim = np.zeros((12, ny, nx))
-        pea_monthy_clim = np.zeros((12, ny, nx))
+                    print("not possible to calculate pea")
+    #        if "sst" in self.gridded_t.dataset.variables:
+    #            sst = self.gridded_t.dataset.variables["sst"]
+    #        else:
+    #            sst = self.gridded_t.dataset.variables["temperature"].values[:,0,:,:]
+    #        if "sss" in self.gridded_t.dataset.variables:
+    #            sss = self.gridded_t.dataset.variables["sss"]
+    #        else:
+    #            sss = self.gridded_t.dataset.variables["salinity"].values[:,0,:,:]
 
-        try:
-            nyear = int(nt / 12)  # hard wired for monthly data starting in Jan
-            for iy in range(nyear):
-                print("Calc pea", iy)
-                it = np.arange((iy) * 12, (iy) * 12 + 12).astype(int)
+            else:
+                if self.gridded_t.dataset.variables[var].ndim == 3:
+                    Var = self.gridded_t.dataset.variables[var]
+                else:
+                    Var = self.gridded_t.dataset.variables[var].values[:,0,:,:]
                 for im in range(12):
-                    itt = [it[im]]
-                    print(itt)
-                    gridded_t2 = self.gridded_t.subset_as_copy(t_dim=itt)
-                    print("copied", im)
-                    pea = GriddedStratification(gridded_t2)
-                    pea.calc_pea(gridded_t2, zd_mask)
-                    pea_monthy_clim[im, :, :] = pea_monthy_clim[im, :, :] + pea.dataset["PEA"].values
-            pea_monthy_clim = pea_monthy_clim / nyear
+                    print("Month", var, im)
+                    it = np.arange(im, nt, 12).astype(int)
+                    monthly_clim[var][im, :, :] = np.mean(Var[it, :, :], axis=0)
 
-        except Exception as error:
-            (warn(f"Unable to perform pea calculation. Please check the error {error}"))
-            debug(f"Unable to perform pea calculation. Please check the error {error}")
-
-            print("not possible to calculate pea")
-
-        sst = self.gridded_t.dataset.variables["sst"]
-        sss = self.gridded_t.dataset.variables["sss"]
-
-        for im in range(12):
-            print("Month", im)
-            it = np.arange(im, nt, 12).astype(int)
-            sst_monthy_clim[im, :, :] = np.mean(sst[it, :, :], axis=0)
-            sss_monthy_clim[im, :, :] = np.mean(sss[it, :, :], axis=0)
         # NBTy[im,:,:]=np.mean(NBT[it,:,:],axis=0)
         # save hard work in netcdf file
         coords = {
@@ -86,9 +97,9 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
             "longitude": (("y_dim", "x_dim"), self.gridded_t.dataset.longitude.values),
         }
         dims = ["mon_dim", "y_dim", "x_dim"]
-        attributes_sst = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
-        attributes_sss = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
-        attributes_pea = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(self.z_max) + "m"}
+        #attributes_sst = {"units": "o^C", "standard name": "Conservative Sea Surface Temperature"}
+        #attributes_sss = {"units": "", "standard name": "Absolute Sea Surface Salinity"}
+        #attributes_pea = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(self.z_max) + "m"}
         # jth this adds the new variables to the full data set, which makes saving difficult, easier just to keep the new variables in seperate object
         #        self.dataset = self.gridded_t.dataset["sst_monthy_clim"] = xr.DataArray(
         #            np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst
@@ -100,12 +111,18 @@ class GriddedMonthlyHydrographicClimatology(Gridded):
         #            np.squeeze(pea_monthy_clim), coords=coords, dims=dims, attrs=attributes_pea
         #        )
         #        self.dataset = self.gridded_t.dataset
-        self.dataset["sst_monthy_clim"] = xr.DataArray(
-            np.squeeze(sst_monthy_clim), coords=coords, dims=dims, attrs=attributes_sst
-        )
-        self.dataset["sss_monthy_clim"] = xr.DataArray(
-            np.squeeze(sss_monthy_clim), coords=coords, dims=dims, attrs=attributes_sss
-        )
-        self.dataset["pea_monthy_clim"] = xr.DataArray(
-            np.squeeze(pea_monthy_clim), coords=coords, dims=dims, attrs=attributes_pea
-        )
+        for var in variables:
+            if var == 'pea':
+                attributes = {"units": "Jm^-3", "standard name": "Potential Energy Anomaly to " + str(self.z_max) + "m"}
+            else:
+                attributes = self.gridded_t.dataset.variables[var].attrs
+            self.dataset[f"{var}_monthly_clim"] = xr.DataArray(
+                np.squeeze(monthly_clim[var]), coords=coords, dims=dims, attrs=attributes
+                )
+
+ #       self.dataset["sss_monthy_clim"] = xr.DataArray(
+ #           np.squeeze(sss_monthy_clim), coords=coords, dims=dims, attrs=attributes_sss
+ #       )
+ #       self.dataset["pea_monthy_clim"] = xr.DataArray(
+ #           np.squeeze(pea_monthy_clim), coords=coords, dims=dims, attrs=attributes_pea
+ #       )

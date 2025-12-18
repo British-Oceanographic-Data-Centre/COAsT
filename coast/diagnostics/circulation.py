@@ -24,7 +24,7 @@ class CurrentsOnT(Gridded):
         gridded = Gridded(fn_domain=fn_domain, config=config, **kwargs)
         self.dataset = gridded.dataset
 
-    def currents_on_t(self, gridded_u, gridded_v):
+    def currents_on_t(self, gridded_u, gridded_v,u_variable='u_velocity',v_variable='v_velocity'):
         """
         Adds co-located velocity components and speed to CurrentsOnT object
 
@@ -54,9 +54,9 @@ class CurrentsOnT(Gridded):
         """
         ds_u = self.dataset.copy(deep=True)
         # U velocity on T-points
-        ds_u["ut_velocity"] = 0.5 * (gridded_u.dataset.u_velocity.shift(x_dim=1) + gridded_u.dataset.u_velocity)
+        ds_u["ut_velocity"] = 0.5 * (gridded_u.dataset[u_variable].shift(x_dim=1) + gridded_u.dataset[u_variable])
         # replace wrapped (1st) longitude coord with zero
-        _, _lon = xr.broadcast(gridded_u.dataset.u_velocity, gridded_u.dataset.longitude)
+        _, _lon = xr.broadcast(gridded_u.dataset[u_variable], gridded_u.dataset.longitude)
         ds_u["ut_velocity"] = ds_u["ut_velocity"].where(
             _lon != _lon.isel(x_dim=0), 0
         )  # keep values except where lon(x_dim=0)
@@ -73,9 +73,9 @@ class CurrentsOnT(Gridded):
         # V velocity on T-points
         ds_v = self.dataset.copy(deep=True)
 
-        ds_v["vt_velocity"] = 0.5 * (gridded_v.dataset.v_velocity.shift(y_dim=1) + gridded_v.dataset.v_velocity)
+        ds_v["vt_velocity"] = 0.5 * (gridded_v.dataset[v_variable].shift(y_dim=1) + gridded_v.dataset[v_variable])
         # replace wrapped (1st) latitude coord with zero
-        _, _lat = xr.broadcast(gridded_v.dataset.v_velocity, gridded_v.dataset.latitude)
+        _, _lat = xr.broadcast(gridded_v.dataset[v_variable], gridded_v.dataset.latitude)
         ds_v["vt_velocity"] = ds_v["vt_velocity"].where(
             _lat != _lat.isel(y_dim=0), 0
         )  # keep values except where lat(y_dim=0)

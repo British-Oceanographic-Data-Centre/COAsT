@@ -44,11 +44,21 @@ def experiments(experiments="experiments.json"):
         except:
             file_names = []
 
+        try:
+            ystart = json_content["year_start"]
+        except:
+            ystart = []
+
+        try:
+            ystop = json_content["year_stop"]
+        except:
+            ystop = []
+
         # check all non zero lengths are the same
-        lengths = np.array([len(exp_names), len(dirs), len(domains), len(file_names)])
+        lengths = np.array([len(exp_names), len(dirs), len(domains), len(file_names), len(ystart),len(ystop)])
         if np.min(lengths[np.nonzero(lengths)[0]]) != np.max(lengths[np.nonzero(lengths)[0]]):
             print("Warning DIFFERENT NUMBER OF NAMES PROVIDED, CHECK JSON FILE")
-    return exp_names, dirs, domains, file_names
+    return exp_names, dirs, domains, file_names, ystart, ystop
 
 
 def nemo_filename_maker(directory, year_start: int, year_stop: int, grid: str = "T") -> List:

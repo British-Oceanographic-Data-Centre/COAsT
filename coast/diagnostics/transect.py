@@ -6,7 +6,7 @@ import gsw
 import os.path as path_lib
 import xarray as xr
 import numpy as np
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid as cumtrapz #jth fix for newer version of scipy
 import warnings
 import traceback
 from .._utils.logging_util import get_slug, debug, warn, info
