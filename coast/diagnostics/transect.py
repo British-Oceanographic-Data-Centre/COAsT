@@ -128,8 +128,8 @@ class Transect:
                 tran_y_ind, tran_x_ind = self.process_transect_indices(
                     gridded, np.asarray(tran_y_ind), np.asarray(tran_x_ind)
                 )
-            elif y_indices is not None and x_indices is not None:
-                if y_indices[0] > y_indices[-1]:
+            elif y_indices is not None and x_indices is not None: # y_indices increasing != latitude increasing near N pole
+                if gridded.dataset.latitude[y_indices[0], x_indices[0]] > gridded.dataset.latitude[y_indices[-1], x_indices[-1]]:
                     y_indices = y_indices[::-1]
                     x_indices = x_indices[::-1]
                 tran_y_ind, tran_x_ind = self.process_transect_indices(gridded, y_indices, x_indices)
@@ -367,6 +367,8 @@ class TransectF(Transect):
         # directions are positive.
         dr_n = np.where(np.diff(self.y_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
         dr_n = dr_n[~np.isnan(dr_n)].astype(int)
+        dr_s = np.where(np.diff(self.y_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
+        dr_s = dr_s[~np.isnan(dr_s)].astype(int)
         dr_e = np.where(np.diff(self.x_ind) > 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
         dr_e = dr_e[~np.isnan(dr_e)].astype(int)
         dr_w = np.where(np.diff(self.x_ind) < 0, np.arange(0, self.data.r_dim.size - 1), np.nan)
@@ -384,6 +386,20 @@ class TransectF(Transect):
         longitude[dr_n] = u_ds.longitude.values[dr_n + 1]
         e1[dr_n] = u_ds.e1.values[dr_n + 1]
         e2[dr_n] = u_ds.e2.values[dr_n + 1]
+
+        # u flux (- in)
+        velocity[:, :, dr_s] = -u_ds.u_velocity.to_masked_array()[:, :, dr_s]
+        if compute_transports:
+            vol_transport[:, :, dr_s] = (
+                velocity[:, :, dr_s] * u_ds.e2.to_masked_array()[dr_s] * u_ds.e3.to_masked_array()[:, :, dr_s]
+            )
+            e3[:, :, dr_s] = u_ds.e3.values[:, :, dr_s]
+        depth_0[:, dr_s] = u_ds.depth_0.to_masked_array()[:, dr_s]
+        latitude[dr_s] = u_ds.latitude.values[dr_s]
+        longitude[dr_s] = u_ds.longitude.values[dr_s]
+        e1[dr_s] = u_ds.e1.values[dr_s]
+        e2[dr_s] = u_ds.e2.values[dr_s]
+
 
         # v flux (- in)
         velocity[:, :, dr_e] = -v_ds.v_velocity.to_masked_array()[:, :, dr_e + 1]
