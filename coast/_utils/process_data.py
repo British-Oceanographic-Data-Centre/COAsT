@@ -120,7 +120,5 @@ class ProcessData:  # TODO All abstract methods should be implemented
         return gd
 
 
-Process_data = deprecated(
-    "Please use the 'ProcessData' class instead. \
-    This name will change in the next release."
-)(ProcessData)
+Process_data = deprecated("Please use the 'ProcessData' class instead. \
+    This name will change in the next release.")(ProcessData)

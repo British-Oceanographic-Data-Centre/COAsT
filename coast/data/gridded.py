@@ -574,11 +574,8 @@ class Gridded(Coast):  # TODO Complete this docstring
             if eos != "EOS10":
                 raise ValueError(str(self) + ": Density calculation for " + eos + " not implemented.")
             if self.grid_ref != "t-grid":
-                raise ValueError(
-                    str(self)
-                    + ": Density calculation can only be performed for a t-grid object,\
-                                 the tracer grid for NEMO."
-                )
+                raise ValueError(str(self) + ": Density calculation can only be performed for a t-grid object,\
+                                 the tracer grid for NEMO.")
             No_time = False
             try:
                 shape_ds = (

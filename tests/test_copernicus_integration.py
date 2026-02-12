@@ -8,7 +8,6 @@ import numpy
 from xarray import Dataset
 from coast import Copernicus, Gridded
 
-
 DATABASE = "nrt"
 PRODUCT_ID = "global-analysis-forecast-phy-001-024"
 CONFIG = (Path(__file__).parent.parent / "config" / "example_cmems_grid_t.json").resolve(strict=True)

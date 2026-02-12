@@ -2,6 +2,7 @@
 """
 Polar plotting example
 """
+
 #################################################
 # This demonstration will show how to re-project the NEMO velocities for quiver
 # plotting in polar coordinates.
