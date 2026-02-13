@@ -34,7 +34,6 @@ from test_wod_read_data import test_wod_read_data
 from test_process_data import test_process_data_methods
 from test_bgc_gridded_initialisation import test_bgc_gridded_initialisation
 
-
 # Test list -- comment out ones you don't want maybe (or add your own)
 tests_to_do = [
     # test_TEMPLATE,

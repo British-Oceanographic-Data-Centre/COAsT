@@ -11,7 +11,6 @@ For example:
 
 from os import path
 
-
 # All directories relative to unit_testing diretory
 dn_files = "./example_files/"  # Example data directory
 dn_config = "./config"  # Example config file directory

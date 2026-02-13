@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from .opendap import OpendapInfo
 
-
 COPERNICUS_CAS = "https://cmems-cas.cls.fr/cas/login"
 COPERNICUS_URL = "https://{}.cmems-du.eu/thredds/dodsC/{}"
 

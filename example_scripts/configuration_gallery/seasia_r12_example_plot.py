@@ -9,7 +9,6 @@ Make simple seasia 1/12 deg SSS plot.
 import coast
 import matplotlib.pyplot as plt
 
-
 #################################################
 # %%  Loading  data
 #################################################

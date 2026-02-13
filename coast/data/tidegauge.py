@@ -834,7 +834,7 @@ class Tidegauge(Timeseries):
         header = True
         for line in fid:
             if ":" in line and header is True:
-                (key, val) = line.split(":")
+                key, val = line.split(":")
                 key = key.lower().strip().replace(" ", "_")
                 val = val.lower().strip().replace(" ", "_")
                 header_dict[key] = val

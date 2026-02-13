@@ -142,10 +142,8 @@ class Transect:
                     gridded.dataset.longitude[tran_y_ind[-1], tran_x_ind[-1]],
                 )
             else:
-                raise ValueError(
-                    "Must supply both point_A and point_B of transect \
-                                 or the indices defining it."
-                )
+                raise ValueError("Must supply both point_A and point_B of transect \
+                                 or the indices defining it.")
 
             # indices along the transect
             self.y_ind = tran_y_ind

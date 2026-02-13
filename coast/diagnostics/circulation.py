@@ -5,6 +5,7 @@ Created on Wed Dec 21 16:47:59 2022
 
 @author: jholt
 """
+
 from ..data.gridded import Gridded
 import numpy as np
 import xarray as xr

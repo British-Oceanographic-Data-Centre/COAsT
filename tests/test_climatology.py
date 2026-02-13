@@ -8,7 +8,6 @@ import xarray as xr
 from coast._utils import seasons
 from coast.diagnostics.climatology import Climatology
 
-
 YEARS = [2000, 2001]
 PERIOD = seasons.ALL
 # Date ranges for each season of 2000 and 2001.

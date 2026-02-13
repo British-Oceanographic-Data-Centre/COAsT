@@ -8,7 +8,6 @@ from pydap.client import open_url
 from pydap.cas.get_cookies import setup_session
 import requests
 
-
 CASTGC = "CASTGC"
 
 
