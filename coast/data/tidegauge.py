@@ -241,7 +241,7 @@ class Tidegauge(Timeseries):
             datum = " ".join(datum)
             instrument = fid.readline().split()[2:]
             instrument = " ".join(instrument)
-            precision = float(fid.readline().split()[2])
+            precision = fid.readline().split()[2]
             null_value = float(fid.readline().split()[3])
             gauge_type = fid.readline().split()[3:]
             gauge_type = " ".join(gauge_type)

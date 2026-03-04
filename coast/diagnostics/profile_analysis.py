@@ -40,7 +40,7 @@ class ProfileAnalysis(Indexed):
         var_list = list(dataset.keys())
         time_var_list = ["time"]
         for vv in var_list:
-            if dataset[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
+            if dataset[vv].dtype in ["M8[ns]", "timedelta64[ns]", "timedelta64[s]"]:
                 time_var_list.append(vv)
 
         # Extract/remove time vars from input dataset (but save them)
@@ -108,7 +108,7 @@ class ProfileAnalysis(Indexed):
         var_list = list(dataset.keys())
         time_var_list = ["time"]
         for vv in var_list:
-            if dataset[vv].dtype in ["M8[ns]", "timedelta64[ns]"]:
+            if dataset[vv].dtype in ["M8[ns]", "timedelta64[ns]", "timedelta64[s]"]:
                 time_var_list.append(vv)
 
         # Remove the time variables and save them for merge back later
