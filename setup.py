@@ -32,7 +32,7 @@ PACKAGE = SimpleNamespace(
         "project_urls": {"documentation": "https://british-oceanographic-data-centre.github.io/COAsT/"},
         "install_requires": [
             "cython==0.29.37",
-            "PyYAML==5.4.1",
+            "PyYAML>=5.4.1",
             "oyaml==1.0",
             "pytest==7.1.1",
             "pytest-mock==3.7.0",
@@ -57,7 +57,7 @@ PACKAGE = SimpleNamespace(
             "cartopy==0.23.0",
             "h5py==3.6.0",
             "zarr==2.18.2",
-            "pip==25.1.1",
+            # pip is not a valid install_requires dependency
             "spyder==6.0.7",
             "jupyterlab==4.4.3",
             # "xesmf>=0.3.0",  # Optional. Not part of main package
